@@ -1,0 +1,6 @@
+schema_version: 1
+name: os.elasticsearch
+version: '1.0'
+description: elasticsearch image configuration module.
+execute:
+- script: configure.sh
