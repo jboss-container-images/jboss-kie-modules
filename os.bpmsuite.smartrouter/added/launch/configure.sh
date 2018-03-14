@@ -47,7 +47,7 @@
 # type entries, which should only be processed once.
 #
 
-source $JBOSS_HOME/bin/launch/logging.sh
+source ${LAUNCH_DIR}/logging.sh
 
 # clear functions from any previous module
 function prepareModule() {

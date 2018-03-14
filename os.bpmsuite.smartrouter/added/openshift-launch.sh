@@ -1,7 +1,7 @@
 #!/bin/sh
 # Openshift BPMS Smart Router launch script
 
-source $JBOSS_HOME/bin/launch/logging.sh
+source ${LAUNCH_DIR}/logging.sh
 
 if [ "${SCRIPT_DEBUG}" = "true" ] ; then
     set -x
@@ -9,10 +9,10 @@ if [ "${SCRIPT_DEBUG}" = "true" ] ; then
 fi
 
 CONFIGURE_SCRIPTS=(
-  /opt/${JBOSS_PRODUCT}/launch/bpmsuite-smartrouter.sh
+  ${LAUNCH_DIR}/bpmsuite-smartrouter.sh
 )
 
-source /opt/${JBOSS_PRODUCT}/launch/configure.sh
+source ${LAUNCH_DIR}/configure.sh
 
 log_info "Running $JBOSS_IMAGE_NAME image, version $PRODUCT_VERSION"
 

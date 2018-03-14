@@ -9,8 +9,8 @@ ROUTER_DIR=/opt/${JBOSS_PRODUCT}
 # Add custom launch script and dependent scripts/libraries/snippets
 cp -p ${ADDED_DIR}/openshift-launch.sh ${ROUTER_DIR}/
 
-mkdir -p ${ROUTER_DIR}/launch
-cp -r ${ADDED_DIR}/launch/* ${ROUTER_DIR}/launch
+mkdir -p ${LAUNCH_DIR}
+cp -r ${ADDED_DIR}/launch/* $LAUNCH_DIR
 
 # Necessary to permit running with a randomised UID
 chown -R jboss:root ${ROUTER_DIR}
