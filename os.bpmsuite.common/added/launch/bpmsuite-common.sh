@@ -9,6 +9,8 @@ function prepareEnv() {
     unset KIE_ADMIN_PWD
     unset KIE_ADMIN_USER
     unset KIE_MBEANS
+    unset KIE_SERVER_CONTROLLER_PWD
+    unset KIE_SERVER_CONTROLLER_USER
 }
 
 function configureEnv() {
@@ -17,6 +19,7 @@ function configureEnv() {
 
 function configure() {
     configure_admin_security
+    configure_controller_security
     configure_maven_settings
     configure_mbeans
 }
@@ -27,6 +30,17 @@ function configure_admin_security() {
     ${JBOSS_HOME}/bin/add-user.sh -a --user "${kieAdminUser}" --password "${kieAdminPwd}" --role "kie-server,rest-all,admin,kiemgmt,Administrators"
     if [ "$?" -ne "0" ]; then
         log_error "Failed to create admin user \"${kieAdminUser}\""
+        log_error "Exiting..."
+        exit
+    fi
+}
+
+function configure_controller_security() {
+    local kieServerControllerUser=$(find_env "KIE_SERVER_CONTROLLER_USER" "controllerUser")
+    local kieServerControllerPwd=$(find_env "KIE_SERVER_CONTROLLER_PWD" "controller1!")
+    ${JBOSS_HOME}/bin/add-user.sh -a --user "${kieServerControllerUser}" --password "${kieServerControllerPwd}" --role "kie-server,rest-all,guest"
+    if [ "$?" -ne "0" ]; then
+        log_error "Failed to create controller user \"${kieServerControllerUser}\""
         log_error "Exiting..."
         exit
     fi
