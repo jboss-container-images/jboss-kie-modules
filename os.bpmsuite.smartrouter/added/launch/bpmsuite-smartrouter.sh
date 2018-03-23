@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source "/opt/${JBOSS_PRODUCT}/launch/launch-common.sh"
+source "${LAUNCH_DIR}/launch-common.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
