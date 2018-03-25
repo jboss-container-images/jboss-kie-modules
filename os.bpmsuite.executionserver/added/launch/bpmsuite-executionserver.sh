@@ -278,7 +278,7 @@ function configure_server_state() {
     if [ "${kieServerId}" = "" ]; then
         if [ "x${HOSTNAME}" != "x" ]; then
             # chop off trailing unique "dash number" so all servers use the same template
-            kieServerId=$(echo "${HOSTNAME}" | sed -e 's/\(.*\)-.*/\1/')
+            kieServerId=$(echo "${HOSTNAME}" | sed -e 's/\(.*\)-[[:digit:]]\+-.*/\1/')
         else
             kieServerId="$(generate_random_id)"
         fi
