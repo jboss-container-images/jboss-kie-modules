@@ -25,22 +25,10 @@ function configureEnv() {
 
 function configure() {
     configure_metaspace
-    configure_controller_security
     configure_controller_access
     configure_server_access
     configure_guvnor_settings
     configure_misc_security
-}
-
-function configure_controller_security() {
-    local kieServerControllerUser=$(find_env "KIE_SERVER_CONTROLLER_USER" "controllerUser")
-    local kieServerControllerPwd=$(find_env "KIE_SERVER_CONTROLLER_PWD" "controller1!")
-    ${JBOSS_HOME}/bin/add-user.sh -a --user "${kieServerControllerUser}" --password "${kieServerControllerPwd}" --role "kie-server,rest-all,guest"
-    if [ "$?" -ne "0" ]; then
-        log_error "Failed to create controller user \"${kieServerControllerUser}\""
-        log_error "Exiting..."
-        exit
-    fi
 }
 
 # here in case the controller is separate from business central
@@ -70,15 +58,15 @@ function configure_controller_access {
         # url
         local kieServerControllerUrl="${kieServerControllerProtocol}://${kieServerControllerHost}:${kieServerControllerPort}/${kieServerControllerPath}"
         JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller=${kieServerControllerUrl}"
-        # user/pwd
-        local kieServerControllerUser=$(find_env "KIE_SERVER_CONTROLLER_USER" "controllerUser")
-        local kieServerControllerPwd=$(find_env "KIE_SERVER_CONTROLLER_PWD" "controller1!")
-        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.user=${kieServerControllerUser}"
-        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.pwd=${kieServerControllerPwd}"
-        # token
-        if [ "${KIE_SERVER_CONTROLLER_TOKEN}" != "" ]; then
-            JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.token=${KIE_SERVER_CONTROLLER_TOKEN}"
-        fi
+    fi
+    # user/pwd
+    local kieServerControllerUser=$(find_env "KIE_SERVER_CONTROLLER_USER" "controllerUser")
+    local kieServerControllerPwd=$(find_env "KIE_SERVER_CONTROLLER_PWD" "controller1!")
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.user=${kieServerControllerUser}"
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.pwd=${kieServerControllerPwd}"
+    # token
+    if [ "${KIE_SERVER_CONTROLLER_TOKEN}" != "" ]; then
+        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.token=${KIE_SERVER_CONTROLLER_TOKEN}"
     fi
 }
 
