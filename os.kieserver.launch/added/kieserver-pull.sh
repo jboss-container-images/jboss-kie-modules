@@ -40,7 +40,7 @@ for (( i=0; i<${KIE_CONTAINER_DEPLOYMENT_COUNT}; i++ )); do
 
     log_info "Attempting to pull dependencies for kjar ${i} with 'mvn ${MAVEN_ARGS_PULL}'"
     log_info "Using MAVEN_OPTS '${MAVEN_OPTS}'"
-    log_ino "Using $(mvn --version)"
+    log_info "Using $(mvn --version)"
 
     # Execute the maven pull of dependencies
     mvn $MAVEN_ARGS_PULL
