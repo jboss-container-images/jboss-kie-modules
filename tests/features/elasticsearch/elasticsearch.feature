@@ -1,4 +1,4 @@
-@rhba-7/elasticsearch-openshift
+@rhpam-7/elasticsearch-openshift
 Feature: BPM Suite Business Central tests
 
   Scenario: Test Container Health
