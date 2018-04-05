@@ -7,6 +7,14 @@ source $JBOSS_HOME/bin/launch/logging.sh
 
 function prepareEnv() {
     # please keep these in alphabetical order
+    unset APPFORMER_ELASTIC_CLUSTER_NAME
+    unset APPFORMER_ELASTIC_HOST
+    unset APPFORMER_ELASTIC_PORT
+    unset APPFORMER_ELASTIC_RETRIES
+    unset APPFORMER_JMS_BROKER_ADDRESS
+    unset APPFORMER_JMS_BROKER_PASSWORD
+    unset APPFORMER_JMS_BROKER_PORT
+    unset APPFORMER_JMS_BROKER_USER
     unset KIE_SERVER_CONTROLLER_HOST
     unset KIE_SERVER_CONTROLLER_PORT
     unset KIE_SERVER_CONTROLLER_PROTOCOL
@@ -29,6 +37,7 @@ function configure() {
     configure_server_access
     configure_guvnor_settings
     configure_misc_security
+    configure_ha
 }
 
 # here in case the controller is separate from business central
@@ -106,4 +115,32 @@ function configure_misc_security() {
 # It avoid to set the max metaspace size if there is a multiple container instantiation.
 function configure_metaspace() {
     export GC_MAX_METASPACE_SIZE=${WORKBENCH_MAX_METASPACE_SIZE:-1024}
+}
+
+# required envs for HA
+
+
+function configure_ha() {
+    # for now lets just use DNS_PING, if KUBE ping is also needed we can add it later
+    if [ "${JGROUPS_PING_PROTOCOL}" = "openshift.DNS_PING" ]; then
+        if [ -n "${OPENSHIFT_DNS_PING_SERVICE_NAME}" -a "${OPENSHIFT_DNS_PING_SERVICE_PORT}" ]; then
+            #local artemisAddress=`hostname -i`
+            log_info "OpenShift DNS_PING protocol envs set, verifying other needed envs for HA setup. Using ${JGROUPS_PING_PROTOCOL}"
+            if [ -n "$APPFORMER_ELASTIC_HOST" -a -n "$APPFORMER_JMS_BROKER_USER" -a -n "$APPFORMER_JMS_BROKER_PASSWORD" -a -n "$APPFORMER_JMS_BROKER_ADDRESS" ] ; then
+              JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dappformer-jms-url=tcp://${APPFORMER_JMS_BROKER_ADDRESS}:${APPFORMTER_JMS_BROKER_PORT:-61616}"
+              JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dappformer-jms-username=${APPFORMER_JMS_BROKER_USER} -Dappformer-jms-password=${APPFORMER_JMS_BROKER_PASSWORD}"
+              JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dappformer-cluster=true -Dorg.appformer.ext.metadata.index=elastic -Des.set.netty.runtime.available.processors=false"
+              JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.appformer.ext.metadata.elastic.port=${APPFORMER_ELASTIC_PORT:-9300}"
+              JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.appformer.ext.metadata.elastic.host=${APPFORMER_ELASTIC_HOST}"
+              JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.appformer.ext.metadata.elastic.cluster=${APPFORMER_ELASTIC_CLUSTER_NAME:-kie-cluster}"
+              JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.appformer.ext.metadata.elastic.retries=${APPFORMER_ELASTIC_RETRIES:-10}"
+            else
+              log_warning "HA envs not set, HA will not be configured."
+            fi
+        else
+            log_warning "Missing configuration for JBoss HA. Envs OPENSHIFT_DNS_PING_SERVICE_NAME and OPENSHIFT_DNS_PING_SERVICE_PORT not found."
+        fi
+    else
+        log_warning "JGROUPS_PING_PROTOCOL not set, HA will not be available."
+    fi
 }
