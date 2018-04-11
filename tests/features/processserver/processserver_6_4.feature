@@ -1,4 +1,4 @@
-@jboss-processserver-6/processserver64-openshift
+@jboss-processserver-6/processserver64-openshift @jboss-processserver-6/processserver64-eap70-openshift
 Feature: OpenShift Process Server 6.4 basic tests
   
   Scenario: Check for add-user failures
@@ -95,3 +95,8 @@ Feature: OpenShift Process Server 6.4 basic tests
     And file /opt/eap/standalone/deployments/kie-server.war/WEB-INF/lib/kie-api-6.5.0.Final-redhat-2.jar should not exist
     And file /opt/eap/standalone/deployments/kie-server.war/WEB-INF/lib/kie-api-6.5.0.Final-redhat-19.jar should exist
     And file /opt/eap/standalone/deployments/kie-server.war/WEB-INF/lib/openshift-kieserver-common-1.2.0.Final-redhat-1.jar should exist
+
+  @jboss-kieserver-6/kieserver64-eap70-openshift
+  Scenario: check if the RA_TRACKING env var is set
+    When container is ready
+    Then run sh -c 'echo $RA_TRACKING' in container and check its output contains false
