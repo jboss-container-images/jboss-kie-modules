@@ -25,6 +25,8 @@ function prepareEnv() {
     unset KIE_SERVER_PWD
     unset KIE_SERVER_TOKEN
     unset KIE_SERVER_USER
+    unset MAVEN_REPO_PASSWORD
+    unset MAVEN_REPO_USERNAME
 }
 
 function configureEnv() {
@@ -35,6 +37,7 @@ function configure() {
     configure_metaspace
     configure_controller_access
     configure_server_access
+    configure_maven_security
     configure_guvnor_settings
     configure_misc_security
     configure_ha
@@ -88,6 +91,17 @@ function configure_server_access() {
     # token
     if [ "${KIE_SERVER_TOKEN}" != "" ]; then
         JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.token=${KIE_SERVER_TOKEN}"
+    fi
+}
+
+function configure_maven_security() {
+    local kieServerMavenUser=$(find_env "MAVEN_REPO_USERNAME" "mavenUser")
+    local kieServerMavenPwd=$(find_env "MAVEN_REPO_PASSWORD" "maven1!")
+    ${JBOSS_HOME}/bin/add-user.sh -a --user "${kieServerMavenUser}" --password "${kieServerMavenPwd}"
+    if [ "$?" -ne "0" ]; then
+        log_error "Failed to create maven user \"${kieServerMavenUser}\""
+        log_error "Exiting..."
+        exit
     fi
 }
 
