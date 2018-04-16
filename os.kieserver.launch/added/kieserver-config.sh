@@ -393,6 +393,12 @@ function setKieServerEnv() {
     fi
     KIE_SERVER_OPTS="${KIE_SERVER_OPTS} -Dorg.kie.server.repo=${KIE_SERVER_REPO}"
     KIE_SERVER_OPTS="${KIE_SERVER_OPTS} -Dorg.optaplanner.server.ext.disabled=${KIE_SERVER_BRP_DISABLED}"
+    if [ "x${KIE_SERVER_MGMT_DISABLED}" != "x" ]; then
+        KIE_SERVER_OPTS="${KIE_SERVER_OPTS} -Dorg.kie.server.mgmt.api.disabled=${KIE_SERVER_MGMT_DISABLED}"
+    fi
+    if [ "x${KIE_SERVER_STARTUP_STRATEGY}" != "x" ]; then
+        KIE_SERVER_OPTS="${KIE_SERVER_OPTS} -Dorg.kie.server.startup.strategy=${KIE_SERVER_STARTUP_STRATEGY}"
+    fi
 
     # env var used by KIE to find and load global settings.xml before overriding with custom settings.xml (above)
     m2Home=$(mvn -v | grep -i 'maven home: ' | sed -E 's/^.{12}//')
@@ -437,6 +443,7 @@ function dumpKieServerEnv() {
     echo "KIE_SERVER_JMS_QUEUES_RESPONSE: $(getKieServerVal JMS_QUEUES_RESPONSE)"
     echo "KIE_SERVER_LOCATION: $(getKieServerVal LOCATION)"
     echo "KIE_SERVER_MBEANS_ENABLED: $(getKieServerVal MBEANS_ENABLED)"
+    echo "KIE_SERVER_MGMT_DISABLED: $(getKieServerVal MGMT_DISABLED)"
     echo "KIE_SERVER_OPTS: $(getKieServerVal OPTS)"
     echo "KIE_SERVER_PASSWORD: $(getKieServerVal PASSWORD)"
     if [ "${KIE_SERVER_BPM_DISABLED}" = "false" ]; then
@@ -447,6 +454,7 @@ function dumpKieServerEnv() {
     echo "KIE_SERVER_PORT: $(getKieServerVal PORT)"
     echo "KIE_SERVER_PROTOCOL: $(getKieServerVal PROTOCOL)"
     echo "KIE_SERVER_REPO: $(getKieServerVal REPO)"
+    echo "KIE_SERVER_STARTUP_STRATEGY: $(getKieServerVal STARTUP_STRATEGY)"
     echo "KIE_SERVER_STATE_FILE: $(getKieServerVal STATE_FILE)"
     echo "KIE_SERVER_USER: $(getKieServerVal USER)"
     echo "M2_HOME: ${M2_HOME}"
