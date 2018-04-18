@@ -17,6 +17,8 @@ function prepareEnv() {
     unset KIE_SERVER_ROUTER_PORT
     unset KIE_SERVER_ROUTER_PROTOCOL
     unset KIE_SERVER_ROUTER_URL_EXTERNAL
+    unset KIE_SERVER_ROUTER_REPO
+    unset KIE_SERVER_ROUTER_CONFIG_WATCHER_ENABLED
 }
 
 function configureEnv() {
@@ -49,9 +51,20 @@ function configure_router_state() {
     fi
     JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.router.name=${kieServerRouterName}"
 
+    # Potentially allow HA config by watching file system for config changes
+    if [ "x${KIE_SERVER_ROUTER_CONFIG_WATCHER_ENABLED}" != "x" ]; then
+        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.router.config.watcher.enabled=${KIE_SERVER_ROUTER_CONFIG_WATCHER_ENABLED}"
+    fi
+
     # see scripts/os.bpmsuite.smartrouter/configure.sh
     local kieServerRouterRepo="/opt/${JBOSS_PRODUCT}"
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.router.repo=${kieServerRouterRepo}"
+
+    # Potentially modify the location of smart router data
+    if [ "x${KIE_SERVER_ROUTER_REPO}" != "x" ]; then
+        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.router.repo=${KIE_SERVER_ROUTER_REPO}"
+    else
+        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.router.repo=${kieServerRouterRepo}"
+    fi
 }
 
 function configure_router_location {

@@ -12,6 +12,9 @@ cp -p ${ADDED_DIR}/openshift-launch.sh ${ROUTER_DIR}/
 mkdir -p ${LAUNCH_DIR}
 cp -r ${ADDED_DIR}/launch/* $LAUNCH_DIR
 
+# Ensure that the local data directory exists
+mkdir -p ${ROUTER_DIR}/data
+
 # Necessary to permit running with a randomised UID
 chown -R jboss:root ${ROUTER_DIR}
 chmod -R 777 ${ROUTER_DIR}
