@@ -11,9 +11,12 @@ SOURCES_DIR="/tmp/artifacts"
 if [[ "$JBOSS_EAP_VERSION" == "6."* ]]; then
     BPMSUITE_BASE_DIR="jboss-eap-6.4"
     BPMSUITE_DEPLOYABLE_VERSION="eap6.x"
-    else
-        BPMSUITE_BASE_DIR="jboss-eap-7.0"
-        BPMSUITE_DEPLOYABLE_VERSION="eap7.x"
+elif [[ "$JBOSS_EAP_VERSION" == "7.0."* ]]; then
+    BPMSUITE_BASE_DIR="jboss-eap-7.0"
+    BPMSUITE_DEPLOYABLE_VERSION="eap7.x"
+else
+    BPMSUITE_BASE_DIR="jboss-eap-7.1"
+    BPMSUITE_DEPLOYABLE_VERSION="eap7.x"
 fi
 KIE_SERVER_WAR_DIR="${BPMSUITE_BASE_DIR}/standalone/deployments/kie-server.war"
 # asterix in WAR_PATH includes kie-server.war/ and kie-server.war.dodeploy
@@ -53,12 +56,21 @@ chmod 666 "${KIE_SERVER_WEBINF_DIR}/ejb-jar.xml"
 chmod 664 "${KIE_SERVER_WEBINF_DIR}/security-filter-rules.properties"
 chmod 664 "${KIE_SERVER_WEBINF_DIR}/web.xml"
 
+# https://issues.jboss.org/browse/RHPAM-738
+if [[ -f "${SOURCES_DIR}/${BUSINESS_CENTRAL_DISTRIBUTION_ZIP}" ]] && [[ "${JBPM_WB_KIE_SERVER_BACKEND_JAR}" != "" ]]; then
+    unzip -qj "${SOURCES_DIR}/${BUSINESS_CENTRAL_DISTRIBUTION_ZIP}" "${BPMSUITE_BASE_DIR}/standalone/deployments/business-central.war/WEB-INF/lib/${JBPM_WB_KIE_SERVER_BACKEND_JAR}" -d "${SOURCES_DIR}"
+    mkdir -p "${KIE_SERVER_WEBINF_DIR}/classes"
+    chmod 775 "${KIE_SERVER_WEBINF_DIR}/classes"
+    unzip -qj "${SOURCES_DIR}/${JBPM_WB_KIE_SERVER_BACKEND_JAR}" "default-query-definitions.json" -d "${KIE_SERVER_WEBINF_DIR}/classes"
+    chmod 664 "${KIE_SERVER_WEBINF_DIR}/classes/default-query-definitions.json"
+fi
+
 if [[ "$JBOSS_EAP_VERSION" == "6."* ]]; then
     cp -f -p ${ADDED_METAINF_DIR}/kie-server-jms-eap6x.xml ${KIE_SERVER_METAINF_DIR}/kie-server-jms.xml
     cp -f -p ${ADDED_WEBINF_DIR}/jboss-deployment-structure-eap6x.xml ${KIE_SERVER_WEBINF_DIR}/jboss-deployment-structure.xml
-    else
-        cp -f -p ${ADDED_METAINF_DIR}/kie-server-jms-eap7x.xml ${KIE_SERVER_METAINF_DIR}/kie-server-jms.xml
-        cp -f -p ${ADDED_WEBINF_DIR}/jboss-deployment-structure-eap7x.xml ${KIE_SERVER_WEBINF_DIR}/jboss-deployment-structure.xml
+else
+    cp -f -p ${ADDED_METAINF_DIR}/kie-server-jms-eap7x.xml ${KIE_SERVER_METAINF_DIR}/kie-server-jms.xml
+    cp -f -p ${ADDED_WEBINF_DIR}/jboss-deployment-structure-eap7x.xml ${KIE_SERVER_WEBINF_DIR}/jboss-deployment-structure.xml
 fi
 
 # needs to be overwritten by kieserver-launch.sh
