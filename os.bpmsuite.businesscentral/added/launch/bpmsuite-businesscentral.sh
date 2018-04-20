@@ -100,6 +100,8 @@ function configure_guvnor_settings() {
     JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.uberfire.metadata.index.dir=${bpmsuiteDataDir}"
     JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.uberfire.nio.git.dir=${bpmsuiteDataDir}"
     JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.uberfire.nio.git.ssh.cert.dir=${bpmsuiteDataDir}"
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.uberfire.nio.git.daemon.enabled=false"
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.uberfire.nio.git.ssh.host=0.0.0.0"
 }
 
 function configure_misc_security() {
