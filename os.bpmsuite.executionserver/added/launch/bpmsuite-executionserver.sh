@@ -53,7 +53,7 @@ function configure() {
     configure_server_sync_deploy
     configure_drools
     configure_executor
-    configure_kie_server_capabilities
+    configure_jbpm
     # configure_server_state always has to be last
     configure_server_state
 }
@@ -197,7 +197,6 @@ function configure_server_persistence() {
     if [ "${KIE_SERVER_PERSISTENCE_SCHEMA}" != "" ]; then
         JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.persistence.schema=${KIE_SERVER_PERSISTENCE_SCHEMA}"
     fi
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.jbpm.ejb.timer.tx=true"
 }
 
 function configure_server_security() {
@@ -250,10 +249,10 @@ function configure_executor(){
     fi
 }
 
-# Enable/disable the capabilities according with the product
-function configure_kie_server_capabilities() {
-    local kieServerCapabilities
-    if [ "${JBOSS_PRODUCT}" = "bpmsuite-executionserver" ]; then
+# Enable/disable the jbpm capabilities according with the product
+function configure_jbpm() {
+    if [[ $JBOSS_PRODUCT =~ (bpmsuite\-execution|rhpam\-kie)server ]]; then
+        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.jbpm.ejb.timer.tx=true"
         if [ "${JBPM_HT_CALLBACK_METHOD}" != "" ]; then
             JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.jbpm.ht.callback=${JBPM_HT_CALLBACK_METHOD}"
         fi
@@ -261,15 +260,12 @@ function configure_kie_server_capabilities() {
             JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.jbpm.ht.custom.callback=${JBPM_HT_CALLBACK_CLASS}"
         fi
         if [ "${JBPM_LOOP_LEVEL_DISABLED}" != "" ]; then
+            # yes, this starts with -Djbpm not -Dorg.jbpm
             JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Djbpm.loop.level.disabled=${JBPM_LOOP_LEVEL_DISABLED}"
         fi
+    elif [ "${JBOSS_PRODUCT}" = "rhdm-kieserver" ]; then
+        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.jbpm.server.ext.disabled=true -Dorg.jbpm.ui.server.ext.disabled=true -Dorg.jbpm.case.server.ext.disabled=true"
     fi
-
-    if [ "${JBOSS_PRODUCT}" = "rhdm-kieserver" ]; then
-        kieServerCapabilities="${kieServerCapabilities} -Dorg.jbpm.server.ext.disabled=true -Dorg.jbpm.ui.server.ext.disabled=true -Dorg.jbpm.case.server.ext.disabled=true"
-    fi
-
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} ${kieServerCapabilities}"
 }
 
 function configure_server_state() {
