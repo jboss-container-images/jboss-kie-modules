@@ -1,0 +1,6 @@
+schema_version: 1
+name: os.kieserver.probes70
+version: '1.0'
+description: Legacy os.kieserver.probes70 script package.
+execute:
+- script: prepare.sh
