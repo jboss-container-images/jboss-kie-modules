@@ -9,4 +9,4 @@ Feature: BPM Suite Business Central Monitoring tests
   Scenario: Check for product and version  environment variables
     When container is ready
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for bpmsuite-businesscentral-monitoring
-    And run sh -c 'echo $JBOSS_BPMSUITE_BUSINESSCENTRAL_MONITORING_VERSION' in container and check its output for 7.0.0
+    And run sh -c 'echo $JBOSS_BPMSUITE_BUSINESS_CENTRAL_MONITORING_VERSION' in container and check its output for 7.0.0

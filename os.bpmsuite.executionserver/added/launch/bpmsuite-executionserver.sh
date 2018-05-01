@@ -1,7 +1,8 @@
 #!/bin/bash
 
 source "${JBOSS_HOME}/bin/launch/launch-common.sh"
-source $JBOSS_HOME/bin/launch/logging.sh
+source "${JBOSS_HOME}/bin/launch/logging.sh"
+source "${JBOSS_HOME}/bin/launch/bpmsuite-security.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
@@ -11,16 +12,12 @@ function prepareEnv() {
     unset JBPM_HT_CALLBACK_METHOD
     unset JBPM_LOOP_LEVEL_DISABLED
     unset KIE_EXECUTOR_RETRIES
-    unset KIE_SERVER_BYPASS_AUTH_USER
+    unset_kie_security_env
     unset KIE_SERVER_CONTAINER_DEPLOYMENT
     unset KIE_SERVER_CONTROLLER_HOST
     unset KIE_SERVER_CONTROLLER_PORT
     unset KIE_SERVER_CONTROLLER_PROTOCOL
-    unset KIE_SERVER_CONTROLLER_PWD
     unset KIE_SERVER_CONTROLLER_SERVICE
-    unset KIE_SERVER_CONTROLLER_TOKEN
-    unset KIE_SERVER_CONTROLLER_USER
-    unset KIE_SERVER_DOMAIN
     unset KIE_SERVER_HOST
     unset KIE_SERVER_ID
     unset KIE_SERVER_PERSISTENCE_DIALECT
@@ -29,14 +26,11 @@ function prepareEnv() {
     unset KIE_SERVER_PERSISTENCE_TM
     unset KIE_SERVER_PORT
     unset KIE_SERVER_PROTOCOL
-    unset KIE_SERVER_PWD
     unset KIE_SERVER_ROUTER_HOST
     unset KIE_SERVER_ROUTER_PORT
     unset KIE_SERVER_ROUTER_PROTOCOL
     unset KIE_SERVER_ROUTER_SERVICE
     unset KIE_SERVER_SYNC_DEPLOY
-    unset KIE_SERVER_TOKEN
-    unset KIE_SERVER_USER
 }
 
 function preConfigure() {
@@ -153,7 +147,7 @@ function configure_EJB_Timer_datasource {
 
                 else
                     local databaseName=$(find_env "${dsPrefix}_DATABASE")
-	                databaseName=$(find_env "${dsPrefix}_XA_CONNECTION_PROPERTY_DatabaseName" "${databaseName}")
+                    databaseName=$(find_env "${dsPrefix}_XA_CONNECTION_PROPERTY_DatabaseName" "${databaseName}")
                     local serverName=$(find_env "${dsPrefix}_SERVICE_HOST" )
                     serverName=$(find_env "${dsPrefix}_XA_CONNECTION_PROPERTY_ServerName" "${serverName}")
                     local portNumber=$(find_env "${dsPrefix}_SERVICE_PORT" )
@@ -171,9 +165,8 @@ function configure_EJB_Timer_datasource {
             EJB_TIMER_TX_ISOLATION="${EJB_TIMER_TX_ISOLATION:-TRANSACTION_READ_COMMITTED}"
             TIMER_SERVICE_DATA_STORE="EJB_TIMER"
         fi
-	fi
+    fi
 }
-
 
 function configure_server_env {
     # source the KIE config
@@ -214,13 +207,12 @@ function configure_controller_access {
         JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller=${kieServerControllerUrl}"
     fi
     # user/pwd
-    local kieServerControllerUser=$(find_env "KIE_SERVER_CONTROLLER_USER" "controllerUser")
-    local kieServerControllerPwd=$(find_env "KIE_SERVER_CONTROLLER_PWD" "controller1!")
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.user=${kieServerControllerUser}"
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.pwd=${kieServerControllerPwd}"
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.user=$(get_kie_server_controller_user)"
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.pwd=$(get_kie_server_controller_pwd)"
     # token
-    if [ "${KIE_SERVER_CONTROLLER_TOKEN}" != "" ]; then
-        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.token=${KIE_SERVER_CONTROLLER_TOKEN}"
+    local kieServerControllerToken="$(get_kie_server_controller_token)"
+    if [ "${kieServerControllerToken}" != "" ]; then
+        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.token=${kieServerConrollerToken}"
     fi
 }
 
@@ -317,37 +309,26 @@ function configure_server_persistence() {
 }
 
 function configure_server_security() {
+    # add eap user (see bpmsuite-security.sh)
+    add_kie_server_user
     # user/pwd
-    local kieServerUser=$(find_env "KIE_SERVER_USER" "executionUser")
-    local kieServerPwd=$(find_env "KIE_SERVER_PWD" "execution1!")
-    ${JBOSS_HOME}/bin/add-user.sh -a --user "${kieServerUser}" --password "${kieServerPwd}" --role "kie-server,rest-all,guest"
-    if [ "$?" -ne "0" ]; then
-        log_error "Failed to create execution user \"${kieServerUser}\""
-        log_error "Exiting..."
-        exit
-    fi
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.user=${kieServerUser}"
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.pwd=${kieServerPwd}"
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.user=$(get_kie_server_user)"
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.pwd=$(get_kie_server_pwd)"
     # token
-    if [ "${KIE_SERVER_TOKEN}" != "" ]; then
-        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.token=${KIE_SERVER_TOKEN}"
+    local kieServerToken="$(get_kie_server_token)"
+    if [ "${kieServerToken}" != "" ]; then
+        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.token=${kieServerToken}"
     fi
     # domain
-    if [ "${KIE_SERVER_DOMAIN}" = "" ]; then
-        KIE_SERVER_DOMAIN="other"
-    fi
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.domain=${KIE_SERVER_DOMAIN}"
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.domain=$(get_kie_server_domain)"
     # bypass auth user
-    bypassAuthUser=$(echo "${KIE_SERVER_BYPASS_AUTH_USER}" | tr "[:upper:]" "[:lower:]")
-    if [ "${bypassAuthUser}" = "true" ]; then
-        KIE_SERVER_BYPASS_AUTH_USER="true"
-    else
-        KIE_SERVER_BYPASS_AUTH_USER="false"
+    local kieServerBypassAuthUser="$(get_kie_server_bypass_auth_user)"
+    if [ "${kieServerBypassAuthUser}" != "" ]; then
+        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.bypass.auth.user=${kieServerBypassAuthUser}"
     fi
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.bypass.auth.user=${KIE_SERVER_BYPASS_AUTH_USER}"
 }
 
-function configure_server_sync_deploy(){
+function configure_server_sync_deploy() {
     # server sync deploy (true by default)
     local kieServerSyncDeploy="true";
     if [ "${KIE_SERVER_SYNC_DEPLOY// /}" != "" ]; then
@@ -359,7 +340,7 @@ function configure_server_sync_deploy(){
     JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.sync.deploy=${kieServerSyncDeploy}"
 }
 
-function configure_executor(){
+function configure_executor() {
     # kie executor number of retries
     if [ "${KIE_EXECUTOR_RETRIES}" != "" ]; then
         JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.executor.retry.count=${KIE_EXECUTOR_RETRIES}"
