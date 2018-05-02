@@ -1,14 +1,15 @@
-@jboss-bpmsuite-7/bpmsuite70-executionserver-openshift
+@rhpam-7/rhpam70-kieserver-openshift
 Feature: RHPAM Execution Server Common tests
-   # https://issues.jboss.org/browse/CLOUD-180
+
+  # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
     When container is ready
-    Then container log should contain jboss-bpmsuite-7/bpmsuite70-executionserver-openshift image, version
+    Then container log should contain rhpam-7/rhpam70-kieserver-openshift image, version
 
   Scenario: Check for product and version  environment variables
     When container is ready
-    Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for bpmsuite-executionserver
-    And run sh -c 'echo $JBOSS_BPMSUITE_EXECUTIONSERVER_VERSION' in container and check its output for 7.0.0
+    Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-kieserver
+     And run sh -c 'echo $JBOSS_RHPAM_KIESERVER_VERSION' in container and check its output for 7.0.0
 
   Scenario: Test REST API is available and valid
     When container is started with env
