@@ -66,11 +66,11 @@ Feature: RHPAM KIE Server configuration tests
     Then file /opt/eap/standalone/deployments/node-info.war should exist
 
   Scenario: deploys the library example, then checks if it's deployed.
-    Given s2i build https://github.com/jboss-openshift/openshift-quickstarts from processserver/library using master
-      | variable                         | value                                                                        |
-      | KIE_CONTAINER_DEPLOYMENT         | LibraryContainer=org.openshift.quickstarts:processserver-library:1.4.0.Final |
-      | KIE_CONTAINER_REDIRECT_ENABLED   | false                                                                        |
-    Then container log should contain Container LibraryContainer
+    Given s2i build https://github.com/jboss-container-images/rhpam-7-openshift-image from quickstarts/library-process/library using rhpam70-dev
+      | variable                        | value                                                                                    |
+      | KIE_SERVER_CONTAINER_DEPLOYMENT | rhpam-kieserver-library=org.openshift.quickstarts:rhpam-kieserver-library:1.4.0-SNAPSHOT |
+    Then container log should contain Container rhpam-kieserver-library
+
 
   # https://issues.jboss.org/browse/RHPAM-846
   Scenario: Check jbpm is enabled in RHPAM 7
