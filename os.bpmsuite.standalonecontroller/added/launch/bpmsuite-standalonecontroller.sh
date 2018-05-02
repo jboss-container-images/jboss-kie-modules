@@ -1,15 +1,12 @@
 #!/bin/bash
 
 source "${JBOSS_HOME}/bin/launch/launch-common.sh"
-source $JBOSS_HOME/bin/launch/logging.sh
+source "${JBOSS_HOME}/bin/launch/logging.sh"
+source "${JBOSS_HOME}/bin/launch/bpmsuite-security.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
-    unset KIE_SERVER_CONTROLLER_PWD
-    unset KIE_SERVER_CONTROLLER_USER
-    unset KIE_SERVER_PWD
-    unset KIE_SERVER_TOKEN
-    unset KIE_SERVER_USER
+    unset_kie_security_env
 }
 
 function configureEnv() {
@@ -22,24 +19,17 @@ function configure() {
 }
 
 function configure_controller_security() {
-    local kieServerControllerUser=$(find_env "KIE_SERVER_CONTROLLER_USER" "controllerUser")
-    local kieServerControllerPwd=$(find_env "KIE_SERVER_CONTROLLER_PWD" "controller1!")
-    ${JBOSS_HOME}/bin/add-user.sh -a --user "${kieServerControllerUser}" --password "${kieServerControllerPwd}" --role "kie-server,rest-all,guest"
-    if [ "$?" -ne "0" ]; then
-        log_error "Failed to create controller user \"${kieServerControllerUser}\""
-        log_error "Exiting..."
-        exit
-    fi
+    # add eap user (see bpmsuite-security.sh)
+    add_kie_server_controller_user
 }
 
 function configure_server_access() {
     # user/pwd
-    local kieServerUser=$(find_env "KIE_SERVER_USER" "executionUser")
-    local kieServerPwd=$(find_env "KIE_SERVER_PWD" "execution1!")
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.user=${kieServerUser}"
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.pwd=${kieServerPwd}"
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.user=$(get_kie_server_user)"
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.pwd=$(get_kie_server_pwd)"
     # token
-    if [ "${KIE_SERVER_TOKEN}" != "" ]; then
-        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.token=${KIE_SERVER_TOKEN}"
+    local kieServerToken="$(get_kie_server_token)"
+    if [ "${kieServerToken}" != "" ]; then
+        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.token=${kieServerToken}"
     fi
 }

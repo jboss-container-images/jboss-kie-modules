@@ -3,7 +3,8 @@
 source "${JBOSS_HOME}/bin/launch/launch-common.sh"
 source "${JBOSS_HOME}/bin/launch/login-modules-common.sh"
 source "${JBOSS_HOME}/bin/launch/management-common.sh"
-source $JBOSS_HOME/bin/launch/logging.sh
+source "${JBOSS_HOME}/bin/launch/logging.sh"
+source "${JBOSS_HOME}/bin/launch/bpmsuite-security.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
@@ -15,16 +16,11 @@ function prepareEnv() {
     unset APPFORMER_JMS_BROKER_PASSWORD
     unset APPFORMER_JMS_BROKER_PORT
     unset APPFORMER_JMS_BROKER_USER
+    unset_kie_security_env
     unset KIE_SERVER_CONTROLLER_HOST
     unset KIE_SERVER_CONTROLLER_PORT
     unset KIE_SERVER_CONTROLLER_PROTOCOL
-    unset KIE_SERVER_CONTROLLER_PWD
     unset KIE_SERVER_CONTROLLER_SERVICE
-    unset KIE_SERVER_CONTROLLER_TOKEN
-    unset KIE_SERVER_CONTROLLER_USER
-    unset KIE_SERVER_PWD
-    unset KIE_SERVER_TOKEN
-    unset KIE_SERVER_USER
 }
 
 function configureEnv() {
@@ -32,12 +28,29 @@ function configureEnv() {
 }
 
 function configure() {
-    configure_metaspace
+    configure_admin_security
     configure_controller_access
     configure_server_access
     configure_guvnor_settings
-    configure_misc_security
+    configure_metaspace
     configure_ha
+}
+
+function configure_admin_security() {
+    # add eap users (see bpmsuite-security.sh)
+    add_kie_admin_user
+    add_kie_server_controller_user
+    if [[ $JBOSS_PRODUCT != *monitoring ]]; then
+        add_kie_maven_user
+    fi
+
+    # (see management-common.sh and login-modules-common.sh)
+    add_management_interface_realm
+    # KieLoginModule breaks Decision Central; it needs to be added only for Business Central & Business Central Monitoring
+    # bpmsuite-businesscentral, bpmsuite-businesscentral-monitoring, rhpam-businesscentral, rhpam-businesscentral-monitoring
+    if [[ $JBOSS_PRODUCT =~ (bpmsuite|rhpam)\-businesscentral(\-monitoring)? ]]; then
+        configure_login_modules "org.kie.security.jaas.KieLoginModule" "optional" "deployment.ROOT.war"
+    fi
 }
 
 # here in case the controller is separate from business central
@@ -69,25 +82,23 @@ function configure_controller_access {
         JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller=${kieServerControllerUrl}"
     fi
     # user/pwd
-    local kieServerControllerUser=$(find_env "KIE_SERVER_CONTROLLER_USER" "controllerUser")
-    local kieServerControllerPwd=$(find_env "KIE_SERVER_CONTROLLER_PWD" "controller1!")
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.user=${kieServerControllerUser}"
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.pwd=${kieServerControllerPwd}"
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.user=$(get_kie_server_controller_user)"
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.pwd=$(get_kie_server_controller_pwd)"
     # token
-    if [ "${KIE_SERVER_CONTROLLER_TOKEN}" != "" ]; then
-        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.token=${KIE_SERVER_CONTROLLER_TOKEN}"
+    local kieServerControllerToken="$(get_kie_server_controller_token)"
+    if [ "${kieServerControllerToken}" != "" ]; then
+        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.controller.token=${kieServerConrollerToken}"
     fi
 }
 
 function configure_server_access() {
     # user/pwd
-    local kieServerUser=$(find_env "KIE_SERVER_USER" "executionUser")
-    local kieServerPwd=$(find_env "KIE_SERVER_PWD" "execution1!")
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.user=${kieServerUser}"
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.pwd=${kieServerPwd}"
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.user=$(get_kie_server_user)"
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.pwd=$(get_kie_server_pwd)"
     # token
-    if [ "${KIE_SERVER_TOKEN}" != "" ]; then
-        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.token=${KIE_SERVER_TOKEN}"
+    local kieServerToken="$(get_kie_server_token)"
+    if [ "${kieServerToken}" != "" ]; then
+        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.token=${kieServerToken}"
     fi
 }
 
@@ -104,15 +115,6 @@ function configure_guvnor_settings() {
     JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.uberfire.nio.git.ssh.host=0.0.0.0"
 }
 
-function configure_misc_security() {
-    add_management_interface_realm
-    # KieLoginModule breaks Decision Central; it needs to be added only for Business Central & Business Central Monitoring
-    # bpmsuite-businesscentral, bpmsuite-businesscentral-monitoring, rhpam-businesscentral, rhpam-businesscentral-monitoring
-    if [[ $JBOSS_PRODUCT =~ (bpmsuite|rhpam)\-businesscentral(\-monitoring)? ]]; then
-        configure_login_modules "org.kie.security.jaas.KieLoginModule" "optional" "deployment.ROOT.war"
-    fi
-}
-
 # Set the max metaspace size only for the workbench
 # It avoid to set the max metaspace size if there is a multiple container instantiation.
 function configure_metaspace() {
@@ -120,8 +122,6 @@ function configure_metaspace() {
 }
 
 # required envs for HA
-
-
 function configure_ha() {
     # for now lets just use DNS_PING, if KUBE ping is also needed we can add it later
     if [ "${JGROUPS_PING_PROTOCOL}" = "openshift.DNS_PING" ]; then
