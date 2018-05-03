@@ -309,7 +309,8 @@ function configure_server_persistence() {
 }
 
 function configure_server_security() {
-    # add eap user (see bpmsuite-security.sh)
+    # add eap users (see bpmsuite-security.sh)
+    add_kie_admin_user
     add_kie_server_user
     # user/pwd
     JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.user=$(get_kie_server_user)"
