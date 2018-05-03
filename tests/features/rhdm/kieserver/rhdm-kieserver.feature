@@ -14,8 +14,8 @@ Feature: RHDM KIE Server configuration tests
   # https://issues.jboss.org/browse/RHPAM-891
   Scenario: Check default users are properly configured
     When container is ready
-    Then file /opt/eap/standalone/configuration/application-users.properties should not contain adminUser
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain adminUser
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain adminUser=de3155e1927c6976555925dec24a53ac
+     And file /opt/eap/standalone/configuration/application-roles.properties should contain adminUser=kie-server,rest-all,admin,kiemgmt,Administrators
      And file /opt/eap/standalone/configuration/application-users.properties should not contain mavenUser
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain mavenUser
      And file /opt/eap/standalone/configuration/application-users.properties should not contain controllerUser
@@ -35,8 +35,8 @@ Feature: RHDM KIE Server configuration tests
       | KIE_SERVER_CONTROLLER_PWD  | customCtl!0 |
       | KIE_SERVER_USER            | customExe   |
       | KIE_SERVER_PWD             | customExe!0 |
-    Then file /opt/eap/standalone/configuration/application-users.properties should not contain customAdm
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain customAdm
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=05ad559f03f4a06845bf201990f6832f
+     And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=kie-server,rest-all,admin,kiemgmt,Administrators
      And file /opt/eap/standalone/configuration/application-users.properties should not contain customMvn
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain customMvn
      And file /opt/eap/standalone/configuration/application-users.properties should not contain customCtl
