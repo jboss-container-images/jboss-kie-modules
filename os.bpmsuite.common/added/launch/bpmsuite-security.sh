@@ -108,7 +108,7 @@ function get_kie_server_domain() {
 
 function get_kie_server_bypass_auth_user() {
     local bypass_auth_user=$(echo "${KIE_SERVER_BYPASS_AUTH_USER}" | tr "[:upper:]" "[:lower:]")
-    if [ "x${bypass_auth_user}" != "x"] && [ "${bypass_auth_user}" != "true"]; then
+    if [ "x${bypass_auth_user}" != "x" ] && [ "${bypass_auth_user}" != "true" ]; then
         bypass_auth_user="false"
     fi
     echo "${bypass_auth_user}"
