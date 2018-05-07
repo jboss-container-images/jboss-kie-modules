@@ -34,6 +34,13 @@ mkdir -p ${KIE_DIR}/repository
 chown -R jboss:root ${KIE_DIR}
 chmod -R 777 ${KIE_DIR}
 
+#temp fix for https://issues.jboss.org/browse/RHPAM-740, after the latest postgresql jar is provided from RPM, follow up work: https://issues.jboss.org/browse/RHPAM-785
+#only copy the JDBC if it exists
+POSTGRESQL_JAR=${SOURCES_DIR}/postgresql-42.2.2.redhat-2.jar
+if [ -f $POSTGRESQL_JAR ]; then
+    cp $POSTGRESQL_JAR /usr/share/java/postgresql-jdbc.jar
+fi
+
 # Necessary to permit running with a randomised UID
 for dir in /deployments $JBOSS_HOME $HOME; do
     chown -R jboss:root $dir
