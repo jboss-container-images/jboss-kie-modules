@@ -1,6 +1,7 @@
 #!/bin/bash
 
 function prepareEnv() {
+    # please keep these in alphabetical order
     unset ES_CLUSTER_NAME
     unset ES_HTTP_HOST
     unset ES_HTTP_PORT
@@ -16,7 +17,6 @@ function configureEnv() {
 }
 
 function preConfigure() {
-#    configureCredentials
     configureMinMemoryRatio
 }
 
