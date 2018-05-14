@@ -20,6 +20,7 @@ function prepareEnv() {
     unset KIE_SERVER_CONTROLLER_SERVICE
     unset KIE_SERVER_HOST
     unset KIE_SERVER_ID
+    unset KIE_SERVER_MGMT_DISABLED
     unset KIE_SERVER_PERSISTENCE_DIALECT
     unset KIE_SERVER_PERSISTENCE_DS
     unset KIE_SERVER_PERSISTENCE_SCHEMA
@@ -364,6 +365,11 @@ function configure_jbpm() {
         fi
     elif [ "${JBOSS_PRODUCT}" = "rhdm-kieserver" ]; then
         JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.jbpm.server.ext.disabled=true -Dorg.jbpm.ui.server.ext.disabled=true -Dorg.jbpm.case.server.ext.disabled=true"
+    fi
+
+    # setting valid for both, rhpam and rhdm execution server
+    if [ "${KIE_SERVER_MGMT_DISABLED}" = "true" ]; then
+        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.mgmt.api.disabled=true -Dorg.kie.server.startup.strategy=LocalContainersStartupStrategy"
     fi
 }
 
