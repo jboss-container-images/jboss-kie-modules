@@ -1,4 +1,4 @@
-@rhpam-7/rhpam70-businesscentral-openshift @rhpam-7/rhpam70-businesscentral-monitoring-openshift @rhdm-7/rhdm70-decisioncentral-openshift
+@rhpam-7/rhpam70-businesscentral-openshift @rhpam-7/rhpam70-businesscentral-monitoring-openshift @rhdm-7/rhdm70-decisioncentral-openshift @wip
 Feature: RHPAM RHDM Workbench clustering configuration
 
   Scenario: HA will not be configured
@@ -26,7 +26,7 @@ Feature: RHPAM RHDM Workbench clustering configuration
       | APPFORMER_JMS_BROKER_ADDRESS    | 11.11.11.11           |
     Then container log should contain -Dappformer-jms-url=tcp://11.11.11.11:61616
      And container log should contain -Dappformer-jms-username=brokerUser -Dappformer-jms-password=brokerPwd
-     And container log should contain -Dappformer-cluster=true -Dorg.appformer.ext.metadata.index=elastic -Des.set.netty.runtime.available.processors=false
+     And container log should contain -Dappformer-jms-connection-mode=REMOTE -Dorg.appformer.ext.metadata.index=elastic -Des.set.netty.runtime.available.processors=false
      And container log should contain -Dorg.appformer.ext.metadata.elastic.port=9300
      And container log should contain -Dorg.appformer.ext.metadata.elastic.host=10.10.10.10
      And container log should contain -Dorg.appformer.ext.metadata.elastic.cluster=kie-cluster
@@ -48,7 +48,7 @@ Feature: RHPAM RHDM Workbench clustering configuration
       | APPFORMER_ELASTIC_RETRIES       | 59                    |
     Then container log should contain -Dappformer-jms-url=tcp://11.11.11.11:5000
      And container log should contain -Dappformer-jms-username=brokerUser -Dappformer-jms-password=brokerPwd
-     And container log should contain -Dappformer-cluster=true -Dorg.appformer.ext.metadata.index=elastic -Des.set.netty.runtime.available.processors=false
+     And container log should contain -Dappformer-jms-connection-mode=REMOTE -Dorg.appformer.ext.metadata.index=elastic -Des.set.netty.runtime.available.processors=false
      And container log should contain -Dorg.appformer.ext.metadata.elastic.port=9000
      And container log should contain -Dorg.appformer.ext.metadata.elastic.host=10.10.10.10
      And container log should contain -Dorg.appformer.ext.metadata.elastic.cluster=my-custom-cluster

@@ -133,7 +133,7 @@ function configure_ha() {
             if [ -n "$APPFORMER_ELASTIC_HOST" -a -n "$APPFORMER_JMS_BROKER_USER" -a -n "$APPFORMER_JMS_BROKER_PASSWORD" -a -n "$APPFORMER_JMS_BROKER_ADDRESS" ] ; then
               JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dappformer-jms-url=tcp://${APPFORMER_JMS_BROKER_ADDRESS}:${APPFORMTER_JMS_BROKER_PORT:-61616}"
               JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dappformer-jms-username=${APPFORMER_JMS_BROKER_USER} -Dappformer-jms-password=${APPFORMER_JMS_BROKER_PASSWORD}"
-              JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dappformer-cluster=true -Dorg.appformer.ext.metadata.index=elastic -Des.set.netty.runtime.available.processors=false"
+              JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dappformer-jms-connection-mode=REMOTE -Dorg.appformer.ext.metadata.index=elastic -Des.set.netty.runtime.available.processors=false"
               JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.appformer.ext.metadata.elastic.port=${APPFORMER_ELASTIC_PORT:-9300}"
               JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.appformer.ext.metadata.elastic.host=${APPFORMER_ELASTIC_HOST}"
               JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.appformer.ext.metadata.elastic.cluster=${APPFORMER_ELASTIC_CLUSTER_NAME:-kie-cluster}"
