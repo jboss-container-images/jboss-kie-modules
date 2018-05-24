@@ -24,7 +24,7 @@ Feature: RHPAM RHDM Workbench clustering configuration
       | APPFORMER_JMS_BROKER_USER       | brokerUser            |
       | APPFORMER_JMS_BROKER_PASSWORD   | brokerPwd             |
       | APPFORMER_JMS_BROKER_ADDRESS    | 11.11.11.11           |
-    Then container log should contain -Dappformer-jms-url=tcp://11.11.11.11:61616
+    Then container log should contain -Dappformer-cluster=true -Dappformer-jms-url=tcp://11.11.11.11:61616
      And container log should contain -Dappformer-jms-username=brokerUser -Dappformer-jms-password=brokerPwd
      And container log should contain -Dappformer-jms-connection-mode=REMOTE -Dorg.appformer.ext.metadata.index=elastic -Des.set.netty.runtime.available.processors=false
      And container log should contain -Dorg.appformer.ext.metadata.elastic.port=9300
@@ -46,7 +46,30 @@ Feature: RHPAM RHDM Workbench clustering configuration
       | APPFORMER_ELASTIC_PORT          | 9000                  |
       | APPFORMER_ELASTIC_CLUSTER_NAME  | my-custom-cluster     |
       | APPFORMER_ELASTIC_RETRIES       | 59                    |
-    Then container log should contain -Dappformer-jms-url=tcp://11.11.11.11:5000
+    Then container log should contain -Dappformer-cluster=true -Dappformer-jms-url=tcp://11.11.11.11:5000?ha=true&retryInterval=1000&retryIntervalMultiplier=1.0&reconnectAttempts=-1
+     And container log should contain -Dappformer-jms-username=brokerUser -Dappformer-jms-password=brokerPwd
+     And container log should contain -Dappformer-jms-connection-mode=REMOTE -Dorg.appformer.ext.metadata.index=elastic -Des.set.netty.runtime.available.processors=false
+     And container log should contain -Dorg.appformer.ext.metadata.elastic.port=9000
+     And container log should contain -Dorg.appformer.ext.metadata.elastic.host=10.10.10.10
+     And container log should contain -Dorg.appformer.ext.metadata.elastic.cluster=my-custom-cluster
+     And container log should contain -Dorg.appformer.ext.metadata.elastic.retries=59
+
+  Scenario: HA custom configuration with custom jms params
+    When container is started with env
+      | variable                        | value                 |
+      | JGROUPS_PING_PROTOCOL           | openshift.DNS_PING    |
+      | OPENSHIFT_DNS_PING_SERVICE_NAME | ping                  |
+      | OPENSHIFT_DNS_PING_SERVICE_PORT | 8888                  |
+      | APPFORMER_ELASTIC_HOST          | 10.10.10.10           |
+      | APPFORMER_JMS_BROKER_USER       | brokerUser            |
+      | APPFORMER_JMS_BROKER_PASSWORD   | brokerPwd             |
+      | APPFORMER_JMS_BROKER_ADDRESS    | 11.11.11.11           |
+      | APPFORMTER_JMS_BROKER_PORT      | 5000                  |
+      | APPFORMER_ELASTIC_PORT          | 9000                  |
+      | APPFORMER_ELASTIC_CLUSTER_NAME  | my-custom-cluster     |
+      | APPFORMER_ELASTIC_RETRIES       | 59                    |
+      | APPFORMER_JMS_CONNECTION_PARAMS | paramX=test2          |
+    Then container log should contain -Dappformer-cluster=true -Dappformer-jms-url=tcp://11.11.11.11:5000?paramX=test2
      And container log should contain -Dappformer-jms-username=brokerUser -Dappformer-jms-password=brokerPwd
      And container log should contain -Dappformer-jms-connection-mode=REMOTE -Dorg.appformer.ext.metadata.index=elastic -Des.set.netty.runtime.available.processors=false
      And container log should contain -Dorg.appformer.ext.metadata.elastic.port=9000
