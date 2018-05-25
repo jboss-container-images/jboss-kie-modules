@@ -16,6 +16,7 @@ function prepareEnv() {
     unset APPFORMER_JMS_BROKER_PASSWORD
     unset APPFORMER_JMS_BROKER_PORT
     unset APPFORMER_JMS_BROKER_USER
+    unset APPFORMER_JMS_CONNECTION_PARAMS
     unset_kie_security_env
     unset KIE_SERVER_CONTROLLER_HOST
     unset KIE_SERVER_CONTROLLER_PORT
@@ -131,9 +132,11 @@ function configure_ha() {
             #local artemisAddress=`hostname -i`
             log_info "OpenShift DNS_PING protocol envs set, verifying other needed envs for HA setup. Using ${JGROUPS_PING_PROTOCOL}"
             if [ -n "$APPFORMER_ELASTIC_HOST" -a -n "$APPFORMER_JMS_BROKER_USER" -a -n "$APPFORMER_JMS_BROKER_PASSWORD" -a -n "$APPFORMER_JMS_BROKER_ADDRESS" ] ; then
-              JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dappformer-jms-url=tcp://${APPFORMER_JMS_BROKER_ADDRESS}:${APPFORMTER_JMS_BROKER_PORT:-61616}"
+              local jmsConnectionParams="${APPFORMER_JMS_CONNECTION_PARAMS:-ha=true&retryInterval=1000&retryIntervalMultiplier=1.0&reconnectAttempts=-1}"
+              JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dappformer-cluster=true -Dappformer-jms-url=tcp://${APPFORMER_JMS_BROKER_ADDRESS}:${APPFORMTER_JMS_BROKER_PORT:-61616}?${jmsConnectionParams}"
               JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dappformer-jms-username=${APPFORMER_JMS_BROKER_USER} -Dappformer-jms-password=${APPFORMER_JMS_BROKER_PASSWORD}"
-              JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dappformer-jms-connection-mode=REMOTE -Dorg.appformer.ext.metadata.index=elastic -Des.set.netty.runtime.available.processors=false"
+              JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dappformer-jms-connection-mode=REMOTE -Dorg.appformer.ext.metadata.index=elastic"
+              JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Des.set.netty.runtime.available.processors=false"
               JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.appformer.ext.metadata.elastic.port=${APPFORMER_ELASTIC_PORT:-9300}"
               JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.appformer.ext.metadata.elastic.host=${APPFORMER_ELASTIC_HOST}"
               JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.appformer.ext.metadata.elastic.cluster=${APPFORMER_ELASTIC_CLUSTER_NAME:-kie-cluster}"
