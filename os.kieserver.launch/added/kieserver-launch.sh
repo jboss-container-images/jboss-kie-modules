@@ -14,7 +14,7 @@ function runServer() {
 
   log_info "Running $JBOSS_IMAGE_NAME image, version $JBOSS_IMAGE_VERSION"
 
-  exec $JBOSS_HOME/bin/standalone.sh -c standalone-openshift.xml -bmanagement 127.0.0.1 -Djboss.server.data.dir="$instanceDir" ${JAVA_PROXY_OPTIONS} ${JBOSS_HA_ARGS} ${JBOSS_MESSAGING_ARGS}
+  exec $JBOSS_HOME/bin/standalone.sh -c standalone-openshift.xml -bmanagement 127.0.0.1 -Djboss.server.data.dir="$instanceDir" ${JAVA_PROXY_OPTIONS} ${JBOSS_HA_ARGS} ${JBOSS_MESSAGING_ARGS} -Djackson.deserialization.whitelist.packages="${KIE_JACKSON_DESERIALIZATION_WHITELIST}"
 }
 
 function init_data_dir() {
@@ -35,5 +35,5 @@ else
 
   log_info "Running $JBOSS_IMAGE_NAME image, version $JBOSS_IMAGE_VERSION"
 
-  exec $JBOSS_HOME/bin/standalone.sh -c standalone-openshift.xml -bmanagement 127.0.0.1 ${JAVA_PROXY_OPTIONS} ${JBOSS_HA_ARGS} ${JBOSS_MESSAGING_ARGS}
+  exec $JBOSS_HOME/bin/standalone.sh -c standalone-openshift.xml -bmanagement 127.0.0.1 ${JAVA_PROXY_OPTIONS} ${JBOSS_HA_ARGS} ${JBOSS_MESSAGING_ARGS} -Djackson.deserialization.whitelist.packages="${KIE_JACKSON_DESERIALIZATION_WHITELIST}"
 fi
