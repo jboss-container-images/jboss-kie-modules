@@ -31,6 +31,7 @@ function prepareEnv() {
     unset KIE_SERVER_ROUTER_PORT
     unset KIE_SERVER_ROUTER_PROTOCOL
     unset KIE_SERVER_ROUTER_SERVICE
+    unset KIE_SERVER_STARTUP_STRATEGY
     unset KIE_SERVER_SYNC_DEPLOY
 }
 
@@ -54,6 +55,7 @@ function configure() {
     configure_drools
     configure_executor
     configure_jbpm
+    configure_kie_server_mgmt
     # configure_server_state always has to be last
     configure_server_state
 }
@@ -366,10 +368,29 @@ function configure_jbpm() {
     elif [ "${JBOSS_PRODUCT}" = "rhdm-kieserver" ]; then
         JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.jbpm.server.ext.disabled=true -Dorg.jbpm.ui.server.ext.disabled=true -Dorg.jbpm.case.server.ext.disabled=true"
     fi
+}
+
+function configure_kie_server_mgmt() {
+
+    local ALLOWED_STARTUP_STRATEGY=("LocalContainersStartupStrategy" "ControllerBasedStartupStrategy")
+    local invalidStrategy=true
 
     # setting valid for both, rhpam and rhdm execution server
-    if [ "${KIE_SERVER_MGMT_DISABLED}" = "true" ]; then
-        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.mgmt.api.disabled=true -Dorg.kie.server.startup.strategy=LocalContainersStartupStrategy"
+    if [ "${KIE_SERVER_MGMT_DISABLED^^}" = "TRUE" ]; then
+        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.mgmt.api.disabled=true"
+    fi
+
+    if [ "x${KIE_SERVER_STARTUP_STRATEGY}" != "x" ]; then
+        for strategy in ${ALLOWED_STARTUP_STRATEGY[@]}; do
+            if [ "$strategy" = "${KIE_SERVER_STARTUP_STRATEGY}" ]; then
+                invalidStrategy=false
+                JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.startup.strategy=${KIE_SERVER_STARTUP_STRATEGY}"
+            fi
+        done
+
+        if [ "$invalidStrategy" = "true" ]; then
+            log_warning "The startup strategy ${KIE_SERVER_STARTUP_STRATEGY} is not valid, the valid strategies are LocalContainersStartupStrategy and ControllerBasedStartupStrategy"
+        fi
     fi
 }
 
