@@ -23,10 +23,8 @@ RHPAM_GIT_REPO = "https://github.com/jboss-container-images/rhpam-7-openshift-im
 GIT_REPO_LIST = [RHDM_GIT_REPO, RHPAM_GIT_REPO]
 REPO_NAME = "application-templates/"
 TEMPLATE_DOCS = "docs/"
-#APPLICATION_DIRECTORIES = ("rhpam-7-openshift-image", "rhdm-7-openshift-image", "docs")
-#template_dirs = [ 'rhpam-7-openshift-image/templates', 'rhdm-7-openshift-image/templates']
-APPLICATION_DIRECTORIES = ("rhpam-7-openshift-image", "docs")
-template_dirs = [ 'rhpam-7-openshift-image/templates']
+APPLICATION_DIRECTORIES = ("rhpam-7-openshift-image", "rhdm-7-openshift-image", "docs")
+template_dirs = [ 'rhpam-7-openshift-image/templates', 'rhdm-7-openshift-image/templates']
 
 # used to link the image to the image.yaml when the given image is used by a s2i build
 LINKS = {"rhdm70-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm70-kieserver-openshift`]",
@@ -177,7 +175,7 @@ def getVolumePurpose(name):
 def getVariableInfo(data, name, value):
    for d in data:
       if(d["name"] == name or name[1:] in d["name"] or d["name"][1:] in name):
-         return d[value]
+         return str(d[value]).replace("|", "\\|")
    if(value == "value" and name in PARAMETER_VALUES.keys()):
          return PARAMETER_VALUES[name]
    else:
@@ -191,7 +189,7 @@ def createParameterTable(data):
       envVar = getVariableInfo(environment, param["name"], "name")
       value = param["value"] if param.get("value") else getVariableInfo(environment, param["name"], "value")
       req = param["required"] if "required" in param else "?"
-      columns = [param["name"], envVar,  str(param["description"]).replace("|", "\\|"), value, req]
+      columns = [param["name"], envVar, str(param["description"]).replace("|", "\\|"), value, req]
       text += buildRow(columns)
    return text
 
