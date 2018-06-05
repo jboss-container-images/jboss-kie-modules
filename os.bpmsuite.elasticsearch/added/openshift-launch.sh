@@ -16,4 +16,5 @@ source $ELASTICSEARCH_HOME/bin/launch/configure.sh
 
 echo "Running $JBOSS_IMAGE_NAME image, version $JBOSS_IMAGE_VERSION"
 
-exec $ELASTICSEARCH_HOME/bin/elasticsearch ${ELASTICSEARCH_ARGS}
+# eval instead of exec to handle spaces in system properties (like passwords per RHPAM-1135)
+eval $ELASTICSEARCH_HOME/bin/elasticsearch ${ELASTICSEARCH_ARGS}

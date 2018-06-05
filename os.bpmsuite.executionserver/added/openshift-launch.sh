@@ -44,4 +44,5 @@ if [ -n "$CLI_GRACEFUL_SHUTDOWN" ] ; then
   log_info "Using CLI Graceful Shutdown instead of TERM signal"
 fi
 
-exec env M2_HOME=${M2_HOME} $JBOSS_HOME/bin/standalone.sh -c standalone-openshift.xml -bmanagement 127.0.0.1 ${JAVA_PROXY_OPTIONS} ${JBOSS_HA_ARGS} ${JBOSS_MESSAGING_ARGS} ${JBOSS_BPMSUITE_ARGS}
+# eval instead of exec to handle spaces in system properties (like passwords per RHPAM-1135)
+eval env M2_HOME=${M2_HOME} $JBOSS_HOME/bin/standalone.sh -c standalone-openshift.xml -bmanagement 127.0.0.1 ${JAVA_PROXY_OPTIONS} ${JBOSS_HA_ARGS} ${JBOSS_MESSAGING_ARGS} ${JBOSS_BPMSUITE_ARGS}

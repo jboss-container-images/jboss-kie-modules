@@ -21,4 +21,5 @@ if [ -n "$CLI_GRACEFUL_SHUTDOWN" ] ; then
   log_info "Using CLI Graceful Shutdown instead of TERM signal"
 fi
 
-exec  ${JAVA_HOME}/bin/java ${JBOSS_BPMSUITE_ARGS} -jar /opt/${JBOSS_PRODUCT}/${KIE_ROUTER_DISTRIBUTION_JAR}
+# eval instead of exec to handle spaces in system properties (like passwords per RHPAM-1135)
+eval  ${JAVA_HOME}/bin/java ${JBOSS_BPMSUITE_ARGS} -jar /opt/${JBOSS_PRODUCT}/${KIE_ROUTER_DISTRIBUTION_JAR}
