@@ -55,7 +55,7 @@ function get_kie_admin_roles() {
 }
 
 function add_kie_admin_user() {
-    add_eap_user "admin" $(get_kie_admin_user) $(get_kie_admin_pwd) $(get_kie_admin_roles)
+    add_eap_user "admin" "$(get_kie_admin_user)" "$(get_kie_admin_pwd)" "$(get_kie_admin_roles)"
 }
 
 ########## KIE Maven ##########
@@ -76,7 +76,7 @@ function get_kie_maven_roles() {
 }
 
 function add_kie_maven_user() {
-    add_eap_user "maven" $(get_kie_maven_user) $(get_kie_maven_pwd) $(get_kie_maven_roles)
+    add_eap_user "maven" "$(get_kie_maven_user)" "$(get_kie_maven_pwd)" "$(get_kie_maven_roles)"
 }
 
 ########## KIE Server ##########
@@ -115,7 +115,7 @@ function get_kie_server_bypass_auth_user() {
 }
 
 function add_kie_server_user() {
-    add_eap_user "execution" $(get_kie_server_user) $(get_kie_server_pwd) $(get_kie_server_roles)
+    add_eap_user "execution" "$(get_kie_server_user)" "$(get_kie_server_pwd)" "$(get_kie_server_roles)"
 }
 
 ########## KIE Server Controller ##########
@@ -141,7 +141,7 @@ function get_kie_server_controller_roles() {
 }
 
 function add_kie_server_controller_user() {
-    add_eap_user "controller" $(get_kie_server_controller_user) $(get_kie_server_controller_pwd) $(get_kie_server_controller_roles)
+    add_eap_user "controller" "$(get_kie_server_controller_user)" "$(get_kie_server_controller_pwd)" "$(get_kie_server_controller_roles)"
 }
 
 ########## EAP ##########

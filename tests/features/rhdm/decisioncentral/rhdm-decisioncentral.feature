@@ -24,22 +24,23 @@ Feature: RHDM Decision Central configuration tests
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain executionUser
 
   # https://issues.jboss.org/browse/RHPAM-891
+  # https://issues.jboss.org/browse/RHPAM-1135
   Scenario: Check custom users are properly configured
     When container is started with env
-      | variable                   | value       |
-      | KIE_ADMIN_USER             | customAdm   |
-      | KIE_ADMIN_PWD              | customAdm!0 |
-      | KIE_MAVEN_USER             | customMvn   |
-      | KIE_MAVEN_PWD              | customMvn!0 |
-      | KIE_SERVER_CONTROLLER_USER | customCtl   |
-      | KIE_SERVER_CONTROLLER_PWD  | customCtl!0 |
-      | KIE_SERVER_USER            | customExe   |
-      | KIE_SERVER_PWD             | customExe!0 |
-    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=05ad559f03f4a06845bf201990f6832f
+      | variable                   | value        |
+      | KIE_ADMIN_USER             | customAdm    |
+      | KIE_ADMIN_PWD              | custom Adm!0 |
+      | KIE_MAVEN_USER             | customMvn    |
+      | KIE_MAVEN_PWD              | custom Mvn!0 |
+      | KIE_SERVER_CONTROLLER_USER | customCtl    |
+      | KIE_SERVER_CONTROLLER_PWD  | custom Ctl!0 |
+      | KIE_SERVER_USER            | customExe    |
+      | KIE_SERVER_PWD             | custom Exe!0 |
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=bdb667b5fdbfb8ee8e55a0cf3fd954c3
      And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=kie-server,rest-all,admin,kiemgmt,Administrators
-     And file /opt/eap/standalone/configuration/application-users.properties should contain customMvn=9c434ec142d056848c0e7919e49e7e54
+     And file /opt/eap/standalone/configuration/application-users.properties should contain customMvn=a3ed652fc925df8b6afe2787b8300b12
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain customMvn
-     And file /opt/eap/standalone/configuration/application-users.properties should contain customCtl=33a59d7b05c7b102d455d140b0507733
+     And file /opt/eap/standalone/configuration/application-users.properties should contain customCtl=b98ce2388a8ea1f375901feef49e602e
      And file /opt/eap/standalone/configuration/application-roles.properties should contain customCtl=kie-server,rest-all,guest
      And file /opt/eap/standalone/configuration/application-users.properties should not contain customExe
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain customExe
