@@ -24,24 +24,25 @@ Feature: RHPAM KIE Server configuration tests
      And file /opt/eap/standalone/configuration/application-roles.properties should contain executionUser=kie-server,rest-all,guest
 
   # https://issues.jboss.org/browse/RHPAM-891
+  # https://issues.jboss.org/browse/RHPAM-1135
   Scenario: Check custom users are properly configured
     When container is started with env
-      | variable                   | value       |
-      | KIE_ADMIN_USER             | customAdm   |
-      | KIE_ADMIN_PWD              | customAdm!0 |
-      | KIE_MAVEN_USER             | customMvn   |
-      | KIE_MAVEN_PWD              | customMvn!0 |
-      | KIE_SERVER_CONTROLLER_USER | customCtl   |
-      | KIE_SERVER_CONTROLLER_PWD  | customCtl!0 |
-      | KIE_SERVER_USER            | customExe   |
-      | KIE_SERVER_PWD             | customExe!0 |
-    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=05ad559f03f4a06845bf201990f6832f
+      | variable                   | value        |
+      | KIE_ADMIN_USER             | customAdm    |
+      | KIE_ADMIN_PWD              | custom Adm!0 |
+      | KIE_MAVEN_USER             | customMvn    |
+      | KIE_MAVEN_PWD              | custom Mvn!0 |
+      | KIE_SERVER_CONTROLLER_USER | customCtl    |
+      | KIE_SERVER_CONTROLLER_PWD  | custom Ctl!0 |
+      | KIE_SERVER_USER            | customExe    |
+      | KIE_SERVER_PWD             | custom Exe!0 |
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=bdb667b5fdbfb8ee8e55a0cf3fd954c3
      And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=kie-server,rest-all,admin,kiemgmt,Administrators
      And file /opt/eap/standalone/configuration/application-users.properties should not contain customMvn
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain customMvn
      And file /opt/eap/standalone/configuration/application-users.properties should not contain customCtl
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain customCtl
-     And file /opt/eap/standalone/configuration/application-users.properties should contain customExe=e37e2a53d5e3bef041d07263fb84f0de
+     And file /opt/eap/standalone/configuration/application-users.properties should contain customExe=ce6ea825c082968af2b80efe5c1b8c35
      And file /opt/eap/standalone/configuration/application-roles.properties should contain customExe=kie-server,rest-all,guest
 
   Scenario: Test REST API is available and valid
