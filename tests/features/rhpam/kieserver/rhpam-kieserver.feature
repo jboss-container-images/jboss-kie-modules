@@ -12,7 +12,6 @@ Feature: RHPAM KIE Server configuration tests
      And run sh -c 'echo $RHPAM_KIESERVER_VERSION' in container and check its output for 7.0.0
 
   # https://issues.jboss.org/browse/RHPAM-891
-  @wip
   Scenario: Check default users are properly configured
     When container is ready
     Then file /opt/eap/standalone/configuration/application-users.properties should contain adminUser=de3155e1927c6976555925dec24a53ac
@@ -26,7 +25,6 @@ Feature: RHPAM KIE Server configuration tests
 
   # https://issues.jboss.org/browse/RHPAM-891
   # https://issues.jboss.org/browse/RHPAM-1135
-  @wip
   Scenario: Check custom users are properly configured
     When container is started with env
       | variable                   | value         |
