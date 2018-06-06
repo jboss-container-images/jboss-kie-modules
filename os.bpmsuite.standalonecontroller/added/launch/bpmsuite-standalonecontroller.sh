@@ -25,11 +25,11 @@ function configure_controller_security() {
 
 function configure_server_access() {
     # user/pwd
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.user=$(get_kie_server_user)"
-    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.pwd=$(get_kie_server_pwd)"
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.user=\"$(get_kie_server_user)\""
+    JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.pwd=\"$(esc_kie_server_pwd)\""
     # token
     local kieServerToken="$(get_kie_server_token)"
     if [ "${kieServerToken}" != "" ]; then
-        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.token=${kieServerToken}"
+        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.token=\"${kieServerToken}\""
     fi
 }

@@ -37,6 +37,11 @@ function get_default_kie_pwd() {
     echo "${kie_type}1!"
 }
 
+function esc_kie_pwd() {
+    local kie_pwd="${1}"
+    echo ${kie_pwd//\"/\\\"}
+}
+
 ########## KIE Admin ##########
 
 function get_kie_admin_user() {
@@ -47,6 +52,11 @@ function get_kie_admin_user() {
 function get_kie_admin_pwd() {
     local default_kie_pwd=$(get_default_kie_pwd "admin")
     echo $(find_env "KIE_ADMIN_PWD" "${default_kie_pwd}")
+}
+
+function esc_kie_admin_pwd() {
+    local orig_kie_pwd=$(get_kie_admin_pwd)
+    echo $(esc_kie_pwd "${orig_kie_pwd}")
 }
 
 function get_kie_admin_roles() {
@@ -70,6 +80,11 @@ function get_kie_maven_pwd() {
     echo $(find_env "KIE_MAVEN_PWD" "${default_kie_pwd}")
 }
 
+function esc_kie_maven_pwd() {
+    local orig_kie_pwd=$(get_kie_maven_pwd)
+    echo $(esc_kie_pwd "${orig_kie_pwd}")
+}
+
 function get_kie_maven_roles() {
     local default_kie_roles=""
     echo $(find_env "KIE_MAVEN_ROLES" "${default_kie_roles}")
@@ -89,6 +104,11 @@ function get_kie_server_user() {
 function get_kie_server_pwd() {
     local default_kie_pwd=$(get_default_kie_pwd "execution")
     echo $(find_env "KIE_SERVER_PWD" "${default_kie_pwd}")
+}
+
+function esc_kie_server_pwd() {
+    local orig_kie_pwd=$(get_kie_server_pwd)
+    echo $(esc_kie_pwd "${orig_kie_pwd}")
 }
 
 function get_kie_server_token() {
@@ -128,6 +148,11 @@ function get_kie_server_controller_user() {
 function get_kie_server_controller_pwd() {
     local default_kie_pwd=$(get_default_kie_pwd "controller")
     echo $(find_env "KIE_SERVER_CONTROLLER_PWD" "${default_kie_pwd}")
+}
+
+function esc_kie_server_controller_pwd() {
+    local orig_kie_pwd=$(get_kie_server_controller_pwd)
+    echo $(esc_kie_pwd "${orig_kie_pwd}")
 }
 
 function get_kie_server_controller_token() {
