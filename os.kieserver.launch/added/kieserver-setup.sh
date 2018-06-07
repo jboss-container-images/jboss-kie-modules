@@ -31,25 +31,81 @@ function filterKieJmsFile() {
 }
 
 function filterQuartzPropFile() {
+
+    local QUARTZ_DELEGATE_CLASS="org.quartz.impl.jdbcjobstore.StdJDBCDelegate"
+    local DEFAULT_JNDI
+    local DB_TYPE
+
     quartzPropFile="${1}"
     if [ -e ${quartzPropFile} ] ; then
-        if [[ "${KIE_SERVER_PERSISTENCE_DIALECT}" == "org.hibernate.dialect.MySQL"* ]]; then
-            sed -i "s,org.quartz.jobStore.driverDelegateClass=,org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.StdJDBCDelegate," ${quartzPropFile}
-            quartzDriverDelegateSet="true"
-        elif [[ "${KIE_SERVER_PERSISTENCE_DIALECT}" == "org.hibernate.dialect.PostgreSQL"* ]]; then
-            sed -i "s,org.quartz.jobStore.driverDelegateClass=,org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.PostgreSQLDelegate," ${quartzPropFile}
-            quartzDriverDelegateSet="true"
+
+
+        # get the first db configuration using legacy datasource configuration:
+        if [ "x${DB_SERVICE_PREFIX_MAPPING}" != "x" ]; then
+            local serviceMappingName=${DB_SERVICE_PREFIX_MAPPING%%,*}
+            local prefix=${serviceMappingName#*=}
+            DEFAULT_JNDI=$(find_env "${prefix}_JNDI")
         fi
-        if [ "x${DB_JNDI}" != "x" ]; then
-            sed -i "s,org.quartz.dataSource.managedDS.jndiURL=,org.quartz.dataSource.managedDS.jndiURL=${DB_JNDI}," ${quartzPropFile}
+        # get the first db configuration using DATASOURCES env:
+        if [ "x${DATASOURCES}" != "x" ]; then
+            local prefix="${DATASOURCES%%,*}"
+            DEFAULT_JNDI=$(find_env "${prefix}_JNDI")
+        fi
+
+        if [ "x${DEFAULT_JNDI}" != "x" ]; then
             quartzManagedJndiSet="true"
         fi
         if [ "x${QUARTZ_JNDI}" != "x" ]; then
-            sed -i "s,org.quartz.dataSource.notManagedDS.jndiURL=,org.quartz.dataSource.notManagedDS.jndiURL=${QUARTZ_JNDI}," ${quartzPropFile}
             quartzNotManagedJndiSet="true"
         fi
+
+        if [[ "${KIE_SERVER_PERSISTENCE_DIALECT}" == "org.hibernate.dialect.MySQL"* ]]; then
+            quartzDriverDelegateSet="true"
+            DB_TYPE="MYSQL"
+        elif [[ "${KIE_SERVER_PERSISTENCE_DIALECT}" == "org.hibernate.dialect.PostgreSQL"* ]]; then
+            QUARTZ_DELEGATE_CLASS="org.quartz.impl.jdbcjobstore.PostgreSQLDelegate"
+            quartzDriverDelegateSet="true"
+            DB_TYPE="POSTGRESQL"
+        elif [[ "${KIE_SERVER_PERSISTENCE_DIALECT}" == *"Oracle"* ]]; then
+            log_warning "For Oracle 10G use the org.jbpm.persistence.jpa.hibernate.DisabledFollowOnLockOracle10gDialect hibernate dialect to avoid frequent Hibernate warning HHH000444 message in the logs."
+            QUARTZ_DELEGATE_CLASS="org.quartz.impl.jdbcjobstore.oracle.OracleDelegate"
+            # Oracle classes needs to be accessible by the quartz, in this case oracle driver or module needs to be added on jboss-deployment-structure.xml file
+            if [ "x${QUARTZ_DRIVER_MODULE}" != "x" ]; then
+                sed -i "s|<\!--EXTRA_DEPENDENCY-->|<module name=\"${QUARTZ_DRIVER_MODULE}\"/>\n      <\!--EXTRA_DEPENDENCY-->|" $JBOSS_HOME/standalone/deployments/kie-server.war/WEB-INF/jboss-deployment-structure.xml
+            else
+                log_warning "QUARTZ_DRIVER_MODULE env not set. Quartz might not work properly."
+            fi
+            quartzDriverDelegateSet="true"
+            DB_TYPE="ORACLE"
+        elif [[ "${KIE_SERVER_PERSISTENCE_DIALECT}" == "org.hibernate.dialect.SQLServer"* ]]; then
+            QUARTZ_DELEGATE_CLASS="org.quartz.impl.jdbcjobstore.MSSQLDelegate"
+            quartzDriverDelegateSet="true"
+            DB_TYPE="SQLSERVER"
+
+            if [ "x${QUARTZ_DATABASE}" != "x" ]; then
+                local databaseName="${QUARTZ_DATABASE}"
+            fi
+
+            if [ "x${QUARTZ_XA_CONNECTION_PROPERTY_URL}" != "x" ]; then
+                local databaseName="${QUARTZ_XA_CONNECTION_PROPERTY_URL#*=}"
+            fi
+
+            if [ "x${QUARTZ_URL}" != "x" ]; then
+                local databaseName="${QUARTZ_URL#*=}"
+            fi
+
+            sed -i "s|USE \[enter_db_name_here\]|USE ${databaseName}|" $JBOSS_HOME/bin/quartz_tables_sqlserver.sql
+
+        elif [[ "${KIE_SERVER_PERSISTENCE_DIALECT}" == "org.hibernate.dialect.DB2"* ]]; then
+            quartzDriverDelegateSet="true"
+            DB_TYPE="DB2"
+        fi
+
         if [ "${quartzDriverDelegateSet}" = "true" ] && [ "${quartzManagedJndiSet=}" = "true" ] && [ "${quartzNotManagedJndiSet=}" = "true" ]; then
-            KIE_SERVER_OPTS="${KIE_SERVER_OPTS} -Dorg.quartz.properties=${quartzPropFile}"
+            sed -i "s,org.quartz.jobStore.driverDelegateClass=,org.quartz.jobStore.driverDelegateClass=${QUARTZ_DELEGATE_CLASS}," ${quartzPropFile}
+            sed -i "s,org.quartz.dataSource.managedDS.jndiURL=,org.quartz.dataSource.managedDS.jndiURL=${DEFAULT_JNDI}," ${quartzPropFile}
+            sed -i "s,org.quartz.dataSource.notManagedDS.jndiURL=,org.quartz.dataSource.notManagedDS.jndiURL=${QUARTZ_JNDI}," ${quartzPropFile}
+            KIE_SERVER_OPTS="${KIE_SERVER_OPTS} -Dorg.quartz.properties=${quartzPropFile} -Dorg.openshift.kieserver.common.sql.dbtype=${DB_TYPE}"
         fi
     fi
 }
@@ -71,7 +127,10 @@ setupKieServerForOpenShift() {
     # filter the KIE Server kie-server-jms.xml and ejb-jar.xml files
     filterKieJmsFile "${JBOSS_HOME}/standalone/deployments/kie-server.war/META-INF/kie-server-jms.xml"
     filterKieJmsFile "${JBOSS_HOME}/standalone/deployments/kie-server.war/WEB-INF/ejb-jar.xml"
-    
+
+    # setup the drivers, if exists
+    configure_drivers
+
     # filter the KIE Server quartz.properties file
     filterQuartzPropFile "${JBOSS_HOME}/bin/quartz.properties"
     

@@ -391,6 +391,9 @@ function setKieServerEnv() {
         KIE_SERVER_OPTS="${KIE_SERVER_OPTS} -Dorg.kie.server.persistence.ds=${KIE_SERVER_PERSISTENCE_DS}"
         KIE_SERVER_OPTS="${KIE_SERVER_OPTS} -Dorg.kie.server.persistence.tm=${KIE_SERVER_PERSISTENCE_TM}"
     fi
+    if [ "x${KIE_SERVER_PERSISTENCE_SCHEMA}" != "x" ]; then
+         KIE_SERVER_OPTS="${KIE_SERVER_OPTS} -Dorg.kie.server.persistence.schema=${KIE_SERVER_PERSISTENCE_SCHEMA}"
+    fi
     KIE_SERVER_OPTS="${KIE_SERVER_OPTS} -Dorg.kie.server.repo=${KIE_SERVER_REPO}"
     KIE_SERVER_OPTS="${KIE_SERVER_OPTS} -Dorg.optaplanner.server.ext.disabled=${KIE_SERVER_BRP_DISABLED}"
     if [ "x${KIE_SERVER_MGMT_DISABLED}" != "x" ]; then
