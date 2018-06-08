@@ -21,5 +21,18 @@ if [ -n "$CLI_GRACEFUL_SHUTDOWN" ] ; then
   log_info "Using CLI Graceful Shutdown instead of TERM signal"
 fi
 
-# eval instead of exec to handle spaces in system properties (like passwords per RHPAM-1135)
-eval  ${JAVA_HOME}/bin/java ${JBOSS_BPMSUITE_ARGS} -jar /opt/${JBOSS_PRODUCT}/${KIE_ROUTER_DISTRIBUTION_JAR}
+# RHPAM-1135: We need to build and pass an array otherwise spaces in passwords will break the exec
+D_OPTS="${JBOSS_BPMSUITE_ARGS}"
+D_DLM=" -D"
+D_STR=" ${D_OPTS}${D_DLM}"
+D_ARR=()
+while [[ $D_STR ]]; do
+    D_TMP="${D_STR%%"$D_DLM"*}"
+    if [[ ! "${D_TMP}" =~ ^\ +$ ]] && [[ "x${D_TMP}" != "x" ]]; then
+        D_TMP=$(eval "echo \"${D_TMP}\"")
+        D_ARR+=("-D${D_TMP}")
+    fi
+    D_STR=${D_STR#*"$D_DLM"}
+done
+
+exec ${JAVA_HOME}/bin/java "${D_ARR[@]}" -jar /opt/${JBOSS_PRODUCT}/${KIE_ROUTER_DISTRIBUTION_JAR}
