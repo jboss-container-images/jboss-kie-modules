@@ -1,5 +1,7 @@
 @rhpam-7/rhpam70-businesscentral-indexing-openshift
+@skip
 Feature: RHPAM Business Central Indexing configuration tests
+#skip needed for now because of "max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]" on CE CI test system
 
   Scenario: Test Container Health
     When container is ready
@@ -21,13 +23,12 @@ Feature: RHPAM Business Central Indexing configuration tests
       | env_json  | {"JAVA_INITIAL_MEM_RATIO": 100} |
     Then container log should contain -Xms512m, -Xmx512m
 
-  Scenario: Check if the minimum master notes variable is correctly set
+  Scenario: Check if the minimum master nodes variable is correctly set
     When container is started with env
       | variable                | value    |
       | ES_MINIMUM_MASTER_NODES | 2        |
     Then container log should contain not enough master nodes discovered during pinging
      And container log should contain but needed [2]), pinging again
-
 
   Scenario: Check cluster name is correctly set
     When container is started with env
