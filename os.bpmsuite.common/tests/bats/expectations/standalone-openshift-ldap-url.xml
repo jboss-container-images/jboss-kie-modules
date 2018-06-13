@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<subsystem xmlns="urn:jboss:domain:security:2.0">
+    <!-- ##ELYTRON_INTEGRATION## -->
+    <security-domains>
+        <security-domain name="other" cache-type="default">
+            <authentication>
+                <login-module code="Remoting" flag="optional">
+                    <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+                <login-module code="RealmDirect" flag="required">
+                    <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+                <login-module code="LdapExtended" flag="required">
+                    <module-option name="java.naming.provider.url" value="test_url"/>
+                </login-module>
+                <!-- ##OTHER_LOGIN_MODULES## -->
+            </authentication>
+        </security-domain>
+        <security-domain name="jboss-web-policy" cache-type="default">
+            <authorization>
+                <policy-module code="Delegating" flag="required"/>
+            </authorization>
+        </security-domain>
+        <security-domain name="jboss-ejb-policy" cache-type="default">
+            <authorization>
+                <policy-module code="Delegating" flag="required"/>
+            </authorization>
+        </security-domain>
+        <!-- ##KEYCLOAK_SECURITY_DOMAIN## -->
+        <!-- ##ADDITIONAL_SECURITY_DOMAINS## -->
+        </security-domains>
+</subsystem>
