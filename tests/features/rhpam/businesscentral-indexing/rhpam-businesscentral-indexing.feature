@@ -1,5 +1,5 @@
-@rhpam-7/elasticsearch-openshift
-Feature: BPM Suite Business Central tests
+@rhpam-7/rhpam70-businesscentral-indexing-openshift
+Feature: RHPAM Business Central Indexing configuration tests
 
   Scenario: Test Container Health
     When container is ready
