@@ -17,6 +17,7 @@ function prepareEnv() {
     unset APPFORMER_JMS_BROKER_PORT
     unset APPFORMER_JMS_BROKER_USER
     unset APPFORMER_JMS_CONNECTION_PARAMS
+    unset GIT_HOOKS_DIR
     unset_kie_security_env
     unset KIE_SERVER_CONTROLLER_HOST
     unset KIE_SERVER_CONTROLLER_PORT
@@ -113,6 +114,9 @@ function configure_guvnor_settings() {
     JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.uberfire.nio.git.ssh.cert.dir=${bpmsuiteDataDir}"
     JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.uberfire.nio.git.daemon.enabled=false"
     JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.uberfire.nio.git.ssh.host=0.0.0.0"
+    if [[ $JBOSS_PRODUCT != *monitoring && -n GIT_HOOKS_DIR ]]; then
+        JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.uberfire.nio.git.hooks=${GIT_HOOKS_DIR}"
+    fi
 }
 
 # Set the max metaspace size only for the workbench
