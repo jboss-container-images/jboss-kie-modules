@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<subsystem xmlns="urn:jboss:domain:security:2.0">
+    <!-- ##ELYTRON_INTEGRATION## -->
+    <security-domains>
+        <security-domain name="other" cache-type="default">
+            <authentication>
+                <login-module code="Remoting" flag="optional">
+                    <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+                <login-module code="RealmDirect" flag="required">
+                    <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+                <login-module code="LdapExtended" flag="required">
+                    <module-option name="java.naming.provider.url" value="test KIE_AUTH_LDAP_URL"/>
+                    <module-option name="jaasSecurityDomain" value="test KIE_AUTH_LDAP_JAAS_SECURITY_DOMAIN"/>
+                    <module-option name="bindDN" value="test KIE_AUTH_LDAP_BIND_DN"/>
+                    <module-option name="bindCredential" value="test KIE_AUTH_LDAP_BIND_CREDENTIAL"/>
+                    <module-option name="baseCtxDN" value="test KIE_AUTH_LDAP_BASE_CTX_DN"/>
+                    <module-option name="baseFilter" value="test KIE_AUTH_LDAP_BASE_FILTER"/>
+                    <module-option name="rolesCtxDN" value="test KIE_AUTH_LDAP_ROLES_CTX_DN"/>
+                    <module-option name="roleFilter" value="test KIE_AUTH_LDAP_ROLE_FILTER"/>
+                    <module-option name="roleAttributeID" value="test KIE_AUTH_LDAP_ROLE_ATTRIBUTE_ID"/>
+                    <module-option name="roleAttributeIsDN" value="test KIE_AUTH_LDAP_ROLE_ATTRIBUTE_IS_DN"/>
+                    <module-option name="roleNameAttributeID" value="test KIE_AUTH_LDAP_ROLE_NAME_ATTRIBUTE_ID"/>
+                    <module-option name="defaultRole" value="test KIE_AUTH_LDAP_DEFAULT_ROLE"/>
+                    <module-option name="roleRecursion" value="test KIE_AUTH_LDAP_ROLE_RECURSION"/>
+                    <module-option name="distinguishedNameAttribute" value="test KIE_AUTH_LDAP_DISTINGUISHED_NAME_ATTRIBUTE"/>
+                    <module-option name="parseRoleNameFromDN" value="test KIE_AUTH_LDAP_PARSE_ROLE_NAME_FROM_DN"/>
+                    <module-option name="parseUsername" value="test KIE_AUTH_LDAP_PARSE_USERNAME"/>
+                    <module-option name="usernameBeginString" value="test KIE_AUTH_LDAP_USERNAME_BEGIN_STRING"/>
+                    <module-option name="usernameEndString" value="test KIE_AUTH_LDAP_USERNAME_END_STRING"/>
+                    <module-option name="searchTimeLimit" value="test KIE_AUTH_LDAP_SEARCH_TIME_LIMIT"/>
+                    <module-option name="searchScope" value="test KIE_AUTH_LDAP_SEARCH_SCOPE"/>
+                    <module-option name="allowEmptyPasswords" value="test KIE_AUTH_LDAP_ALLOW_EMPTY_PASSWORDS"/>
+                    <module-option name="referralUserAttributeIDToCheck" value="test KIE_AUTH_LDAP_REFERRAL_USER_ATTRIBUTE_ID_TO_CHECK"/>
+                </login-module>
+                <!-- ##OTHER_LOGIN_MODULES## -->
+            </authentication>
+        </security-domain>
+        <security-domain name="jboss-web-policy" cache-type="default">
+            <authorization>
+                <policy-module code="Delegating" flag="required"/>
+            </authorization>
+        </security-domain>
+        <security-domain name="jboss-ejb-policy" cache-type="default">
+            <authorization>
+                <policy-module code="Delegating" flag="required"/>
+            </authorization>
+        </security-domain>
+        <!-- ##KEYCLOAK_SECURITY_DOMAIN## -->
+        <!-- ##ADDITIONAL_SECURITY_DOMAINS## -->
+    </security-domains>
+</subsystem>

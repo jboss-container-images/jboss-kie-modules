@@ -1,10 +1,12 @@
 #!/bin/bash
 
 source /usr/local/s2i/scl-enable-maven
+source "${JBOSS_HOME}/bin/launch/bpmsuite-security-ldap.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
     unset KIE_MBEANS
+    unset_kie_security_ldap_env
 }
 
 function configureEnv() {
@@ -14,6 +16,7 @@ function configureEnv() {
 function configure() {
     configure_maven_settings
     configure_mbeans
+    configure_ldap_security_domain
 }
 
 function configure_maven_settings() {
