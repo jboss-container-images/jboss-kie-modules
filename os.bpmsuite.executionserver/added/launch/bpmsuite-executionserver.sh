@@ -8,6 +8,8 @@ function prepareEnv() {
     # please keep these in alphabetical order
     unset AUTO_CONFIGURE_EJB_TIMER
     unset DROOLS_SERVER_FILTER_CLASSES
+    unset EXECUTION_SERVER_ROUTE_NAME
+    unset EXECUTION_SERVER_USE_SECURE_ROUTE_NAME
     unset JBPM_HT_CALLBACK_CLASS
     unset JBPM_HT_CALLBACK_METHOD
     unset JBPM_LOOP_LEVEL_DISABLED
@@ -260,17 +262,42 @@ function configure_drools() {
 }
 
 function configure_server_location() {
-    # DeploymentConfig: spec/template/spec/containers/env
-    # {
-    #     "name": "KIE_SERVER_HOST",
-    #     "valueFrom": {
-    #         "fieldRef": {
-    #             "fieldPath": "status.podIP"
-    #         }
-    #     }
-    # },
+    # if the EXECUTION_SERVER_HOSTNAME is not set we will query the kubernetes API to retrieve the route value from its name.
+
     if [ "${KIE_SERVER_HOST}" = "" ]; then
-        KIE_SERVER_HOST="${HOSTNAME}"
+        local routeName
+        if [ "${EXECUTION_SERVER_USE_SECURE_ROUTE_NAME^^}" = "TRUE" ]; then
+            KIE_SERVER_PORT="443"
+            KIE_SERVER_PROTOCOL="https"
+            routeName="secure-${EXECUTION_SERVER_ROUTE_NAME}"
+        else
+            KIE_SERVER_PORT="80"
+            routeName="${EXECUTION_SERVER_ROUTE_NAME}"
+        fi
+
+        # only execute the following lines if this container is running on OpenShift
+        if [ -e /var/run/secrets/kubernetes.io/serviceaccount/token ]; then
+            # try to retrieve the host from kubernetes api, a service account with "view" role is necessary to perform this request
+            local namespace=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
+            local token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+            local response=$(curl -s -w "%{http_code}" --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
+                            -H "Authorization: Bearer $token" \
+                            -H 'Accept: application/json' \
+                            https://${KUBERNETES_SERVICE_HOST:-kubernetes.default.svc}:${KUBERNETES_SERVICE_PORT:-443}/apis/route.openshift.io/v1/namespaces/${namespace}/routes/${routeName})
+        fi
+        if [ "${response: -3}" = "200" ]; then
+            # parse the json response to get the route host
+            KIE_SERVER_HOST=$(echo ${response::- 3} | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["spec"]["host"]')
+            log_info "Using route hostname: ${KIE_SERVER_HOST}"
+        else
+            log_warning "Fail to query the route name using Kubernetes API, service account might not have necessary privileges, defaulting it to pod's hostname [${HOSTNAME}]."
+            if [ ! -z "${response}" ]; then
+                log_warning "Response message: ${response::- 3} - HTTP Status code: ${response: -3}"
+            fi
+            KIE_SERVER_PORT="8080"
+            KIE_SERVER_HOST="${HOSTNAME}"
+        fi
+
     fi
     if [ "${KIE_SERVER_HOST}" != "" ]; then
         if [ "${KIE_SERVER_PROTOCOL}" = "" ]; then
