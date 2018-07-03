@@ -285,3 +285,27 @@ Feature: RHPAM KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker on XPath //*[local-name()='xa-datasource']/*[local-name()='validation']/*[local-name()='valid-connection-checker']/@class-name
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value org.jboss.jca.adapters.jdbc.extensions.oracle.OracleExceptionSorter on XPath //*[local-name()='xa-datasource']/*[local-name()='validation']/*[local-name()='exception-sorter']/@class-name
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10000 on XPath //*[local-name()='database-data-store']/@refresh-interval
+
+  Scenario: Configure kie server to be immutable, disable management and set startup strategy
+    When container is started with env
+      | variable                    | value                          |
+      | KIE_SERVER_MGMT_DISABLED    | true                           |
+      | KIE_SERVER_STARTUP_STRATEGY | LocalContainersStartupStrategy |
+    Then container log should contain -Dorg.kie.server.mgmt.api.disabled=true
+    And container log should contain -Dorg.kie.server.startup.strategy=LocalContainersStartupStrategy
+
+  Scenario: Configure kie server to be immutable, disable management and set startup strategy
+    When container is started with env
+      | variable                    | value                          |
+      | KIE_SERVER_MGMT_DISABLED    | true                           |
+      | KIE_SERVER_STARTUP_STRATEGY | ControllerBasedStartupStrategy |
+    Then container log should contain -Dorg.kie.server.mgmt.api.disabled=true
+    And container log should contain -Dorg.kie.server.startup.strategy=ControllerBasedStartupStrategy
+
+  Scenario: Configure kie server to be immutable, disable management and set a invalid startup strategy
+    When container is started with env
+      | variable                    | value    |
+      | KIE_SERVER_MGMT_DISABLED    | true     |
+      | KIE_SERVER_STARTUP_STRATEGY | invalid  |
+    Then container log should contain -Dorg.kie.server.mgmt.api.disabled=true
+    And container log should contain The startup strategy invalid is not valid, the valid strategies are LocalContainersStartupStrategy and ControllerBasedStartupStrategy
