@@ -41,6 +41,16 @@ Feature: Kie Server common features
       | KIE_SERVER_HOST    | my-custon-host.example.com |
       | KIE_SERVER_PORT    | 80                         |
     Then container log should contain -Dorg.kie.server.location=http://my-custon-host.example.com:80/services/rest/server
+
+  Scenario: Test the KIE_SERVER_HOST configuration with custom host with default port
+    When container is started with env
+      | variable           | value                      |
+      | KIE_SERVER_HOST    | my-custon-host.example.com |
+    Then container log should contain -Dorg.kie.server.location=http://my-custon-host.example.com:80/services/rest/server
+
+  Scenario: Test the KIE_SERVER_HOST with no value provided
+    When container is ready
+    Then container log should contain :8080/services/rest/server
   
   Scenario: Don't configure kie server to use LDAP authentication
     When container is ready

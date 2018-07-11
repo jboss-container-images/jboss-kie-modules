@@ -304,7 +304,7 @@ function configure_server_location() {
             KIE_SERVER_PROTOCOL="http"
         fi
         if [ "${KIE_SERVER_PORT}" = "" ]; then
-            KIE_SERVER_PORT="8080"
+            KIE_SERVER_PORT="80"
         fi
         local kieServerUrl="${KIE_SERVER_PROTOCOL}://${KIE_SERVER_HOST}:${KIE_SERVER_PORT}/services/rest/server"
         JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.kie.server.location=${kieServerUrl}"
