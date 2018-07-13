@@ -4,28 +4,28 @@
 
 function unset_kie_security_ldap_env() {
     # please keep these in alphabetical order
-    unset KIE_AUTH_LDAP_ALLOW_EMPTY_PASSWORDS
-    unset KIE_AUTH_LDAP_BASE_CTX_DN
-    unset KIE_AUTH_LDAP_BASE_FILTER
-    unset KIE_AUTH_LDAP_BIND_CREDENTIAL
-    unset KIE_AUTH_LDAP_BIND_DN
-    unset KIE_AUTH_LDAP_DEFAULT_ROLE
-    unset KIE_AUTH_LDAP_DISTINGUISHED_NAME_ATTRIBUTE
-    unset KIE_AUTH_LDAP_JAAS_SECURITY_DOMAIN
-    unset KIE_AUTH_LDAP_PARSE_ROLE_NAME_FROM_DN
-    unset KIE_AUTH_LDAP_PARSE_USERNAME
-    unset KIE_AUTH_LDAP_REFERRAL_USER_ATTRIBUTE_ID_TO_CHECK
-    unset KIE_AUTH_LDAP_ROLE_ATTRIBUTE_ID
-    unset KIE_AUTH_LDAP_ROLE_ATTRIBUTE_IS_DN
-    unset KIE_AUTH_LDAP_ROLE_FILTER
-    unset KIE_AUTH_LDAP_ROLE_NAME_ATTRIBUTE_ID
-    unset KIE_AUTH_LDAP_ROLE_RECURSION
-    unset KIE_AUTH_LDAP_ROLES_CTX_DN
-    unset KIE_AUTH_LDAP_SEARCH_SCOPE
-    unset KIE_AUTH_LDAP_SEARCH_TIME_LIMIT
-    unset KIE_AUTH_LDAP_URL
-    unset KIE_AUTH_LDAP_USERNAME_BEGIN_STRING
-    unset KIE_AUTH_LDAP_USERNAME_END_STRING
+    unset AUTH_LDAP_ALLOW_EMPTY_PASSWORDS
+    unset AUTH_LDAP_BASE_CTX_DN
+    unset AUTH_LDAP_BASE_FILTER
+    unset AUTH_LDAP_BIND_CREDENTIAL
+    unset AUTH_LDAP_BIND_DN
+    unset AUTH_LDAP_DEFAULT_ROLE
+    unset AUTH_LDAP_DISTINGUISHED_NAME_ATTRIBUTE
+    unset AUTH_LDAP_JAAS_SECURITY_DOMAIN
+    unset AUTH_LDAP_PARSE_ROLE_NAME_FROM_DN
+    unset AUTH_LDAP_PARSE_USERNAME
+    unset AUTH_LDAP_REFERRAL_USER_ATTRIBUTE_ID_TO_CHECK
+    unset AUTH_LDAP_ROLE_ATTRIBUTE_ID
+    unset AUTH_LDAP_ROLE_ATTRIBUTE_IS_DN
+    unset AUTH_LDAP_ROLE_FILTER
+    unset AUTH_LDAP_ROLE_NAME_ATTRIBUTE_ID
+    unset AUTH_LDAP_ROLE_RECURSION
+    unset AUTH_LDAP_ROLES_CTX_DN
+    unset AUTH_LDAP_SEARCH_SCOPE
+    unset AUTH_LDAP_SEARCH_TIME_LIMIT
+    unset AUTH_LDAP_URL
+    unset AUTH_LDAP_USERNAME_BEGIN_STRING
+    unset AUTH_LDAP_USERNAME_END_STRING
 }
 
 function add_module() {
@@ -41,36 +41,36 @@ function add_module() {
 }
 
 function configure_ldap_security_domain() {
-    if [[ -z ${KIE_AUTH_LDAP_URL} ]]; then
-        log_info "KIE_AUTH_LDAP_URL not set. Skipping LDAP integration..."
+    if [[ -z ${AUTH_LDAP_URL} ]]; then
+        log_info "AUTH_LDAP_URL not set. Skipping LDAP integration..."
         return
     fi
-    log_info "KIE_AUTH_LDAP_URL is set to ${KIE_AUTH_LDAP_URL}. Added LdapExtended login-module"
+    log_info "AUTH_LDAP_URL is set to ${AUTH_LDAP_URL}. Added LdapExtended login-module"
     local security_domain='<login-module code="LdapExtended" flag="required">'
 
-    security_domain=$(add_module "$security_domain" "java.naming.provider.url" "${KIE_AUTH_LDAP_URL}") 
-    security_domain=$(add_module "$security_domain" "jaasSecurityDomain" "${KIE_AUTH_LDAP_JAAS_SECURITY_DOMAIN}") 
-    security_domain=$(add_module "$security_domain" "bindDN" "${KIE_AUTH_LDAP_BIND_DN}") 
-    security_domain=$(add_module "$security_domain" "bindCredential" "${KIE_AUTH_LDAP_BIND_CREDENTIAL}") 
-    security_domain=$(add_module "$security_domain" "baseCtxDN" "${KIE_AUTH_LDAP_BASE_CTX_DN}") 
-    security_domain=$(add_module "$security_domain" "baseFilter" "${KIE_AUTH_LDAP_BASE_FILTER}")
-    security_domain=$(add_module "$security_domain" "rolesCtxDN" "${KIE_AUTH_LDAP_ROLES_CTX_DN}") 
-    security_domain=$(add_module "$security_domain" "roleFilter" "${KIE_AUTH_LDAP_ROLE_FILTER}")
-    security_domain=$(add_module "$security_domain" "roleAttributeID" "${KIE_AUTH_LDAP_ROLE_ATTRIBUTE_ID}")
-    security_domain=$(add_module "$security_domain" "roleAttributeIsDN" "${KIE_AUTH_LDAP_ROLE_ATTRIBUTE_IS_DN}")
-    security_domain=$(add_module "$security_domain" "roleNameAttributeID" "${KIE_AUTH_LDAP_ROLE_NAME_ATTRIBUTE_ID}")
-    security_domain=$(add_module "$security_domain" "defaultRole" "${KIE_AUTH_LDAP_DEFAULT_ROLE}")
-    security_domain=$(add_module "$security_domain" "roleRecursion" "${KIE_AUTH_LDAP_ROLE_RECURSION}")
-    security_domain=$(add_module "$security_domain" "distinguishedNameAttribute" "${KIE_AUTH_LDAP_DISTINGUISHED_NAME_ATTRIBUTE}")
-    security_domain=$(add_module "$security_domain" "parseRoleNameFromDN" "${KIE_AUTH_LDAP_PARSE_ROLE_NAME_FROM_DN}")
-    security_domain=$(add_module "$security_domain" "parseUsername" "${KIE_AUTH_LDAP_PARSE_USERNAME}")
-    security_domain=$(add_module "$security_domain" "usernameBeginString" "${KIE_AUTH_LDAP_USERNAME_BEGIN_STRING}")
-    security_domain=$(add_module "$security_domain" "usernameEndString" "${KIE_AUTH_LDAP_USERNAME_END_STRING}")
-    security_domain=$(add_module "$security_domain" "searchTimeLimit" "${KIE_AUTH_LDAP_SEARCH_TIME_LIMIT}")
-    security_domain=$(add_module "$security_domain" "searchScope" "${KIE_AUTH_LDAP_SEARCH_SCOPE}")
-    security_domain=$(add_module "$security_domain" "allowEmptyPasswords" "${KIE_AUTH_LDAP_ALLOW_EMPTY_PASSWORDS}")
-    security_domain=$(add_module "$security_domain" "referralUserAttributeIDToCheck" "${KIE_AUTH_LDAP_REFERRAL_USER_ATTRIBUTE_ID_TO_CHECK}") 
-    
+    security_domain=$(add_module "$security_domain" "java.naming.provider.url" "${AUTH_LDAP_URL}")
+    security_domain=$(add_module "$security_domain" "jaasSecurityDomain" "${AUTH_LDAP_JAAS_SECURITY_DOMAIN}")
+    security_domain=$(add_module "$security_domain" "bindDN" "${AUTH_LDAP_BIND_DN}")
+    security_domain=$(add_module "$security_domain" "bindCredential" "${AUTH_LDAP_BIND_CREDENTIAL}")
+    security_domain=$(add_module "$security_domain" "baseCtxDN" "${AUTH_LDAP_BASE_CTX_DN}")
+    security_domain=$(add_module "$security_domain" "baseFilter" "${AUTH_LDAP_BASE_FILTER}")
+    security_domain=$(add_module "$security_domain" "rolesCtxDN" "${AUTH_LDAP_ROLES_CTX_DN}")
+    security_domain=$(add_module "$security_domain" "roleFilter" "${AUTH_LDAP_ROLE_FILTER}")
+    security_domain=$(add_module "$security_domain" "roleAttributeID" "${AUTH_LDAP_ROLE_ATTRIBUTE_ID}")
+    security_domain=$(add_module "$security_domain" "roleAttributeIsDN" "${AUTH_LDAP_ROLE_ATTRIBUTE_IS_DN}")
+    security_domain=$(add_module "$security_domain" "roleNameAttributeID" "${AUTH_LDAP_ROLE_NAME_ATTRIBUTE_ID}")
+    security_domain=$(add_module "$security_domain" "defaultRole" "${AUTH_LDAP_DEFAULT_ROLE}")
+    security_domain=$(add_module "$security_domain" "roleRecursion" "${AUTH_LDAP_ROLE_RECURSION}")
+    security_domain=$(add_module "$security_domain" "distinguishedNameAttribute" "${AUTH_LDAP_DISTINGUISHED_NAME_ATTRIBUTE}")
+    security_domain=$(add_module "$security_domain" "parseRoleNameFromDN" "${AUTH_LDAP_PARSE_ROLE_NAME_FROM_DN}")
+    security_domain=$(add_module "$security_domain" "parseUsername" "${AUTH_LDAP_PARSE_USERNAME}")
+    security_domain=$(add_module "$security_domain" "usernameBeginString" "${AUTH_LDAP_USERNAME_BEGIN_STRING}")
+    security_domain=$(add_module "$security_domain" "usernameEndString" "${AUTH_LDAP_USERNAME_END_STRING}")
+    security_domain=$(add_module "$security_domain" "searchTimeLimit" "${AUTH_LDAP_SEARCH_TIME_LIMIT}")
+    security_domain=$(add_module "$security_domain" "searchScope" "${AUTH_LDAP_SEARCH_SCOPE}")
+    security_domain=$(add_module "$security_domain" "allowEmptyPasswords" "${AUTH_LDAP_ALLOW_EMPTY_PASSWORDS}")
+    security_domain=$(add_module "$security_domain" "referralUserAttributeIDToCheck" "${AUTH_LDAP_REFERRAL_USER_ATTRIBUTE_ID_TO_CHECK}")
+
     security_domain="${security_domain}"'</login-module><!-- ##OTHER_LOGIN_MODULES## -->'
 
     sed -i "s|<!-- ##OTHER_LOGIN_MODULES## -->|${security_domain}|" "${CONFIG_FILE}"

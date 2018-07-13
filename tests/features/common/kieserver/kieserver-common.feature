@@ -51,15 +51,15 @@ Feature: Kie Server common features
   Scenario: Test the KIE_SERVER_HOST with no value provided
     When container is ready
     Then container log should contain :8080/services/rest/server
-  
+
   Scenario: Don't configure kie server to use LDAP authentication
     When container is ready
-    Then container log should contain KIE_AUTH_LDAP_URL not set. Skipping LDAP integration...
+    Then container log should contain AUTH_LDAP_URL not set. Skipping LDAP integration...
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <login-module code="LdapExtended"
 
   Scenario: Configure kie server to use LDAP authentication
     When container is started with env
       | variable          | value     |
-      | KIE_AUTH_LDAP_URL | test_url  |
-    Then container log should contain KIE_AUTH_LDAP_URL is set to test_url. Added LdapExtended login-module
+      | AUTH_LDAP_URL | test_url  |
+    Then container log should contain AUTH_LDAP_URL is set to test_url. Added LdapExtended login-module
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended"
