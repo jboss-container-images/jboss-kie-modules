@@ -40,7 +40,8 @@ template_dirs = ['rhpam-7-openshift-image/templates', 'rhdm-7-openshift-image/te
 LINKS = {"rhdm70-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm70-kieserver-openshift`]",
          "rhdm70-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhdm-7/rhdm70-kieserver-openshift`]",
          "rhpam70-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam70-kieserver-openshift`]",
-         "rhpam70-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam70-kieserver-openshift`]"}
+         "rhpam70-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam70-kieserver-openshift`]",
+         "rhpam70-kieserver-openshift:1.2": "../../../kieserver/image.yaml[`rhpam-7/rhpam70-kieserver-openshift`]"}
 
 # used to update template parameters values
 PARAMETER_VALUES = {"EXAMPLE": "var"}
@@ -205,6 +206,8 @@ def getVariableInfo(data, name, value):
 def createParameterTable(data):
     text = ""
     for param in data["parameters"]:
+        if u"\u2019" in param["description"]:
+            param["description"] = param["description"].replace(u"\u2019", "'")
         deploy = [d["spec"]["template"]["spec"]["containers"][0]["env"] for d in data["objects"] if
                   d["kind"] == "DeploymentConfig"]
         environment = [item for sublist in deploy for item in sublist]
