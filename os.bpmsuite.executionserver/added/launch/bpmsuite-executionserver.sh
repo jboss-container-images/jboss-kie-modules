@@ -160,6 +160,13 @@ function configure_EJB_Timer_datasource {
                     EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName=${databaseName}
                     EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName=${serverName}
                     EJB_TIMER_XA_CONNECTION_PROPERTY_PortNumber=${portNumber}
+
+                    if [ "${EJB_TIMER_DRIVER}" = "db2" ]; then
+                        # default to 4, but user could define 2
+                        local driverType=$(find_env "${dsPrefix}_DRIVER_TYPE" "4")
+                        driverType=$(find_env "${dsPrefix}_XA_CONNECTION_PROPERTY_DriverType" "${driverType}")
+                        EJB_TIMER_XA_CONNECTION_PROPERTY_DriverType=${driverType}
+                    fi
                 fi
             fi
             EJB_TIMER_USERNAME=$(find_env "${dsPrefix}_USERNAME")

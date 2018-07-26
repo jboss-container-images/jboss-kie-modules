@@ -249,7 +249,7 @@ Feature: RHPAM KIE Server configuration tests
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_part on XPath //*[local-name()='database-data-store']/@partition
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10000 on XPath //*[local-name()='database-data-store']/@refresh-interval
 
-  Scenario: Checks if the EJB Timer was successfully configured using external datasource with DATASOURCES env using XA URL property
+  Scenario: Checks if the EJB Timer was successfully configured for an external Oracle datasource with DATASOURCES env using XA URL property
     When container is started with env
       | variable                                  | value                                                                       |
       | DATASOURCES                               | TEST                                                                        |
@@ -285,3 +285,40 @@ Feature: RHPAM KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker on XPath //*[local-name()='xa-datasource']/*[local-name()='validation']/*[local-name()='valid-connection-checker']/@class-name
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value org.jboss.jca.adapters.jdbc.extensions.oracle.OracleExceptionSorter on XPath //*[local-name()='xa-datasource']/*[local-name()='validation']/*[local-name()='exception-sorter']/@class-name
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10000 on XPath //*[local-name()='database-data-store']/@refresh-interval
+
+  Scenario: Checks if the EJB Timer was successfully configured for an external DB2 datasource with Type 4 (default type) and env using XA connection properties
+    When container is started with env
+      | variable                                  | value                           |
+      | DATASOURCES                               | TEST                            |
+      | TEST_USERNAME                             | bpmUser                         |
+      | TEST_PASSWORD                             | bpmPass                         |
+      | TEST_DRIVER                               | db2                             |
+      | TEST_XA_CONNECTION_PROPERTY_ServerName    | 127.0.0.1                       |
+      | TEST_XA_CONNECTION_PROPERTY_DatabaseName  | bpms                            |
+      | TEST_XA_CONNECTION_PROPERTY_PortNumber    | 50000                           |
+      | TEST_NONXA                                | false                           |
+    Then XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value db2 on XPath //*[local-name()='xa-datasource']/*[local-name()='driver']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 127.0.0.1 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="ServerName"]
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpms on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DatabaseName"]
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 50000 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="PortNumber"]
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 4 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DriverType"]
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value db2 on XPath //*[local-name()='database-data-store']/@database
+
+  Scenario: Checks if the EJB Timer was successfully configured for an external DB2 datasource with Type 2 and env using XA connection properties
+    When container is started with env
+      | variable                                  | value                           |
+      | DATASOURCES                               | TEST                            |
+      | TEST_USERNAME                             | bpmUser                         |
+      | TEST_PASSWORD                             | bpmPass                         |
+      | TEST_DRIVER                               | db2                             |
+      | TEST_XA_CONNECTION_PROPERTY_ServerName    | 127.0.0.1                       |
+      | TEST_XA_CONNECTION_PROPERTY_DatabaseName  | bpms                            |
+      | TEST_XA_CONNECTION_PROPERTY_PortNumber    | 50000                           |
+      | TEST_XA_CONNECTION_PROPERTY_DriverType    | 2                               |
+      | TEST_NONXA                                | false                           |
+    Then XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value db2 on XPath //*[local-name()='xa-datasource']/*[local-name()='driver']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 127.0.0.1 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="ServerName"]
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpms on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DatabaseName"]
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 50000 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="PortNumber"]
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 2 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DriverType"]
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value db2 on XPath //*[local-name()='database-data-store']/@database
