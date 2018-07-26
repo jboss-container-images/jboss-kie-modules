@@ -74,4 +74,8 @@ function configure_ldap_security_domain() {
     security_domain="${security_domain}"'</login-module><!-- ##OTHER_LOGIN_MODULES## -->'
 
     sed -i "s|<!-- ##OTHER_LOGIN_MODULES## -->|${security_domain}|" "${CONFIG_FILE}"
+
+    # RHPAM-1422, if the RealmDirect is set as Required, ldap auth will fail.
+    # TODO remove it out as part of the CLOUD-2750
+    sed -i 's|<login-module code="RealmDirect" flag="required">|<login-module code="RealmDirect" flag="optional">|' "${CONFIG_FILE}"
 }
