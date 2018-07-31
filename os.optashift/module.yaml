@@ -1,0 +1,6 @@
+schema_version: 1
+name: os.optashift
+version: '1.0'
+description: os.optashift script package.
+execute:
+- script: configure.sh
