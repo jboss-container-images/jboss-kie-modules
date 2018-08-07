@@ -1,15 +1,15 @@
-@rhpam-7/rhpam70-kieserver-openshift
+@rhpam-7/rhpam71-kieserver-openshift
 Feature: RHPAM KIE Server configuration tests
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
     When container is ready
-    Then container log should contain rhpam-7/rhpam70-kieserver-openshift image, version
+    Then container log should contain rhpam-7/rhpam71-kieserver-openshift image, version
 
   Scenario: Check for product and version environment variables
     When container is ready
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-kieserver
-     And run sh -c 'echo $RHPAM_KIESERVER_VERSION' in container and check its output for 7.0.2
+     And run sh -c 'echo $RHPAM_KIESERVER_VERSION' in container and check its output for 7.1.0
 
   # https://issues.jboss.org/browse/RHPAM-891
   Scenario: Check default users are properly configured
@@ -67,7 +67,7 @@ Feature: RHPAM KIE Server configuration tests
     Then file /opt/eap/standalone/deployments/node-info.war should exist
 
   Scenario: deploys the library example, then checks if it's deployed.
-    Given s2i build https://github.com/jboss-container-images/rhpam-7-openshift-image from quickstarts/library-process/library using rhpam70-dev
+    Given s2i build https://github.com/jboss-container-images/rhpam-7-openshift-image from quickstarts/library-process/library using rhpam71-dev
       | variable                        | value                                                                                    |
       | KIE_SERVER_CONTAINER_DEPLOYMENT | rhpam-kieserver-library=org.openshift.quickstarts:rhpam-kieserver-library:1.4.0-SNAPSHOT |
     Then container log should contain Container rhpam-kieserver-library
