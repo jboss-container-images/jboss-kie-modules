@@ -1,4 +1,4 @@
-@rhpam-7/rhpam70-businesscentral-indexing-openshift
+@rhpam-7/rhpam71-businesscentral-indexing-openshift
 Feature: RHPAM Business Central Indexing configuration tests
 
   Scenario: Test Container Health

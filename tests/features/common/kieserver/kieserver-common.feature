@@ -1,4 +1,4 @@
-@rhdm-7/rhdm70-kieserver-openshift  @rhpam-7/rhpam70-kieserver-openshift
+@rhdm-7/rhdm71-kieserver-openshift  @rhpam-7/rhpam71-kieserver-openshift
 Feature: Kie Server common features
 
   Scenario: Check if kieserver mgmt is correctly set.

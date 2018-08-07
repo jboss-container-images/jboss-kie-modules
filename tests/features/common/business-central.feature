@@ -1,4 +1,4 @@
-@rhdm-7/rhdm70-decisioncentral-openshift @rhpam-7/rhpam70-businesscentral-openshift @rhpam-7/rhpam70-businesscentral-monitoring-openshift
+@rhdm-7/rhdm71-decisioncentral-openshift @rhpam-7/rhpam71-businesscentral-openshift @rhpam-7/rhpam71-businesscentral-monitoring-openshift
 Feature: Decision/Business Central common features
 
   Scenario: Configure business-central to use LDAP authentication
