@@ -15,7 +15,7 @@
 #   Generate docs for RHDM and RHPAM: ./gen_template_docs.py
 #   Generate docs only for rhdm: ./gen_template_docs.py --rhdm
 #   Generate docs only for rhpam: ./gen_template_docs.py --rhpam
-#   Generate docs specifying custom branch: ./gen_template_docs.py --rhdm-git-branch 7.0.1 --rhpam-git-branch 7.0.2
+#   Generate docs specifying custom branch: ./gen_template_docs.py --rhdm-git-branch 7.1.0 --rhpam-git-branch 7.1.0
 
 import argparse
 import json
@@ -37,11 +37,8 @@ APPLICATION_DIRECTORIES = ("rhpam-7-openshift-image", "rhdm-7-openshift-image", 
 template_dirs = ['rhpam-7-openshift-image/templates', 'rhdm-7-openshift-image/templates']
 
 # used to link the image to the image.yaml when the given image is used by a s2i build
-LINKS = {"rhdm70-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm70-kieserver-openshift`]",
-         "rhdm70-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhdm-7/rhdm70-kieserver-openshift`]",
-         "rhpam70-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam70-kieserver-openshift`]",
-         "rhpam70-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam70-kieserver-openshift`]",
-         "rhpam70-kieserver-openshift:1.2": "../../../kieserver/image.yaml[`rhpam-7/rhpam70-kieserver-openshift`]"}
+LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm71-kieserver-openshift`]",
+         "rhpam71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]"}
 
 # used to update template parameters values
 PARAMETER_VALUES = {"EXAMPLE": "var"}
@@ -151,7 +148,7 @@ def createTemplate(data, path):
                 tdata['objects'][0]['secrets'] = [{"secretNames": secretName}]
 
         # currently only the rhpam-authoring-ha will have clustering section, any new template that supports clustering needs to be added in the var below.
-        clusteringTemplates = ['rhpam70-authoring-ha.yaml']
+        clusteringTemplates = ['rhpam71-authoring-ha.yaml']
         for template in clusteringTemplates:
             if str(path).rsplit('/', 1)[-1] == template:
                 tdata['objects'][0]['clustering'] = [{}]
@@ -421,8 +418,8 @@ def pull_templates(rhdm_git_branch, rhpam_git_branch):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='OpenShift Application Templates docs generator')
-    parser.add_argument('--rhdm-git-branch', dest='rhdm_git_branch', default='rhdm70-dev', help='Branch to checkout')
-    parser.add_argument('--rhpam-git-branch', dest='rhpam_git_branch', default='rhpam70-dev', help='Branch to checkout')
+    parser.add_argument('--rhdm-git-branch', dest='rhdm_git_branch', default='rhdm71-dev', help='Branch to checkout')
+    parser.add_argument('--rhpam-git-branch', dest='rhpam_git_branch', default='rhpam71-dev', help='Branch to checkout')
     parser.add_argument('--rhdm', dest='generate_rhdm', action='store_true', default=False,
                         help='If set, only rhdm template docs will be generated')
     parser.add_argument('--rhpam', dest='generate_rhpam', action='store_true', default=False,
