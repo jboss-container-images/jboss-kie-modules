@@ -1,0 +1,6 @@
+schema_version: 1
+name: jboss.kie.kieserver
+version: '1.0'
+description: The jboss.kie.kieserver script package.
+execute:
+- script: configure.sh

@@ -1,0 +1,6 @@
+schema_version: 1
+name: jboss.kie.smartrouter
+version: '1.0'
+description: The jboss.kie.smartrouter script package.
+execute:
+- script: configure.sh
