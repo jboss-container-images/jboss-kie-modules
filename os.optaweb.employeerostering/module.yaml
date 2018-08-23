@@ -1,0 +1,6 @@
+schema_version: 1
+name: os.optaweb.employeerostering
+version: '1.0'
+description: os.optaweb.employeerostering script package.
+execute:
+- script: configure.sh
