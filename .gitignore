@@ -25,3 +25,4 @@ tools/rhdm-*
 tools/rhpam-*
 venv/
 *.war
+tools/openshift-template-validator/openshift-template-validator
