@@ -1,14 +1,14 @@
 @rhdm-7/rhdm71-decisioncentral-openshift @rhpam-7/rhpam71-businesscentral-openshift @rhpam-7/rhpam71-businesscentral-monitoring-openshift
 Feature: Decision/Business Central common features
 
-  Scenario: Configure business-central to use LDAP authentication
+  Scenario: Configure kie-workbench to use LDAP authentication
     When container is started with env
       | variable      | value     |
       | AUTH_LDAP_URL | test_url  |
     Then container log should contain AUTH_LDAP_URL is set to test_url. Added LdapExtended login-module
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended"
 
-  Scenario: Configure business-central to use LDAP authentication
+  Scenario: Configure kie-workbench to use LDAP authentication
     When container is started with env
       | variable                    | value                         |
       | AUTH_LDAP_URL               | test_url                      |
@@ -29,3 +29,11 @@ Feature: Decision/Business Central common features
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="rolesCtxDN" value="ou=Roles,dc=example,dc=com"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleFilter" value="(member={1})"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleAttributeID" value="cn"/>
+
+  Scenario: Configure GIT_HOOKS_DIR and check for directory existence
+    When container is started with env
+      | variable      | value          |
+      | GIT_HOOKS_DIR | /opt/git/hooks |
+    Then container log should contain GIT_HOOKS_DIR directory "/opt/git/hooks" created.
+    And file /opt/git/hooks should exist and be a directory
+
