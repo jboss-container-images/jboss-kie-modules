@@ -114,8 +114,20 @@ function configure_guvnor_settings() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.ssh.cert.dir=${kieDataDir}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.daemon.enabled=false"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.ssh.host=0.0.0.0"
-    if [[ $JBOSS_PRODUCT != *monitoring && -n GIT_HOOKS_DIR ]]; then
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.hooks=${GIT_HOOKS_DIR}"
+    if [[ $JBOSS_PRODUCT != *monitoring && "${GIT_HOOKS_DIR}" != "" ]]; then
+        if [ ! -e "${GIT_HOOKS_DIR}" ]; then
+            echo "GIT_HOOKS_DIR directory \"${GIT_HOOKS_DIR}\" does not exist; creating..."
+            if mkdir -p "${GIT_HOOKS_DIR}" ; then
+                echo "GIT_HOOKS_DIR directory \"${GIT_HOOKS_DIR}\" created."
+            else
+                echo "GIT_HOOKS_DIR directory \"${GIT_HOOKS_DIR}\" could not be created!"
+            fi
+        elif  [ -f "${GIT_HOOKS_DIR}" ]; then
+            echo "GIT_HOOKS_DIR \"${GIT_HOOKS_DIR}\" cannot be used because it is a file!"
+        fi
+        if [ -d "${GIT_HOOKS_DIR}" ]; then
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.hooks=${GIT_HOOKS_DIR}"
+        fi
     fi
 }
 
