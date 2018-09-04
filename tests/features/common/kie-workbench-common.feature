@@ -33,7 +33,7 @@ Feature: Decision/Business Central common features
   Scenario: Configure GIT_HOOKS_DIR and check for directory existence
     When container is started with env
       | variable      | value          |
-      | GIT_HOOKS_DIR | /opt/git/hooks |
-    Then container log should contain GIT_HOOKS_DIR directory "/opt/git/hooks" created.
-    And file /opt/git/hooks should exist and be a directory
+      | GIT_HOOKS_DIR | /opt/eap/standalone/data/kie/git/hooks |
+    Then container log should contain GIT_HOOKS_DIR directory "/opt/eap/standalone/data/kie/git/hooks" created.
+    And file /opt/eap/standalone/data/kie/git/hooks should exist and be a directory
 
