@@ -30,10 +30,3 @@ Feature: Decision/Business Central common features
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleFilter" value="(member={1})"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleAttributeID" value="cn"/>
 
-  Scenario: Configure GIT_HOOKS_DIR and check for directory existence
-    When container is started with env
-      | variable      | value          |
-      | GIT_HOOKS_DIR | /opt/eap/standalone/data/kie/git/hooks |
-    Then container log should contain GIT_HOOKS_DIR directory "/opt/eap/standalone/data/kie/git/hooks" created.
-    And file /opt/eap/standalone/data/kie/git/hooks should exist and be a directory
-
