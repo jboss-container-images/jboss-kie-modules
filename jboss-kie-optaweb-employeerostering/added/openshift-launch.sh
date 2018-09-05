@@ -1,5 +1,5 @@
 #!/bin/sh
-# Openshift RHDM Employee Rostering Optimizer launch script
+# Openshift JBoss KIE - Business Optimizer OptaWeb Employee Rostering launch script
 
 source $JBOSS_HOME/bin/launch/logging.sh
 
@@ -30,6 +30,9 @@ CONFIGURE_SCRIPTS=(
   $JBOSS_HOME/bin/launch/ports.sh
   $JBOSS_HOME/bin/launch/maven-repos.sh
   $JBOSS_HOME/bin/launch/access_log_valve.sh
+  $JBOSS_HOME/bin/launch/jboss-kie-common.sh
+  $JBOSS_HOME/bin/launch/jboss-kie-optaweb-common.sh
+  $JBOSS_HOME/bin/launch/jboss-kie-optaweb-employeerostering.sh
   /opt/run-java/proxy-options
 )
 
@@ -42,8 +45,18 @@ if [ -n "$CLI_GRACEFUL_SHUTDOWN" ] ; then
   log_info "Using CLI Graceful Shutdown instead of TERM signal"
 fi
 
-#for persistence.xml, in order to use external DB instead of the hard-coded default H2 db. 
-JBOSS_BPMSUITE_ARGS="${JBOSS_BPMSUITE_ARGS} -Dorg.optaweb.employeerostering.persistence.datasource=${OPTAWEB_ROSTERING_PERSISTENCE_DATASOURCE} -Dorg.optaweb.employeerostering.persistence.dialect=${OPTAWEB_ROSTERING_PERSISTENCE_DIALECT}"
-sed  -i.bak "s/<spec-descriptor-property-replacement>false/<spec-descriptor-property-replacement>true/g" $JBOSS_HOME/standalone/configuration/standalone-openshift.xml
+# RHPAM-1135: We need to build and pass an array otherwise spaces in passwords will break the exec
+D_OPTS="${JBOSS_KIE_ARGS}"
+D_DLM=" -D"
+D_STR=" ${D_OPTS}${D_DLM}"
+D_ARR=()
+while [[ $D_STR ]]; do
+    D_TMP="${D_STR%%"$D_DLM"*}"
+    if [[ ! "${D_TMP}" =~ ^\ +$ ]] && [[ "x${D_TMP}" != "x" ]]; then
+        D_TMP=$(eval "echo \"${D_TMP}\"")
+        D_ARR+=("-D${D_TMP}")
+    fi
+    D_STR=${D_STR#*"$D_DLM"}
+done
 
-exec env M2_HOME=${M2_HOME} $JBOSS_HOME/bin/standalone.sh -c standalone-openshift.xml -bmanagement 127.0.0.1 ${JAVA_PROXY_OPTIONS} ${JBOSS_HA_ARGS} ${JBOSS_MESSAGING_ARGS} ${JBOSS_BPMSUITE_ARGS}
+exec env M2_HOME=${M2_HOME} $JBOSS_HOME/bin/standalone.sh -c standalone-openshift.xml -bmanagement 127.0.0.1 ${JAVA_PROXY_OPTIONS} ${JBOSS_HA_ARGS} ${JBOSS_MESSAGING_ARGS} "${D_ARR[@]}"

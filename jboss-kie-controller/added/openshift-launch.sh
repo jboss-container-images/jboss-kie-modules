@@ -1,5 +1,5 @@
 #!/bin/sh
-# Openshift BPMS Standalone Controller launch script
+# Openshift JBoss KIE - Standalone Controller launch script
 
 source $JBOSS_HOME/bin/launch/logging.sh
 
