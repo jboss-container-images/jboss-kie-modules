@@ -75,109 +75,86 @@ function configure_EJB_Timer_datasource {
             log_info "configuring EJB Timer Datasource based on DB_SERVICE_PREFIX_MAPPING env"
             local serviceMappingName=${DB_SERVICE_PREFIX_MAPPING%=*}
             local prefix=${DB_SERVICE_PREFIX_MAPPING#*=}
+            local service=${serviceMappingName^^}
+            service=${service//-/_}
 
-            EJB_TIMER_JNDI=$(find_env "${prefix}_JNDI")
-            EJB_TIMER_JNDI="${EJB_TIMER_JNDI}_EJBTimer"
+            DB_SERVICE_PREFIX_MAPPING="${serviceMappingName}=EJB_TIMER,${DB_SERVICE_PREFIX_MAPPING}"
+            TIMER_SERVICE_DATA_STORE="${serviceMappingName}"
+            EJB_TIMER_DRIVER=${serviceMappingName##*-}
 
-            # force the provided datasource to be xa
-            eval ${prefix}_NONXA=false
-
-            #mysql need to be created manually because the DB_SERVICE_PREFIX_MAPPING does not allow to configure the XA URL
-            if [[ "${serviceMappingName}" = *"mysql"* ]]; then
-                DATASOURCES="EJB_TIMER"
-
-                local service=${serviceMappingName^^}
-                service=${service//-/_}
-                local host=$(find_env "${service}_SERVICE_HOST")
-                local port=$(find_env "${service}_SERVICE_PORT" "3306")
-                local database=$(find_env "${prefix}_DATABASE")
-                EJB_TIMER_DRIVER="mysql"
-                EJB_TIMER_XA_CONNECTION_PROPERTY_URL="jdbc:mysql://${host}:${port}/${database}?pinGlobalTxToPhysicalConnection=true"
-                EJB_TIMER_CONNECTION_CHECKER=$(find_env "${prefix}_CONNECTION_CHECKER" "org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker")
-                EJB_TIMER_EXCEPTION_SORTER=$(find_env "${prefix}_EXCEPTION_SORTER" "org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter")
-                EJB_TIMER_BACKGROUND_VALIDATION=$(find_env "${prefix}_BACKGROUND_VALIDATION" "true")
-                EJB_TIMER_BACKGROUND_VALIDATION_MILLIS=$(find_env "${prefix}_BACKGROUND_VALIDATION_MILLIS" "10000")
-                TIMER_SERVICE_DATA_STORE="EJB_TIMER"
-            else
-                # Make sure that the EJB datasource is configured first, in this way the timer's default-data-store wil be the
-                # EJBTimer datasource
-                DB_SERVICE_PREFIX_MAPPING="${serviceMappingName}=EJB_TIMER,${DB_SERVICE_PREFIX_MAPPING}"
-                EJB_TIMER_DATABASE=$(find_env "${prefix}_DATABASE")
-                EJB_TIMER_DRIVER="postgresql"
-                TIMER_SERVICE_DATA_STORE="${serviceMappingName}"
-            fi
-            EJB_TIMER_USERNAME=$(find_env "${prefix}_USERNAME")
-            EJB_TIMER_PASSWORD=$(find_env "${prefix}_PASSWORD")
-            EJB_TIMER_MIN_POOL_SIZE=$(find_env "${prefix}_MIN_POOL_SIZE")
-            EJB_TIMER_MAX_POOL_SIZE=$(find_env "${prefix}_MAX_POOL_SIZE")
-            EJB_TIMER_TX_ISOLATION="${EJB_TIMER_TX_ISOLATION:-TRANSACTION_READ_COMMITTED}"
-            EJB_TIMER_NONXA="false"
-            #inject_ejb_timer_datastore
-
+            set_timer_env $prefix $service
         elif [ -n "${DATASOURCES}" ]; then
             log_info "configuring EJB Timer Datasource based on DATASOURCES env"
             # Make sure that the EJB datasource is configured first, in this way the timer's default-data-store wil be the
             # EJBTimer datasource
             local dsPrefix="${DATASOURCES%,*}"
-            # force the provided datasource to be xa
-            eval ${dsPrefix}_NONXA=false
-
             DATASOURCES="EJB_TIMER,${DATASOURCES}"
-
-            EJB_TIMER_DRIVER=$(find_env "${dsPrefix}_DRIVER")
-
-            if [ "${EJB_TIMER_DRIVER}" = "postgresql" ]; then
-                EJB_TIMER_DATABASE=$(find_env "${dsPrefix}_DATABASE")
-                EJB_TIMER_SERVICE_HOST=$(find_env "${dsPrefix}_SERVICE_HOST")
-                EJB_TIMER_SERVICE_PORT=$(find_env "${dsPrefix}_SERVICE_PORT")
-
-            elif [ "${EJB_TIMER_DRIVER}" = "mysql" ]; then
-                local host=$(find_env "${dsPrefix}_SERVICE_HOST")
-                local port=$(find_env "${dsPrefix}_SERVICE_PORT" "3306")
-                local database=$(find_env "${dsPrefix}_DATABASE")
-                EJB_TIMER_XA_CONNECTION_PROPERTY_URL="jdbc:mysql://${host}:${port}/${database}?pinGlobalTxToPhysicalConnection=true"
-            else
-                # these values are set automatically it the driver is mysql or postgresql, if the driver does not match, these values must be provided
-                EJB_TIMER_CONNECTION_CHECKER=$(find_env "${dsPrefix}_CONNECTION_CHECKER")
-                EJB_TIMER_EXCEPTION_SORTER=$(find_env "${dsPrefix}_EXCEPTION_SORTER")
-                EJB_TIMER_BACKGROUND_VALIDATION=$(find_env "${dsPrefix}_BACKGROUND_VALIDATION")
-                EJB_TIMER_BACKGROUND_VALIDATION_MILLIS=$(find_env "${dsPrefix}_BACKGROUND_VALIDATION_MILLIS")
-
-                # if prefix_URL and prefix_XA_CONNECTION_PROPERTY_propertyName are set, rely on XA property
-                # the same will be valid for others XA properties
-                local url=$(find_env "${dsPrefix}_URL")
-                url=$(find_env "${dsPrefix}_XA_CONNECTION_PROPERTY_URL" "${url}")
-                if [ "x${url}" != "x" ]; then
-                    EJB_TIMER_XA_CONNECTION_PROPERTY_URL=${url}
-
-                else
-                    local databaseName=$(find_env "${dsPrefix}_DATABASE")
-                    databaseName=$(find_env "${dsPrefix}_XA_CONNECTION_PROPERTY_DatabaseName" "${databaseName}")
-                    local serverName=$(find_env "${dsPrefix}_SERVICE_HOST" )
-                    serverName=$(find_env "${dsPrefix}_XA_CONNECTION_PROPERTY_ServerName" "${serverName}")
-                    local portNumber=$(find_env "${dsPrefix}_SERVICE_PORT" )
-                    portNumber=$(find_env "${dsPrefix}_XA_CONNECTION_PROPERTY_PortNumber" "${portNumber}")
-                    EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName=${databaseName}
-                    EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName=${serverName}
-                    EJB_TIMER_XA_CONNECTION_PROPERTY_PortNumber=${portNumber}
-
-                    if [ "${EJB_TIMER_DRIVER}" = "db2" ]; then
-                        # default to 4, but user could define 2
-                        local driverType=$(find_env "${dsPrefix}_DRIVER_TYPE" "4")
-                        driverType=$(find_env "${dsPrefix}_XA_CONNECTION_PROPERTY_DriverType" "${driverType}")
-                        EJB_TIMER_XA_CONNECTION_PROPERTY_DriverType=${driverType}
-                    fi
-                fi
-            fi
-            EJB_TIMER_USERNAME=$(find_env "${dsPrefix}_USERNAME")
-            EJB_TIMER_PASSWORD=$(find_env "${dsPrefix}_PASSWORD")
-            EJB_TIMER_MIN_POOL_SIZE=$(find_env "${dsPrefix}_MIN_POOL_SIZE" "10")
-            EJB_TIMER_MAX_POOL_SIZE=$(find_env "${dsPrefix}_MAX_POOL_SIZE" "10")
-            EJB_TIMER_NONXA="false"
-            EJB_TIMER_TX_ISOLATION="${EJB_TIMER_TX_ISOLATION:-TRANSACTION_READ_COMMITTED}"
-            TIMER_SERVICE_DATA_STORE="EJB_TIMER"
+            set_timer_env $dsPrefix
         fi
     fi
+}
+
+function set_timer_env {
+    local prefix=$1
+    local service=$2
+
+    declare_timer_common_variables $prefix
+    set_timer_defaults
+    declare_xa_variables $prefix $service
+}
+
+function declare_timer_common_variables {
+    local common_vars=(DRIVER JNDI USERNAME PASSWORD TX_ISOLATION \
+                            XA_CONNECTION_PROPERTY_URL MAX_POOL_SIZE \
+                            MIN_POOL_SIZE CONNECTION_CHECKER EXCEPTION_SORTER \
+                            BACKGROUND_VALIDATION BACKGROUND_VALIDATION_MILLIS)
+
+    for var in ${common_vars[@]}; do
+        local value=$(find_env "${prefix}_${var}")
+        if [[ -n ${value} ]]; then
+            eval "EJB_TIMER_${var}"=${value}
+        fi
+    done
+}
+
+function set_timer_defaults {
+    EJB_TIMER_JNDI="${EJB_TIMER_JNDI}_EJBTimer"
+    EJB_TIMER_MAX_POOL_SIZE=${EJB_TIMER_MAX_POOL_SIZE:-"10"}
+    EJB_TIMER_MIN_POOL_SIZE=${EJB_TIMER_MIN_POOL_SIZE:-"10"}
+    EJB_TIMER_TX_ISOLATION="${EJB_TIMER_TX_ISOLATION:-TRANSACTION_READ_COMMITTED}"
+    if [[ $EJB_TIMER_DRIVER = "mysql" ]]; then
+        EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection="true"
+        EJB_TIMER_BACKGROUND_VALIDATION_MILLIS=${EJB_TIMER_BACKGROUND_VALIDATION_MILLIS:-"10000"}
+    fi
+}
+
+function get_svc_var {
+    local var=$1
+    local prop=$2
+    local prefix=$3
+    local svc=$4
+
+    local var_name=${prefix}_XA_CONNECTION_PROPERTY_${prop}
+    local value=$(find_env ${var_name})
+    if [[ -z ${value} ]]; then
+        value=$(find_env "${prefix}_SERVICE_${var}")
+        if [[ -n ${svc} && -z ${value} ]]; then
+            value=$(find_env "${svc}_SERVICE_${var}")
+        fi
+    fi
+    if [[ -n ${value} ]]; then
+        eval "EJB_TIMER_XA_CONNECTION_PROPERTY_${prop}"=${value}
+    fi
+}
+
+function declare_xa_variables {
+    local prefix=$1
+    local service=$2
+    database=$(find_env "${prefix}_DATABASE")
+    xa_database=$(find_env "${prefix}_XA_CONNECTION_PROPERTY_DatabaseName")
+    EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName=${xa_database:-${database}}
+    get_svc_var "HOST" "ServerName" $prefix $service
+    get_svc_var "PORT" "PortNumber" $prefix $service
 }
 
 function configure_server_env {
