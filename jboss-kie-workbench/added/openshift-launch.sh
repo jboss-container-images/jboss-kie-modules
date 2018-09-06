@@ -1,5 +1,5 @@
 #!/bin/sh
-# Openshift BPMS Business Central launch script
+# Openshift JBoss KIE - Workbench launch script
 
 source $JBOSS_HOME/bin/launch/logging.sh
 

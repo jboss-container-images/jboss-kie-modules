@@ -1,5 +1,5 @@
 #!/bin/sh
-# Openshift BPMS Execution Server launch script
+# Openshift JBoss KIE - KIE Server launch script
 
 source $JBOSS_HOME/bin/launch/logging.sh
 

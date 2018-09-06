@@ -1,5 +1,5 @@
 #!/bin/sh
-# Openshift BPMS Smart Router launch script
+# Openshift JBoss KIE - Smart Router launch script
 
 source ${LAUNCH_DIR}/logging.sh
 
