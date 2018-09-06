@@ -216,7 +216,7 @@ $ curl https://glide.sh/get | sh
 
 #### Cloning the repo
 
-$ git clone https://github.com/spolti/jboss-kie-modules.git
+$ git clone https://github.com/jboss-container-images/jboss-kie-modules.git
 $ mkdir -p $GOPATH/src/github.com/jboss-container-images/jboss-kie-modules/tools/
 $ cp -r jboss-kie-modules/tools/openshift-template-validator/ $GOPATH/src/github.com/jboss-container-images/jboss-kie-modules/tools/
 ```
