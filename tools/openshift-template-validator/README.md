@@ -126,9 +126,9 @@ parameters:
   value: myapp
   required: true
 ...
-- displayName: Execution Server Container Memory Limit
-  description: Execution Server Container memory limit
-  name: EXCECUTION_SERVER_MEMORY_LIMIT
+- displayName: KIE Server Container Memory Limit
+  description: KIE Server Container memory limit
+  name: KIE_SERVER_MEMORY_LIMIT
   value: 1Gi
   required: false
  -----> No validation issues found.

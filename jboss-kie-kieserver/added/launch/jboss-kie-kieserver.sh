@@ -8,8 +8,8 @@ function prepareEnv() {
     # please keep these in alphabetical order
     unset AUTO_CONFIGURE_EJB_TIMER
     unset DROOLS_SERVER_FILTER_CLASSES
-    unset EXECUTION_SERVER_ROUTE_NAME
-    unset EXECUTION_SERVER_USE_SECURE_ROUTE_NAME
+    unset KIE_SERVER_ROUTE_NAME
+    unset KIE_SERVER_USE_SECURE_ROUTE_NAME
     unset JBPM_HT_CALLBACK_CLASS
     unset JBPM_HT_CALLBACK_METHOD
     unset JBPM_LOOP_LEVEL_DISABLED
@@ -269,17 +269,17 @@ function configure_drools() {
 }
 
 function configure_server_location() {
-    # if the EXECUTION_SERVER_HOSTNAME is not set we will query the kubernetes API to retrieve the route value from its name.
+    # if the KIE server hostname is not set we will query the kubernetes API to retrieve the route value from its name.
 
     if [ "${KIE_SERVER_HOST}" = "" ]; then
         local routeName
-        if [ "${EXECUTION_SERVER_USE_SECURE_ROUTE_NAME^^}" = "TRUE" ]; then
+        if [ "${KIE_SERVER_USE_SECURE_ROUTE_NAME^^}" = "TRUE" ]; then
             KIE_SERVER_PORT="443"
             KIE_SERVER_PROTOCOL="https"
-            routeName="secure-${EXECUTION_SERVER_ROUTE_NAME}"
+            routeName="secure-${KIE_SERVER_ROUTE_NAME}"
         else
             KIE_SERVER_PORT="80"
-            routeName="${EXECUTION_SERVER_ROUTE_NAME}"
+            routeName="${KIE_SERVER_ROUTE_NAME}"
         fi
 
         # only execute the following lines if this container is running on OpenShift
@@ -409,7 +409,7 @@ function configure_kie_server_mgmt() {
     local ALLOWED_STARTUP_STRATEGY=("LocalContainersStartupStrategy" "ControllerBasedStartupStrategy")
     local invalidStrategy=true
 
-    # setting valid for both, rhpam and rhdm execution server
+    # setting valid for both, rhpam and rhdm KIE server
     if [ "${KIE_SERVER_MGMT_DISABLED^^}" = "TRUE" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.mgmt.api.disabled=true"
     fi
