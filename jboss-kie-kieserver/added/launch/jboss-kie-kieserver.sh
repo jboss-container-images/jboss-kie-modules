@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source "${JBOSS_HOME}/bin/launch/launch-common.sh"
+source "${JBOSS_HOME}/bin/launch/jboss-kie-common.sh"
 source "${JBOSS_HOME}/bin/launch/logging.sh"
 source "${JBOSS_HOME}/bin/launch/jboss-kie-security.sh"
 
@@ -282,16 +283,8 @@ function configure_server_location() {
             routeName="${KIE_SERVER_ROUTE_NAME}"
         fi
 
-        # only execute the following lines if this container is running on OpenShift
-        if [ -e /var/run/secrets/kubernetes.io/serviceaccount/token ]; then
-            # try to retrieve the host from kubernetes api, a service account with "view" role is necessary to perform this request
-            local namespace=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
-            local token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-            local response=$(curl -s -w "%{http_code}" --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
-                            -H "Authorization: Bearer $token" \
-                            -H 'Accept: application/json' \
-                            https://${KUBERNETES_SERVICE_HOST:-kubernetes.default.svc}:${KUBERNETES_SERVICE_PORT:-443}/apis/route.openshift.io/v1/namespaces/${namespace}/routes/${routeName})
-        fi
+        local response=$(query_server_host ${routeName})
+
         if [ "${response: -3}" = "200" ]; then
             # parse the json response to get the route host
             KIE_SERVER_HOST=$(echo ${response::- 3} | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["spec"]["host"]')

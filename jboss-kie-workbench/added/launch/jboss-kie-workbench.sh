@@ -2,6 +2,7 @@
 
 source "${JBOSS_HOME}/bin/launch/launch-common.sh"
 source "${JBOSS_HOME}/bin/launch/login-modules-common.sh"
+source "${JBOSS_HOME}/bin/launch/jboss-kie-common.sh"
 source "${JBOSS_HOME}/bin/launch/management-common.sh"
 source "${JBOSS_HOME}/bin/launch/logging.sh"
 source "${JBOSS_HOME}/bin/launch/jboss-kie-security.sh"
@@ -129,6 +130,37 @@ function configure_guvnor_settings() {
             JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.hooks=${GIT_HOOKS_DIR}"
         fi
     fi
+
+    local url
+    local port="80"
+    local protocol="http"
+    if [ "${WORKBENCH_ROUTE_NAME}" != "" ]; then
+
+        if [[ "${WORKBENCH_ROUTE_NAME}" = *"secure"* ]]; then
+            port="443"
+            protocol="https"
+        fi
+
+        local response=$(query_server_host ${WORKBENCH_ROUTE_NAME})
+
+        if [ "${response: -3}" = "200" ]; then
+               # parse the json response to get the route host
+               hostname=$(echo ${response::- 3} | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["spec"]["host"]')
+               url="${protocol}://${hostname}:${port}"
+               log_info "Using route hostname: ${url}"
+        else
+            log_warning "Fail to query the route name using Kubernetes API, service account might not have necessary privileges, defaulting it to pod's hostname [${HOSTNAME}]."
+            if [ ! -z "${response}" ]; then
+                log_warning "Response message: ${response::- 3} - HTTP Status code: ${response: -3}"
+            fi
+            url="http://${HOSTNAME}:8080"
+        fi
+
+    else
+        url="http://${HOSTNAME}:8080"
+        log_info "Using route hostname: ${url}"
+    fi
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.m2repo.url=${url}/maven2"
 }
 
 # Set the max metaspace size only for the workbench
