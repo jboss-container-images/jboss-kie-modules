@@ -7,7 +7,7 @@
                 <login-module code="Remoting" flag="optional">
                     <module-option name="password-stacking" value="useFirstPass"/>
                 </login-module>
-                <login-module code="RealmDirect" flag="required">
+                <login-module code="RealmDirect" flag="optional">
                     <module-option name="password-stacking" value="useFirstPass"/>
                 </login-module>
                 <login-module code="LdapExtended" flag="required">
