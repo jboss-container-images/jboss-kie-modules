@@ -422,8 +422,8 @@ function configure_kie_server_mgmt() {
 }
 
 function configure_server_state() {
-    # Need to replace whitespaces with something different from space or escaped space (\ ) characters
-    local kieServerId="${KIE_SERVER_ID// /_}"
+    # replace all non-alphanumeric characters with an underscore
+    local kieServerId="${KIE_SERVER_ID//[^[:alpha:].-]/_}"
     if [ "${kieServerId}" = "" ]; then
         if [ "x${HOSTNAME}" != "x" ]; then
             # chop off trailing unique "dash number" so all servers use the same template
