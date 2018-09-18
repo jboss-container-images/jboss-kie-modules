@@ -25,10 +25,8 @@ CONFIGURE_SCRIPTS=(
   $JBOSS_HOME/bin/launch/json_logging.sh
   $JBOSS_HOME/bin/launch/security-domains.sh
   $JBOSS_HOME/bin/launch/jboss_modules_system_pkgs.sh
-  $JBOSS_HOME/bin/launch/keycloak.sh
   $JBOSS_HOME/bin/launch/deploymentScanner.sh
   $JBOSS_HOME/bin/launch/ports.sh
-  $JBOSS_HOME/bin/launch/maven-repos.sh
   $JBOSS_HOME/bin/launch/access_log_valve.sh
   $JBOSS_HOME/bin/launch/jboss-kie-common.sh
   $JBOSS_HOME/bin/launch/jboss-kie-optaweb-common.sh
