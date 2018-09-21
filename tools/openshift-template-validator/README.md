@@ -76,7 +76,21 @@ Errors found: {
 }
 ```
 
-Future work: allow to provide annotation=value
+User can also provide a desired value for the custom annotation by using key=value format, you can also provide custon annotations
+with no value that it will be tested too.
+
+```bash
+$ ./openshift-template-validator validate -t /data/dev/sources/rhpam-7-openshift-image/templates/rhpam71-authoring.yaml -a value1=one,value2=two,value3=trhee,otherAnnotation
+Validating file /data/dev/sources/rhpam-7-openshift-image/templates/rhpam71-authoring.yaml
+Errors found: {
+  "Annotations": [
+    "Annotation value1 was found in the template annotations but does not contain the required value[one].",
+    "Annotation value2 was not found in the template annotations.",
+    "Annotation value3 was not found in the template annotations.",
+    "Annotation otherAnnotation was not found in the template annotations."
+  ]
+}
+```
 
 
 #### Verifying template version
@@ -95,7 +109,14 @@ Errors found: {
 }
 ```
 
-#### Strict mode
+#### Template parameters validation
+
+This tool also verify the template parameters, it will check:
+- if the parameter have all the required fields: DisplayName, Description, Name and Required
+- if any parameter is required, but not value provided (--strict-mode)
+- if all defined parameters are being used for any DeploymentConfig defined in the target template
+
+##### Strict mode
 
 The Strict mode will verify if there is a required parameter with no value, example:
 
@@ -112,7 +133,8 @@ Errors found: {
 }
 ```
 
-#### Dumping template parameters for troubleshooting
+
+##### Dumping template parameters for troubleshooting
 
 If for some reason the parameters validation failed and you want to verify the parameters, just use the *dump" flag:
 
@@ -183,7 +205,6 @@ In this case, the issue was a string character in the container port definition 
 ### TODO
 
 - allow user to specify the validations they want to disable, i.e --disable-annotations-check
-- use custom annotations with value
 
 
 #### Contributing
@@ -200,14 +221,15 @@ The next lines contains all the necessary steps to build this tool from source.
 
 #### Getting the source and building it
 
-Install Goland and prepare the GOPATH env.
+Install Golang, glide, and prepare the GOPATH env.
 
 ```bash
 $
 $ sudo dnf install golang
-$ mkdir -p $HOME/go
-$ echo 'export GOPATH=$HOME/go' >> $HOME/.bashrc
-$ source $HOME/.bashrc
+$ mkdir -p ~/go/{bin,pkg,src}
+$ echo 'export GOPATH=$HOME/go' >> ~/.bashrc
+$ echo 'export PATH=$PATH:$GOPATH/bin' >> ~/.bashrc
+$ source ~/.bashrc
 $ go env GOPATH
 /home/spolti/go
 
@@ -215,7 +237,6 @@ $ curl https://glide.sh/get | sh
 
 
 #### Cloning the repo
-
 $ git clone https://github.com/jboss-container-images/jboss-kie-modules.git
 $ mkdir -p $GOPATH/src/github.com/jboss-container-images/jboss-kie-modules/tools/
 $ cp -r jboss-kie-modules/tools/openshift-template-validator/ $GOPATH/src/github.com/jboss-container-images/jboss-kie-modules/tools/

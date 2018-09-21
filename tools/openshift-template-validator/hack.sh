@@ -29,7 +29,6 @@ go get github.com/openshift/source-to-image
 mv "${GOPATH}"/src/github.com/openshift/source-to-image/vendor "${GOPATH}"/src/github.com/openshift/source-to-image/_vendor
 
 
-
 "${GOPATH}"/bin/glide up
 "${GOPATH}"/bin/glide install --strip-vendor
 

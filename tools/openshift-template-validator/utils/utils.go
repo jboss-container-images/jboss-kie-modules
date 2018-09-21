@@ -63,6 +63,5 @@ func RecoverFromPanic() {
 		if Debug {
 			fmt.Println("recovered from ", r)
 		}
-
 	}
 }

@@ -1,9 +1,8 @@
 package validation
 
 import (
-	"strings"
-
 	"github.com/jboss-container-images/jboss-kie-modules/tools/openshift-template-validator/utils"
+	"strings"
 )
 
 func validateAnnotations(annotations map[string]string) {
@@ -51,16 +50,38 @@ func validateAnnotations(annotations map[string]string) {
 		}
 	}
 
-	tempRequiredAnnotations := utils.RequiredAnnotations
+	mapRequiredAnnotations := make(map[string]string)
+	var tempRequiredAnnotations []string
 	if len(utils.CustomAnnotation) > 0 {
 		for _, ca := range strings.Split(utils.CustomAnnotation, ",") {
-			tempRequiredAnnotations = append(tempRequiredAnnotations, ca)
+			if strings.Contains(ca, "=") {
+				tempAnnotation := strings.Split(ca, "=")
+				mapRequiredAnnotations[tempAnnotation[0]] = tempAnnotation[1]
+			} else {
+				tempRequiredAnnotations = append(tempRequiredAnnotations, ca)
+			}
 		}
 	}
+
+	if len(mapRequiredAnnotations) > 0 {
+		for customk, customv := range mapRequiredAnnotations {
+			_, found := annotations[customk]
+			if !found {
+				validationErrors["Annotations"] = append(validationErrors["Annotations"], "Annotation "+customk+" was not found in the template annotations.")
+			} else {
+				for ak, av := range annotations {
+					if ak == customk && av != customv {
+						validationErrors["Annotations"] = append(validationErrors["Annotations"], "Annotation "+customk+" was found in the template annotations but does not contain the required value["+customv+"].")
+					}
+				}
+			}
+		}
+	}
+
 	for _, tempRequiredAnnotation := range tempRequiredAnnotations {
 		_, found := annotations[tempRequiredAnnotation]
 		if !found {
-			validationErrors["Annotations"] = append(validationErrors["Annotations"], "Annotation "+tempRequiredAnnotation+" was not in the template annotations.")
+			validationErrors["Annotations"] = append(validationErrors["Annotations"], "Annotation "+tempRequiredAnnotation+" was not found in the template annotations.")
 			tempRequiredAnnotation = ""
 		}
 	}

@@ -77,6 +77,8 @@ func Validate(file string) bool {
 
 			// ignore other kinds
 		} else if template.Kind == "Template" { // do the other validations
+
+			//			fmt.Printf("%#v", t.Spec.Template.Spec.Containers[0].Env)
 			// validate the template annotations
 			validateAnnotations(template.Annotations)
 
@@ -85,10 +87,11 @@ func Validate(file string) bool {
 
 			// validate template parameters
 			//		all templates should have the same required fields: displayName, description, name
-			validateTemplateParameters(template.Parameters, file, templateExtension)
+			validateTemplateParameters(template.Parameters, file, templateExtension, template.Objects)
 
 			// validate all template objects like, DeploymentConfig, BuildConfig, ImageStreams, Rolebinding, etc..
 			validateObjects(template)
+
 		}
 
 		if len(validationErrors) > 0 {
