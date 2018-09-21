@@ -333,6 +333,10 @@ func validateObjects(template templateapi.Template) {
 					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "metadata.labels.[application] cannot be empty.")
 				}
 
+				if t.Labels["service"] == "" {
+					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "metadata.labels.[service] cannot be empty.")
+				}
+
 				if t.Annotations["template.alpha.openshift.io/wait-for-ready"] != "true" {
 					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "metadata.annotations.[template.alpha.openshift.io/wait-for-ready] cannot be empty or does not contain the expected value: Provided["+t.Annotations["template.alpha.openshift.io/wait-for-ready"]+"]-Expected[true]")
 				}

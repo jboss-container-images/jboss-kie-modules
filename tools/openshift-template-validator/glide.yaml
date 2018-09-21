@@ -3,13 +3,15 @@ import:
 - package: github.com/asaskevich/govalidator
   version: ^9.0.0
 - package: github.com/openshift/api
-  version: release-3.11
+  version: master
   subpackages:
   - apps/v1
   - authorization/v1
   - build/v1
   - image/v1
   - route/v1
+  - openshiftcontrolplane/v1
+  - legacyconfig/v1
 - package: github.com/openshift/library-go
   version: release-3.11
 - package: github.com/openshift/client-go
@@ -62,6 +64,7 @@ import:
 - package: github.com/sirupsen/logrus
 - package: github.com/certifi/gocertifi
 - package: github.com/inconshreveable/mousetrap
+- package: github.com/konsorten/go-windows-terminal-sequences
 ignore:
   - github.com/jboss-container-images/jboss-kie-modules/tools/openshift-template-validator
   - github.com/openshift/origin
