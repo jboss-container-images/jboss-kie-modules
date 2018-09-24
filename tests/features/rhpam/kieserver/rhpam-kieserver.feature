@@ -66,6 +66,8 @@ Feature: RHPAM KIE Server configuration tests
       | CUSTOM_INSTALL_DIRECTORIES | custom   |
     Then file /opt/eap/standalone/deployments/node-info.war should exist
 
+  # KIECLOUD-11: temporarily ignore since Jenkins CI builds currently fail with this test, even though it passes when run at the command line
+  @ignore
   Scenario: deploys the library example, then checks if it's deployed.
     Given s2i build https://github.com/jboss-container-images/rhpam-7-openshift-image from quickstarts/library-process/library using rhpam71-dev
       | variable                        | value                                                                                    |
