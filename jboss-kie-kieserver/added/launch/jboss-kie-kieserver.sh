@@ -422,9 +422,20 @@ function configure_kie_server_mgmt() {
 }
 
 function configure_server_state() {
-    # replace all non-alphanumeric characters with an underscore
-    local kieServerId="${KIE_SERVER_ID//[^[:alpha:].-]/_}"
-    if [ "${kieServerId}" = "" ]; then
+    # replace all non-alphanumeric characters with a dash
+    local kieServerId="${KIE_SERVER_ID//[^[:alnum:].-]/-}"
+    if [ "x${kieServerId}" != "x" ]; then
+        # can't start with a dash
+        local firstChar="$(echo -n $kieServerId | head -c 1)"
+        if [ "${firstChar}" = "-" ]; then
+            kieServerId="0${kieServerId}"
+        fi
+        # can't end with a dash
+        local lastChar="$(echo -n $kieServerId | tail -c 1)"
+        if [ "${lastChar}" = "-" ]; then
+            kieServerId="${kieServerId}0"
+        fi
+    else
         if [ "x${HOSTNAME}" != "x" ]; then
             # chop off trailing unique "dash number" so all servers use the same template
             kieServerId=$(echo "${HOSTNAME}" | sed -e 's/\(.*\)-[[:digit:]]\+-.*/\1/')
