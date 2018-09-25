@@ -143,7 +143,7 @@ func validateTemplateParameters(parameters []templateapi.Parameter, file string,
 	}
 
 	// usually envs that contains the following pattern in the name is not used under container envs.
-	r, _ := regexp.Compile(`APPLICATION_NAME|HTTPS_SECRET|IMAGE_STREAM|VOLUME_CAPACITY$|MEMORY_LIMIT$|HOSTNAME_HTTP|SOURCE_REPOSITORY|WEBHOOK_SECRET|_DIR$|MAVEN_MIRROR_URL`)
+	r, _ := regexp.Compile(`EXTENSIONS_IMAGE|APPLICATION_NAME|HTTPS_SECRET|IMAGE_STREAM|VOLUME_CAPACITY$|MEMORY_LIMIT$|HOSTNAME_HTTP|SOURCE_REPOSITORY|WEBHOOK_SECRET|_DIR$|MAVEN_MIRROR_URL`)
 	for _, parameter := range parameters {
 		// check if the parameter.Name is present on envs map
 		_, present := envsMap[parameter.Name]
