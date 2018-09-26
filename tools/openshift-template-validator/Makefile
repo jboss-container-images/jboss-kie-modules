@@ -5,8 +5,8 @@ VERSION ?= $(shell git describe --tags)
 VERSION_INCODE = $(shell perl -ne '/^var version.*"([^"]+)".*$$/ && print "v$$1\n"' cli/main.go)
 
 build:
-	${GO_EXECUTABLE} build -o openshift-template-validator-linux-amd64 -ldflags "-X main.version=${VERSION_INCODE}" main.go
-	GOOS=windows GOARCH=amd64 ${GO_EXECUTABLE} build -o openshift-template-validator-amd64.exe -ldflags "-X main.version=${VERSION_INCODE}" main.go
+	${GO_EXECUTABLE} build -o openshift-template-validator-linux-amd64 -ldflags "-X main.version=${VERSION}" main.go
+	GOOS=windows GOARCH=amd64 ${GO_EXECUTABLE} build -o openshift-template-validator-amd64.exe -ldflags "-X main.version=${VERSION}" main.go
 
 install: build
 	install -m 755 -D ${SRC_DIR}/openshift-template-validator-linux-amd64 ${DIST_DIR}/
