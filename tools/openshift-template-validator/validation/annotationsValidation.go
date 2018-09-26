@@ -78,6 +78,7 @@ func validateAnnotations(annotations map[string]string) {
 		}
 	}
 
+	tempRequiredAnnotations = append(tempRequiredAnnotations, utils.RequiredAnnotations...)
 	for _, tempRequiredAnnotation := range tempRequiredAnnotations {
 		_, found := annotations[tempRequiredAnnotation]
 		if !found {

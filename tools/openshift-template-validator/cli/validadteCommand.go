@@ -10,10 +10,9 @@ import (
 	"github.com/jboss-container-images/jboss-kie-modules/tools/openshift-template-validator/utils"
 	"github.com/jboss-container-images/jboss-kie-modules/tools/openshift-template-validator/validation"
 	"github.com/urfave/cli"
-
 )
 
-var validateCommand = cli.Command{
+var ValidateCommand = cli.Command{
 	Name:        "validate",
 	Usage:       "Validate OpenShift Application Template(s)",
 	Description: "Validate just one template or a bunch of them, the issues found will be printed, the binary will exit with 0, means success and any value different than 0 means that some issue happened (10 - file or directory not found, 12 - validation issues, 15 - panic)",

@@ -78,7 +78,6 @@ func Validate(file string) bool {
 			// ignore other kinds
 		} else if template.Kind == "Template" { // do the other validations
 
-			//			fmt.Printf("%#v", t.Spec.Template.Spec.Containers[0].Env)
 			// validate the template annotations
 			validateAnnotations(template.Annotations)
 
