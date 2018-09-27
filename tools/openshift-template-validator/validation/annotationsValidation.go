@@ -23,7 +23,8 @@ func validateAnnotations(annotations map[string]string) {
 		// validate annotations
 		// validate the required annotation tags, for now only jboss
 		if annotationKey == "tags" {
-			if !strings.Contains(annotationValue, "jboss") {
+			tags := strings.Split(annotationValue, ",")
+			if !utils.In_array(tags, "jboss") {
 				validationErrors["Annotations"] = append(validationErrors["Annotations"], "The tag jboss was not found in template tags.")
 			}
 		}
