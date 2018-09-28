@@ -1,0 +1,179 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  annotations:
+    iconClass: icon-jboss
+    tags: jboss
+    version: "10"
+    openshift.io/display-name: TestTemplate
+    openshift.io/provider-display-name: Red Hat, Inc.
+    description: TestTemplate
+    template.openshift.io/long-description: TestTemplate
+    template.openshift.io/documentation-url: TestTemplate
+    template.openshift.io/support-url: https://access.redhat.com
+    template.openshift.io/bindable: "false"
+  name: template
+labels:
+  template: template
+message: |-
+      A simple message
+parameters:
+- displayName: Application Name
+  description: The name for the application.
+  name: APPLICATION_NAME
+  value: myapp
+  required: true
+- displayName: Some var
+  description: Some var
+  name: SOME_VAR
+  value: somevar
+  required: true
+- displayName: routeName
+  description: routeName
+  name: ROUTE_HOSTNAME_HTTP
+  value: 'myhost.com'
+  required: true
+- displayName: MEMORY_LIMIT
+  description: MEMORY_LIMIT
+  name: MEMORY_LIMIT
+  value: 1Gi
+  required: false
+objects:
+- kind: ServiceAccount
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}-testtemplate"
+    labels:
+      application: "${APPLICATION_NAME}"
+- kind: RoleBinding
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}-testtemplate-view"
+  subjects:
+  - kind: ServiceAccount
+    name: "${APPLICATION_NAME}-testtemplate"
+  roleRef:
+    name: view
+- kind: Service
+  apiVersion: v1
+  spec:
+    ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: https
+      port: 8443
+      targetPort: 8443
+    selector:
+      deploymentConfig: "${APPLICATION_NAME}-testtemplate"
+  metadata:
+    name: "${APPLICATION_NAME}-testtemplate"
+    labels:
+      application: "${APPLICATION_NAME}"
+      service: "${APPLICATION_NAME}-testtemplate"
+    annotations:
+      description: All the KIE server web server's ports.
+- kind: Route
+  apiVersion: v1
+  id: "${APPLICATION_NAME}-testtemplate-http"
+  metadata:
+    name: "${APPLICATION_NAME}-testtemplate"
+    labels:
+      application: "${APPLICATION_NAME}"
+      service: "${APPLICATION_NAME}-testtemplate"
+    annotations:
+      description: Route for KIE server's http service.
+  spec:
+    host: "${ROUTE_HOSTNAME_HTTP}"
+    to:
+      name: "${APPLICATION_NAME}-testtemplate"
+    port:
+      targetPort: http
+- kind: DeploymentConfig
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}-testtemplate"
+    labels:
+      application: "${APPLICATION_NAME}"
+      service: "${APPLICATION_NAME}-testtemplate"
+    annotations:
+      template.alpha.openshift.io/wait-for-ready: "true"
+  spec:
+    strategy:
+      type: Recreate
+    triggers:
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+        - "${APPLICATION_NAME}-testtemplate"
+        from:
+          kind: ImageStreamTag
+          namespace: "namespace"
+          name: "image:$tag"
+    - type: ConfigChange
+    replicas: 1
+    selector:
+      deploymentConfig: "${APPLICATION_NAME}"
+    template:
+      metadata:
+        name: "${APPLICATION_NAME}"
+        labels:
+          deploymentConfig: "${APPLICATION_NAME}"
+          application: "${APPLICATION_NAME}"
+          service: "${APPLICATION_NAME}"
+      spec:
+        serviceAccountName: "${APPLICATION_NAME}"
+        terminationGracePeriodSeconds: 60
+        containers:
+        - name: "${APPLICATION_NAME}"
+          image: "image"
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "${MEMORY_LIMIT}"
+          volumeMounts:
+          - name: keystore-volume
+            mountPath: "/etc/secret-volume"
+            readOnly: true
+          livenessProbe:
+            exec:
+              command:
+              - "/bin/bash"
+              - "-c"
+              - "curl something"
+            initialDelaySeconds: 180
+            timeoutSeconds: 2
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+              - "/bin/bash"
+              - "-c"
+              - "curl something"
+            initialDelaySeconds: 60
+            timeoutSeconds: 2
+            periodSeconds: 30
+            failureThreshold: 6
+          ports:
+          - name: jolokia
+            containerPort: 8778
+            protocol: TCP
+          - name: http
+            containerPort: 8080
+            protocol: TCP
+          - name: https
+            containerPort: 8443
+            protocol: TCP
+          - name: ping
+            containerPort: 8888
+            protocol: TCP
+          env:
+          - name: SOME_VAR
+            value: "${SOME_VAR}"
+        volumes:
+        - name: keystore-volume
+          secret:
+            secretName: "${KIE_SERVER_HTTPS_SECRET}"

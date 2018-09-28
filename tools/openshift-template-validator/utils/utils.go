@@ -58,6 +58,13 @@ func ParsePort(value string) error {
 	return err
 }
 
+func In_array(a []string, value string) bool {
+	for _, v := range a {
+		if v == value {return true}
+	}
+	return false
+}
+
 func RecoverFromPanic() {
 	if r := recover(); r != nil {
 		if Debug {
