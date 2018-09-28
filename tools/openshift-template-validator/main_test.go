@@ -5,7 +5,7 @@ import (
 	validatorcli "github.com/jboss-container-images/jboss-kie-modules/tools/openshift-template-validator/cli"
 	"github.com/jboss-container-images/jboss-kie-modules/tools/openshift-template-validator/utils"
 	"github.com/jboss-container-images/jboss-kie-modules/tools/openshift-template-validator/validation"
-	"github.com/openshift/origin/_vendor/github.com/containers/storage/pkg/testutil/assert"
+	"github.com/stretchr/testify/assert"
 	"github.com/urfave/cli"
 	"io"
 	"os"
@@ -51,25 +51,25 @@ func TestTemplateParameters(t *testing.T) {
 	}
 	os.Stdout = nil
 
-	os.Args = []string{"openshift-template-validator", "validate", "-t", "test/no-issues-template.yaml", "-p", "-a", "tags=jboss", "-V", "-v", "10", "-vv", "-s", "-du"}
+	os.Args = []string{"openshift-template-validator", "validate", "-t", "test/basic-template.yaml", "-p", "-a", "tags=jboss", "-V", "-v", "10", "-vv", "-s", "-du"}
 	app.Run(os.Args)
-	assert.Equal(t,  "test/no-issues-template.yaml", utils.File)
-	assert.Equal(t,  true, utils.Persist)
-	assert.Equal(t,  "tags=jboss", utils.CustomAnnotation)
-	assert.Equal(t,  true, utils.ValidateTemplateVersion)
-	assert.Equal(t,  "10", utils.ProvidedTemplateVersion)
-	assert.Equal(t,  true, utils.Debug)
-	assert.Equal(t,  true, utils.Strict)
-	assert.Equal(t,  true, utils.DumpParameters)
+	assert.Equal(t, "test/basic-template.yaml", utils.File)
+	assert.Equal(t, true, utils.Persist)
+	assert.Equal(t, "tags=jboss", utils.CustomAnnotation)
+	assert.Equal(t, true, utils.ValidateTemplateVersion)
+	assert.Equal(t, "10", utils.ProvidedTemplateVersion)
+	assert.Equal(t, true, utils.Debug)
+	assert.Equal(t, true, utils.Strict)
+	assert.Equal(t, true, utils.DumpParameters)
 
-	fileName := os.TempDir() + "/no-issues-template.json"
+	fileName := os.TempDir() + "/basic-template.json"
 	if _, err := os.Stat(fileName); os.IsNotExist(err) {
-		t.Errorf("File does not exist, %s", fileName )
+		t.Errorf("File does not exist, %s", fileName)
 	}
 
 	os.Args = []string{"openshift-template-validator", "validate", "-d", "test/"}
 	app.Run(os.Args)
-	assert.Equal(t,  "test/", utils.LocalDir)
+	assert.Equal(t, "test/", utils.LocalDir)
 
 	os.Stdout = stdout
 

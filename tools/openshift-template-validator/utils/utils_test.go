@@ -3,7 +3,7 @@ package utils
 import (
 	"fmt"
 	"github.com/jboss-container-images/jboss-kie-modules/tools/openshift-template-validator/utils"
-	"github.com/openshift/origin/_vendor/github.com/containers/storage/pkg/testutil/assert"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -21,7 +21,7 @@ func TestParseHAProxyTimeout(t *testing.T) {
 	// test wrong value
 	err := utils.ParseHAProxyTimeout("10ts")
 	if err != nil {
-		assert.Equal(t, err.Error(), "provided value does not match the regex ^[0-9]*(us|ms|s|m|h|d)$")
+		 assert.Equal(t, err.Error(), "provided value does not match the regex ^[0-9]*(us|ms|s|m|h|d)$")
 	}
 
 }
