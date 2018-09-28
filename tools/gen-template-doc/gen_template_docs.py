@@ -350,6 +350,7 @@ def generate_readme(generate_rhdm, generate_rhpam):
     if generate_rhdm:
         try:
             with open('docs/rhdm-7-openshift-image/README.adoc', 'w') as fh:
+                print('Generating docs/rhdm-7-openshift-image/README.adoc...')
                 fh.write(autogen_warning)
                 # page header
                 fh.write(open('./README_RHDM.adoc.in').read())
@@ -373,6 +374,7 @@ def generate_readme(generate_rhdm, generate_rhpam):
     if generate_rhpam:
         try:
             with open('docs/rhpam-7-openshift-image/README.adoc', 'w') as fh:
+                print('Generating docs/rhpam-7-openshift-image/README.adoc...')
                 fh.write(autogen_warning)
                 # page header
                 fh.write(open('./README_RHPAM.adoc.in').read())
@@ -429,6 +431,11 @@ if __name__ == "__main__":
 
     if not args.generate_rhdm and not args.generate_rhpam:
         GIT_REPO_LIST = [RHDM_GIT_REPO, RHPAM_GIT_REPO]
+        # when no args are provided the default behavior is generate docs for pam and dm
+        # so, here the values for args.generate_rhdm and args.generate_rhpam
+        # are manually set.
+        args.generate_rhdm = True
+        args.generate_rhpam = True
     elif args.generate_rhdm:
         GIT_REPO_LIST = [RHDM_GIT_REPO]
     elif args.generate_rhpam:
