@@ -8,11 +8,11 @@ mkdir -p $JBOSS_HOME/bin/launch
 
 export CONFIG_FILE=$JBOSS_HOME/standalone/configuration/standalone-openshift.xml
 
-source $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-security-ldap.sh
+source $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-security-login-modules.sh
 
 setup() {
   cp $BATS_TEST_DIRNAME/resources/standalone-openshift.xml $CONFIG_FILE
-  run unset_kie_security_ldap_env
+  run unset_kie_security_auth_env
 }
 
 @test "do not replace placeholder when URL is not provided" {
@@ -28,7 +28,7 @@ setup() {
     AUTH_LDAP_ROLE_NAME_ATTR_ID="test AUTH_LDAP_ROLE_NAME_ATTR_ID"
     AUTH_LDAP_SEARCH_SCOPE="test AUTH_LDAP_SEARCH_SCOPE"
 
-    run configure_ldap_security_domain
+    run configure_ldap_login_module
 
     [ "$output" = "[INFO]AUTH_LDAP_URL not set. Skipping LDAP integration..." ]
     [ "$status" -eq 0 ]
@@ -38,7 +38,7 @@ setup() {
 @test "replace placeholder by minimum xml content when URL is provided" {
     AUTH_LDAP_URL="test_url"
 
-    run configure_ldap_security_domain
+    run configure_ldap_login_module
 
     [ "$output" = "[INFO]AUTH_LDAP_URL is set to test_url. Added LdapExtended login-module" ]
     [ "$status" -eq 0 ]
@@ -69,7 +69,7 @@ setup() {
     AUTH_LDAP_USERNAME_BEGIN_STRING="test AUTH_LDAP_USERNAME_BEGIN_STRING"
     AUTH_LDAP_USERNAME_END_STRING="test AUTH_LDAP_USERNAME_END_STRING"
 
-    run configure_ldap_security_domain
+    run configure_ldap_login_module
 
     [ "$output" = "[INFO]AUTH_LDAP_URL is set to test AUTH_LDAP_URL. Added LdapExtended login-module" ]
     [ "$status" -eq 0 ]

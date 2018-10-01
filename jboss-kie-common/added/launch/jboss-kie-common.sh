@@ -1,12 +1,12 @@
 #!/bin/bash
 
 source /usr/local/s2i/scl-enable-maven
-source "${JBOSS_HOME}/bin/launch/jboss-kie-security-ldap.sh"
+source "${JBOSS_HOME}/bin/launch/jboss-kie-security-login-modules.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
     unset KIE_MBEANS
-    unset_kie_security_ldap_env
+    unset_kie_security_auth_env
 }
 
 function configureEnv() {
@@ -16,7 +16,7 @@ function configureEnv() {
 function configure() {
     configure_maven_settings
     configure_mbeans
-    configure_ldap_security_domain
+    configure_auth_login_modules
 }
 
 function configure_maven_settings() {
