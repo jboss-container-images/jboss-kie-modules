@@ -1,6 +1,5 @@
 #!/bin/sh
 # if using vim, do ':set ft=zsh' for easier reading
-
 source /usr/local/s2i/scl-enable-maven
 source $JBOSS_HOME/bin/launch/logging.sh
 
@@ -14,7 +13,36 @@ DEPLOY_DIR="${JBOSS_HOME}/standalone/deployments"
 MAVEN_REPO=${HOME}/.m2/repository
 mkdir -p ${MAVEN_REPO}
 
+# $1 - file
+# $2 - pom file
+# $3 - packaging
+prepare_maven_command() {
+    # Add JVM default options
+    export MAVEN_OPTS="${MAVEN_OPTS:-$(/opt/run-java/java-default-options)}"
+    # Use maven batch mode (CLOUD-579)
+    MAVEN_ARGS_INSTALL="-e -DskipTests install:install-file -Dfile=${1} -DpomFile=${2} -Dpackaging=${3} --batch-mode -Djava.net.preferIPv4Stack=true -Popenshift -Dcom.redhat.xpaas.repo.redhatga ${MAVEN_ARGS_APPEND}"
+    log_info "Attempting to install jar with 'mvn ${MAVEN_ARGS_INSTALL}'"
+    log_info "Using MAVEN_OPTS '${MAVEN_OPTS}'"
+    log_info "Using $(mvn --version)"
+    echo ${MAVEN_ARGS_INSTALL}
+}
+
 if [ -d ${DEPLOY_DIR} ]; then
+    log_info "Verifying if the provided maven project is multi-module"
+    grep -qE '<module>.*</module>' ${LOCAL_SOURCE_DIR}/pom.xml
+    if [ "$?" == "0" ]; then
+        modules=$(grep -E '<module>.*</module>'  ${LOCAL_SOURCE_DIR}/pom.xml  | awk -F '[<>]' '/module/{print $3}' | tr '\n' ' ')
+        log_info "Multi module detected, the modules are: ${modules}"
+        mvn $(prepare_maven_command ${LOCAL_SOURCE_DIR}/pom.xml ${LOCAL_SOURCE_DIR}/pom.xml "pom")
+        ERR=$?
+        if [ $ERR -ne 0 ]; then
+            log_error "Aborting due to error code $ERR from Maven build"
+            # cleanup
+            rm -rf ${TEMP_JARS_DIR}
+            exit $ERR
+        fi
+    fi
+
     TEMP_JARS_DIR="${LOCAL_SOURCE_DIR}/tmp-jars"
 
     # install all jars in the local maven repository, including kjar (has both kmodule.xml and pom.xml)
@@ -46,15 +74,8 @@ if [ -d ${DEPLOY_DIR} ]; then
                 rm -rf ${DEPLOY_DIR}/${JAR}
                 mv ${DEPLOY_DIR}/${JAR}.zip ${DEPLOY_DIR}/${JAR}
             fi
-            # Add JVM default options
-            export MAVEN_OPTS="${MAVEN_OPTS:-$(/opt/run-java/java-default-options)}"
-            # Use maven batch mode (CLOUD-579)
-            MAVEN_ARGS_INSTALL="-e -DskipTests install:install-file -Dfile=${DEPLOY_DIR}/${JAR} -DpomFile=${POM} -Dpackaging=jar --batch-mode -Djava.net.preferIPv4Stack=true -Popenshift -Dcom.redhat.xpaas.repo.redhatga ${MAVEN_ARGS_APPEND}"
-            log_info "Attempting to install jar with 'mvn ${MAVEN_ARGS_INSTALL}'"
-            log_info "Using MAVEN_OPTS '${MAVEN_OPTS}'"
-            log_info "Using $(mvn --version)"
-            # Execute the maven install of jar and kjar
-            mvn $MAVEN_ARGS_INSTALL
+
+            mvn $(prepare_maven_command "${DEPLOY_DIR}/${JAR}" "${POM}" "jar")
             ERR=$?
             if [ $ERR -ne 0 ]; then
                 log_error "Aborting due to error code $ERR from Maven build"
@@ -102,5 +123,6 @@ if [ -d ${DEPLOY_DIR} ]; then
     chown -R --quiet jboss:root ${MAVEN_REPO}
     chmod -R --quiet g+rwX ${MAVEN_REPO}
 fi
+
 
 exit 0
