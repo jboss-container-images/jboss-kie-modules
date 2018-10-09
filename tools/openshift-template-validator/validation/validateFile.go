@@ -79,7 +79,7 @@ func Validate(file string) bool {
 		} else if template.Kind == "Template" { // do the other validations
 
 			// validate the template annotations
-			validateAnnotations(template.Annotations)
+			validateAnnotations(template.Annotations, template.Name)
 
 			// validate template name, should not be empty and should be equal to the label "template"
 			validateTemplateName(template.Name, template.Labels)
