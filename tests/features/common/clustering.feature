@@ -21,9 +21,10 @@ Feature: RHPAM RHDM Workbench clustering configuration
       | OPENSHIFT_DNS_PING_SERVICE_NAME | ping                  |
       | OPENSHIFT_DNS_PING_SERVICE_PORT | 8888                  |
       | APPFORMER_ELASTIC_HOST          | 10.10.10.10           |
-      | APPFORMER_JMS_BROKER_USER       | brokerUser            |
+      | APPFORMER_JMS_BROKER_USERNAME   | brokerUser            |
       | APPFORMER_JMS_BROKER_PASSWORD   | brokerPwd             |
       | APPFORMER_JMS_BROKER_ADDRESS    | 11.11.11.11           |
+      | APPFORMER_JMS_BROKER_PORT       | 8885                  |
     Then container log should contain -Dappformer-cluster=true
      And container log should contain -Dappformer-jms-connection-mode=REMOTE
      And container log should contain -Dappformer-jms-url=tcp://11.11.11.11:61616
@@ -43,7 +44,7 @@ Feature: RHPAM RHDM Workbench clustering configuration
       | OPENSHIFT_DNS_PING_SERVICE_NAME | ping                  |
       | OPENSHIFT_DNS_PING_SERVICE_PORT | 8888                  |
       | APPFORMER_ELASTIC_HOST          | 10.10.10.10           |
-      | APPFORMER_JMS_BROKER_USER       | brokerUser            |
+      | APPFORMER_JMS_BROKER_USERNAME   | brokerUser            |
       | APPFORMER_JMS_BROKER_PASSWORD   | brokerPwd             |
       | APPFORMER_JMS_BROKER_ADDRESS    | 11.11.11.11           |
       | APPFORMTER_JMS_BROKER_PORT      | 5000                  |
