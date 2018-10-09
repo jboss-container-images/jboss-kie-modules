@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func validateAnnotations(annotations map[string]string) {
+func validateAnnotations(annotations map[string]string, templateName string) {
 
 	for annotationKey, annotationValue := range annotations {
 		if annotationValue == "" {
@@ -26,6 +26,16 @@ func validateAnnotations(annotations map[string]string) {
 			tags := strings.Split(annotationValue, ",")
 			if !utils.In_array(tags, "jboss") {
 				validationErrors["Annotations"] = append(validationErrors["Annotations"], "The tag jboss was not found in template tags.")
+			}
+			if strings.Contains(templateName, "rhpam") {
+				if !utils.In_array(tags, "processserver") {
+					validationErrors["Annotations"] = append(validationErrors["Annotations"], "The tag processserver was not found in template tags.")
+				}
+			}
+			if strings.Contains(templateName, "rhdm") {
+				if !utils.In_array(tags, "decisionserver") {
+					validationErrors["Annotations"] = append(validationErrors["Annotations"], "The tag decisionserver was not found in template tags.")
+				}
 			}
 		}
 
