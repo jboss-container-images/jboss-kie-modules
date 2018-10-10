@@ -59,7 +59,7 @@ if [ "${KIE_SERVER_CONTAINER_DEPLOYMENT}" != "" ]; then
 fi
 
 # Remove _remote.repositories files so we can run offline: CLOUD-1839
-find ~/.m2/repository -name _remote.repositories | xargs rm
+find ~/.m2/repository -name _remote.repositories | xargs rm -rf
 
 # Necessary to permit running with a randomised UID
 chown -R --quiet jboss:root ${HOME}/.m2/repository
