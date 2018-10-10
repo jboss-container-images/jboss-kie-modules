@@ -30,6 +30,7 @@ CONFIGURE_SCRIPTS=(
   $JBOSS_HOME/bin/launch/ports.sh
   $JBOSS_HOME/bin/launch/maven-repos.sh
   $JBOSS_HOME/bin/launch/access_log_valve.sh
+  $JBOSS_HOME/bin/launch/filters.sh
   $JBOSS_HOME/bin/launch/jboss-kie-common.sh
   $JBOSS_HOME/bin/launch/jboss-kie-kieserver.sh
   /opt/run-java/proxy-options
