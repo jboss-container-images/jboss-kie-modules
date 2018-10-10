@@ -65,6 +65,7 @@ import:
 - package: github.com/certifi/gocertifi
 - package: github.com/inconshreveable/mousetrap
 - package: github.com/konsorten/go-windows-terminal-sequences
+- package: github.com/stretchr/testify/assert
 ignore:
   - github.com/jboss-container-images/jboss-kie-modules/tools/openshift-template-validator
   - github.com/openshift/origin
