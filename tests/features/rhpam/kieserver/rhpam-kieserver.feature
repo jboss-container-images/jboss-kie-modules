@@ -324,3 +324,9 @@ Feature: RHPAM KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 50000 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="PortNumber"]
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 2 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DriverType"]
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value db2 on XPath //*[local-name()='database-data-store']/@database
+
+  Scenario: Verify if the DB Schema is correctly set.
+    When container is started with env
+      | variable                        | value                 |
+      | KIE_SERVER_PERSISTENCE_SCHEMA   | schema.a              |
+    Then container log should contain -Dorg.kie.server.persistence.schema=schema.a
