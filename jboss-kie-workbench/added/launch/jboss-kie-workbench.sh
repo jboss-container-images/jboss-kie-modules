@@ -191,7 +191,7 @@ function configure_ha() {
                 JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.cluster=${APPFORMER_ELASTIC_CLUSTER_NAME:-kie-cluster}"
                 JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.retries=${APPFORMER_ELASTIC_RETRIES:-10}"
                 # [RHPAM-1522] make the workbench webapp distributable for HA (uncomment the <distributable/> tag)
-                # NOTE: Disabling due to a regression introduced in 7.1.0; needs to be fixed in 7.1.1 (see RHPAM-1522)
+                # NOTE: Disabling due to a regression introduced in 7.1.0; needs to be fixed in 7.2.0 (see RHPAM-1522)
                 # local webXml="${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/web.xml"
                 # sed -i "/^\s*<!--/!b;N;/<distributable\/>/s/.*\n//;T;:a;n;/^\s*-->/!ba;d" "${webXml}"
             else
