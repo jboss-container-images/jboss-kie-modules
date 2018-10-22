@@ -44,9 +44,11 @@ fi
 cp -f -p ${SOURCES_DIR}/openshift-kieserver-common-${OPENSHIFT_KIESERVER_VERSION}.jar ${KIE_SERVER_WEBINF_DIR}/lib/openshift-kieserver-common-${OPENSHIFT_KIESERVER_VERSION}.jar
 cp -f -p ${SOURCES_DIR}/openshift-kieserver-jms-${OPENSHIFT_KIESERVER_VERSION}.jar ${KIE_SERVER_WEBINF_DIR}/lib/openshift-kieserver-jms-${OPENSHIFT_KIESERVER_VERSION}.jar
 cp -f -p ${SOURCES_DIR}/openshift-kieserver-web-${OPENSHIFT_KIESERVER_VERSION}.jar ${KIE_SERVER_WEBINF_DIR}/lib/openshift-kieserver-web-${OPENSHIFT_KIESERVER_VERSION}.jar
+cp -f -p ${SOURCES_DIR}/quartz-oracle-1.8.5.jar ${KIE_SERVER_WEBINF_DIR}/lib/
 chmod 664 "${KIE_SERVER_WEBINF_DIR}/lib/openshift-kieserver-common-${OPENSHIFT_KIESERVER_VERSION}.jar"
 chmod 664 "${KIE_SERVER_WEBINF_DIR}/lib/openshift-kieserver-jms-${OPENSHIFT_KIESERVER_VERSION}.jar"
 chmod 664 "${KIE_SERVER_WEBINF_DIR}/lib/openshift-kieserver-web-${OPENSHIFT_KIESERVER_VERSION}.jar"
+chmod 664 "${KIE_SERVER_WEBINF_DIR}/lib/quartz-oracle-1.8.5.jar"
 
 cp -f -p ${ADDED_WEBINF_DIR}/ejb-jar.xml ${KIE_SERVER_WEBINF_DIR}/ejb-jar.xml
 cp -f -p ${ADDED_WEBINF_DIR}/security-filter-rules.properties ${KIE_SERVER_WEBINF_DIR}/security-filter-rules.properties

@@ -26,6 +26,7 @@
            the WAR depends on private modules. -->
       <!-- Keep the alphabetical order! -->
       <module name="org.apache.xerces"/>
+      <!--EXTRA_DEPENDENCY-->
     </dependencies>
   </deployment>
 </jboss-deployment-structure>

@@ -28,6 +28,7 @@
       <module name="org.apache.xerces"/>
       <module name="org.osgi.core"/>
       <module name="org.osgi.enterprise"/>
+      <!--EXTRA_DEPENDENCY-->
     </dependencies>
   </deployment>
 </jboss-deployment-structure>
