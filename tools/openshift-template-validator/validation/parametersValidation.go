@@ -4,16 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/asaskevich/govalidator"
-	"github.com/openshift/origin/pkg/api/legacygroupification"
 	"gopkg.in/yaml.v2"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
-
-	appsapiv1 "github.com/openshift/api/apps/v1"
-	"k8s.io/kubernetes/pkg/api/legacyscheme"
 
 	"github.com/jboss-container-images/jboss-kie-modules/tools/openshift-template-validator/utils"
 	templateapi "github.com/openshift/origin/pkg/template/apis/template"
@@ -42,9 +36,11 @@ func validateTemplateParameters(parameters []templateapi.Parameter, file string,
 	var parameterValidationErrors []string
 	var param Parameter
 	var item string
+	var objectsBegin int
 
 	if extension == "yaml" {
 		begin, end := parametersLines(file)
+		objectsBegin = end
 		count := 0
 		fileContent, _ := os.Open(file)
 		scanner := bufio.NewScanner(fileContent)
@@ -54,7 +50,6 @@ func validateTemplateParameters(parameters []templateapi.Parameter, file string,
 			count++
 			if count > begin && count < end && !strings.HasPrefix(line, "#") {
 				item += "\n" + line
-
 			}
 		}
 
@@ -84,11 +79,16 @@ func validateTemplateParameters(parameters []templateapi.Parameter, file string,
 		fmt.Println(item)
 	}
 
+	// verify if there is duplicated parameters
+	verifyDuplicatedParameters(item)
+
 	if err := yaml.UnmarshalStrict([]byte(item), &param); err != nil && utils.Debug {
 		fmt.Println("\nWarning: " + err.Error())
 	}
 
+	a := stringfyTemplateObjects(file, objectsBegin)
 	for index, param := range param.Parameters {
+
 		if _, err := govalidator.ValidateStruct(param); err != nil {
 			var field string
 			if param.Name == "" {
@@ -98,62 +98,16 @@ func validateTemplateParameters(parameters []templateapi.Parameter, file string,
 			}
 			parameterValidationErrors = append(parameterValidationErrors, "Index ["+strconv.Itoa(index+1)+"] Parameter name "+field+" - "+err.Error()+"; ")
 		}
+
+		if !strings.Contains(a, param.Name) {
+			validationErrors["Parameters"] = append(validationErrors["Parameters"], "Parameter ["+param.Name+"] is defined but is not used in anywhere in the template.")
+		}
 	}
 
 	if len(parameterValidationErrors) > 0 {
 		validationErrors["Parameters"] = append(validationErrors["Parameters"], strings.Join(parameterValidationErrors, ""))
 	}
 
-	// get the unprocessed template objects, this way we can assure that all Envs contains the name, and in the value field
-	// Example:
-	//  	 - name: KIE_ADMIN_USER
-	//         value: "${KIE_ADMIN_USER}"
-	// we get something like: {v1.EnvVar{Name:"KIE_ADMIN_USER", Value:"${KIE_ADMIN_USER}"
-	// this we can compare if all parameters are being in used somewhere in the env
-	envsMap := make(map[string]string)
-	var envValues string
-	for _, item := range objects {
-		if obj, ok := item.(*runtime.Unknown); ok {
-			decodedObj, _ := runtime.Decode(unstructured.UnstructuredJSONScheme, obj.Raw)
-			item = decodedObj
-		}
-		gvk := item.GetObjectKind().GroupVersionKind()
-		legacygroupification.OAPIToGroupifiedGVK(&gvk)
-		item.GetObjectKind().SetGroupVersionKind(gvk)
-		unstructuredObj := item.(*unstructured.Unstructured)
-
-		obj, err := legacyscheme.Scheme.New(unstructuredObj.GroupVersionKind())
-		if err != nil {
-			fmt.Printf("Error on creating new Unstructured object %v\n", err.Error())
-		}
-		runtime.DefaultUnstructuredConverter.FromUnstructured(unstructuredObj.Object, obj)
-
-		switch t := obj.(type) {
-		case *appsapiv1.DeploymentConfig:
-			// only get name/value
-
-			for _, container := range t.Spec.Template.Spec.Containers {
-				for _, env := range container.Env {
-					replacer := strings.NewReplacer("$", "", "{", "", "}","")
-					envsMap[env.Name] = "dummy"
-					envValues += replacer.Replace(env.Value) + "-"
-				}
-			}
-		}
-	}
-
-	// usually envs that contains the following pattern in the name is not used under container envs.
-	r, _ := regexp.Compile(`EXTENSIONS_IMAGE|APPLICATION_NAME|HTTPS_SECRET|IMAGE_STREAM|VOLUME_CAPACITY$|MEMORY_LIMIT$|HOSTNAME_HTTP|SOURCE_REPOSITORY|WEBHOOK_SECRET|_DIR$|MAVEN_MIRROR_URL`)
-	for _, parameter := range parameters {
-		// check if the parameter.Name is present on envs map
-		_, present := envsMap[parameter.Name]
-		if !present && !strings.Contains(envValues, parameter.Name) {
-			// make sure that the parameter is not used as value too.
-			if !r.MatchString(parameter.Name) {
-				validationErrors["Parameters"] = append(validationErrors["Parameters"], "Parameter ["+parameter.Name+"] is defined but is not used in any container envs.")
-			}
-		}
-	}
 }
 
 // returns line number where the parameters starts/ends
@@ -177,4 +131,43 @@ func parametersLines(file string) (begin int, end int) {
 
 	}
 	return begin, end
+}
+
+func stringfyTemplateObjects(fileName string, objectsBegin int) string {
+	var count int
+	var objectItems string
+	// get the all objects to verify if any template parameters is not being used.
+	fileContent, _ := os.Open(fileName)
+	scanner := bufio.NewScanner(fileContent)
+	for scanner.Scan() {
+		line := scanner.Text()
+		count++
+		if count > objectsBegin {
+			objectItems += "\n" + line
+		}
+	}
+	return objectItems
+}
+
+func verifyDuplicatedParameters(item string) {
+
+	scanner := bufio.NewScanner(strings.NewReader(item))
+	var paramNameList []string
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.Contains(line, "name:") {
+			tempLine := strings.Split(line, ":")
+			paramNameList = append(paramNameList, tempLine[1])
+		}
+	}
+
+	seen := make(map[string]struct{}, len(paramNameList))
+
+	for _, v := range paramNameList {
+		if _, ok := seen[v]; ok {
+			validationErrors["Parameters"] = append(validationErrors["Parameters"], "The following parameter is duplicate:" + v)
+			continue
+		}
+		seen[v] = struct{}{}
+	}
 }

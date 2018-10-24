@@ -92,12 +92,12 @@ func arrayToString(array []string) string {
 func walkDir(localDir string) bool {
 	var containErrors = false
 	var fileRegex = regexp.MustCompile(`.yaml|json$`)
+	var excludeDirRegex = regexp.MustCompile(`.git|target|tests|contrib`)
 	fmt.Println("Reading directory " + localDir)
 	filepath.Walk(localDir, func(absoluteFilePath string, fileInfo os.FileInfo, err error) error {
 
-		if strings.HasSuffix(absoluteFilePath, ".git") || strings.HasSuffix(absoluteFilePath, "target") || strings.HasSuffix(absoluteFilePath, "tests") {
+		if excludeDirRegex.MatchString(absoluteFilePath) {
 			return filepath.SkipDir
-
 		} else if !fileInfo.IsDir() {
 			if fileRegex.MatchString(fileInfo.Name()) {
 				if validation.Validate(absoluteFilePath) {
