@@ -113,6 +113,7 @@ func validateObjects(template templateapi.Template) {
 					}
 				}
 
+
 			case *corev1.PersistentVolumeClaim:
 				t.Namespace = "default"
 				if t.Labels["application"] == "" {
@@ -135,6 +136,9 @@ func validateObjects(template templateapi.Template) {
 					for _, e := range err {
 						validationErrors["RoleBinding"] = append(validationErrors["RoleBinding"], e.Error())
 					}
+				}
+				if t.Labels["application"] == "" {
+					validationErrors["RoleBinding"] = append(validationErrors["RoleBinding"], "metadata.labels.[application] cannot be empty.")
 				}
 
 			case *corev1.Service:
@@ -297,9 +301,12 @@ func validateObjects(template templateapi.Template) {
 						fmt.Printf("A possible error happened on object kind '%s' and name '%s' while parsing container ports %v\n", reflect.TypeOf(t), t.Name, container.Ports)
 					}
 
-					if container.LivenessProbe.SuccessThreshold == 0 {
-						t.Spec.Template.Spec.Containers[i].LivenessProbe.SuccessThreshold = 1
+					if container.LivenessProbe != nil {
+						if container.LivenessProbe.SuccessThreshold == 0 {
+							t.Spec.Template.Spec.Containers[i].LivenessProbe.SuccessThreshold = 1
+						}
 					}
+
 					if container.TerminationMessagePolicy == "" {
 						t.Spec.Template.Spec.Containers[i].TerminationMessagePolicy = corev1.TerminationMessageFallbackToLogsOnError
 					}
@@ -308,6 +315,16 @@ func validateObjects(template templateapi.Template) {
 						if env.ValueFrom != nil {
 							t.Spec.Template.Spec.Containers[i].Env[j].ValueFrom.FieldRef.APIVersion = appsapiv1.SchemeGroupVersion.Version
 						}
+					}
+
+					// check if there is duplicate envs
+					seen := make(map[string]struct{}, len(container.Env))
+					for _, v := range container.Env {
+						if _, ok := seen[v.Name]; ok {
+							validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "The following parameter is duplicate: " + v.Name)
+							continue
+						}
+						seen[v.Name] = struct{}{}
 					}
 				}
 
