@@ -190,10 +190,26 @@ function configure_ha() {
                 JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.port=${APPFORMER_ELASTIC_PORT:-9300}"
                 JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.cluster=${APPFORMER_ELASTIC_CLUSTER_NAME:-kie-cluster}"
                 JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.retries=${APPFORMER_ELASTIC_RETRIES:-10}"
-                # [RHPAM-1522] make the workbench webapp distributable for HA (uncomment the <distributable/> tag)
-                # NOTE: Disabling due to a regression introduced in 7.1.0; needs to be fixed in 7.2.0 (see RHPAM-1522)
-                # local webXml="${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/web.xml"
-                # sed -i "/^\s*<!--/!b;N;/<distributable\/>/s/.*\n//;T;:a;n;/^\s*-->/!ba;d" "${webXml}"
+
+                # [RHPAM-1522] make the workbench webapp distributable for HA (2 steps)
+                # step 1) uncomment the <distributable/> tag
+                local web_xml="${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/web.xml"
+                sed -i "/^\s*<!--/!b;N;/<distributable\/>/s/.*\n//;T;:a;n;/^\s*-->/!ba;d" "${web_xml}"
+                # step 2) modify the web cache container per https://access.redhat.com/solutions/2776221
+                local web_cache="\
+                    <transport lock-timeout='60000'/>\
+                    <replicated-cache name='repl' mode='ASYNC'>\
+                        <file-store/>\
+                    </replicated-cache>\
+                    <distributed-cache name='dist' mode='ASYNC' l1-lifespan='0' owners='2'>\
+                        <file-store/>\
+                    </distributed-cache>"
+                xmllint --shell "${CONFIG_FILE}" << SHELL
+                    cd //*[local-name()='cache-container'][@name='web']
+                    set ${web_cache}
+                    save
+SHELL
+# SHELL line above not indented on purpose for correct vim syntax highlighting
             else
                 log_warning "HA envs not set, HA will not be configured."
             fi
