@@ -204,7 +204,7 @@ function configure_ha() {
                     <distributed-cache name='dist' mode='ASYNC' l1-lifespan='0' owners='2'>\
                         <file-store/>\
                     </distributed-cache>"
-                xmllint --shell "${CONFIG_FILE}" << SHELL
+                xmllint --shell "${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml" << SHELL
                     cd //*[local-name()='cache-container'][@name='web']
                     set ${web_cache}
                     save
