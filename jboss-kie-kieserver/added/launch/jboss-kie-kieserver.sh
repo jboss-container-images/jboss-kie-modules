@@ -1,16 +1,14 @@
 #!/bin/bash
 
 source "${JBOSS_HOME}/bin/launch/launch-common.sh"
-source "${JBOSS_HOME}/bin/launch/jboss-kie-common.sh"
+source "${JBOSS_HOME}/bin/launch/jboss-kie-wildfly-common.sh"
 source "${JBOSS_HOME}/bin/launch/logging.sh"
-source "${JBOSS_HOME}/bin/launch/jboss-kie-security.sh"
+source "${JBOSS_HOME}/bin/launch/jboss-kie-wildfly-security.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
     unset AUTO_CONFIGURE_EJB_TIMER
     unset DROOLS_SERVER_FILTER_CLASSES
-    unset KIE_SERVER_ROUTE_NAME
-    unset KIE_SERVER_USE_SECURE_ROUTE_NAME
     unset JBPM_HT_CALLBACK_CLASS
     unset JBPM_HT_CALLBACK_METHOD
     unset JBPM_LOOP_LEVEL_DISABLED
@@ -30,10 +28,12 @@ function prepareEnv() {
     unset KIE_SERVER_PERSISTENCE_TM
     unset KIE_SERVER_PORT
     unset KIE_SERVER_PROTOCOL
+#    unset KIE_SERVER_ROUTE_NAME
     unset KIE_SERVER_ROUTER_HOST
     unset KIE_SERVER_ROUTER_PORT
     unset KIE_SERVER_ROUTER_PROTOCOL
     unset KIE_SERVER_ROUTER_SERVICE
+#    unset KIE_SERVER_USE_SECURE_ROUTE_NAME
     unset KIE_SERVER_STARTUP_STRATEGY
     unset KIE_SERVER_SYNC_DEPLOY
 }
@@ -194,13 +194,13 @@ function configure_server_env {
 
 function configure_controller_access {
     # We will only support one controller, whether running by itself or in business central.
-    local controllerService="${KIE_SERVER_CONTROLLER_SERVICE}"
-    controllerService=${controllerService^^}
-    controllerService=${controllerService//-/_}
+    local kieServerControllerService="${KIE_SERVER_CONTROLLER_SERVICE}"
+    kieServerControllerService=${kieServerControllerService^^}
+    kieServerControllerService=${kieServerControllerService//-/_}
     # host
     local kieServerControllerHost="${KIE_SERVER_CONTROLLER_HOST}"
     if [ "${kieServerControllerHost}" = "" ]; then
-        kieServerControllerHost=$(find_env "${controllerService}_SERVICE_HOST")
+        kieServerControllerHost=$(find_env "${kieServerControllerService}_SERVICE_HOST")
     fi
     if [ "${kieServerControllerHost}" != "" ]; then
         # protocol
@@ -208,15 +208,15 @@ function configure_controller_access {
         # port
         local kieServerControllerPort="${KIE_SERVER_CONTROLLER_PORT}"
         if [ "${kieServerControllerPort}" = "" ]; then
-            kieServerControllerPort=$(find_env "${controllerService}_SERVICE_PORT" "8080")
+            kieServerControllerPort=$(find_env "${kieServerControllerService}_SERVICE_PORT" "8080")
         fi
         # path
-        local kieServerControllerPath="rest/controller"
+        local kieServerControllerPath="/rest/controller"
         if [ "${kieServerControllerProtocol}" = "ws" ]; then
-            kieServerControllerPath="websocket/controller"
+            kieServerControllerPath="/websocket/controller"
         fi
         # url
-        local kieServerControllerUrl="${kieServerControllerProtocol}://${kieServerControllerHost}:${kieServerControllerPort}/${kieServerControllerPath}"
+        local kieServerControllerUrl=$(build_simple_url "${kieServerControllerProtocol}" "${kieServerControllerHost}" "${kieServerControllerPort}" "${kieServerControllerPath}")
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller=${kieServerControllerUrl}"
     fi
     # user/pwd
@@ -230,13 +230,13 @@ function configure_controller_access {
 }
 
 function configure_router_access {
-    local routerService="${KIE_SERVER_ROUTER_SERVICE}"
-    routerService=${routerService^^}
-    routerService=${routerService//-/_}
+    local kieServerRouterService="${KIE_SERVER_ROUTER_SERVICE}"
+    kieServerRouterService=${kieServerRouterService^^}
+    kieServerRouterService=${kieServerRouterService//-/_}
     # host
     local kieServerRouterHost="${KIE_SERVER_ROUTER_HOST}"
     if [ "${kieServerRouterHost}" = "" ]; then
-        kieServerRouterHost=$(find_env "${routerService}_SERVICE_HOST")
+        kieServerRouterHost=$(find_env "${kieServerRouterService}_SERVICE_HOST")
     fi
     if [ "${kieServerRouterHost}" != "" ]; then
         # protocol
@@ -244,10 +244,10 @@ function configure_router_access {
         # port
         local kieServerRouterPort="${KIE_SERVER_ROUTER_PORT}"
         if [ "${kieServerRouterPort}" = "" ]; then
-            kieServerRouterPort=$(find_env "${routerService}_SERVICE_PORT" "9000")
+            kieServerRouterPort=$(find_env "${kieServerRouterService}_SERVICE_PORT" "9000")
         fi
         # url
-        local kieServerRouterUrl="${kieServerRouterProtocol}://${kieServerRouterHost}:${kieServerRouterPort}"
+        local kieServerRouterUrl=$(build_simple_url "${kieServerRouterProtocol}" "${kieServerRouterHost}" "${kieServerRouterPort}" "")
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router=${kieServerRouterUrl}"
     fi
 }
@@ -270,45 +270,46 @@ function configure_drools() {
 }
 
 function configure_server_location() {
-    # if the KIE server hostname is not set we will query the kubernetes API to retrieve the route value from its name.
+    # ---------- EXTERNAL ROUTE LOCATION ----------
+    # External location of all KIE Servers via the Route.
+    # Requires the following template parameters:
+    #
+    # - name: KIE_SERVER_ROUTE_NAME
+    #   value: "${APPLICATION_NAME}-kieserver"
+    # - name: KIE_SERVER_USE_SECURE_ROUTE_NAME
+    #   value: "${KIE_SERVER_USE_SECURE_ROUTE_NAME}"
+    # - name: HOSTNAME_HTTP
+    #   value: "${KIE_SERVER_HOSTNAME_HTTP}"
+    # - name: HOSTNAME_HTTPS
+    #   value: "${KIE_SERVER_HOSTNAME_HTTPS}"
+    #
+#    local routeName="${KIE_SERVER_ROUTE_NAME}"
+#    local routeProtocol="http"
+#    local routeHost="${HOSTNAME_HTTP:-${HOSTNAME:-localhost}}"
+#    local routePort="80"
+#    if [ "${KIE_SERVER_USE_SECURE_ROUTE_NAME^^}" = "TRUE" ]; then
+#        routeName="secure-${routeName}"
+#        routeProtocol="https"
+#        routeHost="${HOSTNAME_HTTPS:-${routeHost}}"
+#        routePort="443"
+#    fi
+#    local routeUrl=$(build_route_url "${routeName}" "${routeProtocol}" "${routeHost}" "${routePort}" "/services/rest/server")
+#    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${routeUrl}"
 
-    if [ "${KIE_SERVER_HOST}" = "" ]; then
-        local routeName
-        if [ "${KIE_SERVER_USE_SECURE_ROUTE_NAME^^}" = "TRUE" ]; then
-            KIE_SERVER_PORT="443"
-            KIE_SERVER_PROTOCOL="https"
-            routeName="secure-${KIE_SERVER_ROUTE_NAME}"
-        else
-            KIE_SERVER_PORT="80"
-            routeName="${KIE_SERVER_ROUTE_NAME}"
-        fi
-
-        local response=$(query_server_host ${routeName})
-
-        if [ "${response: -3}" = "200" ]; then
-            # parse the json response to get the route host
-            KIE_SERVER_HOST=$(echo ${response::- 3} | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["spec"]["host"]')
-            log_info "Using route hostname: ${KIE_SERVER_HOST}"
-        else
-            log_warning "Fail to query the route name using Kubernetes API, service account might not have necessary privileges, defaulting it to pod's hostname [${HOSTNAME}]."
-            if [ ! -z "${response}" ]; then
-                log_warning "Response message: ${response::- 3} - HTTP Status code: ${response: -3}"
-            fi
-            KIE_SERVER_PORT="8080"
-            KIE_SERVER_HOST="${HOSTNAME}"
-        fi
-
-    fi
-    if [ "${KIE_SERVER_HOST}" != "" ]; then
-        if [ "${KIE_SERVER_PROTOCOL}" = "" ]; then
-            KIE_SERVER_PROTOCOL="http"
-        fi
-        if [ "${KIE_SERVER_PORT}" = "" ]; then
-            KIE_SERVER_PORT="80"
-        fi
-        local kieServerUrl="${KIE_SERVER_PROTOCOL}://${KIE_SERVER_HOST}:${KIE_SERVER_PORT}/services/rest/server"
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${kieServerUrl}"
-    fi
+    # ---------- INTERNAL POD LOCATION ----------
+    # Internal location of each KIE Server per each Pod's IP (retrieved via the Downward API).
+    # Requires the following template parameter:
+    #
+    # - name: KIE_SERVER_HOST
+    #   valueFrom:
+    #     fieldRef:
+    #       fieldPath: status.podIP
+    #
+    local podProtocol="http"
+    local podHost="${KIE_SERVER_HOST:-${HOSTNAME:-localhost}}"
+    local podPort="80"
+    local podUrl=$(build_simple_url "${podProtocol}" "${podHost}" "${podPort}" "/services/rest/server")
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${podUrl}"
 }
 
 function configure_server_persistence() {
@@ -339,7 +340,7 @@ function configure_server_persistence() {
 }
 
 function configure_server_security() {
-    # add eap users (see jboss-kie-security.sh)
+    # add eap users (see jboss-kie-wildfly-security.sh)
     add_kie_admin_user
     add_kie_server_user
     # user/pwd

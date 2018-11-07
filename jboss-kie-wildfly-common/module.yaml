@@ -1,9 +1,9 @@
 schema_version: 1
-name: jboss.kie.common
+name: jboss-kie-wildfly-common
 version: '1.0'
-description: The jboss.kie.common script package.
+description: The jboss-kie-wildfly-common module.
 execute:
-- script: configure.sh
+    - script: configure.sh
 envs:
     - name: "AUTH_LDAP_BASE_CTX_DN"
       description: "The fixed DN of the top-level context to begin the user search."

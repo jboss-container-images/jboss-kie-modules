@@ -68,15 +68,13 @@ function configure_router_state() {
 }
 
 function configure_router_location {
-    # DeploymentConfig: spec/template/spec/containers/env
-    # {
-    #     "name": "KIE_SERVER_ROUTER_HOST",
-    #     "valueFrom": {
-    #         "fieldRef": {
-    #             "fieldPath": "status.podIP"
-    #         }
-    #     }
-    # },
+    # DeploymentConfig environment
+    #
+    # name: KIE_SERVER_ROUTER_HOST
+    # valueFrom:
+    #   fieldRef:
+    #     fieldPath: status.podIP
+    #
     local kieServerRouterHost="${KIE_SERVER_ROUTER_HOST}"
     if [ "${kieServerRouterHost}" = "" ]; then
         kieServerRouterHost="${HOSTNAME}"
@@ -122,15 +120,15 @@ function configure_controller_access {
             kieServerControllerPort=$(find_env "${controllerService}_SERVICE_PORT" "8080")
         fi
         # path
-        local kieServerControllerPath="rest/controller"
+        local kieServerControllerPath="/rest/controller"
         if [ "${kieServerControllerProtocol}" = "ws" ]; then
-            kieServerControllerPath="websocket/controller"
+            kieServerControllerPath="/websocket/controller"
         fi
         # url
-        local kieServerControllerUrl="${kieServerControllerProtocol}://${kieServerControllerHost}:${kieServerControllerPort}/${kieServerControllerPath}"
+        local kieServerControllerUrl="${kieServerControllerProtocol}://${kieServerControllerHost}:${kieServerControllerPort}${kieServerControllerPath}"
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller=${kieServerControllerUrl}"
     fi
-    # NOTE: the below must match what is in jboss-kie-modules/jboss-kie-common/added/launch/jboss-kie-security.sh
+    # NOTE: the below must match what is in jboss-kie-modules/jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-security.sh
     # user/pwd
     local kieServerControllerUser=$(find_env "KIE_SERVER_CONTROLLER_USER" "controllerUser")
     local kieServerControllerPwd=$(find_env "KIE_SERVER_CONTROLLER_PWD" "controller1!")

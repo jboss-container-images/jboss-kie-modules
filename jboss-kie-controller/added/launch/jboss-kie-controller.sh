@@ -2,7 +2,7 @@
 
 source "${JBOSS_HOME}/bin/launch/launch-common.sh"
 source "${JBOSS_HOME}/bin/launch/logging.sh"
-source "${JBOSS_HOME}/bin/launch/jboss-kie-security.sh"
+source "${JBOSS_HOME}/bin/launch/jboss-kie-wildfly-security.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
@@ -19,7 +19,7 @@ function configure() {
 }
 
 function configure_controller_security() {
-    # add eap user (see jboss-kie-security.sh)
+    # add eap user (see jboss-kie-wildfly-security.sh)
     add_kie_server_controller_user
 }
 

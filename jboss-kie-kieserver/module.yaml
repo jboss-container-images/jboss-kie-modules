@@ -1,9 +1,9 @@
 schema_version: 1
-name: jboss.kie.kieserver
+name: jboss-kie-kieserver
 version: '1.0'
-description: The jboss.kie.kieserver script package.
+description: The jboss-kie-kieserver module.
 envs:
-- name: MAVEN_LOCAL_REPO
-  value: /home/jboss/.m2/repository
+    - name: MAVEN_LOCAL_REPO
+      value: /home/jboss/.m2/repository
 execute:
-- script: configure.sh
+    - script: configure.sh

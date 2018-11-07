@@ -1,6 +1,6 @@
 schema_version: 1
-name: jboss.kie.optaweb.employeerostering
+name: jboss-kie-optaweb-employeerostering
 version: '1.0'
-description: jboss.kie.optaweb.employeerostering script package.
+description: jboss-kie-optaweb-employeerostering module.
 execute:
-- script: configure.sh
+    - script: configure.sh
