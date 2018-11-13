@@ -283,18 +283,18 @@ function configure_server_location() {
     # - name: HOSTNAME_HTTPS
     #   value: "${KIE_SERVER_HOSTNAME_HTTPS}"
     #
-#    local routeName="${KIE_SERVER_ROUTE_NAME}"
-#    local routeProtocol="http"
-#    local routeHost="${HOSTNAME_HTTP:-${HOSTNAME:-localhost}}"
-#    local routePort="80"
-#    if [ "${KIE_SERVER_USE_SECURE_ROUTE_NAME^^}" = "TRUE" ]; then
-#        routeName="secure-${routeName}"
-#        routeProtocol="https"
-#        routeHost="${HOSTNAME_HTTPS:-${routeHost}}"
-#        routePort="443"
-#    fi
-#    local routeUrl=$(build_route_url "${routeName}" "${routeProtocol}" "${routeHost}" "${routePort}" "/services/rest/server")
-#    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${routeUrl}"
+    local routeName="${KIE_SERVER_ROUTE_NAME}"
+    local routeProtocol="http"
+    local routeHost="${HOSTNAME_HTTP:-${HOSTNAME:-localhost}}"
+    local routePort="80"
+    if [ "${KIE_SERVER_USE_SECURE_ROUTE_NAME^^}" = "TRUE" ]; then
+        routeName="secure-${routeName}"
+        routeProtocol="https"
+        routeHost="${HOSTNAME_HTTPS:-${routeHost}}"
+        routePort="443"
+    fi
+    local routeUrl=$(build_route_url "${routeName}" "${routeProtocol}" "${routeHost}" "${routePort}" "/services/rest/server")
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${routeUrl}"
 
     # ---------- INTERNAL POD LOCATION ----------
     # Internal location of each KIE Server per each Pod's IP (retrieved via the Downward API).
@@ -305,11 +305,11 @@ function configure_server_location() {
     #     fieldRef:
     #       fieldPath: status.podIP
     #
-    local podProtocol="http"
-    local podHost="${KIE_SERVER_HOST:-${HOSTNAME:-localhost}}"
-    local podPort="8080"
-    local podUrl=$(build_simple_url "${podProtocol}" "${podHost}" "${podPort}" "/services/rest/server")
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${podUrl}"
+#    local podProtocol="http"
+#    local podHost="${KIE_SERVER_HOST:-${HOSTNAME:-localhost}}"
+#    local podPort="8080"
+#    local podUrl=$(build_simple_url "${podProtocol}" "${podHost}" "${podPort}" "/services/rest/server")
+#    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${podUrl}"
 }
 
 function configure_server_persistence() {
