@@ -307,7 +307,7 @@ function configure_server_location() {
     #
     local podProtocol="http"
     local podHost="${KIE_SERVER_HOST:-${HOSTNAME:-localhost}}"
-    local podPort="80"
+    local podPort="8080"
     local podUrl=$(build_simple_url "${podProtocol}" "${podHost}" "${podPort}" "/services/rest/server")
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${podUrl}"
 }
