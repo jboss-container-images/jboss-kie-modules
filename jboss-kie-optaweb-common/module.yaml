@@ -1,6 +1,6 @@
 schema_version: 1
-name: jboss.kie.optaweb.common
+name: jboss-kie-optaweb-common
 version: '1.0'
-description: jboss.kie.optaweb.common script package.
+description: jboss-kie-optaweb-common module.
 execute:
-- script: configure.sh
+    - script: configure.sh

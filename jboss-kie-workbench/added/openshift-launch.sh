@@ -31,7 +31,7 @@ CONFIGURE_SCRIPTS=(
   $JBOSS_HOME/bin/launch/maven-repos.sh
   $JBOSS_HOME/bin/launch/access_log_valve.sh
   $JBOSS_HOME/bin/launch/filters.sh
-  $JBOSS_HOME/bin/launch/jboss-kie-common.sh
+  $JBOSS_HOME/bin/launch/jboss-kie-wildfly-common.sh
   $JBOSS_HOME/bin/launch/jboss-kie-workbench.sh
   /opt/run-java/proxy-options
 )

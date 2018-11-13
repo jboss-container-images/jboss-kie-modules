@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load jboss-kie-common
+load jboss-kie-wildfly-common
 
 export JBOSS_HOME=$BATS_TMPDIR/jboss_home
 mkdir -p $JBOSS_HOME/standalone/configuration
@@ -8,7 +8,7 @@ mkdir -p $JBOSS_HOME/bin/launch
 
 export CONFIG_FILE=$JBOSS_HOME/standalone/configuration/standalone-openshift.xml
 
-source $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-security-login-modules.sh
+source $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-wildfly-security-login-modules.sh
 
 setup() {
   cp $BATS_TEST_DIRNAME/resources/standalone-openshift.xml $CONFIG_FILE
