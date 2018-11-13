@@ -17,6 +17,7 @@ function prepareEnv() {
     unset APPFORMER_JMS_BROKER_PASSWORD
     unset APPFORMER_JMS_BROKER_PORT
     unset APPFORMER_JMS_BROKER_USER
+    unset APPFORMER_JMS_BROKER_USERNAME
     unset APPFORMER_JMS_CONNECTION_PARAMS
     unset GIT_HOOKS_DIR
     unset_kie_security_env
@@ -71,9 +72,9 @@ function configure_controller_access {
         # protocol
         local kieSererControllerProtocol=$(find_env "KIE_SERVER_CONTROLLER_PROTOCOL" "http")
         # port
-        local kieServerontrollerPort="${KIE_SERVER_CONTROLLER_PORT}"
-        if [ "${kieServerontrollerPort}" = "" ]; then
-            kieServerontrollerPort=$(find_env "${kieServerControllerService}_SERVICE_PORT" "8080")
+        local kieServerControllerPort="${KIE_SERVER_CONTROLLER_PORT}"
+        if [ "${kieServerControllerPort}" = "" ]; then
+            kieServerControllerPort=$(find_env "${kieServerControllerService}_SERVICE_PORT" "8080")
         fi
         # path
         local kieServerControllerPath="/rest/controller"
@@ -81,7 +82,7 @@ function configure_controller_access {
             kieServerControllerPath="/websocket/controller"
         fi
         # url
-        local kieServerControllerUrl=$(build_simple_url "${kieSererControllerProtocol}" "${kieServerControllerHost}" "${kieServerontrollerPort}" "${kieServerControllerPath}")
+        local kieServerControllerUrl=$(build_simple_url "${kieSererControllerProtocol}" "${kieServerControllerHost}" "${kieServerControllerPort}" "${kieServerControllerPath}")
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller=${kieServerControllerUrl}"
     fi
     # user/pwd
@@ -147,13 +148,14 @@ function configure_ha() {
     if [ "${JGROUPS_PING_PROTOCOL}" = "openshift.DNS_PING" ]; then
         if [ -n "${OPENSHIFT_DNS_PING_SERVICE_NAME}" -a "${OPENSHIFT_DNS_PING_SERVICE_PORT}" ]; then
             log_info "OpenShift DNS_PING protocol envs set, verifying other needed envs for HA setup. Using ${JGROUPS_PING_PROTOCOL}"
-            if [ -n "$APPFORMER_ELASTIC_HOST" -a -n "$APPFORMER_JMS_BROKER_USER" -a -n "$APPFORMER_JMS_BROKER_PASSWORD" -a -n "$APPFORMER_JMS_BROKER_ADDRESS" ] ; then
+            local jmsBrokerUsername="${APPFORMER_JMS_BROKER_USERNAME:-APPFORMER_JMS_BROKER_USER}"
+            if [ -n "$APPFORMER_ELASTIC_HOST" -a -n "$jmsBrokerUsername" -a -n "$APPFORMER_JMS_BROKER_PASSWORD" -a -n "$APPFORMER_JMS_BROKER_ADDRESS" ] ; then
                 # set the workbench properties for HA
                 local jmsConnectionParams="${APPFORMER_JMS_CONNECTION_PARAMS:-ha=true&retryInterval=1000&retryIntervalMultiplier=1.0&reconnectAttempts=-1}"
                 JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer-cluster=true"
                 JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer-jms-connection-mode=REMOTE"
                 JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer-jms-url=tcp://${APPFORMER_JMS_BROKER_ADDRESS}:${APPFORMTER_JMS_BROKER_PORT:-61616}?${jmsConnectionParams}"
-                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer-jms-username=${APPFORMER_JMS_BROKER_USER}"
+                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer-jms-username=${jmsBrokerUsername}"
                 JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer-jms-password=${APPFORMER_JMS_BROKER_PASSWORD}"
                 JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Des.set.netty.runtime.available.processors=false"
                 JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.index=elastic"
