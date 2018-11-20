@@ -148,7 +148,7 @@ function configure_ha() {
     if [ "${JGROUPS_PING_PROTOCOL}" = "openshift.DNS_PING" ]; then
         if [ -n "${OPENSHIFT_DNS_PING_SERVICE_NAME}" -a -n "${OPENSHIFT_DNS_PING_SERVICE_PORT}" ]; then
             log_info "OpenShift DNS_PING protocol envs set, verifying other needed envs for HA setup. Using ${JGROUPS_PING_PROTOCOL}"
-            local jmsBrokerUsername="${APPFORMER_JMS_BROKER_USERNAME:-APPFORMER_JMS_BROKER_USER}"
+            local jmsBrokerUsername="${APPFORMER_JMS_BROKER_USERNAME:-$APPFORMER_JMS_BROKER_USER}"
             if [ -n "$APPFORMER_ELASTIC_HOST" -a -n "$jmsBrokerUsername" -a -n "$APPFORMER_JMS_BROKER_PASSWORD" -a -n "$APPFORMER_JMS_BROKER_ADDRESS" ] ; then
                 # set the workbench properties for HA
                 local jmsConnectionParams="${APPFORMER_JMS_CONNECTION_PARAMS:-ha=true&retryInterval=1000&retryIntervalMultiplier=1.0&reconnectAttempts=-1}"
