@@ -31,26 +31,18 @@ Feature: Kie Server common features
     Then container log should contain -Dorg.kie.server.mgmt.api.disabled=true
     And container log should contain The startup strategy invalid is not valid, the valid strategies are LocalContainersStartupStrategy and ControllerBasedStartupStrategy
 
-  Scenario: Test the KIE_SERVER_HOST configuration to default value
-    When container is ready
-    Then container log should contain Fail to query the route name using Kubernetes API
-
-  Scenario: Test the KIE_SERVER_HOST configuration with custom host
+  Scenario: Test the kie server configuration with custom host
     When container is started with env
-      | variable           | value                      |
-      | KIE_SERVER_HOST    | my-custon-host.example.com |
-      | KIE_SERVER_PORT    | 80                         |
-    Then container log should contain -Dorg.kie.server.location=http://my-custon-host.example.com:80/services/rest/server
+      | variable                         | value                      |
+      | HOSTNAME_HTTP                    | my-custom-host.example.com |
+    Then container log should contain -Dorg.kie.server.location=http://my-custom-host.example.com:80/services/rest/server
 
-  Scenario: Test the KIE_SERVER_HOST configuration with custom host with default port
+  Scenario: Test the kie server configuration with secure custom host
     When container is started with env
-      | variable           | value                      |
-      | KIE_SERVER_HOST    | my-custon-host.example.com |
-    Then container log should contain -Dorg.kie.server.location=http://my-custon-host.example.com:80/services/rest/server
-
-  Scenario: Test the KIE_SERVER_HOST with no value provided
-    When container is ready
-    Then container log should contain :8080/services/rest/server
+      | variable                         | value                      |
+      | KIE_SERVER_USE_SECURE_ROUTE_NAME | true                       |
+      | HOSTNAME_HTTPS                   | my-custom-host.example.com |
+    Then container log should contain -Dorg.kie.server.location=https://my-custom-host.example.com:443/services/rest/server
 
   Scenario: Don't configure kie server to use LDAP authentication
     When container is ready
