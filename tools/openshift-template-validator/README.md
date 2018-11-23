@@ -259,12 +259,12 @@ The build/install will generate two binaries:
 
 Just build:
 ```bash
-$ make build
+$ make
 ```
 
 Install the binaries on the $GOPATH/bin (make sure you have this path on your $PATH env variable)
 ```bash
-$ make install
+$ sudo make install
 ```
 
 To clean the binaries
