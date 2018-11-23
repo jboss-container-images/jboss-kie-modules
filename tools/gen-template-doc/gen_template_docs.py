@@ -38,7 +38,9 @@ template_dirs = ['rhpam-7-openshift-image/templates', 'rhdm-7-openshift-image/te
 
 # used to link the image to the image.yaml when the given image is used by a s2i build
 LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm71-kieserver-openshift`]",
-         "rhpam71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]"}
+         "rhdm72-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm72-kieserver-openshift`]",
+         "rhpam71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]",
+         "rhpam72-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam72-kieserver-openshift`]"}
 
 # used to update template parameters values
 PARAMETER_VALUES = {"EXAMPLE": "var"}
@@ -60,10 +62,11 @@ def generate_templates():
     for directory in template_dirs:
         if not os.path.isdir(directory):
             continue
-        for template in sorted(os.listdir(directory)):
-            if template[-5:] != '.json' and template[-5:] != '.yaml':
-                continue
-            generate_template(os.path.join(directory, template))
+        for dirpath, dirnames, files in os.walk(directory):
+            for template in files:
+                if template[-5:] != '.json' and template[-5:] != '.yaml':
+                    continue
+                generate_template(os.path.join(dirpath, template))
 
 
 def generate_template(path):
@@ -141,14 +144,15 @@ def createTemplate(data, path):
             secretName = ""
             if len(serviceAccountName) > 0:
                 for param in data["parameters"]:
-                    if "example" in param and param["example"].endswith("app-secret"):
-                        secretName += param["example"] + '\n'
+                    if "example" in param:
+                        if not isinstance(param["example"], int) and param["example"].endswith("app-secret"):
+                            secretName += param["example"] + '\n'
                     elif "value" in param and param["value"].endswith("app-secret"):
                         secretName += param["value"] + '\n'
                 tdata['objects'][0]['secrets'] = [{"secretNames": secretName}]
 
-        # currently only the rhpam-authoring-ha will have clustering section, any new template that supports clustering needs to be added in the var below.
-        clusteringTemplates = ['rhpam71-authoring-ha.yaml']
+        # currently only the rhpam-authoring-ha will have clustering section, any new template that supports clustering needs to be added in the clusteringTemplates var.
+        clusteringTemplates = ['rhpam71-authoring-ha.yaml', 'rhpam72-authoring-ha.yaml']
         for template in clusteringTemplates:
             if str(path).rsplit('/', 1)[-1] == template:
                 tdata['objects'][0]['clustering'] = [{}]
