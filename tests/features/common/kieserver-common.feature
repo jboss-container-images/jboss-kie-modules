@@ -31,17 +31,40 @@ Feature: Kie Server common features
     Then container log should contain -Dorg.kie.server.mgmt.api.disabled=true
     And container log should contain The startup strategy invalid is not valid, the valid strategies are LocalContainersStartupStrategy and ControllerBasedStartupStrategy
 
-  Scenario: Test the kie server configuration with custom host
+  Scenario: Test the kie server location with hardcoded value
+    When container is started with env
+      | variable            | value                                  |
+      | KIE_SERVER_LOCATION | https://foo.bar.com:9443/rest/endpoint |
+    Then container log should contain -Dorg.kie.server.location=https://foo.bar.com:9443/rest/endpoint
+
+  Scenario: Test the kie server location with legacy hardcoded url value
+    When container is started with env
+      | variable        | value                                     |
+      | KIE_SERVER_URL  | http://bar.foo.io/rest/endpoints/serviceA |
+      | KIE_SERVER_HOST | should.be.ignored                         |
+    Then container log should contain -Dorg.kie.server.location=http://bar.foo.io/rest/endpoints/serviceA
+
+  Scenario: Test the kie server location with custom build parameters
+    When container is started with env
+      | variable            | value   |
+      | KIE_SERVER_PROTOCOL | ws      |
+      | KIE_SERVER_HOST     | my-host |
+      | KIE_SERVER_PORT     | 9080    |
+    Then container log should contain -Dorg.kie.server.location=ws://my-host:9080/services/rest/server
+
+  Scenario: Test the kie server location with custom insecure host
     When container is started with env
       | variable                         | value                      |
       | HOSTNAME_HTTP                    | my-custom-host.example.com |
+      | KIE_SERVER_ROUTE_NAME            | my-custom-route            |
     Then container log should contain -Dorg.kie.server.location=http://my-custom-host.example.com:80/services/rest/server
 
-  Scenario: Test the kie server configuration with secure custom host
+  Scenario: Test the kie server location with custom secure host and secure route name
     When container is started with env
       | variable                         | value                      |
-      | KIE_SERVER_USE_SECURE_ROUTE_NAME | true                       |
       | HOSTNAME_HTTPS                   | my-custom-host.example.com |
+      | KIE_SERVER_ROUTE_NAME            | my-custom-route            |
+      | KIE_SERVER_USE_SECURE_ROUTE_NAME | true                       |
     Then container log should contain -Dorg.kie.server.location=https://my-custom-host.example.com:443/services/rest/server
 
   Scenario: Don't configure kie server to use LDAP authentication
