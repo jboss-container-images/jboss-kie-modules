@@ -87,9 +87,9 @@ build_route_url() {
     local port=${4}
     local path=${5}
     if [ "${routeName}" != "" ]; then
-        if [[ "${routeName}" = *"secure"* ]]; then
-            protocol="https"
-            port="443"
+        if [[ "${routeName},," = *"secure"* ]]; then
+            protocol="${protocol:-https}"
+            port="${port:-443}"
         fi
         local response=$(query_route_host ${routeName})
         if [ "${response: -3}" = "200" ]; then

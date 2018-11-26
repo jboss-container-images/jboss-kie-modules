@@ -19,8 +19,9 @@ function prepareEnv() {
     unset KIE_SERVER_CONTROLLER_PORT
     unset KIE_SERVER_CONTROLLER_PROTOCOL
     unset KIE_SERVER_CONTROLLER_SERVICE
-#    unset KIE_SERVER_HOST
+    unset KIE_SERVER_HOST
     unset KIE_SERVER_ID
+    unset KIE_SERVER_LOCATION
     unset KIE_SERVER_MGMT_DISABLED
     unset KIE_SERVER_PERSISTENCE_DIALECT
     unset KIE_SERVER_PERSISTENCE_DS
@@ -33,6 +34,7 @@ function prepareEnv() {
     unset KIE_SERVER_ROUTER_PORT
     unset KIE_SERVER_ROUTER_PROTOCOL
     unset KIE_SERVER_ROUTER_SERVICE
+    unset KIE_SERVER_URL
     unset KIE_SERVER_USE_SECURE_ROUTE_NAME
     unset KIE_SERVER_STARTUP_STRATEGY
     unset KIE_SERVER_SYNC_DEPLOY
@@ -269,47 +271,69 @@ function configure_drools() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.drools.server.filter.classes=${DROOLS_SERVER_FILTER_CLASSES}"
 }
 
+# ---------- KIE SERVER LOCATION URL VIA ROUTE ----------
+# External location of all KIE Servers via a Route.
+# Example template parameters:
+#
+# - name: KIE_SERVER_ROUTE_NAME
+#   value: "${APPLICATION_NAME}-kieserver"
+# - name: KIE_SERVER_USE_SECURE_ROUTE_NAME
+#   value: "${KIE_SERVER_USE_SECURE_ROUTE_NAME}"
+# - name: HOSTNAME_HTTP
+#   value: "${KIE_SERVER_HOSTNAME_HTTP}"
+# - name: HOSTNAME_HTTPS
+#   value: "${KIE_SERVER_HOSTNAME_HTTPS}"
+#
+# ---------- EXPLICIT KIE SERVER LOCATION ----------
+# Internal location of each KIE Server per each Pod's IP (retrieved via the Downward API).
+# Example template parameters:
+#
+# - name: KIE_SERVER_PROTOCOL
+#   value: "${KIE_SERVER_PROTOCOL}"
+# - name: KIE_SERVER_HOST
+#   valueFrom:
+#     fieldRef:
+#       fieldPath: status.podIP
+# - name: KIE_SERVER_PORT
+#   value: "${KIE_SERVER_PORT}"
+#
 function configure_server_location() {
-    # ---------- EXTERNAL ROUTE LOCATION ----------
-    # External location of all KIE Servers via the Route.
-    # Requires the following template parameters:
-    #
-    # - name: KIE_SERVER_ROUTE_NAME
-    #   value: "${APPLICATION_NAME}-kieserver"
-    # - name: KIE_SERVER_USE_SECURE_ROUTE_NAME
-    #   value: "${KIE_SERVER_USE_SECURE_ROUTE_NAME}"
-    # - name: HOSTNAME_HTTP
-    #   value: "${KIE_SERVER_HOSTNAME_HTTP}"
-    # - name: HOSTNAME_HTTPS
-    #   value: "${KIE_SERVER_HOSTNAME_HTTPS}"
-    #
-    local routeName="${KIE_SERVER_ROUTE_NAME}"
-    local routeProtocol="http"
-    local routeHost="${HOSTNAME_HTTP:-${HOSTNAME:-localhost}}"
-    local routePort="80"
-    if [ "${KIE_SERVER_USE_SECURE_ROUTE_NAME^^}" = "TRUE" ]; then
-        routeName="secure-${routeName}"
-        routeProtocol="https"
-        routeHost="${HOSTNAME_HTTPS:-${routeHost}}"
-        routePort="443"
+    # KIE_SERVER_LOCATION matches our env-to-property naming convention,
+    # but KIE_SERVER_URL kept here for backwards compatibility
+    local location="${KIE_SERVER_LOCATION:-$KIE_SERVER_URL}"
+    if [ -z "${location}" ]; then
+        local protocol="${KIE_SERVER_PROTOCOL,,}"
+        local host="${KIE_SERVER_HOST}"
+        local defaultInsecureHost="${HOSTNAME_HTTP:-${HOSTNAME:-localhost}}"
+        local defaultSecureHost="${HOSTNAME_HTTPS:-${defaultInsecureHost}}"
+        local port="${KIE_SERVER_PORT}"
+        local path="/services/rest/server"
+        local routeName="${KIE_SERVER_ROUTE_NAME}"
+        if [ -n "${routeName}" ]; then
+            if [ "${KIE_SERVER_USE_SECURE_ROUTE_NAME^^}" = "TRUE" ]; then
+                routeName="secure-${routeName}"
+                protocol="${protocol:-https}"
+                host="${host:-${defaultSecureHost}}"
+                port="${port:-443}"
+            else
+                protocol="${protocol:-http}"
+                host="${host:-${defaultInsecureHost}}"
+                port="${port:-80}"
+            fi
+            location=$(build_route_url "${routeName}" "${protocol}" "${host}" "${port}" "${path}")
+        else
+            if [ "${protocol}" = "https" ]; then
+                host="${host:-${defaultSecureHost}}"
+                port="${port:-8443}"
+            else
+                protocol="${protocol:-http}"
+                host="${host:-${defaultInsecureHost}}"
+                port="${port:-8080}"
+            fi
+            location=$(build_simple_url "${protocol}" "${host}" "${port}" "${path}")
+        fi
     fi
-    local routeUrl=$(build_route_url "${routeName}" "${routeProtocol}" "${routeHost}" "${routePort}" "/services/rest/server")
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${routeUrl}"
-
-    # ---------- INTERNAL POD LOCATION ----------
-    # Internal location of each KIE Server per each Pod's IP (retrieved via the Downward API).
-    # Requires the following template parameter:
-    #
-    # - name: KIE_SERVER_HOST
-    #   valueFrom:
-    #     fieldRef:
-    #       fieldPath: status.podIP
-    #
-#    local podProtocol="http"
-#    local podHost="${KIE_SERVER_HOST:-${HOSTNAME:-localhost}}"
-#    local podPort="8080"
-#    local podUrl=$(build_simple_url "${podProtocol}" "${podHost}" "${podPort}" "/services/rest/server")
-#    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${podUrl}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${location}"
 }
 
 function configure_server_persistence() {
