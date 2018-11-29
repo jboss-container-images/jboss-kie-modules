@@ -38,6 +38,7 @@ template_dirs = ['rhpam-7-openshift-image/templates', 'rhdm-7-openshift-image/te
 
 # used to link the image to the image.yaml when the given image is used by a s2i build
 LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm71-kieserver-openshift`]",
+         "rhdm71-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhdm-7/rhdm71-kieserver-openshift`]",
          "rhdm72-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm72-kieserver-openshift`]",
          "rhpam71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]",
          "rhpam72-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam72-kieserver-openshift`]"}
