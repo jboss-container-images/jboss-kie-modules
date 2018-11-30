@@ -16,11 +16,12 @@ mkdir -p ${MAVEN_REPO}
 # $1 - file
 # $2 - pom file
 # $3 - packaging
+# $4 - classifier=sources used when a jar is source.
 prepare_maven_command() {
     # Add JVM default options
     export MAVEN_OPTS="${MAVEN_OPTS:-$(/opt/run-java/java-default-options)}"
     # Use maven batch mode (CLOUD-579)
-    MAVEN_ARGS_INSTALL="-e -DskipTests install:install-file -Dfile=${1} -DpomFile=${2} -Dpackaging=${3} --batch-mode -Djava.net.preferIPv4Stack=true -Popenshift -Dcom.redhat.xpaas.repo.redhatga ${MAVEN_ARGS_APPEND}"
+    MAVEN_ARGS_INSTALL="-e -DskipTests install:install-file -Dfile=${1} -DpomFile=${2} -Dpackaging=${3} ${4} --batch-mode -Djava.net.preferIPv4Stack=true -Popenshift -Dcom.redhat.xpaas.repo.redhatga ${MAVEN_ARGS_APPEND}"
     log_info "Attempting to install jar with 'mvn ${MAVEN_ARGS_INSTALL}'"
     log_info "Using MAVEN_OPTS '${MAVEN_OPTS}'"
     log_info "Using $(mvn --version)"
@@ -75,7 +76,11 @@ if [ -d ${DEPLOY_DIR} ]; then
                 mv ${DEPLOY_DIR}/${JAR}.zip ${DEPLOY_DIR}/${JAR}
             fi
 
-            mvn $(prepare_maven_command "${DEPLOY_DIR}/${JAR}" "${POM}" "jar")
+            classifier=""
+            if [[ "${JAR}" == *"sources"* ]]; then
+                classifier="-Dclassifier=sources"
+            fi
+            mvn $(prepare_maven_command "${DEPLOY_DIR}/${JAR}" "${POM}" "jar" "${classifier}")
             ERR=$?
             if [ $ERR -ne 0 ]; then
                 log_error "Aborting due to error code $ERR from Maven build"
