@@ -67,6 +67,12 @@ Feature: Kie Server common features
       | KIE_SERVER_USE_SECURE_ROUTE_NAME | true                       |
     Then container log should contain -Dorg.kie.server.location=https://my-custom-host.example.com:443/services/rest/server
 
+  Scenario: Test the KIE_SERVER_HOST configuration with custom host with default port
+    When container is started with env
+      | variable         | value                      |
+      | KIE_SERVER_ID    | helloworld                 |
+    Then container log should contain -Dorg.kie.server.id=helloworld
+
   Scenario: Don't configure kie server to use LDAP authentication
     When container is ready
     Then container log should contain AUTH_LDAP_URL not set. Skipping LDAP integration...
@@ -101,6 +107,14 @@ Feature: Kie Server common features
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleFilter" value="(member={1})"/>
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleAttributeID" value="cn"/>
 
+  Scenario: Test custom login module configuration
+    When container is started with env
+      | variable                          | value              |
+      | AUTH_ROLE_MAPPER_ROLES_PROPERTIES | roles_mapper_test  |
+      | AUTH_ROLE_MAPPER_REPLACE_ROLE     | role_test          |
+    Then container log should contain AUTH_ROLE_MAPPER_ROLES_PROPERTIES is set to roles_mapper_test
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="rolesProperties" value="roles_mapper_test"/>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="replaceRole" value="role_test"/>
 
   Scenario: CLOUD-747/KIECLOUD-49, test multi-module builds
     Given s2i build https://github.com/jboss-container-images/rhdm-7-openshift-image from quickstarts/hello-rules-multi-module using master
@@ -112,3 +126,57 @@ Feature: Kie Server common features
      And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rhdm-kieserver-hellorules/1.4.0-SNAPSHOT/rhdm-kieserver-hellorules-1.4.0-SNAPSHOT-sources.jar && echo all good' in container and check its output for all good
      And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rhdm-kieserver-hellorules-model/1.4.0-SNAPSHOT/rhdm-kieserver-hellorules-model-1.4.0-SNAPSHOT.jar && echo all good' in container and check its output for all good
      And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rhdm-kieserver-hellorules-model/1.4.0-SNAPSHOT/rhdm-kieserver-hellorules-model-1.4.0-SNAPSHOT-sources.jar && echo all good' in container and check its output for all good
+
+  Scenario: test Kie Server controller configuration
+    When container is started with env
+      | variable                        | value     |
+      | KIE_SERVER_CONTROLLER_HOST      | localhost |
+      | KIE_SERVER_CONTROLLER_PORT      | 8080      |
+      | KIE_SERVER_CONTROLLER_PROTOCOL  | ws        |
+    Then container log should contain -Dorg.kie.server.controller=ws://localhost:8080/websocket/controller
+
+  Scenario: test Kie Server controller service configuration
+    When container is started with env
+      | variable                        | value       |
+      | KIE_SERVER_CONTROLLER_SERVICE   | SERVICE_ONE |
+      | SERVICE_ONE_SERVICE_HOST        | localhost   |
+      | SERVICE_ONE_SERVICE_PORT        | 8080        |
+    Then container log should contain -Dorg.kie.server.controller=http://localhost:8080/rest/controller
+
+  Scenario: test Kie Server router configuration
+    When container is started with env
+      | variable                        | value       |
+      | KIE_SERVER_ROUTER_HOST          | localhost   |
+      | KIE_SERVER_ROUTER_PORT          | 9000        |
+      | KIE_SERVER_ROUTER_PROTOCOL      | https       |
+    Then container log should contain -Dorg.kie.server.router=https://localhost:9000
+
+  Scenario: test Kie Server router service configuration
+    When container is started with env
+      | variable                        | value       |
+      | KIE_SERVER_ROUTER_SERVICE       | SERVICE_ONE |
+      | SERVICE_ONE_SERVICE_HOST        | localhost2  |
+      | SERVICE_ONE_SERVICE_PORT        | 9001        |
+    Then container log should contain -Dorg.kie.server.router=http://localhost2:9001
+
+  Scenario: test Kie Server Sync deploy configuration
+    When container is started with env
+      | variable                | value  |
+      | KIE_SERVER_SYNC_DEPLOY  | true   |
+    Then container log should contain -Dorg.kie.server.sync.deploy=true
+
+  Scenario: test Kie Server KIE_SERVER_CONTAINER_DEPLOYMENT_OVERRIDE env
+    When container is started with env
+      | variable                                  | value                                   |
+      | KIE_SERVER_CONTAINER_DEPLOYMENT           | deployment=a.b.c:1.0-SNAPSHOT           |
+      | KIE_SERVER_CONTAINER_DEPLOYMENT_OVERRIDE  | deploymentOverride=a.b.c:1.0-SNAPSHOT   |
+  Then container log should contain Encountered EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT_OVERRIDE: deploymentOverride=a.b.c:1.0-SNAPSHOT
+   And container log should contain Setting EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT_ORIGINAL: deployment=a.b.c:1.0-SNAPSHOT
+   And container log should contain Using overridden EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: deploymentOverride=a.b.c:1.0-SNAPSHOT
+   And container log should contain KIE_SERVER_CONTAINER_DEPLOYMENT: deploymentOverride=a.b.c:1.0-SNAPSHOT
+   And container log should contain KIE_SERVER_CONTAINER_DEPLOYMENT_ORIGINAL: deployment=a.b.c:1.0-SNAPSHOT
+   And container log should contain KIE_SERVER_CONTAINER_DEPLOYMENT_OVERRIDE: deploymentOverride=a.b.c:1.0-SNAPSHOT
+   And container log should contain KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT: 1
+   And container log should contain KIE_SERVER_CONTAINER_ID_0: deploymentOverride
+   And container log should contain KIE_SERVER_CONTAINER_KJAR_GROUP_ID_0: a.b.c
+   And container log should contain KIE_SERVER_CONTAINER_KJAR_ARTIFACT_ID_0: 1.0-SNAPSHOT

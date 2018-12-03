@@ -11,59 +11,6 @@ Feature: RHDM KIE Server configuration tests
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhdm-kieserver
      And run sh -c 'echo $RHDM_KIESERVER_VERSION' in container and check its output for 7.2
 
-  # https://issues.jboss.org/browse/RHPAM-891
-  Scenario: Check default users are properly configured
-    When container is ready
-    Then file /opt/eap/standalone/configuration/application-users.properties should contain adminUser=de3155e1927c6976555925dec24a53ac
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain adminUser=kie-server,rest-all,admin,kiemgmt,Administrators
-     And file /opt/eap/standalone/configuration/application-users.properties should not contain mavenUser
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain mavenUser
-     And file /opt/eap/standalone/configuration/application-users.properties should not contain controllerUser
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain controllerUser
-     And file /opt/eap/standalone/configuration/application-users.properties should contain executionUser=69ea96114cd41afa6a9d5be2e1e0531e
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain executionUser=kie-server,rest-all,guest
-
-  # https://issues.jboss.org/browse/RHPAM-891
-  # https://issues.jboss.org/browse/RHPAM-1135
-  Scenario: Check custom users are properly configured
-    When container is started with env
-      | variable                   | value         |
-      | KIE_ADMIN_USER             | customAdm     |
-      | KIE_ADMIN_PWD              | custom" Adm!0 |
-      | KIE_MAVEN_USER             | customMvn     |
-      | KIE_MAVEN_PWD              | custom" Mvn!0 |
-      | KIE_SERVER_CONTROLLER_USER | customCtl     |
-      | KIE_SERVER_CONTROLLER_PWD  | custom" Ctl!0 |
-      | KIE_SERVER_USER            | customExe     |
-      | KIE_SERVER_PWD             | custom" Exe!0 |
-    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=a4d41e50a4ae17a50c1ceabe21e41a80
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=kie-server,rest-all,admin,kiemgmt,Administrators
-     And file /opt/eap/standalone/configuration/application-users.properties should not contain customMvn
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain customMvn
-     And file /opt/eap/standalone/configuration/application-users.properties should not contain customCtl
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain customCtl
-     And file /opt/eap/standalone/configuration/application-users.properties should contain customExe=d2d5d854411231a97fdbf7fe6f91a786
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain customExe=kie-server,rest-all,guest
-
-  Scenario: Test REST API is available and valid
-    When container is started with env
-      | variable         | value       |
-      | KIE_SERVER_USER  | kieserver   |
-      | KIE_SERVER_PWD   | kieserver1! |
-    Then check that page is served
-      | property        | value                 |
-      | port            | 8080                  |
-      | path            | /services/rest/server |
-      | wait            | 60                    |
-      | username        | kieserver             |
-      | password        | kieserver1!           |
-      | expected_phrase | SUCCESS               |
-
-  Scenario: Check custom war file was successfully deployed via CUSTOM_INSTALL_DIRECTORIES
-    Given s2i build https://github.com/jboss-openshift/openshift-examples.git from custom-install-directories
-      | variable   | value                    |
-      | CUSTOM_INSTALL_DIRECTORIES | custom   |
-    Then file /opt/eap/standalone/deployments/node-info.war should exist
 
   # KIECLOUD-11: temporarily ignore since Jenkins CI builds currently fail with this test, even though it passes when run at the command line
   @ignore
@@ -77,4 +24,10 @@ Feature: RHDM KIE Server configuration tests
   Scenario: Check jbpm is _not_ enabled in RHDM 7
     When container is ready
     Then container log should contain -Dorg.jbpm.server.ext.disabled=true
+     And container log should contain -Dorg.jbpm.ui.server.ext.disabled=true
+     And container log should contain -Dorg.jbpm.case.server.ext.disabled=true
      And container log should not contain -Dorg.jbpm.ejb.timer.tx=true
+
+  Scenario: Check rhdm-kieserver extensions
+    When container is ready
+    Then container log should contain -Dorg.jbpm.server.ext.disabled=true -Dorg.jbpm.ui.server.ext.disabled=true -Dorg.jbpm.case.server.ext.disabled=true
