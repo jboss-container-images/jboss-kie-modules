@@ -11,55 +11,6 @@ Feature: RHPAM KIE Server configuration tests
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-kieserver
      And run sh -c 'echo $RHPAM_KIESERVER_VERSION' in container and check its output for 7.2
 
-  # https://issues.jboss.org/browse/RHPAM-891
-  Scenario: Check default users are properly configured
-    When container is ready
-    Then file /opt/eap/standalone/configuration/application-users.properties should contain adminUser=de3155e1927c6976555925dec24a53ac
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain adminUser=kie-server,rest-all,admin,kiemgmt,Administrators
-     And file /opt/eap/standalone/configuration/application-users.properties should not contain mavenUser
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain mavenUser
-     And file /opt/eap/standalone/configuration/application-users.properties should not contain controllerUser
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain controllerUser
-     And file /opt/eap/standalone/configuration/application-users.properties should contain executionUser=69ea96114cd41afa6a9d5be2e1e0531e
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain executionUser=kie-server,rest-all,guest
-
-  # https://issues.jboss.org/browse/RHPAM-891
-  # https://issues.jboss.org/browse/RHPAM-1135
-  Scenario: Check custom users are properly configured
-    When container is started with env
-      | variable                   | value         |
-      | KIE_ADMIN_USER             | customAdm     |
-      | KIE_ADMIN_PWD              | custom" Adm!0 |
-      | KIE_MAVEN_USER             | customMvn     |
-      | KIE_MAVEN_PWD              | custom" Mvn!0 |
-      | KIE_SERVER_CONTROLLER_USER | customCtl     |
-      | KIE_SERVER_CONTROLLER_PWD  | custom" Ctl!0 |
-      | KIE_SERVER_USER            | customExe     |
-      | KIE_SERVER_PWD             | custom" Exe!0 |
-    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=a4d41e50a4ae17a50c1ceabe21e41a80
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=kie-server,rest-all,admin,kiemgmt,Administrators
-     And file /opt/eap/standalone/configuration/application-users.properties should not contain customMvn
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain customMvn
-     And file /opt/eap/standalone/configuration/application-users.properties should not contain customCtl
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain customCtl
-     And file /opt/eap/standalone/configuration/application-users.properties should contain customExe=d2d5d854411231a97fdbf7fe6f91a786
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain customExe=kie-server,rest-all,guest
-
-  Scenario: Test REST API is available and valid
-    When container is started with env
-      | variable         | value       |
-      | KIE_SERVER_USER  | kieserver   |
-      | KIE_SERVER_PWD   | kieserver1! |
-    Then check that page is served
-      | property        | value                 |
-      | port            | 8080                  |
-      | path            | /services/rest/server |
-      | wait            | 60                    |
-      | username        | kieserver             |
-      | password        | kieserver1!           |
-      | expected_phrase | SUCCESS               |
-
-  # https://issues.jboss.org/browse/CLOUD-1145 - base test
   Scenario: Check custom war file was successfully deployed via CUSTOM_INSTALL_DIRECTORIES
     Given s2i build https://github.com/jboss-openshift/openshift-examples.git from custom-install-directories
       | variable   | value                    |
@@ -73,7 +24,6 @@ Feature: RHPAM KIE Server configuration tests
       | variable                        | value                                                                                    |
       | KIE_SERVER_CONTAINER_DEPLOYMENT | rhpam-kieserver-library=org.openshift.quickstarts:rhpam-kieserver-library:1.4.0-SNAPSHOT |
     Then container log should contain Container rhpam-kieserver-library
-
 
   # https://issues.jboss.org/browse/RHPAM-846
   Scenario: Check jbpm is enabled in RHPAM 7
@@ -93,6 +43,23 @@ Feature: RHPAM KIE Server configuration tests
       | variable                   | value     |
       | AUTO_CONFIGURE_EJB_TIMER   | false     |
     Then container log should not contain EJB Timer will be auto configured if any datasource is configured via DB_SERVICE_PREFIX_MAPPING or DATASOURCES envs.
+
+  Scenario: Check jbpm ht configuration
+    When container is started with env
+      | variable                 | value       |
+      | JBPM_HT_CALLBACK_CLASS   | my.db.class |
+      | JBPM_HT_CALLBACK_METHOD  | db          |
+      | JBPM_LOOP_LEVEL_DISABLED | true        |
+    Then container log should contain -Dorg.jbpm.ht.callback=db
+     And container log should contain -Dorg.jbpm.ht.custom.callback=my.db.class
+     And container log should contain -Djbpm.loop.level.disabled=true
+
+  Scenario: Check for the default ejb timer's setup behavior
+    When container is started with env
+      | variable               | value |
+      | KIE_EXECUTOR_RETRIES   | 40    |
+    Then container log should contain -Dorg.kie.executor.retry.count=40
+     And container log should contain - Retries per Request: 40
 
   Scenario: Checks if the EJB Timer was successfully configured with MySQL with DB_SERVICE_PREFIX_MAPPING env
     When container is started with env
@@ -325,8 +292,16 @@ Feature: RHPAM KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 2 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DriverType"]
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value db2 on XPath //*[local-name()='database-data-store']/@database
 
-  Scenario: Verify if the DB Schema is correctly set.
+  Scenario: Verify if the DB Schema and persistence dialect is correctly set.
     When container is started with env
-      | variable                        | value                 |
-      | KIE_SERVER_PERSISTENCE_SCHEMA   | schema.a              |
+      | variable                        | value                            |
+      | KIE_SERVER_PERSISTENCE_SCHEMA   | schema.a                         |
+      | KIE_SERVER_PERSISTENCE_DIALECT  | org.hibernate.dialect.DB2Dialect |
+      | KIE_SERVER_PERSISTENCE_DS       | java:jboss/datasources/yes       |
+      | KIE_SERVER_PERSISTENCE_TM       | tmTest                           |
     Then container log should contain -Dorg.kie.server.persistence.schema=schema.a
+     And container log should contain -Dorg.kie.server.persistence.dialect=org.hibernate.dialect.DB2Dialect
+     And container log should contain -Dorg.kie.server.persistence.ds=java:jboss/datasources/yes
+     And container log should contain -Dorg.kie.server.persistence.tm=tmTest
+
+
