@@ -1,4 +1,4 @@
-@rhdm-7/rhdm71-decisioncentral-openshift @rhpam-7/rhpam71-businesscentral-openshift
+@rhdm-7/rhdm72-decisioncentral-openshift @rhpam-7/rhpam72-businesscentral-openshift
 Feature: Decision/Business Central authoring features
 
   Scenario: Configure GIT_HOOKS_DIR and check for directory existence
