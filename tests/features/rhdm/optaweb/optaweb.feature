@@ -1,7 +1,7 @@
 @rhdm-7/rhdm72-optaweb-employee-rostering-openshift
 Feature: RHDM OptaWeb configuration tests
 
-  Scenario: Check jbpm is enabled in RHPAM 7
+  Scenario: Verify OptaWeb configurations
     When container is started with env
       | variable                                            | value                       |
       | OPTAWEB_EMPLOYEE_ROSTERING_PERSISTENCE_DATASOURCE   | java:jboss/datasource/123   |
