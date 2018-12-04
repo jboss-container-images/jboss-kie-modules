@@ -1,10 +1,10 @@
-@rhpam-7/rhpam71-businesscentral-openshift
+@rhpam-7/rhpam72-businesscentral-openshift
 Feature: RHPAM Business Central configuration tests
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
     When container is ready
-    Then container log should contain rhpam-7/rhpam71-businesscentral-openshift image, version
+    Then container log should contain rhpam-7/rhpam72-businesscentral-openshift image, version
 
   Scenario: Check for product and version environment variables
     When container is ready
