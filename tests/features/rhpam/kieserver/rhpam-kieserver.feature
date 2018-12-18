@@ -1,15 +1,15 @@
-@rhpam-7/rhpam72-kieserver-openshift
+@rhpam-7/rhpam73-kieserver-openshift
 Feature: RHPAM KIE Server configuration tests
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
     When container is ready
-    Then container log should contain rhpam-7/rhpam72-kieserver-openshift image, version
+    Then container log should contain rhpam-7/rhpam73-kieserver-openshift image, version
 
   Scenario: Check for product and version environment variables
     When container is ready
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-kieserver
-     And run sh -c 'echo $RHPAM_KIESERVER_VERSION' in container and check its output for 7.2
+     And run sh -c 'echo $RHPAM_KIESERVER_VERSION' in container and check its output for 7.3
 
   Scenario: Check custom war file was successfully deployed via CUSTOM_INSTALL_DIRECTORIES
     Given s2i build https://github.com/jboss-openshift/openshift-examples.git from custom-install-directories

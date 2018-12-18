@@ -1,15 +1,15 @@
-@rhpam-7/rhpam72-controller-openshift
+@rhpam-7/rhpam73-controller-openshift
 Feature: RHPAM Controller configuration tests
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
     When container is ready
-    Then container log should contain rhpam-7/rhpam72-controller-openshift image, version
+    Then container log should contain rhpam-7/rhpam73-controller-openshift image, version
 
   Scenario: Check for product and version environment variables
     When container is ready
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-controller
-     And run sh -c 'echo $RHPAM_CONTROLLER_VERSION' in container and check its output for 7.2
+     And run sh -c 'echo $RHPAM_CONTROLLER_VERSION' in container and check its output for 7.3
 
   # https://issues.jboss.org/browse/RHPAM-891
   Scenario: Check default users are properly configured

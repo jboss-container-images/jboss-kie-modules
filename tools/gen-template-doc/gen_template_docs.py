@@ -40,8 +40,10 @@ template_dirs = ['rhpam-7-openshift-image/templates', 'rhdm-7-openshift-image/te
 LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm71-kieserver-openshift`]",
          "rhdm71-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhdm-7/rhdm71-kieserver-openshift`]",
          "rhdm72-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm72-kieserver-openshift`]",
+         "rhdm73-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm73-kieserver-openshift`]",
          "rhpam71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]",
-         "rhpam72-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam72-kieserver-openshift`]"}
+         "rhpam72-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam72-kieserver-openshift`]",
+         "rhpam73-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam73-kieserver-openshift`]"}
 
 # used to update template parameters values
 PARAMETER_VALUES = {"EXAMPLE": "var"}
@@ -152,8 +154,13 @@ def createTemplate(data, path):
                         secretName += param["value"] + '\n'
                 tdata['objects'][0]['secrets'] = [{"secretNames": secretName}]
 
-        # currently only the rhpam-authoring-ha will have clustering section, any new template that supports clustering needs to be added in the clusteringTemplates var.
-        clusteringTemplates = ['rhpam71-authoring-ha.yaml', 'rhpam72-authoring-ha.yaml']
+        # Any template that supports clustering needs to be added in the clusteringTemplates var.
+        clusteringTemplates = [
+            'rhpam70-authoring-ha.yaml',
+            'rhpam71-authoring-ha.yaml', 'rhdm71-authoring-ha.yaml',
+            'rhpam72-authoring-ha.yaml', 'rhdm72-authoring-ha.yaml',
+            'rhpam73-authoring-ha.yaml', 'rhdm73-authoring-ha.yaml'
+        ]
         for template in clusteringTemplates:
             if str(path).rsplit('/', 1)[-1] == template:
                 tdata['objects'][0]['clustering'] = [{}]
