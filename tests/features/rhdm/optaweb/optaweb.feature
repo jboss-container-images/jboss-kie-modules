@@ -1,4 +1,4 @@
-@rhdm-7/rhdm72-optaweb-employee-rostering-openshift
+@rhdm-7/rhdm73-optaweb-employee-rostering-openshift
 Feature: RHDM OptaWeb configuration tests
 
   Scenario: Verify OptaWeb configurations
