@@ -16,6 +16,17 @@
 #   Generate docs only for rhdm: ./gen_template_docs.py --rhdm
 #   Generate docs only for rhpam: ./gen_template_docs.py --rhpam
 #   Generate docs specifying custom branch: ./gen_template_docs.py --rhdm-git-branch 7.1.0 --rhpam-git-branch 7.1.0
+#   Generate docs and copy the docs to its final location:
+#       The default location of the generated docs are: ../../../<repo_name>/templates/docs/
+#       Considering that jboss-kie-modules and the other projects are in the same directory level, i.e:
+#        $ ls  /data/dev/sources
+#        ...
+#        jboss-processserver-6-openshift-image      rhpam-7-openshift-image
+#        And also considering that you are running the tool from jboss-kie-modules/tools/gen-template-doc
+#
+#       ./gen_template_docs.py --rhdm --copy-docs
+#
+#       To specify the a custom directory use:  ./gen_template_docs.py --rhdm --copy-docs --rhdm-docs-final-location /my/custom/dir
 
 import argparse
 import json
@@ -27,14 +38,19 @@ import re
 from collections import OrderedDict
 from pygit2 import clone_repository
 from ptemplate.template import Template
+from shutil import copy
 
 RHDM_GIT_REPO = "https://github.com/jboss-container-images/rhdm-7-openshift-image.git"
 RHPAM_GIT_REPO = "https://github.com/jboss-container-images/rhpam-7-openshift-image.git"
-GIT_REPO_LIST = ''
+IPS_GIT_REPO = "https://github.com/jboss-container-images/jboss-processserver-6-openshift-image.git"
+DS_GIT_REPO = "https://github.com/jboss-container-images/jboss-decisionserver-6-openshift-image.git"
+GIT_REPO_LIST = []
 REPO_NAME = "application-templates/"
-TEMPLATE_DOCS = "docs/"
-APPLICATION_DIRECTORIES = ("rhpam-7-openshift-image", "rhdm-7-openshift-image", "docs")
-template_dirs = ['rhpam-7-openshift-image/templates', 'rhdm-7-openshift-image/templates']
+TEMPLATE_DOCS = "output/"
+APPLICATION_DIRECTORIES = ("target/rhpam-7-openshift-image", "target/rhdm-7-openshift-image", "output/",
+                           "target/jboss-processserver-6-openshift-image", "target/jboss-decisionserver-6-openshift-image")
+template_dirs = ['target/rhpam-7-openshift-image/templates', 'target/rhdm-7-openshift-image/templates', 'target/rhdm-7-openshift-image/templates/optaweb',
+                 'target/jboss-processserver-6-openshift-image/templates', 'target/jboss-decisionserver-6-openshift-image/templates']
 
 # used to link the image to the image.yaml when the given image is used by a s2i build
 LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm71-kieserver-openshift`]",
@@ -43,7 +59,9 @@ LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-
          "rhdm73-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm73-kieserver-openshift`]",
          "rhpam71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]",
          "rhpam72-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam72-kieserver-openshift`]",
-         "rhpam73-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam73-kieserver-openshift`]"}
+         "rhpam73-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam73-kieserver-openshift`]",
+         "jboss-processserver64-openshift:1.4": "../../image.yaml[`jboss-processserver64-openshift`]",
+         "jboss-decisionserver64-openshift:1.4": "../..iamge.yaml[`jboss-decisionserver64-openshift`]"}
 
 # used to update template parameters values
 PARAMETER_VALUES = {"EXAMPLE": "var"}
@@ -78,10 +96,10 @@ def generate_template(path):
     with open(path) as data_file:
         if path[-5:] == '.json':
             data = json.load(data_file, object_pairs_hook=OrderedDict)
-            outfile = TEMPLATE_DOCS + re.sub('\.json$', '', path) + '.adoc'
+            outfile = TEMPLATE_DOCS + re.sub('\.json$', '',  path.replace('optaweb/', '')) + '.adoc'
         else:
             data = yaml.load(data_file)
-            outfile = TEMPLATE_DOCS + re.sub('\.yaml$', '', path) + '.adoc'
+            outfile = TEMPLATE_DOCS + re.sub('\.yaml$', '',  path.replace('optaweb/', '')) + '.adoc'
 
     if not 'labels' in data or not "template" in data["labels"]:
         sys.stderr.write("no template label for template %s, can't generate documentation\n" % path)
@@ -357,12 +375,13 @@ def createContainerTable(data, table):
     return text
 
 
-def generate_readme(generate_rhdm, generate_rhpam):
+def generate_readme(generate_rhdm, generate_rhpam, generate_ips, generate_ds):
+    black_list = ['contrib', 'docs', 'optaweb']
     """Generates a README page for the template documentation."""
     if generate_rhdm:
         try:
-            with open('docs/rhdm-7-openshift-image/README.adoc', 'w') as fh:
-                print('Generating docs/rhdm-7-openshift-image/README.adoc...')
+            with open('output/target/rhdm-7-openshift-image/README.adoc', 'w') as fh:
+                print('Generating output/target/rhdm-7-openshift-image/README.adoc...')
                 fh.write(autogen_warning)
                 # page header
                 fh.write(open('./README_RHDM.adoc.in').read())
@@ -371,11 +390,13 @@ def generate_readme(generate_rhdm, generate_rhpam):
                         continue
                     elif "rhdm" in directory:
                         # section header
-                        fh.write('\n== %s\n\n' % fullname.get(directory, directory))
+                        prefix=''
+                        if "optaweb" in directory:
+                            prefix='optaweb-'
+                        fh.write('\n== %s%s\n\n' % (prefix, "rhdm-7-openshift-templates"))
                         # links
                         for template in [os.path.splitext(x)[0] for x in sorted(os.listdir(directory))]:
-                            # XXX: Hack for 1.3 release, which excludes processserver
-                            if template != "processserver-app-secret" and "image-stream" not in template:
+                            if "image-stream" not in template and template not in black_list:
                                 fh.write("* link:%s.adoc[%s]\n" % (template, template))
                 # release notes
                 fh.write(open('./release-notes-rhdm.adoc.in').read())
@@ -385,8 +406,8 @@ def generate_readme(generate_rhdm, generate_rhpam):
 
     if generate_rhpam:
         try:
-            with open('docs/rhpam-7-openshift-image/README.adoc', 'w') as fh:
-                print('Generating docs/rhpam-7-openshift-image/README.adoc...')
+            with open('output/target/rhpam-7-openshift-image/README.adoc', 'w') as fh:
+                print('Generating output/target/rhpam-7-openshift-image/README.adoc...')
                 fh.write(autogen_warning)
                 # page header
                 fh.write(open('./README_RHPAM.adoc.in').read())
@@ -396,11 +417,11 @@ def generate_readme(generate_rhdm, generate_rhpam):
                         continue
                     elif "rhpam" in directory:
                         # section header
-                        fh.write('\n== %s\n\n' % fullname.get(directory, directory))
+                        fh.write('\n== %s\n\n' % "rhpam-7-openshift-templates")
+
                         # links
                         for template in [os.path.splitext(x)[0] for x in sorted(os.listdir(directory))]:
-                            # XXX: Hack for 1.3 release, which excludes processserver
-                            if template != "processserver-app-secret" and "image-stream" not in template:
+                            if "image-stream" not in template and template not in black_list:
                                 fh.write("* link:%s.adoc[%s]\n" % (template, template))
                 # release notes
                 fh.write(open('./release-notes-rhpam.adoc.in').read())
@@ -408,8 +429,55 @@ def generate_readme(generate_rhdm, generate_rhpam):
             print("Error while writing README_RHPAM.adoc: " + str(e))
             pass
 
+    if generate_ips:
+        try:
+            with open('output/target/jboss-processserver-6-openshift-image/README.adoc', 'w') as fh:
+                print('Generating output/target/jboss-processserver-6-openshift-image/README.adoc...')
+                fh.write(autogen_warning)
+                # page header
+                fh.write(open('./README_IPS.adoc.in').read())
 
-def pull_templates(rhdm_git_branch, rhpam_git_branch):
+                for directory in sorted(template_dirs):
+                    if not os.path.isdir(directory):
+                        continue
+                    elif "processserver" in directory:
+                        # section header
+                        fh.write('\n== %s\n\n' % "ips-openshift-templates")
+                        # links
+                        for template in [os.path.splitext(x)[0] for x in sorted(os.listdir(directory))]:
+                            if template != "processserver-app-secret" and "image-stream" not in template and template not in black_list:
+                                fh.write("* link:%s.adoc[%s]\n" % (template, template))
+                # release notes
+                fh.write(open('./release-notes-ips.adoc.in').read())
+        except IOError, e:
+            print("Error while writing README_IPS.adoc: " + str(e))
+            pass
+
+    if generate_ds:
+        try:
+            with open('output/target/jboss-decisionserver-6-openshift-image/README.adoc', 'w') as fh:
+                print('Generating output/target/jboss-decisionserver-6-openshift-image/README.adoc...')
+                fh.write(autogen_warning)
+                # page header
+                fh.write(open('./README_DS.adoc.in').read())
+
+                for directory in sorted(template_dirs):
+                    if not os.path.isdir(directory):
+                        continue
+                    elif "decisionserver" in directory:
+                        # section header
+                        fh.write('\n== %s\n\n' % "ds-openshift-templates")
+                        # links
+                        for template in [os.path.splitext(x)[0] for x in sorted(os.listdir(directory))]:
+                            if "image-stream" not in template and template not in black_list:
+                                fh.write("* link:%s.adoc[%s]\n" % (template, template))
+                # release notes
+                fh.write(open('./release-notes-ds.adoc.in').read())
+        except IOError, e:
+            print("Error while writing README_DS.adoc: " + str(e))
+            pass
+
+def pull_templates(rhdm_git_branch, rhpam_git_branch, ips_git_branch, ds_git_branch):
     print ('Pulling templates from {0}'.format(GIT_REPO_LIST))
     try:
         for dir in APPLICATION_DIRECTORIES:
@@ -419,39 +487,124 @@ def pull_templates(rhdm_git_branch, rhpam_git_branch):
         print("Error: %s - %s." % (e.filename, e.strerror))
 
     for repo in GIT_REPO_LIST:
-        git_dir = repo.rsplit('/', 1)[-1].replace('.git', '')
+        git_dir = 'target/' + repo.rsplit('/', 1)[-1].replace('.git', '')
         if 'rhdm' in git_dir:
             print('Using RHDM branch {0}'.format(rhdm_git_branch))
             clone_repository(repo, git_dir, bare=False, checkout_branch=rhdm_git_branch)
         elif 'rhpam' in git_dir:
             print('Using RHPAM branch {0}'.format(rhpam_git_branch))
             clone_repository(repo, git_dir, bare=False, checkout_branch=rhpam_git_branch)
+        elif 'processserver' in git_dir:
+            print('Using IPS branch {0}'.format(ips_git_branch))
+            clone_repository(repo, git_dir, bare=False, checkout_branch=ips_git_branch)
+        elif 'decisionserver' in git_dir:
+            print('Using DS branch {0}'.format(ds_git_branch))
+            clone_repository(repo, git_dir, bare=False, checkout_branch=ds_git_branch)
 
+def copy_templates_adoc(generate_rhdm, generate_rhpam, generate_ips, generate_ds,
+                             rhdm_docs_final_location, rhpam_docs_final_location,
+                             ips_docs_final_location, ds_docs_final_location):
+
+    for project in APPLICATION_DIRECTORIES:
+        if generate_rhdm and "rhdm" in project:
+            try:
+                for dirpath, dirnames, files in os.walk(TEMPLATE_DOCS + "" + project):
+                    for template in files:
+                        if template[-5:] != '.adoc':
+                            continue
+                        print('Copying file {0} to {1}'.format(os.path.join(dirpath, template), rhdm_docs_final_location))
+                        copy(os.path.join(dirpath, template), rhdm_docs_final_location)
+            except IOError, e:
+                print("Error while copying RHDM adocs: " + str(e))
+                pass
+
+        if generate_rhpam and "rhpam" in project:
+            try:
+                for dirpath, dirnames, files in os.walk(TEMPLATE_DOCS + "" + project):
+                    for template in files:
+                        if template[-5:] != '.adoc':
+                            continue
+                        print('Copying file {0} to {1}'.format(os.path.join(dirpath, template), rhpam_docs_final_location))
+                        copy(os.path.join(dirpath, template), rhpam_docs_final_location)
+            except IOError, e:
+                print("Error while copying RHPAM adocs: " + str(e))
+                pass
+
+        if generate_ips and "processserver" in project:
+            try:
+                for dirpath, dirnames, files in os.walk(TEMPLATE_DOCS + "" + project):
+                    for template in files:
+                        if template[-5:] != '.adoc':
+                            continue
+                        print('Copying file {0} to {1}'.format(os.path.join(dirpath, template), ips_docs_final_location))
+                        copy(os.path.join(dirpath, template), ips_docs_final_location)
+            except IOError, e:
+                print("Error while copying RHPAM adocs: " + str(e))
+                pass
+
+        if generate_ds and "decisionserver in":
+            try:
+                for dirpath, dirnames, files in os.walk(TEMPLATE_DOCS + "" + project):
+                    for template in files:
+                        if template[-5:] != '.adoc':
+                            continue
+                        print('Copying file {0} to {1}'.format(os.path.join(dirpath, template), ds_docs_final_location))
+                        copy(os.path.join(dirpath, template), ds_docs_final_location)
+            except IOError, e:
+                print("Error while copying RHPAM adocs: " + str(e))
+                pass
 
 # expects to be run from the root of the repository
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='OpenShift Application Templates docs generator')
-    parser.add_argument('--rhdm-git-branch', dest='rhdm_git_branch', default='rhdm71-dev', help='Branch to checkout')
-    parser.add_argument('--rhpam-git-branch', dest='rhpam_git_branch', default='rhpam71-dev', help='Branch to checkout')
+    parser.add_argument('--rhdm-git-branch', dest='rhdm_git_branch', default='master', help='Branch to checkout')
+    parser.add_argument('--rhpam-git-branch', dest='rhpam_git_branch', default='master', help='Branch to checkout')
+    parser.add_argument('--ips-git-branch', dest='ips_git_branch', default='6.4.x', help='Branch to checkout')
+    parser.add_argument('--ds-git-branch', dest='ds_git_branch', default='6.4.x', help='Branch to checkout')
     parser.add_argument('--rhdm', dest='generate_rhdm', action='store_true', default=False,
                         help='If set, only rhdm template docs will be generated')
     parser.add_argument('--rhpam', dest='generate_rhpam', action='store_true', default=False,
                         help='If set, only rhpam template docs will be generated')
+    parser.add_argument('--ips', dest='generate_ips', action='store_true', default=False,
+                        help='If set, only IPS template docs will be generated')
+    parser.add_argument('--ds', dest='generate_ds', action='store_true', default=False,
+                        help='If set, only IPS template docs will be generated')
+
+    parser.add_argument('--copy-docs', dest='copy_docs', action='store_true', default=False,
+                        help='If set, the generated docs will be copied to the defined final directory '
+                             'defined by the --rhdm-docs-final-location, --rhpam-docs-final-location,'
+                             '--ips-docs-final-location and --ds-docs-final-location')
+    parser.add_argument('--rhdm-docs-final-location', dest='rhdm_docs_final_location', default='../../../rhdm-7-openshift-image/templates/docs/',
+                        help='RHDM final docs location, this directory will be used to copy the generated docs. The default location is defined based on this script root\'s directory.')
+    parser.add_argument('--rhpam-docs-final-location', dest='rhpam_docs_final_location', default='../../../rhpam-7-openshift-image/templates/docs/',
+                        help='RHPAM final docs location, this directory will be used to copy the generated docs. The default location is defined based on this script root\'s directory.')
+    parser.add_argument('--ips-docs-final-location', dest='ips_docs_final_location', default='../../../jboss-processserver-6-openshift-image/templates/docs/',
+                        help='IPS final docs location, this directory will be used to copy the generated docs. The default location is defined based on this script root\'s directory.')
+    parser.add_argument('--ds-docs-final-location', dest='ds_docs_final_location', default='../../../jboss-decisionserver-6-openshift-image/templates/docs/',
+                        help='DS final docs location, this directory will be used to copy the generated docs. The default location is defined based on this script root\'s directory.')
+
     parser.add_argument('--template', dest='template', help='Generate the docs for only one template')
     args = parser.parse_args()
 
-    if not args.generate_rhdm and not args.generate_rhpam:
-        GIT_REPO_LIST = [RHDM_GIT_REPO, RHPAM_GIT_REPO]
+    if not args.generate_rhdm and not args.generate_rhpam and not args.generate_ips and not args.generate_ds:
+        GIT_REPO_LIST = [RHDM_GIT_REPO, RHPAM_GIT_REPO, IPS_GIT_REPO, DS_GIT_REPO]
         # when no args are provided the default behavior is generate docs for pam and dm
         # so, here the values for args.generate_rhdm and args.generate_rhpam
         # are manually set.
         args.generate_rhdm = True
         args.generate_rhpam = True
+        args.generate_ds = True
+        args.generate_ips = True
+
     elif args.generate_rhdm:
-        GIT_REPO_LIST = [RHDM_GIT_REPO]
+        GIT_REPO_LIST.append(RHDM_GIT_REPO)
     elif args.generate_rhpam:
-        GIT_REPO_LIST = [RHPAM_GIT_REPO]
+        GIT_REPO_LIST.append(RHPAM_GIT_REPO)
+    elif args.generate_ips:
+        GIT_REPO_LIST.append(IPS_GIT_REPO)
+    elif args.generate_ds:
+        GIT_REPO_LIST.append(DS_GIT_REPO)
     # the user may specify a particular template to parse,
     if args.template:
         generate_template(args.template)
@@ -463,6 +616,10 @@ if __name__ == "__main__":
         except OSError as e:
             print("Error: %s - %s." % ('docs', e.strerror))
         # pull all the templates from upstream
-        pull_templates(args.rhdm_git_branch, args.rhpam_git_branch)
+        pull_templates(args.rhdm_git_branch, args.rhpam_git_branch, args.ips_git_branch, args.ds_git_branch)
         generate_templates()
-        generate_readme(args.generate_rhdm, args.generate_rhpam)
+        generate_readme(args.generate_rhdm, args.generate_rhpam, args.generate_ips, args.generate_ds)
+        if args.copy_docs:
+            copy_templates_adoc(args.generate_rhdm, args.generate_rhpam, args.generate_ips, args.generate_ds,
+                                args.rhdm_docs_final_location, args.rhpam_docs_final_location,
+                                args.ips_docs_final_location, args.ds_docs_final_location)
