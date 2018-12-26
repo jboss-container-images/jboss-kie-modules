@@ -15,6 +15,9 @@ import (
 	kapi "k8s.io/kubernetes/pkg/apis/core"
 	kapiv1 "k8s.io/kubernetes/pkg/apis/core/v1"
 	kvalidation "k8s.io/kubernetes/pkg/apis/core/validation"
+	kappsv1 "k8s.io/api/apps/v1"
+	krbac "k8s.io/kubernetes/pkg/apis/rbac"
+	krbacvalidation "k8s.io/kubernetes/pkg/apis/rbac/validation"
 
 	appsapiv1 "github.com/openshift/api/apps/v1"
 	authapiv1 "github.com/openshift/api/authorization/v1"
@@ -365,6 +368,106 @@ func validateObjects(template templateapi.Template) {
 				invalidSelector, _ := regexp.MatchString(`\${\w+}*`, t.Spec.Selector["deploymentConfig"])
 				if invalidSelector {
 					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "spec.selector[deploymentConfig] should should not be empty or value is not correct. Provided value: "+t.Spec.Selector["deploymentConfig"])
+				}
+
+			case *kappsv1.StatefulSet:
+				t.Namespace = "default"
+				errorPrefix := fmt.Sprintf("StatefulSet-%s", t.Name)
+
+				if t.Spec.Template.Spec.RestartPolicy == "" {
+					t.Spec.Template.Spec.RestartPolicy = corev1.RestartPolicyAlways
+				}
+
+				if t.Spec.Template.Spec.DNSPolicy == "" {
+					t.Spec.Template.Spec.DNSPolicy = corev1.DNSDefault
+				}
+
+				for i, container := range t.Spec.Template.Spec.Containers {
+					if utils.Debug && container.Ports[i].ContainerPort == 0 {
+						fmt.Printf("A possible error happened on object kind '%s' and name '%s' while parsing container ports %v\n", reflect.TypeOf(t), t.Name, container.Ports)
+					}
+
+					if container.LivenessProbe != nil {
+						if container.LivenessProbe.SuccessThreshold == 0 {
+							t.Spec.Template.Spec.Containers[i].LivenessProbe.SuccessThreshold = 1
+						}
+					}
+
+					if container.TerminationMessagePolicy == "" {
+						t.Spec.Template.Spec.Containers[i].TerminationMessagePolicy = corev1.TerminationMessageFallbackToLogsOnError
+					}
+
+					for j, env := range container.Env {
+						if env.ValueFrom != nil {
+							t.Spec.Template.Spec.Containers[i].Env[j].ValueFrom.FieldRef.APIVersion = appsapiv1.SchemeGroupVersion.Version
+						}
+					}
+
+					// check if there is duplicate envs
+					seen := make(map[string]struct{}, len(container.Env))
+					for _, v := range container.Env {
+						if _, ok := seen[v.Name]; ok {
+							validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "The following parameter is duplicate: " + v.Name)
+							continue
+						}
+						seen[v.Name] = struct{}{}
+					}
+				}
+
+				versioned, err := legacyscheme.Scheme.ConvertToVersion(t, appsapi.SchemeGroupVersion)
+				if err != nil {
+					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], err.Error())
+					if utils.Debug {
+						fmt.Printf("Error on convertion Unstructured object to appsapi.DeploymentConfit %v", err.Error())
+					}
+				}
+
+				appsDeploymentConfig := versioned.(*appsapi.DeploymentConfig)
+				if errs := appsvalidation.ValidateDeploymentConfig(appsDeploymentConfig); errs != nil {
+					for _, e := range errs {
+						validationErrors[errorPrefix] = append(validationErrors[errorPrefix], e.Error())
+					}
+					if utils.Debug && len(errs) > 0 {
+						fmt.Printf("Error on validating DeploymentConfig Object %v", err)
+					}
+				}
+
+				if t.Labels["application"] == "" {
+					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "metadata.labels.[application] cannot be empty.")
+				}
+
+				if t.Labels["service"] == "" {
+					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "metadata.labels.[service] cannot be empty.")
+				}
+
+				if t.Annotations["template.alpha.openshift.io/wait-for-ready"] != "true" {
+					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "metadata.annotations.[template.alpha.openshift.io/wait-for-ready] cannot be empty or does not contain the expected value: Provided["+t.Annotations["template.alpha.openshift.io/wait-for-ready"]+"]-Expected[true]")
+				}
+
+			case *krbac.Role:
+				t.Namespace = "default"
+
+				if err := krbacvalidation.ValidateRole(t); len(err) > 0 {
+					for _, e := range err {
+						validationErrors["Role"] = append(validationErrors["Role"], e.Error())
+					}
+				}
+
+				if t.Labels["application"] == "" {
+					validationErrors["Role"] = append(validationErrors["Role"], "metadata.labels.[application] cannot be empty.")
+				}
+
+			case *krbac.RoleBinding:
+				t.Namespace = "default"
+
+				if err := krbacvalidation.ValidateRoleBinding(t); len(err) > 0 {
+					for _, e := range err {
+						validationErrors["RoleBinding"] = append(validationErrors["RoleBinding"], e.Error())
+					}
+				}
+
+				if t.Labels["application"] == "" {
+					validationErrors["RoleBinding"] = append(validationErrors["RoleBinding"], "metadata.labels.[application] cannot be empty.")
 				}
 
 			default:
