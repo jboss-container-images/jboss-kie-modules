@@ -86,3 +86,43 @@ Feature: RHPAM Smart Router configuration tests
       | KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD  | mykeystorepass                   |
     Then container log should match regex KieServerRouter started on.*9000 and .*9443 \(TLS\) at
     And container log should contain Container is in test mode and not in OpenShift, generating test certificate
+
+  Scenario: Verify if the properties were correctly set
+    When container is started with env
+      | variable                                  | value        |
+      | SCRIPT_DEBUG                              | true         |
+      | KIE_SERVER_CONTROLLER_HOST                | 10.1.1.190   |
+      | KIE_SERVER_CONTROLLER_PORT                | 9005         |
+      | KIE_SERVER_CONTROLLER_PROTOCOL            | http         |
+      | KIE_SERVER_CONTROLLER_PWD                 | 123changeme  |
+      | KIE_SERVER_CONTROLLER_TOKEN               | tokenA       |
+      | KIE_SERVER_CONTROLLER_USER                | userA        |
+      | KIE_SERVER_ROUTER_HOST                    | routerHost   |
+      | KIE_SERVER_ROUTER_ID                      | routerID     |
+      | KIE_SERVER_ROUTER_NAME                    | routerName   |
+      | KIE_SERVER_ROUTER_PORT                    | 10508        |
+      | KIE_SERVER_ROUTER_PROTOCOL                | http         |
+      | KIE_SERVER_ROUTER_URL_EXTERNAL            | externalURL  |
+      | KIE_SERVER_ROUTER_REPO                    | routerRepo   |
+      | KIE_SERVER_ROUTER_CONFIG_WATCHER_ENABLED  | true         |
+    Then container log should contain org.kie.server.controller = http://10.1.1.190:9005
+     And container log should contain org.kie.server.controller.user = userA
+     And container log should contain org.kie.server.controller.pwd = 123changeme
+     And container log should contain org.kie.server.controller.token = tokenA
+     And container log should contain org.kie.server.router.host = routerHost
+     And container log should contain org.kie.server.router.port = 10508
+     And container log should contain org.kie.server.router.id = routerID
+     And container log should contain org.kie.server.router.name = routerName
+     And container log should contain org.kie.server.router.url.external = externalURL
+     And container log should contain org.kie.server.router.repo = routerRepo
+     And container log should contain org.kie.server.router.config.watcher.enabled = true
+
+  Scenario: Verify if the properties were correctly set using CONTROLLER_SERVICE
+    When container is started with env
+      | variable                       | value        |
+      | SCRIPT_DEBUG                   | true         |
+      | KIE_SERVER_CONTROLLER_SERVICE  | SERVICE_ONE  |
+      | SERVICE_ONE_SERVICE_HOST       | 10.1.1.12    |
+      | SERVICE_ONE_SERVICE_PORT       | 10508        |
+      | KIE_SERVER_CONTROLLER_PROTOCOL | http         |
+    Then container log should contain -Dorg.kie.server.controller=http://10.1.1.12:10508
