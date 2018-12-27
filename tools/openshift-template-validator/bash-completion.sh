@@ -5,15 +5,15 @@ _validator_completions() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     showOnlyOne="${COMP_WORDS[1]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="validate help h"
-    allOpts="--template --dir --persist --custom-annotation --template-version --validate-version --verbose --strict --dump"
+    opts="validate help"
+    allOpts="--file --dir --persist --custom-annotation --template-version --validate-version --verbose --strict --dump --help"
 
     case "${prev}" in
         validate)
             COMPREPLY=( $(compgen -W "${allOpts}" -- ${cur}) )
 
             ;;
-        -t|--template|-d|--dir)
+        -f|--file|-d|--dir)
             return 0
             ;;
         *)

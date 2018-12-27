@@ -275,8 +275,8 @@ func validateObjects(template templateapi.Template) {
 					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], err.Error())
 				}
 
-				imageImageStream := versioned.(*imageapi.ImageStream)
-				if err := imagevalidation.ValidateImageStream(imageImageStream); err != nil {
+				imageStream := versioned.(*imageapi.ImageStream)
+				if err := imagevalidation.ValidateImageStream(imageStream); err != nil {
 					for _, e := range err {
 						validationErrors[errorPrefix] = append(validationErrors[errorPrefix], e.Error())
 					}
@@ -286,7 +286,7 @@ func validateObjects(template templateapi.Template) {
 					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "metadata.labels.[application] cannot be empty.")
 				}
 
-				// deploymentConfig should have the annotation template.alpha.openshift.io/wait-for-ready: "true"
+			// deploymentConfig should have the annotation template.alpha.openshift.io/wait-for-ready: "true"
 			case *appsapiv1.DeploymentConfig:
 				t.Namespace = "default"
 				errorPrefix := fmt.Sprintf("DeploymentConfig-%s", t.Name)
