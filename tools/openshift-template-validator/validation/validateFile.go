@@ -14,11 +14,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/kubernetes/pkg/api/legacyscheme"
 
-	templateapi "github.com/openshift/origin/pkg/template/apis/template"
-
 	"github.com/jboss-container-images/jboss-kie-modules/tools/openshift-template-validator/utils"
 
 	_ "github.com/openshift/origin/pkg/api/install"
+	templateapi "github.com/openshift/origin/pkg/template/apis/template"
 )
 
 var (
@@ -60,15 +59,19 @@ func Validate(file string) bool {
 		}
 
 		fmt.Print("Validating file " + file)
+
 		// replace the very first apiVersion from v1 to template.openshift.io/v1
-		if utils.Debug {
-			fmt.Print(" -> replacing Template apiVersion from v1 to template.openshift.io/v1")
-		}
 		data = bytes.Replace(data, []byte("v1"), []byte("template.openshift.io/v1"), 1)
 
 		// global validator, only verifies syntax issues
 		if err := runtime.DecodeInto(legacyscheme.Codecs.UniversalDecoder(), data, &template); err != nil {
-			validationErrors["Syntax"] = append(validationErrors["Syntax"], filepath.Base(file)+" - "+err.Error())
+
+			if !strings.ContainsAny(err.Error(), "\"List\"") {
+				validationErrors["Syntax"] = append(validationErrors["Syntax"], filepath.Base(file)+" - "+err.Error())
+			} else {
+				// if imageStreamList, validate it.
+				validateImageStreams(data, file)
+			}
 		}
 
 		// parse the data to json
@@ -90,7 +93,6 @@ func Validate(file string) bool {
 
 			// validate all template objects like, DeploymentConfig, BuildConfig, ImageStreams, Rolebinding, etc..
 			validateObjects(template)
-
 		}
 
 		if len(validationErrors) > 0 {

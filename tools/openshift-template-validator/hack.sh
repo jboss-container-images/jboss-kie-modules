@@ -45,4 +45,4 @@ mv $GOPATH/src/github.com/jboss-container-images/jboss-kie-modules/tools/openshi
 
 
 echo "Trying to build the openshift-template-validator"
-make install
+make && sudo make install

@@ -22,6 +22,7 @@ var (
 	ValidateTemplateVersion bool
 	RequiredAnnotations     = []string{"iconClass", "openshift.io/display-name", "tags", "version", "description", "openshift.io/provider-display-name",
 		"template.openshift.io/documentation-url", "template.openshift.io/support-url", "template.openshift.io/long-description", "template.openshift.io/bindable"}
+	RequiredImageStreamAnnotations = []string{"description", "iconClass", "tags", "supports", "version"}
 )
 
 // read the template and returns its raw data
@@ -60,7 +61,9 @@ func ParsePort(value string) error {
 
 func In_array(a []string, value string) bool {
 	for _, v := range a {
-		if v == value {return true}
+		if v == value {
+			return true
+		}
 	}
 	return false
 }
