@@ -63,6 +63,11 @@ var ValidateCommand = cli.Command{
 			Usage:       "Dump all parsed template parameters.",
 			Destination: &utils.DumpParameters,
 		},
+		cli.BoolFlag{
+			Name:        "disable-defer",
+			Usage:       "Disable defer which recover from panic for troubleshooting purposes.",
+			Destination: &utils.DisableDefer,
+		},
 	},
 	Action: func(c *cli.Context) error {
 
