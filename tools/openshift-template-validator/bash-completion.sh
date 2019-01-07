@@ -6,7 +6,7 @@ _validator_completions() {
     showOnlyOne="${COMP_WORDS[1]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     opts="validate help"
-    allOpts="--file --dir --persist --custom-annotation --template-version --validate-version --verbose --strict --dump --help"
+    allOpts="--file --dir --persist --custom-annotation --template-version --validate-version --verbose --strict --dump --help --disable-defer"
 
     case "${prev}" in
         validate)

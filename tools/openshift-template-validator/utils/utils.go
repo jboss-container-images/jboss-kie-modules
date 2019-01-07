@@ -20,6 +20,7 @@ var (
 	Persist                 bool
 	Strict                  bool
 	ValidateTemplateVersion bool
+	DisableDefer			bool
 	RequiredAnnotations     = []string{"iconClass", "openshift.io/display-name", "tags", "version", "description", "openshift.io/provider-display-name",
 		"template.openshift.io/documentation-url", "template.openshift.io/support-url", "template.openshift.io/long-description", "template.openshift.io/bindable"}
 	RequiredImageStreamAnnotations = []string{"description", "iconClass", "tags", "supports", "version"}
@@ -69,9 +70,9 @@ func In_array(a []string, value string) bool {
 }
 
 func RecoverFromPanic() {
-	if r := recover(); r != nil {
+	if r := recover(); r != nil && !DisableDefer {
 		if Debug {
-			fmt.Println("recovered from ", r)
+			fmt.Println("\nPanic-----recovered from ", r)
 		}
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	kappsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -15,7 +16,6 @@ import (
 	kapi "k8s.io/kubernetes/pkg/apis/core"
 	kapiv1 "k8s.io/kubernetes/pkg/apis/core/v1"
 	kvalidation "k8s.io/kubernetes/pkg/apis/core/validation"
-	kappsv1 "k8s.io/api/apps/v1"
 	krbac "k8s.io/kubernetes/pkg/apis/rbac"
 	krbacvalidation "k8s.io/kubernetes/pkg/apis/rbac/validation"
 
@@ -45,6 +45,7 @@ import (
 )
 
 func validateObjects(template templateapi.Template) {
+
 	defer utils.RecoverFromPanic()
 
 	// Process the template to replace the env values
@@ -115,7 +116,6 @@ func validateObjects(template templateapi.Template) {
 						validationErrors["ServiceAccount"] = append(validationErrors["ServiceAccount"], e.Error())
 					}
 				}
-
 
 			case *corev1.PersistentVolumeClaim:
 				t.Namespace = "default"
@@ -286,7 +286,7 @@ func validateObjects(template templateapi.Template) {
 					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "metadata.labels.[application] cannot be empty.")
 				}
 
-			// deploymentConfig should have the annotation template.alpha.openshift.io/wait-for-ready: "true"
+				// deploymentConfig should have the annotation template.alpha.openshift.io/wait-for-ready: "true"
 			case *appsapiv1.DeploymentConfig:
 				t.Namespace = "default"
 				errorPrefix := fmt.Sprintf("DeploymentConfig-%s", t.Name)
@@ -300,7 +300,7 @@ func validateObjects(template templateapi.Template) {
 				}
 
 				for i, container := range t.Spec.Template.Spec.Containers {
-					if utils.Debug && container.Ports[i].ContainerPort == 0 {
+					if utils.Debug && len(container.Ports) > 0 && container.Ports[i].ContainerPort == 0 {
 						fmt.Printf("A possible error happened on object kind '%s' and name '%s' while parsing container ports %v\n", reflect.TypeOf(t), t.Name, container.Ports)
 					}
 
@@ -324,7 +324,7 @@ func validateObjects(template templateapi.Template) {
 					seen := make(map[string]struct{}, len(container.Env))
 					for _, v := range container.Env {
 						if _, ok := seen[v.Name]; ok {
-							validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "The following parameter is duplicate: " + v.Name)
+							validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "The following parameter is duplicate: "+v.Name)
 							continue
 						}
 						seen[v.Name] = struct{}{}
@@ -335,7 +335,7 @@ func validateObjects(template templateapi.Template) {
 				if err != nil {
 					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], err.Error())
 					if utils.Debug {
-						fmt.Printf("Error on convertion Unstructured object to appsapi.DeploymentConfit %v", err.Error())
+						fmt.Printf("Error on convertion Unstructured object to appsapi.DeploymentConfig %v", err.Error())
 					}
 				}
 
@@ -407,7 +407,7 @@ func validateObjects(template templateapi.Template) {
 					seen := make(map[string]struct{}, len(container.Env))
 					for _, v := range container.Env {
 						if _, ok := seen[v.Name]; ok {
-							validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "The following parameter is duplicate: " + v.Name)
+							validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "The following parameter is duplicate: "+v.Name)
 							continue
 						}
 						seen[v.Name] = struct{}{}
