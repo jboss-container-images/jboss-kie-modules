@@ -169,21 +169,69 @@ function add_kie_server_controller_user() {
     add_eap_user "controller" "$(get_kie_server_controller_user)" "$(get_kie_server_controller_pwd)" "$(get_kie_server_controller_roles)"
 }
 
-########## EAP ##########
 
-function add_eap_user() {
-    local kie_type="${1}"
-    local eap_user="${2}"
-    local eap_pwd="${3}"
-    local eap_roles="${4}"
-    if [ "x${eap_roles}" != "x" ]; then
-        ${JBOSS_HOME}/bin/add-user.sh -a --user "${eap_user}" --password "${eap_pwd}" --role "${eap_roles}"
-    else
-        ${JBOSS_HOME}/bin/add-user.sh -a --user "${eap_user}" --password "${eap_pwd}"
+# print information if the users creation is skipped
+# This function only have the purpose to print user information based on product
+# to guide the user about what users they need to create on the external auth provider, if enabled.
+#
+# $1 - type/component
+print_user_information() {
+    if [ "${AUTH_LDAP_URL}x" != "x" ] || [ "${SSO_URL}x" != "x" ]; then
+        log_info "External authentication/authorization enabled, skipping the embedded users creation."
+        if [ "${1}" == "kieadmin" ] || [ "${1}" == "central" ] || [ "${1}" == "kieserver" ]; then
+            if [ "${KIE_ADMIN_USER}x" != "x" ]; then
+                log_info "KIE_ADMIN_USER is set to ${KIE_ADMIN_USER}, make sure to configure this user with the provided password on the external auth provider with the roles $(get_kie_admin_roles)"
+            else
+                log_info "Make sure to configure a ADMIN user to access the Business Central with the roles $(get_kie_admin_roles)"
+            fi
+        fi
+
+        if [ "${1}" == "central" ] || [ "${1}" == "kieserver" ]; then
+            if [ "${KIE_MAVEN_USER}x" != "x"  ]; then
+                log_info "KIE_MAVEN_USER is set to ${KIE_MAVEN_USER}, make sure to configure this user with the provided password on the external auth provider."
+            else
+                log_info "Make sure to configure the KIE_MAVEN_USER user to interact with Business Central embedded maven server"
+            fi
+
+        fi
+
+        if [ "${1}" == "central" ] || [ "${1}" == "kieserver" ] || [ "${1}" == "controller" ]; then
+            if [ "${KIE_SERVER_CONTROLLER_USER}x" != "x" ]; then
+                log_info "KIE_SERVER_CONTROLLER_USER is set to ${KIE_SERVER_CONTROLLER_USER}, make sure to configure this user with the provided password on the external auth provider with the roles $(get_kie_server_controller_roles)"
+            else
+                log_info "Make sure to configure the KIE_SERVER_CONTROLLER_USER user to interact with KIE Server rest api with the roles $(get_kie_server_controller_roles)"
+            fi
+
+        fi
+
+        if [ "${1}" == "kieserver" ] || [ "${1}" == "controller" ]; then
+            if [ "${KIE_SERVER_USER}x" != "x" ]; then
+                log_info "KIE_SERVER_USER is set to ${KIE_SERVER_USER}, make sure to configure this user with the provided password on the external auth provider with the roles $(get_kie_server_roles)"
+            else
+                log_info "Make sure to configure the KIE_SERVER_USER user to interact with KIE Server rest api with the roles $(get_kie_server_roles)"
+            fi
+        fi
     fi
-    if [ "$?" -ne "0" ]; then
-        log_error "Failed to add KIE ${kie_type} user \"${eap_user}\" in EAP"
-        log_error "Exiting..."
-        exit
+
+}
+
+########## EAP ##########
+# If LDAP/SSO integration is enabled, do not create eap users.
+function add_eap_user() {
+     if [ "${AUTH_LDAP_URL}x" == "x" ] && [ "${SSO_URL}x" == "x" ]; then
+        local kie_type="${1}"
+        local eap_user="${2}"
+        local eap_pwd="${3}"
+        local eap_roles="${4}"
+        if [ "x${eap_roles}" != "x" ]; then
+            ${JBOSS_HOME}/bin/add-user.sh -a --user "${eap_user}" --password "${eap_pwd}" --role "${eap_roles}"
+        else
+            ${JBOSS_HOME}/bin/add-user.sh -a --user "${eap_user}" --password "${eap_pwd}"
+        fi
+        if [ "$?" -ne "0" ]; then
+            log_error "Failed to add KIE ${kie_type} user \"${eap_user}\" in EAP"
+            log_error "Exiting..."
+            exit
+        fi
     fi
 }

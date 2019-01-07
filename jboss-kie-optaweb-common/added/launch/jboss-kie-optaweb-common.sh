@@ -21,6 +21,7 @@ function configure() {
 function configure_optaweb_security() {
     # add eap users (see jboss-kie-wildfly-security.sh)
     add_kie_admin_user
+    print_user_information "kieadmin"
 }
 
 function configure_optaweb_generator() {

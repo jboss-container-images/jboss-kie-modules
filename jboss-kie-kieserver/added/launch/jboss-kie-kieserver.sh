@@ -367,6 +367,7 @@ function configure_server_security() {
     # add eap users (see jboss-kie-wildfly-security.sh)
     add_kie_admin_user
     add_kie_server_user
+    print_user_information "kieserver"
     # user/pwd
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.user=\"$(get_kie_server_user)\""
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.pwd=\"$(esc_kie_server_pwd)\""

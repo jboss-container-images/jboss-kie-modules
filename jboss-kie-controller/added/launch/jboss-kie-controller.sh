@@ -21,6 +21,7 @@ function configure() {
 function configure_controller_security() {
     # add eap user (see jboss-kie-wildfly-security.sh)
     add_kie_server_controller_user
+    print_user_information "controller"
 }
 
 function configure_server_access() {
