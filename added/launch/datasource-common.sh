@@ -215,7 +215,7 @@ function generate_external_datasource() {
   local failed="false"
 
   if [ -n "$NON_XA_DATASOURCE" ] && [ "$NON_XA_DATASOURCE" = "true" ]; then
-    ds="<datasource jta=\"${jta}\" jndi-name=\"${jndi_name}\" pool-name=\"${pool_name}\" enabled=\"true\" use-java-context=\"true\">
+    ds="<datasource jta=\"${jta}\" jndi-name=\"${jndi_name}\" pool-name=\"${pool_name}\" enabled=\"true\" use-java-context=\"true\" statistics-enabled=\"\${wildfly.datasources.statistics-enabled:\${wildfly.statistics-enabled:false}}\">"
           <connection-url>${url}</connection-url>
           <driver>$driver</driver>"
   else
