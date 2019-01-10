@@ -1,4 +1,5 @@
     <server name="default">
+        <statistics enabled="${wildfly.messaging-activemq.statistics-enabled:${wildfly.statistics-enabled:false}}" />
         <security-setting name="#">
             <role name="guest" send="true" consume="true" create-non-durable-queue="true" delete-non-durable-queue="true"/>
         </security-setting>
