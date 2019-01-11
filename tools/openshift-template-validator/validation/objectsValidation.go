@@ -5,19 +5,19 @@ import (
 	"math/rand"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
 	kappsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	krbac "k8s.io/api/rbac/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kubernetes/pkg/api/legacyscheme"
 	kapi "k8s.io/kubernetes/pkg/apis/core"
 	kapiv1 "k8s.io/kubernetes/pkg/apis/core/v1"
 	kvalidation "k8s.io/kubernetes/pkg/apis/core/validation"
-	krbac "k8s.io/kubernetes/pkg/apis/rbac"
-	krbacvalidation "k8s.io/kubernetes/pkg/apis/rbac/validation"
 
 	appsapiv1 "github.com/openshift/api/apps/v1"
 	authapiv1 "github.com/openshift/api/authorization/v1"
@@ -27,7 +27,7 @@ import (
 	appsapi "github.com/openshift/origin/pkg/apps/apis/apps"
 	appsvalidation "github.com/openshift/origin/pkg/apps/apis/apps/validation"
 	authorizationapi "github.com/openshift/origin/pkg/authorization/apis/authorization"
-	"github.com/openshift/origin/pkg/authorization/apis/authorization/v1"
+	v1 "github.com/openshift/origin/pkg/authorization/apis/authorization/v1"
 	"github.com/openshift/origin/pkg/authorization/apis/authorization/validation"
 	buildapi "github.com/openshift/origin/pkg/build/apis/build"
 	buildconversion "github.com/openshift/origin/pkg/build/apis/build/v1"
@@ -414,24 +414,6 @@ func validateObjects(template templateapi.Template) {
 					}
 				}
 
-				versioned, err := legacyscheme.Scheme.ConvertToVersion(t, appsapi.SchemeGroupVersion)
-				if err != nil {
-					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], err.Error())
-					if utils.Debug {
-						fmt.Printf("Error on convertion Unstructured object to appsapi.DeploymentConfit %v", err.Error())
-					}
-				}
-
-				appsDeploymentConfig := versioned.(*appsapi.DeploymentConfig)
-				if errs := appsvalidation.ValidateDeploymentConfig(appsDeploymentConfig); errs != nil {
-					for _, e := range errs {
-						validationErrors[errorPrefix] = append(validationErrors[errorPrefix], e.Error())
-					}
-					if utils.Debug && len(errs) > 0 {
-						fmt.Printf("Error on validating DeploymentConfig Object %v", err)
-					}
-				}
-
 				if t.Labels["application"] == "" {
 					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "metadata.labels.[application] cannot be empty.")
 				}
@@ -440,16 +422,20 @@ func validateObjects(template templateapi.Template) {
 					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "metadata.labels.[service] cannot be empty.")
 				}
 
-				if t.Annotations["template.alpha.openshift.io/wait-for-ready"] != "true" {
-					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "metadata.annotations.[template.alpha.openshift.io/wait-for-ready] cannot be empty or does not contain the expected value: Provided["+t.Annotations["template.alpha.openshift.io/wait-for-ready"]+"]-Expected[true]")
-				}
-
 			case *krbac.Role:
 				t.Namespace = "default"
 
-				if err := krbacvalidation.ValidateRole(t); len(err) > 0 {
-					for _, e := range err {
-						validationErrors["Role"] = append(validationErrors["Role"], e.Error())
+				for i, rule := range t.Rules {
+					if len(rule.APIGroups) == 0 {
+						validationErrors["Role"] = append(validationErrors["Role"], "rules.["+strconv.Itoa(i)+"].apiGroups cannot be empty.")
+					}
+
+					if len(rule.Resources) == 0 {
+						validationErrors["Role"] = append(validationErrors["Role"], "rules.["+strconv.Itoa(i)+"].resources cannot be empty.")
+					}
+
+					if len(rule.Verbs) == 0 {
+						validationErrors["Role"] = append(validationErrors["Role"], "rules.["+strconv.Itoa(i)+"].verbs cannot be empty.")
 					}
 				}
 
@@ -460,10 +446,16 @@ func validateObjects(template templateapi.Template) {
 			case *krbac.RoleBinding:
 				t.Namespace = "default"
 
-				if err := krbacvalidation.ValidateRoleBinding(t); len(err) > 0 {
-					for _, e := range err {
-						validationErrors["RoleBinding"] = append(validationErrors["RoleBinding"], e.Error())
-					}
+				if len(t.Subjects) == 0 {
+					validationErrors["RoleBinding"] = append(validationErrors["RoleBinding"], "subjects cannot be empty.")
+				}
+
+				if t.RoleRef.Kind == "" {
+					validationErrors["RoleBinding"] = append(validationErrors["RoleBinding"], "roleRef.kind cannot be empty.")
+				}
+
+				if t.RoleRef.Name == "" {
+					validationErrors["RoleBinding"] = append(validationErrors["RoleBinding"], "roleRef.name cannot be empty.")
 				}
 
 				if t.Labels["application"] == "" {
