@@ -1,6 +1,21 @@
-source $JBOSS_HOME/bin/launch/launch-common.sh
-source $JBOSS_HOME/bin/launch/tx-datasource.sh
-source $JBOSS_HOME/bin/launch/logging.sh
+
+if [ -n "${TEST_LAUNCH_INCLUDE}" ]; then
+    source "${TEST_LAUNCH_INCLUDE}"
+else
+    source $JBOSS_HOME/bin/launch/launch-common.sh
+fi
+
+if [ -n "${TEST_TX_DATASOURCE_INCLUDE}" ]; then
+    source "${TEST_TX_DATASOURCE_INCLUDE}"
+else
+    source $JBOSS_HOME/bin/launch/tx-datasource.sh
+fi
+
+if [ -n "${TEST_LOGGING_INCLUDE}" ]; then
+    source "${TEST_LOGGING_INCLUDE}"
+else
+    source $JBOSS_HOME/bin/launch/logging.sh
+fi
 
 function clearDatasourceEnv() {
   local prefix=$1
@@ -215,11 +230,11 @@ function generate_external_datasource() {
   local failed="false"
 
   if [ -n "$NON_XA_DATASOURCE" ] && [ "$NON_XA_DATASOURCE" = "true" ]; then
-    ds="<datasource jta=\"${jta}\" jndi-name=\"${jndi_name}\" pool-name=\"${pool_name}\" enabled=\"true\" use-java-context=\"true\" statistics-enabled=\"\${wildfly.datasources.statistics-enabled:\${wildfly.statistics-enabled:false}}\">"
+    ds="<datasource jta=\"${jta}\" jndi-name=\"${jndi_name}\" pool-name=\"${pool_name}\" enabled=\"true\" use-java-context=\"true\" statistics-enabled=\"\${wildfly.datasources.statistics-enabled:\${wildfly.statistics-enabled:false}}\">
           <connection-url>${url}</connection-url>
           <driver>$driver</driver>"
   else
-    ds=" <xa-datasource jndi-name=\"${jndi_name}\" pool-name=\"${pool_name}\" enabled=\"true\" use-java-context=\"true\">"
+    ds=" <xa-datasource jndi-name=\"${jndi_name}\" pool-name=\"${pool_name}\" enabled=\"true\" use-java-context=\"true\" statistics-enabled=\"\${wildfly.datasources.statistics-enabled:\${wildfly.statistics-enabled:false}}\">"
     local xa_props=$(compgen -v | grep -s "${prefix}_XA_CONNECTION_PROPERTY_")
     if [ -z "$xa_props" ] && [ "$driver" != "postgresql" ] && [ "$driver" != "mysql" ]; then
       log_warning "At least one ${prefix}_XA_CONNECTION_PROPERTY_property for datasource ${service_name} is required. Datasource will not be configured."
@@ -313,7 +328,7 @@ function generate_external_datasource() {
 }
 
 function generate_default_datasource() {
-  ds="<datasource jta=\"true\" jndi-name=\"${jndi_name}\" pool-name=\"${pool_name}\" enabled=\"true\" use-java-context=\"true\">"
+  ds="<datasource jta=\"true\" jndi-name=\"${jndi_name}\" pool-name=\"${pool_name}\" enabled=\"true\" use-java-context=\"true\" statistics-enabled=\"\${wildfly.datasources.statistics-enabled:\${wildfly.statistics-enabled:false}}\">"
 
   if [ -n "$url" ]; then
     ds="$ds
