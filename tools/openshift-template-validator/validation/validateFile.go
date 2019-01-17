@@ -27,6 +27,9 @@ var (
 	// map to store the errors found during the template validation, every error found will be printed at the end of the
 	// the execution
 	validationErrors = make(map[string][]string)
+
+	// warning messages, should not make the validation fail, exit status code should be 0
+	validationWarnings = make(map[string][]string)
 )
 
 // main validate function, everything starts here.
@@ -39,7 +42,7 @@ func Validate(file string) bool {
 		os.Exit(10)
 	} else {
 
-		var template templateapi.Template
+		var input templateapi.Template
 
 		templateExtension = filepath.Ext(file)
 		data, err := utils.ReadFile(file)
@@ -64,7 +67,7 @@ func Validate(file string) bool {
 		data = bytes.Replace(data, []byte("v1"), []byte("template.openshift.io/v1"), 1)
 
 		// global validator, only verifies syntax issues
-		if err := runtime.DecodeInto(legacyscheme.Codecs.UniversalDecoder(), data, &template); err != nil {
+		if err := runtime.DecodeInto(legacyscheme.Codecs.UniversalDecoder(), data, &input); err != nil {
 
 			if !strings.ContainsAny(err.Error(), "\"List\"") {
 				validationErrors["Syntax"] = append(validationErrors["Syntax"], filepath.Base(file)+" - "+err.Error())
@@ -75,33 +78,35 @@ func Validate(file string) bool {
 		}
 
 		// parse the data to json
-		if err := json.Unmarshal(data, &template); err != nil {
+		if err := json.Unmarshal(data, &input); err != nil {
 			validationErrors["JSON_Parser"] = append(validationErrors["JSON_Parser"], filepath.Base(file)+" - "+err.Error())
 
 			// ignore other kinds
-		} else if template.Kind == "Template" { // do the other validations
+		} else if input.Kind == "Template" { // do the other validations
 
 			// validate the template annotations
-			validateAnnotations(template.Annotations, template.Name)
+			validateAnnotations(input.Annotations, input.Name)
 
 			// validate template name, should not be empty and should be equal to the label "template"
-			validateTemplateName(template.Name, template.Labels)
+			validateTemplateName(input.Name, input.Labels)
 
 			// validate template parameters
 			//		all templates should have the same required fields: displayName, description, name
-			validateTemplateParameters(template.Parameters, file, templateExtension, template.Objects)
+			validateTemplateParameters(input.Parameters, file, templateExtension, input.Objects)
 
 			// validate all template objects like, DeploymentConfig, BuildConfig, ImageStreams, Rolebinding, etc..
-			validateObjects(template)
+			validateObjects(input)
 		}
 
 		if len(validationErrors) > 0 {
 			fmt.Print("\nErrors found: ")
 			utils.JSONPrettyPrint(validationErrors)
+			printWarnings()
 			// clean the env to store the report of the next validation (if the target is a subset of templates)
 			validationErrors = make(map[string][]string)
 			containValidationErrors = true
 		} else {
+			printWarnings()
 			fmt.Println(" -----> No validation issues found.")
 			containValidationErrors = false
 		}
@@ -121,5 +126,13 @@ func Validate(file string) bool {
 func validateTemplateName(templateName string, templateLabels map[string]string) {
 	if (templateName == "" && templateLabels["template"] == "") || (templateName != templateLabels["template"]) {
 		validationErrors["Template_Name"] = append(validationErrors["Template_Name"], "Template name/template label are empty or not equal")
+	}
+}
+
+func printWarnings() {
+	if len(validationWarnings) > 0 {
+		fmt.Print("\n\"Warnings: ")
+		utils.JSONPrettyPrint(validationWarnings)
+		validationWarnings = make(map[string][]string)
 	}
 }
