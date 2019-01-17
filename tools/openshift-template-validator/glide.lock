@@ -1,5 +1,5 @@
 hash: 6f4fc795a47e933aa6f1753ffd277763fcfb85ed629eabdf046cb11ba083a923
-updated: 2018-12-27T19:00:31.80750195-02:00
+updated: 2019-01-17T15:16:54.232347216-02:00
 imports:
 - name: github.com/asaskevich/govalidator
   version: ccb8e960c48f04d6935e72476ae4a51028f9e22f
@@ -64,7 +64,7 @@ imports:
   subpackages:
   - specs-go/v1
 - name: github.com/openshift/api
-  version: 4703f3e71d833812a81e0fa3a2da1257e3efd85c
+  version: c3ef7090a436a4ce1334e8a0401083b072dc7ab8
   subpackages:
   - apps/v1
   - authorization/v1
@@ -91,7 +91,7 @@ imports:
 - name: github.com/spf13/pflag
   version: 583c0c0531f06d5278b7d917446061adc344b5cd
 - name: github.com/stretchr/testify
-  version: 660f15d67dbb878de0d9d79894f728d691c91b91
+  version: 363ebb24d041ccea8068222281c2e963e997b9dc
   subpackages:
   - assert
 - name: github.com/urfave/cli
@@ -134,6 +134,7 @@ imports:
   - core/v1
   - extensions/v1beta1
   - rbac/v1
+  - rbac/v1beta1
 - name: k8s.io/apiextensions-apiserver
   version: 06dfdaae5c2bd89e1243151ff65b9bf8ee050f28
   subpackages:
@@ -192,10 +193,12 @@ imports:
   subpackages:
   - pkg/util/proto
 - name: k8s.io/kubernetes
-  version: 21afb3cbc1a9669fc6fb7c7ccb70192fa0e10934
+  version: 4649015387ed827463999af472b4eddb6995a079
   subpackages:
   - pkg/api/legacyscheme
   - pkg/api/service
+  - pkg/apis/apps
+  - pkg/apis/apps/validation
   - pkg/apis/autoscaling
   - pkg/apis/core
   - pkg/apis/core/helper

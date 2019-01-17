@@ -8,17 +8,6 @@ import (
 	"strings"
 	"time"
 
-	kappsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/kubernetes/pkg/api/legacyscheme"
-	kapi "k8s.io/kubernetes/pkg/apis/core"
-	kapiv1 "k8s.io/kubernetes/pkg/apis/core/v1"
-	kvalidation "k8s.io/kubernetes/pkg/apis/core/validation"
-	krbac "k8s.io/kubernetes/pkg/apis/rbac"
-	krbacvalidation "k8s.io/kubernetes/pkg/apis/rbac/validation"
-
 	appsapiv1 "github.com/openshift/api/apps/v1"
 	authapiv1 "github.com/openshift/api/authorization/v1"
 	buildapiv1 "github.com/openshift/api/build/v1"
@@ -40,13 +29,31 @@ import (
 	templateapi "github.com/openshift/origin/pkg/template/apis/template"
 	"github.com/openshift/origin/pkg/template/generator"
 	"github.com/openshift/origin/pkg/template/templateprocessing"
+	kappsv1 "k8s.io/api/apps/v1"
+	kappsv1beta1 "k8s.io/api/apps/v1beta1"
+	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
+	krbacvalidation "k8s.io/kubernetes/pkg/apis/rbac/validation"
+	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/kubernetes/pkg/api/legacyscheme"
+	kapi "k8s.io/kubernetes/pkg/apis/core"
+	kapiv1 "k8s.io/kubernetes/pkg/apis/core/v1"
+	kvalidation "k8s.io/kubernetes/pkg/apis/core/validation"
+	krbac "k8s.io/kubernetes/pkg/apis/rbac"
 
 	"github.com/jboss-container-images/jboss-kie-modules/tools/openshift-template-validator/utils"
+	k8sapps "k8s.io/kubernetes/pkg/apis/apps"
+	//k8sappsv1 "k8s.io/kubernetes/pkg/apis/apps/v1"
+	k8svalidation "k8s.io/kubernetes/pkg/apis/apps/validation"
 )
 
 func validateObjects(template templateapi.Template) {
 
-	defer utils.RecoverFromPanic()
+	if !utils.DisableDefer {
+		defer utils.RecoverFromPanic()
+	}
 
 	// Process the template to replace the env values
 	generators := map[string]generator.Generator{
@@ -93,6 +100,7 @@ func validateObjects(template templateapi.Template) {
 
 			if err := runtime.DefaultUnstructuredConverter.FromUnstructured(unstructuredObj.Object, obj); err != nil {
 				error := fmt.Sprintf("PreValidation-%d-%s", index, reflect.TypeOf(obj).String())
+
 				validationErrors[error] = append(validationErrors[error], err.Error())
 				if utils.Debug {
 					fmt.Printf("\nError on converting Unstructured object %v\n", err.Error())
@@ -239,7 +247,6 @@ func validateObjects(template templateapi.Template) {
 					}
 				}
 
-				// buildCOnfig should have the annotation template.alpha.openshift.io/wait-for-ready: "true"
 			case *buildapiv1.BuildConfig:
 				t.Namespace = "default"
 				errorPrefix := fmt.Sprintf("BuildConfig-%s", t.Name)
@@ -286,7 +293,6 @@ func validateObjects(template templateapi.Template) {
 					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "metadata.labels.[application] cannot be empty.")
 				}
 
-				// deploymentConfig should have the annotation template.alpha.openshift.io/wait-for-ready: "true"
 			case *appsapiv1.DeploymentConfig:
 				t.Namespace = "default"
 				errorPrefix := fmt.Sprintf("DeploymentConfig-%s", t.Name)
@@ -372,107 +378,185 @@ func validateObjects(template templateapi.Template) {
 
 			case *kappsv1.StatefulSet:
 				t.Namespace = "default"
-				errorPrefix := fmt.Sprintf("StatefulSet-%s", t.Name)
+				errorPrefix := fmt.Sprintf("kappsv1-StatefulSet-%s", t.Name)
+				drainerErrorPrefix := fmt.Sprintf("kappsv1-StatefulSet-statefulsets.kubernetes.io/drainer-pod-template-%s", t.Name)
 
-				if t.Spec.Template.Spec.RestartPolicy == "" {
-					t.Spec.Template.Spec.RestartPolicy = corev1.RestartPolicyAlways
-				}
-
-				if t.Spec.Template.Spec.DNSPolicy == "" {
-					t.Spec.Template.Spec.DNSPolicy = corev1.DNSDefault
-				}
-
-				for i, container := range t.Spec.Template.Spec.Containers {
-					if utils.Debug && container.Ports[i].ContainerPort == 0 {
-						fmt.Printf("A possible error happened on object kind '%s' and name '%s' while parsing container ports %v\n", reflect.TypeOf(t), t.Name, container.Ports)
-					}
-
-					if container.LivenessProbe != nil {
-						if container.LivenessProbe.SuccessThreshold == 0 {
-							t.Spec.Template.Spec.Containers[i].LivenessProbe.SuccessThreshold = 1
-						}
-					}
-
-					if container.TerminationMessagePolicy == "" {
-						t.Spec.Template.Spec.Containers[i].TerminationMessagePolicy = corev1.TerminationMessageFallbackToLogsOnError
-					}
-
-					for j, env := range container.Env {
-						if env.ValueFrom != nil {
-							t.Spec.Template.Spec.Containers[i].Env[j].ValueFrom.FieldRef.APIVersion = appsapiv1.SchemeGroupVersion.Version
-						}
-					}
-
-					// check if there is duplicate envs
-					seen := make(map[string]struct{}, len(container.Env))
-					for _, v := range container.Env {
-						if _, ok := seen[v.Name]; ok {
-							validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "The following parameter is duplicate: "+v.Name)
-							continue
-						}
-						seen[v.Name] = struct{}{}
-					}
-				}
-
-				versioned, err := legacyscheme.Scheme.ConvertToVersion(t, appsapi.SchemeGroupVersion)
+				versioned, err := legacyscheme.Scheme.ConvertToVersion(t, kappsv1.SchemeGroupVersion)
 				if err != nil {
 					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], err.Error())
 					if utils.Debug {
-						fmt.Printf("Error on convertion Unstructured object to appsapi.DeploymentConfit %v", err.Error())
+						fmt.Printf("Error on convertion Unstructured object to kappsv1.StatefulSet %v", err.Error())
 					}
 				}
 
-				appsDeploymentConfig := versioned.(*appsapi.DeploymentConfig)
-				if errs := appsvalidation.ValidateDeploymentConfig(appsDeploymentConfig); errs != nil {
-					for _, e := range errs {
+				statefulSetv1k8sapps := &k8sapps.StatefulSet{}
+				if err := legacyscheme.Scheme.Convert(versioned, statefulSetv1k8sapps, nil); err != nil {
+					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], err.Error())
+				}
+
+				// if null, set updateStrategy
+				// updateStrategy:
+				// rollingUpdate:
+				// partition: 0
+				// 	type: RollingUpdate
+				if statefulSetv1k8sapps.Spec.UpdateStrategy.Type == "" {
+					statefulSetv1k8sapps.Spec.UpdateStrategy.Type = "RollingUpdate"
+				}
+
+				if err := k8svalidation.ValidateStatefulSet(statefulSetv1k8sapps); err != nil {
+					for _, e := range err {
 						validationErrors[errorPrefix] = append(validationErrors[errorPrefix], e.Error())
 					}
-					if utils.Debug && len(errs) > 0 {
-						fmt.Printf("Error on validating DeploymentConfig Object %v", err)
+				}
+
+				// validate the drainer Pod
+				data := statefulSetv1k8sapps.Annotations["statefulsets.kubernetes.io/drainer-pod-template"]
+				drainerPodTemplate := &corev1.Pod{}
+				if err := runtime.DecodeInto(legacyscheme.Codecs.UniversalDecoder(), []byte(data), drainerPodTemplate); err != nil {
+					validationErrors[drainerErrorPrefix] = append(validationErrors[drainerErrorPrefix], err.Error())
+				}
+
+				drainerPodv1 := &kapi.Pod{}
+				kapiv1.Convert_v1_Pod_To_core_Pod(drainerPodTemplate, drainerPodv1, nil)
+
+				drainerPodv1.Namespace = "default"
+
+				// if empty, set the restartPolicy to its default value
+				if drainerPodv1.Spec.RestartPolicy == "" {
+					drainerPodv1.Spec.RestartPolicy = "Always"
+				}
+
+				// if empty, set the dnsPolicy to its default value
+				if drainerPodv1.Spec.DNSPolicy == "" {
+					drainerPodv1.Spec.DNSPolicy = "ClusterFirst"
+				}
+
+				for index, container := range drainerPodv1.Spec.Containers {
+					// if imagePullPolicy is not present, set to default value
+					if container.ImagePullPolicy == "" {
+						drainerPodv1.Spec.Containers[index].ImagePullPolicy = "IfNotPresent"
+					}
+
+					// set the termination Message Path and MessagePolicy to its default value if empty
+					if container.TerminationMessagePolicy == "" {
+						drainerPodv1.Spec.Containers[index].TerminationMessagePolicy = "File"
+						drainerPodv1.Spec.Containers[index].TerminationMessagePath = "/dev/termination-log"
+					}
+
+					// if env contains the value from valueRef, set ApiVersion
+					for _, env := range container.Env {
+						if env.ValueFrom != nil {
+							if env.ValueFrom.FieldRef != nil {
+								env.ValueFrom.FieldRef.APIVersion = "v1"
+							}
+						}
+					}
+					// ignore volumeMount from drainer pod, sometimes it can use a previously created Volume.
+					for i := range container.VolumeMounts {
+						if container.VolumeMounts[i].Name != "" {
+							drainerPodv1.Spec.Volumes = getFakeVolume(*drainerPodv1)
+							container.VolumeMounts[i] = kapi.VolumeMount{
+								Name:      "ignore",
+								MountPath: "/dev/null",
+							}
+						}
 					}
 				}
 
-				if t.Labels["application"] == "" {
+				if err := kvalidation.ValidatePod(drainerPodv1); err != nil {
+					for _, e := range err {
+						validationErrors[drainerErrorPrefix] = append(validationErrors[drainerErrorPrefix], e.Error())
+					}
+				}
+
+			case *kappsv1beta1.StatefulSet:
+				warningPrefix := fmt.Sprintf("v1beta1-StatefulSet-%s", t.Name)
+				validationWarnings[warningPrefix] = append(validationWarnings[warningPrefix], "Warning, consider move your StatefulSet to v1. No validation will be made.")
+
+			case *rbacv1.Role:
+				t.Namespace = "default"
+				errorPrefix := fmt.Sprintf("rbacv1-Role-%s", t.Name)
+
+				versioned, err := legacyscheme.Scheme.ConvertToVersion(t, rbacv1.SchemeGroupVersion)
+				if err != nil {
+					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], err.Error())
+					if utils.Debug {
+						fmt.Printf("Error on convertion Unstructured object to rbacv1.Role %v", err.Error())
+					}
+				}
+
+				krbacRole := &krbac.Role{}
+				if err := legacyscheme.Scheme.Convert(versioned, krbacRole, nil); err != nil {
+					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], err.Error())
+				}
+
+				if err := krbacvalidation.ValidateRole(krbacRole); err != nil {
+					for _, e := range err {
+						validationErrors[errorPrefix] = append(validationErrors[errorPrefix], e.Error())
+					}
+				}
+
+				if krbacRole.ObjectMeta.Labels["application"] == "" {
 					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "metadata.labels.[application] cannot be empty.")
 				}
 
-				if t.Labels["service"] == "" {
-					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "metadata.labels.[service] cannot be empty.")
-				}
-
-				if t.Annotations["template.alpha.openshift.io/wait-for-ready"] != "true" {
-					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], "metadata.annotations.[template.alpha.openshift.io/wait-for-ready] cannot be empty or does not contain the expected value: Provided["+t.Annotations["template.alpha.openshift.io/wait-for-ready"]+"]-Expected[true]")
-				}
-
-			case *krbac.Role:
-				t.Namespace = "default"
-
-				if err := krbacvalidation.ValidateRole(t); len(err) > 0 {
-					for _, e := range err {
-						validationErrors["Role"] = append(validationErrors["Role"], e.Error())
+				for _, rule := range krbacRole.Rules {
+					if err := krbacvalidation.ValidatePolicyRule(rule, false, nil); err != nil {
+						for _, e := range err {
+							validationErrors[errorPrefix] = append(validationErrors[errorPrefix], e.Error())
+						}
 					}
 				}
 
-				if t.Labels["application"] == "" {
-					validationErrors["Role"] = append(validationErrors["Role"], "metadata.labels.[application] cannot be empty.")
-				}
+			case *rbacv1beta1.Role:
+				warningPrefix := fmt.Sprintf("rbacv1beta1-Role-%s", t.Name)
+				validationWarnings[warningPrefix] = append(validationWarnings[warningPrefix], "Warning, consider move your Role to v1. No validation will be made.")
 
-			case *krbac.RoleBinding:
+			case *rbacv1.RoleBinding:
 				t.Namespace = "default"
+				errorPrefix := fmt.Sprintf("rbacv1-RoleBinding-%s", t.Name)
 
-				if err := krbacvalidation.ValidateRoleBinding(t); len(err) > 0 {
-					for _, e := range err {
-						validationErrors["RoleBinding"] = append(validationErrors["RoleBinding"], e.Error())
+				versioned, err := legacyscheme.Scheme.ConvertToVersion(t, rbacv1.SchemeGroupVersion)
+				if err != nil {
+					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], err.Error())
+					if utils.Debug {
+						fmt.Printf("Error on convertion Unstructured object to rbacv1.Role %v", err.Error())
 					}
 				}
 
-				if t.Labels["application"] == "" {
-					validationErrors["RoleBinding"] = append(validationErrors["RoleBinding"], "metadata.labels.[application] cannot be empty.")
+				krbacRoleBinding := &krbac.RoleBinding{}
+				if err := legacyscheme.Scheme.Convert(versioned, krbacRoleBinding, nil); err != nil {
+					validationErrors[errorPrefix] = append(validationErrors[errorPrefix], err.Error())
 				}
+				if err := krbacvalidation.ValidateRoleBinding(krbacRoleBinding); err != nil {
+					for _, e := range err {
+						validationErrors[errorPrefix] = append(validationErrors[errorPrefix], e.Error())
+					}
+				}
+
+				for _, subject := range krbacRoleBinding.Subjects {
+					subject.Namespace = "default"
+					if err := krbacvalidation.ValidateRoleBindingSubject(subject, false, nil); err != nil {
+						for _, e := range err {
+							validationErrors[errorPrefix] = append(validationErrors[errorPrefix], e.Error())
+						}
+					}
+				}
+
+			case *rbacv1beta1.RoleBinding:
+				warningPrefix := fmt.Sprintf("rbacv1beta1-RoleBinding-%s", t.Name)
+				validationWarnings[warningPrefix] = append(validationWarnings[warningPrefix], "Warning, consider move your RoleBinding to v1. No validation will be made.")
 
 			default:
 				validationErrors["UnrecognizedObjects"] = append(validationErrors["UnrecognizedObjects"], reflect.TypeOf(t).String())
 			}
 		}
+	}
+}
+
+func getFakeVolume(drainerPod kapi.Pod) []kapi.Volume {
+	// create a fake VOlume,
+	return []kapi.Volume{
+		{Name: "ignore", VolumeSource: kapi.VolumeSource{EmptyDir: &kapi.EmptyDirVolumeSource{}}},
 	}
 }
