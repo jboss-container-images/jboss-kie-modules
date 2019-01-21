@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source "${LAUNCH_DIR}/launch-common.sh"
+source "${LAUNCH_DIR}/logging.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
@@ -19,6 +20,11 @@ function prepareEnv() {
     unset KIE_SERVER_ROUTER_URL_EXTERNAL
     unset KIE_SERVER_ROUTER_REPO
     unset KIE_SERVER_ROUTER_CONFIG_WATCHER_ENABLED
+    unset KIE_SERVER_ROUTER_TLS_KEYSTORE
+    unset KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD
+    unset KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS
+    unset KIE_SERVER_ROUTER_PORT_TLS
+    unset KIE_SERVER_ROUTER_TLS_TEST
 }
 
 function configureEnv() {
@@ -29,6 +35,7 @@ function configure() {
     configure_router_state
     configure_router_location
     configure_controller_access
+    configure_router_tls
 }
 
 function configure_router_state() {
@@ -140,6 +147,50 @@ function configure_controller_access {
     if [ "${kieServerControllerToken}" != "" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.token=\"${kieServerControllerToken}\""
     fi
+}
+
+function configure_router_tls() {
+    # If the path, alias, or password is empty exit early and skip https
+    if [ -z "${KIE_SERVER_ROUTER_TLS_KEYSTORE}" ] || \
+       [ -z "${KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS}" ] || \
+       [ -z "${KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD}" ]; then
+        log_warning "Missing value for TLS keystore path, alias, or password, skipping https setup"
+        return
+    fi
+
+    # generate a keystore for cekit test if the test flag is true and we are not running in OpenShift
+    # and there is no keystore file at the designated path
+    if [ "${KIE_SERVER_ROUTER_TLS_TEST}" == "true" ] && [ -z "${KUBERNETES_SERVICE_HOST}" ] && ! [ -f "${KIE_SERVER_ROUTER_TLS_KEYSTORE}" ]; then
+        log_warning "Container is in test mode and not in OpenShift, generating test certificate"
+        keytool -genkey -alias jboss -keyalg RSA -keystore /tmp/keystore.jks -storepass mykeystorepass -keypass mykeystorepass -dname CN=bob
+        KIE_SERVER_ROUTER_TLS_KEYSTORE=/tmp/keystore.jks
+    fi
+
+    # Allow for optional volume mount or empty secret
+    if ! [ -f "${KIE_SERVER_ROUTER_TLS_KEYSTORE}" ]; then
+	log_warning "Keystore file ${KIE_SERVER_ROUTER_TLS_KEYSTORE} not found or not a regular file, skipping https setup"
+	return
+    fi
+
+    # If the keystore is not readable, smartrouter startup will throw an exception
+    # resulting in the http port being unavailable as well. So make sure ...
+    keytool -list -alias ${KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS} \
+	          -storepass ${KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD} \
+	          -keystore ${KIE_SERVER_ROUTER_TLS_KEYSTORE} &> /dev/null
+    if [ "$?" -ne 0 ]; then
+	log_warning "Unable to read TLS keystore, skipping https setup"
+	return
+    fi
+
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.tls.keystore=${KIE_SERVER_ROUTER_TLS_KEYSTORE}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.tls.keystore.keyalias=${KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.tls.keystore.password=${KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD}"
+
+    local kieServerRouterPortTLS="${KIE_SERVER_ROUTER_PORT_TLS}"
+    if [ "${kieServerRouterPortTLS}" = "" ]; then
+        kieServerRouterPortTLS="9443"
+    fi
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.tls.port=${kieServerRouterPortTLS}"
 }
 
 function generate_random_id() {
