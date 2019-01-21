@@ -11,18 +11,18 @@ any Application Template according your needs.
 Verify the tool options by executing the following command:
 
 ```bash
- ./openshift-template-validator validate -h
+$ openshift-template-validator-linux-amd64 validate --help 
 NAME:
-   openshift-template-validator validate - Validate OpenShift Application Template(s)
+   openshift-template-validator-linux-amd64 validate - Validate OpenShift Application Template(s)
 
 USAGE:
-   openshift-template-validator validate [command options] [arguments...]
+   openshift-template-validator-linux-amd64 validate [command options] [arguments...]
 
 DESCRIPTION:
    Validate just one template or a bunch of them, the issues found will be printed, the binary will exit with 0, means success and any value different than 0 means that some issue happened (10 - file or directory not found, 12 - validation issues, 15 - panic)
 
 OPTIONS:
-   --template value, -t value           Set the template to be validate, can be a local file or a remote valid url with raw content.
+   --file value, -f value               Set the template or imagestream to be validate, can be a local file or a remote valid url with raw content.
    --dir value, -d value                Define a directory to be read, all yaml and json files in the given directory will be validated by the tool.
    --persist, -p                        If set, the validated yaml file be saved on /tmp/<file-name> in the json format.
    --custom-annotation value, -a value  Define a custom annotation to be tested against the target template's annotations, values must be separated by comma ',' with no spaces. The default annotations are [iconClass, openshift.io/display-name, tags, version, description, openshift.io/provider-display-name, template.openshift.io/documentation-url, template.openshift.io/support-url, template.openshift.io/long-description, template.openshift.io/bindable]
@@ -31,7 +31,7 @@ OPTIONS:
    --verbose, --vv                      Prints detailed log messages
    --strict, -s                         Enable the strict mode, will verify if any required parameter have no value.
    --dump, --du                         Dump all parsed template parameters.
-
+   --disable-defer                      Disable defer which recover from panic for troubleshooting purposes.
 ```
 
 
@@ -41,7 +41,7 @@ By default, all the validations are done using the JSON format, except for the t
 If your Application template is in the yaml format and you want to save a json copy of it, just use the flat *--persist*, the json file will be saved on /tmp:
 
 ```bash
-$ ./openshift-template-validator validate validate -t /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml --persist
+$ openshift-template-validator-linux-amd64 validate validate -f /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml --persist
 Validating file /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml -----> No validation issues found.
 ```
 
@@ -65,7 +65,7 @@ By default, there is a few required annotations, which are:
 Beside those template annotations, is possible to provide custom ones, for example:
 
 ```bash
-$ ./openshift-template-validator validate validate -t /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml --custom-annotation test,testA,testB
+$ openshift-template-validator-linux-amd64 validate validate -f /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml --custom-annotation test,testA,testB
 Validating file /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml
 Errors found: {
   "Annotations": [
@@ -80,7 +80,7 @@ User can also provide a desired value for the custom annotation by using key=val
 with no value that it will be tested too.
 
 ```bash
-$ ./openshift-template-validator validate -t /data/dev/sources/rhpam-7-openshift-image/templates/rhpam71-authoring.yaml -a value1=one,value2=two,value3=trhee,otherAnnotation
+$ openshift-template-validator-linux-amd64 validate -f /data/dev/sources/rhpam-7-openshift-image/templates/rhpam71-authoring.yaml -a value1=one,value2=two,value3=trhee,otherAnnotation
 Validating file /data/dev/sources/rhpam-7-openshift-image/templates/rhpam71-authoring.yaml
 Errors found: {
   "Annotations": [
@@ -100,7 +100,7 @@ by setting the flag -V (the default version is 1.0) and -v with the desired vers
 
 
 ```bash
- $ ./openshift-template-validator validate validate -t /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml -V -v alpha01
+$ openshift-template-validator-linux-amd64validate -f /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml -V -v alpha01
 Validating file /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml
 Errors found: {
   "Annotations": [
@@ -121,10 +121,10 @@ This tool also verify the template parameters, it will check:
 The Strict mode will verify if there is a required parameter with no value, example:
 
 ```bash
-$ ./openshift-template-validator validate validate -t /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml 
+$ openshift-template-validator-linux-amd64 validate -f /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml 
 Validating file /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml -----> No validation issues found.
 
-$ ./openshift-template-validator validate validate -t /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml --strict
+$ openshift-template-validator-linux-amd64 validate -f /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml --strict
 Validating file /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml
 Errors found: {
   "ObjectsValidation-Processor": [
@@ -139,7 +139,7 @@ Errors found: {
 If for some reason the parameters validation failed and you want to verify the parameters, just use the *dump" flag:
 
 ```bash
- $ ./openshift-template-validator validate validate -t /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml --dump
+ $ openshift-template-validator-linux-amd64 validate -f /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml --dump
 Validating file /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml
 parameters:
 - displayName: Application Name
@@ -161,12 +161,31 @@ parameters:
 
 It is also allowed specify a directory with the flag *-d /target/directory/*
 
+#### Validating ImageStreams
+
+This tool also validate imagestreams, for this, the ImageStream kind must be *ImageStreamList*, i.e.:
+
+```yaml
+kind: ImageStreamList
+apiVersion: v1
+metadata:
+  name: rhpam73-image-streams
+...
+```
+
+Then, just run the tool:
+
+```bash
+$ openshift-template-validator-linux-amd64 validate -f rhpam73-image-streams.yaml 
+Validating file rhpam73-image-streams.yaml -----> No validation issues found.
+```
+
 #### Troubleshooting
 
 If you trying to validate the template and a similar issue happens:
 
 ```bash
-$ openshift-template-validator validate -t /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml 
+$ openshift-template-validator-linux-amd64 validate -f /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml 
 Validating file /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml
 Errors found: {
   "PreValidation-12-*v1.DeploymentConfig": [
@@ -180,7 +199,7 @@ try to enable the verbose mode with the flag -vv to get more information about t
 
 
 ```bash
-$ openshift-template-validator validate -t /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml --vv
+$ openshift-template-validator-linux-amd64 validate -f /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml --vv
 Validating file /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml -> replacing Template apiVersion from v1 to template.openshift.io/v1
 Error on converting Unstructured object unrecognized type: int32
 A possible error happened on object kind '*v1.DeploymentConfig' and name 'myapp-kieserver' while parsing container ports [{jolokia 0 0  } { 0 0  } { 0 0  }]
