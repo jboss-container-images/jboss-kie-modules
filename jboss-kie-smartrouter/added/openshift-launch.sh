@@ -5,7 +5,9 @@ source ${LAUNCH_DIR}/logging.sh
 
 if [ "${SCRIPT_DEBUG}" = "true" ] ; then
     set -x
+    SHOW_JVM_SETTINGS="-XshowSettings:properties"
     log_info "Script debugging is enabled, allowing bash commands and their arguments to be printed as they are executed"
+    log_info "JVM settings debug is enabled."
 fi
 
 CONFIGURE_SCRIPTS=(
@@ -35,4 +37,4 @@ while [[ $D_STR ]]; do
     D_STR=${D_STR#*"$D_DLM"}
 done
 
-exec ${JAVA_HOME}/bin/java "${D_ARR[@]}" -jar /opt/${JBOSS_PRODUCT}/${KIE_ROUTER_DISTRIBUTION_JAR}
+exec ${JAVA_HOME}/bin/java ${SHOW_JVM_SETTINGS} "${D_ARR[@]}" -jar /opt/${JBOSS_PRODUCT}/${KIE_ROUTER_DISTRIBUTION_JAR}
