@@ -51,5 +51,5 @@ Feature: OpenShift Decision Server 6.4 basic tests
     Then file /opt/eap/standalone/deployments/kie-server.war/WEB-INF/web.xml should contain org.openshift.kieserver
     And file /opt/eap/standalone/deployments/kie-server.war/WEB-INF/security-filter-rules.properties should exist
     And file /opt/eap/standalone/deployments/kie-server.war/WEB-INF/lib/kie-api-6.5.0.Final-redhat-2.jar should not exist
-    And file /opt/eap/standalone/deployments/kie-server.war/WEB-INF/lib/kie-api-6.5.0.Final-redhat-21.jar should exist
-    And file /opt/eap/standalone/deployments/kie-server.war/WEB-INF/lib/openshift-kieserver-common-1.2.0.Final-redhat-1.jar should exist
+    And file /opt/eap/standalone/deployments/kie-server.war/WEB-INF/lib/kie-api-6.5.0.Final-redhat-25.jar should exist
+    And file /opt/eap/standalone/deployments/kie-server.war/WEB-INF/lib/openshift-kieserver-common-1.2.2.Final-redhat-1.jar should exist

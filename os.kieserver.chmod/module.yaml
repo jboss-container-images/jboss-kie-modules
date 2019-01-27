@@ -3,4 +3,4 @@ name: os.kieserver.chmod
 version: '1.0'
 description: Legacy os.kieserver.chmod script package.
 execute:
-- script: run
+- script: configure.sh

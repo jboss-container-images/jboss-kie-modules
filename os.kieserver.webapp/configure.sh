@@ -61,6 +61,19 @@ chmod 664 "${KIE_SERVER_WEBINF_DIR}/web.xml"
 if [[ "$JBOSS_EAP_VERSION" == "6."* ]]; then
     cp -f -p ${ADDED_METAINF_DIR}/kie-server-jms-eap6x.xml ${KIE_SERVER_METAINF_DIR}/kie-server-jms.xml
     cp -f -p ${ADDED_WEBINF_DIR}/jboss-deployment-structure-eap6x.xml ${KIE_SERVER_WEBINF_DIR}/jboss-deployment-structure.xml
+
+    # https://access.redhat.com/solutions/3637671
+    compiler_patch_name="jboss-bxms-6.4.11-RHBPMS-5222"
+    compiler_patch_zip="${SOURCES_DIR}/${compiler_patch_name}.zip"
+    compiler_patch_jar="drools-compiler-6.5.0.Final-redhat-25-RHBPMS-5222.jar"
+     compiler_orig_jar="${KIE_SERVER_WEBINF_DIR}/lib/drools-compiler-6.5.0.Final-redhat-25.jar"
+    if [ -e "${compiler_patch_zip}" ] && [ -e "${compiler_orig_jar}" ]; then
+        unzip -q "${compiler_patch_zip}" "${compiler_patch_name}/${compiler_patch_jar}"
+        cp -f -p "${compiler_patch_name}/${compiler_patch_jar}" "${KIE_SERVER_WEBINF_DIR}/lib/${compiler_patch_jar}"
+        chmod 664 "${KIE_SERVER_WEBINF_DIR}/lib/${compiler_patch_jar}"
+        rm -f "${compiler_orig_jar}"
+        rm -rf "${compiler_patch_name}*"
+    fi
 else
     cp -f -p ${ADDED_METAINF_DIR}/kie-server-jms-eap7x.xml ${KIE_SERVER_METAINF_DIR}/kie-server-jms.xml
     cp -f -p ${ADDED_WEBINF_DIR}/jboss-deployment-structure-eap7x.xml ${KIE_SERVER_WEBINF_DIR}/jboss-deployment-structure.xml

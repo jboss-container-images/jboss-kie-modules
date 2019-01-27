@@ -3,4 +3,4 @@ name: os.kieserver.probes
 version: '1.0'
 description: Legacy os.kieserver.probes script package.
 execute:
-- script: prepare.sh
+- script: configure.sh
