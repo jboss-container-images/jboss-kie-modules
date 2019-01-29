@@ -2,8 +2,5 @@ schema_version: 1
 name: os.kieserver.s2i
 version: '1.0'
 description: Legacy os.kieserver.s2i script package.
-envs:
-- name: MAVEN_LOCAL_REPO
-  value: /home/jboss/.m2/repository
 execute:
-- script: prepare.sh
+- script: configure.sh

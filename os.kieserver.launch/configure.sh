@@ -33,3 +33,6 @@ fi
 if [[ "$JBOSS_EAP_VERSION" == "7."* ]]; then
     sed -i "s/password.restriction=WARN/password.restriction=REJECT/" ${JBOSS_HOME}/bin/add-user.properties
 fi
+
+# Make sure the owner of added files is the 'jboss' user
+chown -R jboss:jboss ${SCRIPT_DIR}
