@@ -51,6 +51,7 @@ function configure_admin_security() {
     if [[ $JBOSS_PRODUCT != *monitoring ]]; then
         add_kie_maven_user
     fi
+    print_user_information "central"
 
     # (see management-common.sh and login-modules-common.sh)
     add_management_interface_realm
