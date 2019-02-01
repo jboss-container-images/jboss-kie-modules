@@ -25,6 +25,19 @@ Feature: RHPAM KIE Server configuration tests
       | KIE_SERVER_CONTAINER_DEPLOYMENT | rhpam-kieserver-library=org.openshift.quickstarts:rhpam-kieserver-library:1.4.0-SNAPSHOT |
     Then container log should contain Container rhpam-kieserver-library
 
+  # https://issues.jboss.org/browse/JBPM-7834
+  Scenario: Check OpenShiftStartupStrategy is enabled in RHPAM 7
+    When container is started with env
+      | variable                    | value                     |
+      | KIE_SERVER_STARTUP_STRATEGY | OpenShiftStartupStrategy  |
+    Then container log should contain -Dorg.kie.server.startup.strategy=OpenShiftStartupStrategy
+  
+  Scenario: Check LocalContainersStartupStrategy is enabled in RHPAM 7
+    When container is started with env
+      | variable                    | value                     |
+      | KIE_SERVER_STARTUP_STRATEGY | LocalContainersStartupStrategy  |
+    Then container log should contain -Dorg.kie.server.startup.strategy=LocalContainersStartupStrategy
+
   # https://issues.jboss.org/browse/RHPAM-846
   Scenario: Check jbpm is enabled in RHPAM 7
     When container is started with env

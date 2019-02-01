@@ -424,7 +424,7 @@ function configure_jbpm() {
 
 function configure_kie_server_mgmt() {
 
-    local ALLOWED_STARTUP_STRATEGY=("LocalContainersStartupStrategy" "ControllerBasedStartupStrategy")
+    local ALLOWED_STARTUP_STRATEGY=("LocalContainersStartupStrategy" "ControllerBasedStartupStrategy" "OpenShiftStartupStrategy")
     local invalidStrategy=true
 
     # setting valid for both, rhpam and rhdm KIE server
