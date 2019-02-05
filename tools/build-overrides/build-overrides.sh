@@ -13,7 +13,7 @@ download() {
     local code
     if [ ! -f "${file}" ]; then
         echo "Downloading ${url} to ${file} ..."
-        curl --silent --show-error --fail "${url}" --output "${file}"
+        curl --silent --location --show-error --fail "${url}" --output "${file}"
         code=$?
     else
         echo "File ${file} already downloaded."
@@ -91,6 +91,8 @@ handle_rhdm_artifacts() {
     local build_url
     if [ "${build_type}" = "nightly" ]; then
         build_url="http://rcm-guest.app.eng.bos.redhat.com/rcm-guest/staging/rhdm/RHDM-${full_version}.NIGHTLY/rhdm-${build_date}.properties"
+    elif [ "${build_type}" = "staging" ]; then
+        build_rul="http://rcm-guest.app.eng.bos.redhat.com/rcm-guest/staging/rhdm/RHDM-${full_version}/rhdm-deliverable-list-staging.properties"
     elif [ "${build_type}" = "candidate" ]; then
         build_url="http://download.devel.redhat.com/devel/candidates/RHDM/RHDM-${full_version}/rhdm-deliverable-list.properties"
     else
@@ -213,6 +215,8 @@ handle_rhpam_artifacts() {
     local build_url
     if [ "${build_type}" = "nightly" ]; then
         build_url="http://rcm-guest.app.eng.bos.redhat.com/rcm-guest/staging/rhpam/RHPAM-${full_version}.NIGHTLY/rhpam-${build_date}.properties"
+    elif [ "${build_type}" = "staging" ]; then
+        build_rul="http://rcm-guest.app.eng.bos.redhat.com/rcm-guest/staging/rhpam/RHPAM-${full_version}/rhpam-deliverable-list-staging.properties"
     elif [ "${build_type}" = "candidate" ]; then
         build_url="http://download.devel.redhat.com/devel/candidates/RHPAM/RHPAM-${full_version}/rhpam-deliverable-list.properties"
     else
@@ -252,6 +256,10 @@ handle_rhpam_artifacts() {
 
     # BUSINESS_CENTRAL_MONITORING_DISTRIBUTION_ZIP
     local business_central_monitoring_distribution_url=$(get_url "rhpam.monitoring.latest.url" "${build_file}")
+    if [ -z "${business_central_monitoring_distribution_url}" ]; then
+        business_central_monitoring_distribution_url=$(echo "${business_central_distribution_url}" | sed -e 's/business-central-eap7-deployable/monitoring-ee7/')
+        echo "Property \"rhpam.monitoring.latest.url\" is not defined. Attempting ${business_central_monitoring_distribution_url} ..."
+    fi
     local business_central_monitoring_distribution_zip=$(get_name "${business_central_monitoring_distribution_url}")
     local business_central_monitoring_distribution_file="${artifacts_dir}/${business_central_monitoring_distribution_zip}"
     download "${business_central_monitoring_distribution_url}" "${business_central_monitoring_distribution_file}"
@@ -357,8 +365,9 @@ main() {
     local build_type_default="nightly"
     local build_date
     local build_date_default=$(date '+%Y%m%d')
+    local version_example="7.3.0"
     local default_dir
-    local default_dir_example="/tmp/${build_tool}/${build_type_default}/${build_date_default}"
+    local default_dir_example="/tmp/${build_tool}/${build_type_default}/${build_date_default}/${version_example}"
     local artifacts_dir
     local overrides_dir
     local usage_help
@@ -379,8 +388,8 @@ main() {
     if [ -n "${usage_help}" ] || [[ $(echo ${args[@]}) =~ .*\-h.* ]]; then
         # usage/help
         echo "Usage: ${build_tool}.sh [-v \"#.#.#\"] [-t \"${build_type_default}\"] [-b \"YYYYMMDD\"] [-d \"DEFAULT_DIR\"] [-a \"ARTIFACT_DIR\"] [-o \"OVERRIDES_DIR\"] [-h]"
-        echo "-v = [v]ersion (required; format: major.minor.micro; example: 7.3.0)"
-        echo "-t = [t]ype of build (optional; default: ${build_type_default}; allowed: nightly, candidate)"
+        echo "-v = [v]ersion (required; format: major.minor.micro; example: ${version_example})"
+        echo "-t = [t]ype of build (optional; default: ${build_type_default}; allowed: nightly, staging, candidate)"
         echo "-b = [b]uild date (optional; default: ${build_date_default})"
         echo "-d = [d]efault directory (optional; default example: ${default_dir_example})"
         echo "-a = [a]rtifacts directory (optional; default: default directory)"
@@ -397,8 +406,8 @@ main() {
         # build type
         if [ -z "${build_type}" ]; then
             build_type="${build_type_default}"
-        elif [ "${build_type}" != "nightly" ] && [ "${build_type}" != "candidate" ] ; then
-            (>&2 echo "Build type not recognized. Must be nightly or candidate. Run ${build_tool}.sh -h for help.")
+        elif [ "${build_type}" != "nightly" ] && [ "${build_type}" != "staging" ] && [ "${build_type}" != "candidate" ] ; then
+            (>&2 echo "Build type not recognized. Must be nightly, staging, or candidate. Run ${build_tool}.sh -h for help.")
             return 1
         fi
         # build date
@@ -408,7 +417,7 @@ main() {
 
         # default directory
         if [ -z "${default_dir}" ]; then
-            default_dir="/tmp/${build_tool}/${build_type}/${build_date}"
+            default_dir="/tmp/${build_tool}/${build_type}/${build_date}/${full_version}"
         fi
         # artifacts directory
         if [ -z "${artifacts_dir}" ]; then
