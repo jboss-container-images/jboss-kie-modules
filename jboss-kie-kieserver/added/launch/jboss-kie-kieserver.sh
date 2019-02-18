@@ -38,6 +38,7 @@ function prepareEnv() {
     unset KIE_SERVER_USE_SECURE_ROUTE_NAME
     unset KIE_SERVER_STARTUP_STRATEGY
     unset KIE_SERVER_SYNC_DEPLOY
+    unset PROMETHEUS_SERVER_EXT_DISABLED
 }
 
 function preConfigure() {
@@ -63,6 +64,7 @@ function configure() {
     configure_kie_server_mgmt
     # configure_server_state always has to be last
     configure_server_state
+    configure_prometheus
 }
 
 function configure_EJB_Timer_datasource {
@@ -518,6 +520,18 @@ function configure_server_state() {
         if [ $ERR -ne 0 ]; then
             log_error "Aborting due to error code $ERR from kie server state file init"
             exit $ERR
+        fi
+    fi
+}
+
+function configure_prometheus() {
+    if [ -n "${PROMETHEUS_SERVER_EXT_DISABLED}" ]; then
+        if [ "${PROMETHEUS_SERVER_EXT_DISABLED^^}" = "TRUE" ]; then
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.prometheus.server.ext.disabled=true"
+        elif [ "${PROMETHEUS_SERVER_EXT_DISABLED^^}" = "FALSE" ]; then
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.prometheus.server.ext.disabled=false"
+        else
+            log_error "Invalid value \"${PROMETHEUS_SERVER_EXT_DISABLED}\" for PROMETHEUS_SERVER_EXT_DISABLED. Must be \"true\" or \"false\"."
         fi
     fi
 }

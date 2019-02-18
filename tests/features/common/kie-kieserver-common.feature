@@ -348,3 +348,26 @@ Feature: Kie Server common features
     And container log should contain KIE_SERVER_CONTAINER_ID_0: deploymentOverride
     And container log should contain KIE_SERVER_CONTAINER_KJAR_GROUP_ID_0: a.b.c
     And container log should contain KIE_SERVER_CONTAINER_KJAR_ARTIFACT_ID_0: 1.0-SNAPSHOT
+
+  Scenario: Check that prometheus properties are enabled.
+    When container is started with env
+      | variable                       | value |
+      | PROMETHEUS_SERVER_EXT_DISABLED | false |
+      | AB_PROMETHEUS_ENABLE           | true  |
+    Then container log should contain -Dorg.kie.prometheus.server.ext.disabled=false
+     And container log should contain -javaagent:/opt/jboss/container/prometheus/jmx_prometheus_javaagent.jar=9799:/opt/jboss/container/prometheus/etc/jmx-exporter-config.yaml
+
+  Scenario: Check that prometheus properties are disabled.
+    When container is started with env
+      | variable                       | value |
+      | PROMETHEUS_SERVER_EXT_DISABLED | true  |
+      | AB_PROMETHEUS_ENABLE           | false |
+    Then container log should contain -Dorg.kie.prometheus.server.ext.disabled=true
+     And container log should not contain -javaagent:/opt/jboss/container/prometheus/jmx_prometheus_javaagent.jar
+
+  Scenario: Check bad prometheus env and no AB env.
+    When container is started with env
+      | variable                       | value  |
+      | PROMETHEUS_SERVER_EXT_DISABLED | foobar |
+    Then container log should contain Invalid value "foobar" for PROMETHEUS_SERVER_EXT_DISABLED. Must be "true" or "false".
+     And container log should not contain -javaagent:/opt/jboss/container/prometheus/jmx_prometheus_javaagent.jar
