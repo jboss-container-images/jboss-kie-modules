@@ -85,6 +85,7 @@ function configure_EJB_Timer_datasource {
             TIMER_SERVICE_DATA_STORE="${serviceMappingName}"
             EJB_TIMER_DRIVER=${serviceMappingName##*-}
 
+            set_url $prefix
             set_timer_env $prefix $service
         elif [ -n "${DATASOURCES}" ]; then
             log_info "configuring EJB Timer Datasource based on DATASOURCES env"
@@ -92,6 +93,7 @@ function configure_EJB_Timer_datasource {
             # EJBTimer datasource
             local dsPrefix="${DATASOURCES%,*}"
             DATASOURCES="EJB_TIMER,${DATASOURCES}"
+            set_url $dsPrefix
             set_timer_env $dsPrefix
             TIMER_SERVICE_DATA_STORE="EJB_TIMER"
 
@@ -100,6 +102,16 @@ function configure_EJB_Timer_datasource {
                 eval ${dsPrefix}_NONXA="true"
             fi
         fi
+    fi
+}
+
+# Sets the NONXA url if only the PREFIX_XA_CONNECTION_PROPERTY_URL is provided.
+# $1 - datasource prefix
+function set_url {
+    local prefixedUrl=$(find_env "${1}_URL")
+    url=$(find_env "${1}_XA_CONNECTION_PROPERTY_URL" "${prefixedUrl}")
+    if [ "${prefixedUrl}x" = "x" ]; then
+        eval ${1}_URL="${url}"
     fi
 }
 
@@ -132,9 +144,11 @@ function set_timer_defaults {
     else
         EJB_TIMER_JNDI=$(find_env "${prefix}_JNDI" "java:jboss/datasources/ejb_timer")
     fi
+
     EJB_TIMER_MAX_POOL_SIZE=${EJB_TIMER_MAX_POOL_SIZE:-"10"}
     EJB_TIMER_MIN_POOL_SIZE=${EJB_TIMER_MIN_POOL_SIZE:-"10"}
     EJB_TIMER_TX_ISOLATION="${EJB_TIMER_TX_ISOLATION:-TRANSACTION_READ_COMMITTED}"
+
     if [[ $EJB_TIMER_DRIVER = *"mysql"* ]]; then
         local url=$(find_env "${prefix}_URL")
         url=$(find_env "${prefix}_XA_CONNECTION_PROPERTY_URL" "${url}")
