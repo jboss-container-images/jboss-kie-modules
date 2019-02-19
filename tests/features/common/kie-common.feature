@@ -63,3 +63,12 @@ Feature: RHPAM and RHDM common tests
       | variable   | value |
       | KIE_MBEANS | false |
     Then container log should contain -Dkie.mbeans=disabled -Dkie.scanner.mbeans=disabled
+
+  Scenario: test MAVEN_MIRROR_URL configuration
+    When container is started with env
+      | variable         | value                                     |
+      | MAVEN_MIRROR_URL | http://nexus-test.127.0.0.1.nip.ip/nexus/ |
+    Given XML namespaces
+       | prefix | url                                    |
+       | ns     | http://maven.apache.org/SETTINGS/1.0.0 |
+    Then XML file /home/jboss/.m2/settings.xml should have 1 elements on XPath //ns:mirror[ns:id='mirror.default'][ns:url='http://nexus-test.127.0.0.1.nip.ip/nexus/'][ns:mirrorOf='external:*']
