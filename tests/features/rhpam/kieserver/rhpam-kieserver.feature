@@ -67,7 +67,7 @@ Feature: RHPAM KIE Server configuration tests
      And container log should contain -Dorg.jbpm.ht.custom.callback=my.db.class
      And container log should contain -Djbpm.loop.level.disabled=true
 
-  Scenario: Check for the default ejb timer's setup behavior
+  Scenario: Check for the Executor's retries configuration
     When container is started with env
       | variable               | value |
       | KIE_EXECUTOR_RETRIES   | 40    |
@@ -630,3 +630,36 @@ Feature: RHPAM KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10 on XPath //*[local-name()='xa-pool']/*[local-name()='min-pool-size']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10 on XPath //*[local-name()='xa-pool']/*[local-name()='max-pool-size']
 
+  Scenario: Checks if the EJB Timer and common datasource were created
+    When container is started with env
+      | variable                         | value                                  |
+      | DATASOURCES                      | RHPAM                                  |
+      | RHPAM_DATABASE                   | rhpam7                                 |
+      | RHPAM_JNDI                       | java:jboss/datasources/rhpam          |
+      | RHPAM_JTA                        | true                                   |
+      | RHPAM_DRIVER                     | h2                                     |
+      | RHPAM_USERNAME                   | sa                                     |
+      | RHPAM_PASSWORD                   | 123456                                 |
+      | RHPAM_XA_CONNECTION_PROPERTY_URL | jdbc:h2:/opt/eap/standalone/data/rhpam |
+      | RHPAM_SERVICE_HOST               | dummy                                  |
+      | RHPAM_SERVICE_PORT               | 12345                                  |
+    Then XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/rhpam on XPath //*[local-name()='datasource']/@jndi-name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value rhpam-RHPAM on XPath //*[local-name()='datasource']/@pool-name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='datasource']/@enabled
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='datasource']/@use-java-context
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value h2 on XPath //*[local-name()='xa-datasource']/*[local-name()='driver']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER on XPath //*[local-name()='xa-datasource']/@pool-name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:h2:/opt/eap/standalone/data/rhpam on XPath //*[local-name()='datasource']/*[local-name()='connection-url']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/rhpam_EJBTimer on XPath //*[local-name()='xa-datasource']/@jndi-name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@use-java-context
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@enabled
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:h2:/opt/eap/standalone/data/rhpam on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="URL"]
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value sa on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 123456 on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='password']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value TRANSACTION_READ_COMMITTED on XPath //*[local-name()='xa-datasource']/*[local-name()='transaction-isolation']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_ds on XPath //*[local-name()='timer-service']/@default-data-store
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_ds on XPath //*[local-name()='database-data-store']/@name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/rhpam_EJBTimer on XPath //*[local-name()='database-data-store']/@datasource-jndi-name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value h2 on XPath //*[local-name()='database-data-store']/@database
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_part on XPath //*[local-name()='database-data-store']/@partition
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value -1 on XPath //*[local-name()='database-data-store']/@refresh-interval
