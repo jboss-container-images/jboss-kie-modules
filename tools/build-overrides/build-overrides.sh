@@ -136,7 +136,7 @@ handle_rhdm_artifacts() {
     local decision_central_distribution_md5=$(get_sum "md5" "${decision_central_distribution_file}")
 
     # KIE_SERVER_DISTRIBUTION_ZIP
-    local kie_server_distribution_url=$(get_url "rhdm.kie-server.ee7.latest.url" "${build_file}")
+    local kie_server_distribution_url=$(get_url "rhdm.kie-server.ee8.latest.url" "${build_file}")
     local kie_server_distribution_zip=$(get_name "${kie_server_distribution_url}")
     local kie_server_distribution_file="${artifacts_dir}/${kie_server_distribution_zip}"
     download "${kie_server_distribution_url}" "${kie_server_distribution_file}"
@@ -267,7 +267,7 @@ handle_rhpam_artifacts() {
     local business_central_monitoring_distribution_md5=$(get_sum "md5" "${business_central_monitoring_distribution_file}")
 
     # KIE_SERVER_DISTRIBUTION_ZIP
-    local kie_server_distribution_url=$(get_url "rhpam.kie-server.ee7.latest.url" "${build_file}")
+    local kie_server_distribution_url=$(get_url "rhpam.kie-server.ee8.latest.url" "${build_file}")
     local kie_server_distribution_zip=$(get_name "${kie_server_distribution_url}")
     local kie_server_distribution_file="${artifacts_dir}/${kie_server_distribution_zip}"
     download "${kie_server_distribution_url}" "${kie_server_distribution_file}"
