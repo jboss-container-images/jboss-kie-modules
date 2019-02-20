@@ -32,6 +32,7 @@ import argparse
 import json
 import yaml
 import os
+import re
 import sys
 import shutil
 import re
@@ -221,20 +222,38 @@ def getVolumePurpose(name):
 
 
 # Used for getting image environment variables into parameters table and parameter
-# descriptions into image environment table 
-def getVariableInfo(parameters, name, value):
-    for d in parameters:
-        if (d["name"] == name):
-            return str(d[value]).replace("|", "\\|")
-        else:
-            try:
-                envValue = str(d["value"].replace('$','').replace('{','').replace('}',''))
-                if (envValue == name):
-                    return d["name"]
-            except KeyError:
-                pass
+# descriptions into image environment table
+def getVariableInfo(parameters, name, env, field):
 
-    if (value == "value" and name in PARAMETER_VALUES.keys()):
+    for d in parameters:
+        try:
+            if len(env) > 0 and field == 'description':
+                envValue = replacer(env["value"])
+
+                if d['name'] == envValue or d["name"] == env['name']:
+                    return d[field]
+
+            elif d["name"] == name and name != "":
+                if field == "value" and d.has_key("example"):
+                    return d["example"]
+                elif field == "value" and not d.has_key("example") and not d.get(field):
+                    return "--"
+
+                return str(d[field]).replace("|", "\\|")
+
+            else:
+                parameterValue = replacer(d["value"])
+                if parameterValue == name and field == 'value':
+                    return d[field]
+
+                elif parameterValue == name:
+                    return d["name"]
+
+        except KeyError:
+            pass
+
+
+    if (field == "value" and name in PARAMETER_VALUES.keys()):
         return PARAMETER_VALUES[name]
     else:
         return "--"
@@ -246,10 +265,10 @@ def createParameterTable(data):
         if u"\u2019" in param["description"]:
             param["description"] = param["description"].replace(u"\u2019", "'")
         containerEnvs = [d["spec"]["template"]["spec"]["containers"][0]["env"] for d in data["objects"] if
-                  d["kind"] == "DeploymentConfig"]
+                         d["kind"] == "DeploymentConfig"]
         parameters = [item for sublist in containerEnvs for item in sublist]
-        envVar = getVariableInfo(parameters, param["name"], "name")
-        value = param["value"] if param.get("value") else getVariableInfo(parameters, param["name"], "value")
+        envVar = getVariableInfo(parameters, param["name"], [], "name")
+        value = param["value"] if param.get("value") else getVariableInfo(data['parameters'], param["name"], [], "value")
         req = param["required"] if "required" in param else "?"
         columns = [param["name"], envVar, str(param["description"]).replace("|", "\\|"), value, req]
         text += buildRow(columns)
@@ -286,11 +305,11 @@ def createObjectTable(data, tableKind):
                 tempS2i = s2i.split(":")
                 if "${" in tempS2i[0]:
                     varName = tempS2i[0][tempS2i[0].find("{") + 1:tempS2i[0].find("}")]
-                    varValue = getVariableInfo(data['parameters'], varName, "value")
+                    varValue = getVariableInfo(data['parameters'], varName, [], "value")
                     s2i = s2i.replace('${' + varName + '}', varValue)
                 if "${" in tempS2i[1]:
-                    varName = tempS2i[1][tempS2i[1].find("{") + 1:tempS2i[1].find("}")]
-                    varValue = getVariableInfo(data['parameters'], varName, "value")
+                    varName = tempS2i[1][tempS2i[1].find("{") + 1:tempS2i[1].find("}")]q
+                    varValue = getVariableInfo(data['parameters'], varName, [], "value")
                     s2i = s2i.replace('${' + varName + '}', varValue)
                 link = " link:" + LINKS[s2i]
             elif obj["spec"]["strategy"]["type"] == 'Docker':
@@ -317,7 +336,14 @@ def createDeployConfigTable(data, table):
             if table == "triggers":
                 columns = [deployment, spec["triggers"][0]["type"]]
             elif table == "replicas":
-                columns = [deployment, str(spec["replicas"])]
+                # correctly identify integer values from parameter value
+                if "${" in str(spec["replicas"]):
+                    replicaEnv = replacer(str(spec["replicas"]))
+                    for p in data['parameters']:
+                        if p['name'] == replicaEnv:
+                            columns = [ deployment, p['value'] ]
+                else:
+                    columns = [ deployment, str(spec["replicas"]) ]
             elif table == "serviceAccountName":
                 columns = [deployment, template["serviceAccountName"]]
             elif table == "volumes":
@@ -375,7 +401,8 @@ def createContainerTable(data, table):
             environment = container["env"]
             text += "\n." + str(len(environment)) + "+| `" + deployment + "`"
             for env in environment:
-                columns = [env["name"], getVariableInfo(data["parameters"], env["name"], "description")]
+                columns = [env["name"], getVariableInfo(data["parameters"], "", env, "description")]
+
                 # TODO: handle valueFrom instead of value
                 if "value" in env:
                     columns.append(env["value"])
@@ -384,6 +411,8 @@ def createContainerTable(data, table):
                 text += buildRow(columns)
     return text
 
+def replacer(string):
+    return re.sub("['$','{','}']","", string)
 
 def generate_readme(generate_rhdm, generate_rhpam, generate_ips, generate_ds):
     black_list = ['contrib', 'docs', 'optaweb']
@@ -512,8 +541,8 @@ def pull_templates(rhdm_git_branch, rhpam_git_branch, ips_git_branch, ds_git_bra
             clone_repository(repo, git_dir, bare=False, checkout_branch=ds_git_branch)
 
 def copy_templates_adoc(generate_rhdm, generate_rhpam, generate_ips, generate_ds,
-                             rhdm_docs_final_location, rhpam_docs_final_location,
-                             ips_docs_final_location, ds_docs_final_location):
+                        rhdm_docs_final_location, rhpam_docs_final_location,
+                        ips_docs_final_location, ds_docs_final_location):
 
     for project in APPLICATION_DIRECTORIES:
         if generate_rhdm and "rhdm" in project:
