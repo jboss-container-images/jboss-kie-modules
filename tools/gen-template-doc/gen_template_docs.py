@@ -222,10 +222,18 @@ def getVolumePurpose(name):
 
 # Used for getting image environment variables into parameters table and parameter
 # descriptions into image environment table 
-def getVariableInfo(data, name, value):
-    for d in data:
-        if (d["name"] == name or name[1:] in d["name"] or d["name"][1:] in name):
+def getVariableInfo(parameters, name, value):
+    for d in parameters:
+        if (d["name"] == name):
             return str(d[value]).replace("|", "\\|")
+        else:
+            try:
+                envValue = str(d["value"].replace('$','').replace('{','').replace('}',''))
+                if (envValue == name):
+                    return d["name"]
+            except KeyError:
+                pass
+
     if (value == "value" and name in PARAMETER_VALUES.keys()):
         return PARAMETER_VALUES[name]
     else:
@@ -237,11 +245,11 @@ def createParameterTable(data):
     for param in data["parameters"]:
         if u"\u2019" in param["description"]:
             param["description"] = param["description"].replace(u"\u2019", "'")
-        deploy = [d["spec"]["template"]["spec"]["containers"][0]["env"] for d in data["objects"] if
+        containerEnvs = [d["spec"]["template"]["spec"]["containers"][0]["env"] for d in data["objects"] if
                   d["kind"] == "DeploymentConfig"]
-        environment = [item for sublist in deploy for item in sublist]
-        envVar = getVariableInfo(environment, param["name"], "name")
-        value = param["value"] if param.get("value") else getVariableInfo(environment, param["name"], "value")
+        parameters = [item for sublist in containerEnvs for item in sublist]
+        envVar = getVariableInfo(parameters, param["name"], "name")
+        value = param["value"] if param.get("value") else getVariableInfo(parameters, param["name"], "value")
         req = param["required"] if "required" in param else "?"
         columns = [param["name"], envVar, str(param["description"]).replace("|", "\\|"), value, req]
         text += buildRow(columns)
