@@ -308,7 +308,7 @@ def createObjectTable(data, tableKind):
                     varValue = getVariableInfo(data['parameters'], varName, [], "value")
                     s2i = s2i.replace('${' + varName + '}', varValue)
                 if "${" in tempS2i[1]:
-                    varName = tempS2i[1][tempS2i[1].find("{") + 1:tempS2i[1].find("}")]q
+                    varName = tempS2i[1][tempS2i[1].find("{") + 1:tempS2i[1].find("}")]
                     varValue = getVariableInfo(data['parameters'], varName, [], "value")
                     s2i = s2i.replace('${' + varName + '}', varValue)
                 link = " link:" + LINKS[s2i]
