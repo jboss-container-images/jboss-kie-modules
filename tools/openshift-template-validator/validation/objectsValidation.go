@@ -33,7 +33,6 @@ import (
 	kappsv1beta1 "k8s.io/api/apps/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
-	krbacvalidation "k8s.io/kubernetes/pkg/apis/rbac/validation"
 	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -42,6 +41,7 @@ import (
 	kapiv1 "k8s.io/kubernetes/pkg/apis/core/v1"
 	kvalidation "k8s.io/kubernetes/pkg/apis/core/validation"
 	krbac "k8s.io/kubernetes/pkg/apis/rbac"
+	krbacvalidation "k8s.io/kubernetes/pkg/apis/rbac/validation"
 
 	"github.com/jboss-container-images/jboss-kie-modules/tools/openshift-template-validator/utils"
 	k8sapps "k8s.io/kubernetes/pkg/apis/apps"
@@ -409,63 +409,65 @@ func validateObjects(template templateapi.Template) {
 					}
 				}
 
-				// validate the drainer Pod
+				// validate the drainer Pod if exist
 				data := statefulSetv1k8sapps.Annotations["statefulsets.kubernetes.io/drainer-pod-template"]
-				drainerPodTemplate := &corev1.Pod{}
-				if err := runtime.DecodeInto(legacyscheme.Codecs.UniversalDecoder(), []byte(data), drainerPodTemplate); err != nil {
-					validationErrors[drainerErrorPrefix] = append(validationErrors[drainerErrorPrefix], err.Error())
-				}
-
-				drainerPodv1 := &kapi.Pod{}
-				kapiv1.Convert_v1_Pod_To_core_Pod(drainerPodTemplate, drainerPodv1, nil)
-
-				drainerPodv1.Namespace = "default"
-
-				// if empty, set the restartPolicy to its default value
-				if drainerPodv1.Spec.RestartPolicy == "" {
-					drainerPodv1.Spec.RestartPolicy = "Always"
-				}
-
-				// if empty, set the dnsPolicy to its default value
-				if drainerPodv1.Spec.DNSPolicy == "" {
-					drainerPodv1.Spec.DNSPolicy = "ClusterFirst"
-				}
-
-				for index, container := range drainerPodv1.Spec.Containers {
-					// if imagePullPolicy is not present, set to default value
-					if container.ImagePullPolicy == "" {
-						drainerPodv1.Spec.Containers[index].ImagePullPolicy = "IfNotPresent"
+				if len(data) > 0 {
+					drainerPodTemplate := &corev1.Pod{}
+					if err := runtime.DecodeInto(legacyscheme.Codecs.UniversalDecoder(), []byte(data), drainerPodTemplate); err != nil {
+						validationErrors[drainerErrorPrefix] = append(validationErrors[drainerErrorPrefix], err.Error())
 					}
 
-					// set the termination Message Path and MessagePolicy to its default value if empty
-					if container.TerminationMessagePolicy == "" {
-						drainerPodv1.Spec.Containers[index].TerminationMessagePolicy = "File"
-						drainerPodv1.Spec.Containers[index].TerminationMessagePath = "/dev/termination-log"
+					drainerPodv1 := &kapi.Pod{}
+					kapiv1.Convert_v1_Pod_To_core_Pod(drainerPodTemplate, drainerPodv1, nil)
+
+					drainerPodv1.Namespace = "default"
+
+					// if empty, set the restartPolicy to its default value
+					if drainerPodv1.Spec.RestartPolicy == "" {
+						drainerPodv1.Spec.RestartPolicy = "Always"
 					}
 
-					// if env contains the value from valueRef, set ApiVersion
-					for _, env := range container.Env {
-						if env.ValueFrom != nil {
-							if env.ValueFrom.FieldRef != nil {
-								env.ValueFrom.FieldRef.APIVersion = "v1"
+					// if empty, set the dnsPolicy to its default value
+					if drainerPodv1.Spec.DNSPolicy == "" {
+						drainerPodv1.Spec.DNSPolicy = "ClusterFirst"
+					}
+
+					for index, container := range drainerPodv1.Spec.Containers {
+						// if imagePullPolicy is not present, set to default value
+						if container.ImagePullPolicy == "" {
+							drainerPodv1.Spec.Containers[index].ImagePullPolicy = "IfNotPresent"
+						}
+
+						// set the termination Message Path and MessagePolicy to its default value if empty
+						if container.TerminationMessagePolicy == "" {
+							drainerPodv1.Spec.Containers[index].TerminationMessagePolicy = "File"
+							drainerPodv1.Spec.Containers[index].TerminationMessagePath = "/dev/termination-log"
+						}
+
+						// if env contains the value from valueRef, set ApiVersion
+						for _, env := range container.Env {
+							if env.ValueFrom != nil {
+								if env.ValueFrom.FieldRef != nil {
+									env.ValueFrom.FieldRef.APIVersion = "v1"
+								}
+							}
+						}
+						// ignore volumeMount from drainer pod, sometimes it can use a previously created Volume.
+						for i := range container.VolumeMounts {
+							if container.VolumeMounts[i].Name != "" {
+								drainerPodv1.Spec.Volumes = getFakeVolume(*drainerPodv1)
+								container.VolumeMounts[i] = kapi.VolumeMount{
+									Name:      "ignore",
+									MountPath: "/dev/null",
+								}
 							}
 						}
 					}
-					// ignore volumeMount from drainer pod, sometimes it can use a previously created Volume.
-					for i := range container.VolumeMounts {
-						if container.VolumeMounts[i].Name != "" {
-							drainerPodv1.Spec.Volumes = getFakeVolume(*drainerPodv1)
-							container.VolumeMounts[i] = kapi.VolumeMount{
-								Name:      "ignore",
-								MountPath: "/dev/null",
-							}
-						}
-					}
-				}
 
-				if err := kvalidation.ValidatePod(drainerPodv1); err != nil {
-					for _, e := range err {
-						validationErrors[drainerErrorPrefix] = append(validationErrors[drainerErrorPrefix], e.Error())
+					if err := kvalidation.ValidatePod(drainerPodv1); err != nil {
+						for _, e := range err {
+							validationErrors[drainerErrorPrefix] = append(validationErrors[drainerErrorPrefix], e.Error())
+						}
 					}
 				}
 
