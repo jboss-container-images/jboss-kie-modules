@@ -5,6 +5,11 @@ set -e
 SCRIPT_DIR=$(dirname $0)
 ADDED_DIR=${SCRIPT_DIR}/added
 SOURCES_DIR="/tmp/artifacts"
+KIE_SERVER_WAR_LOCATION="${JBOSS_HOME}/standalone/deployments/ROOT.war"
+
+# Override the ejb-jar.xml file
+rm -rf ${KIE_SERVER_WAR_LOCATION}/WEB-INF/weblogic-ejb-jar.xml
+cp -v ${ADDED_DIR}/WEB-INF/ejb-jar.xml ${KIE_SERVER_WAR_LOCATION}/WEB-INF/
 
 # Make sure the owner of added files is the 'jboss' user
 chown -R jboss:jboss ${SCRIPT_DIR}

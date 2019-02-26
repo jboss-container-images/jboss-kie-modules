@@ -59,7 +59,6 @@ function configure() {
     configure_server_security
     configure_server_sync_deploy
     configure_drools
-    configure_executor
     configure_jbpm
     configure_kie_server_mgmt
     # configure_server_state always has to be last
@@ -430,17 +429,11 @@ function configure_server_sync_deploy() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.sync.deploy=${kieServerSyncDeploy}"
 }
 
-function configure_executor() {
-    # kie executor number of retries
-    if [ "${KIE_EXECUTOR_RETRIES}" != "" ]; then
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.executor.retry.count=${KIE_EXECUTOR_RETRIES}"
-    fi
-}
 
 # Enable/disable the jbpm capabilities according with the product
 function configure_jbpm() {
     if [ "${JBOSS_PRODUCT}" = "rhpam-kieserver" ]; then
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ejb.timer.tx=true"
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ejb.timer.tx=true -Dorg.kie.executor.retry.count=${KIE_EXECUTOR_RETRIES:-3}"
         if [ "${JBPM_HT_CALLBACK_METHOD}" != "" ]; then
             JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ht.callback=${JBPM_HT_CALLBACK_METHOD}"
         fi

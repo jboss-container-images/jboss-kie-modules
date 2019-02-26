@@ -74,6 +74,23 @@ Feature: RHPAM KIE Server configuration tests
     Then container log should contain -Dorg.kie.executor.retry.count=40
      And container log should contain - Retries per Request: 40
 
+  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, verify if the JMS is the default executor and jms transacted is false
+    When container is ready
+    Then container log should contain -Dorg.kie.executor.jms=true
+     And container log should contain -Dorg.kie.executor.jms.queue=queue/KIE.SERVER.EXECUTOR
+     And container log should contain -Dorg.kie.executor.jms.transacted=false
+     And container log should contain Executor JMS based support successfully activated on queue ActiveMQQueue[jms.queue.KIE.SERVER.EXECUTOR]
+
+  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, verify if the JMS executor configuration
+    When container is started with env
+      | variable                           | value                             |
+      | KIE_SERVER_JMS_QUEUE_EXECUTOR      | queue/KIE.SERVER.EXECUTOR.CUSTOM  |
+      | KIE_SERVER_EXECUTOR_JMS_TRANSACTED | true                              |
+    Then container log should contain -Dorg.kie.executor.jms=true
+     And container log should contain -Dorg.kie.executor.jms.queue=queue/KIE.SERVER.EXECUTOR.CUSTOM
+     And container log should contain -Dorg.kie.executor.jms.transacted=true
+     And container log should contain Executor JMS based support successfully activated on queue ActiveMQQueue[jms.queue.KIE.SERVER.EXECUTOR]
+
     Scenario: Checks if the EJB Timer was successfully configured with MySQL with DB_SERVICE_PREFIX_MAPPING env
       When container is started with env
         | variable                   | value                            |
