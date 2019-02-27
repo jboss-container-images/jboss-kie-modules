@@ -6,6 +6,7 @@ import (
 	"github.com/asaskevich/govalidator"
 	"gopkg.in/yaml.v2"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -87,6 +88,12 @@ func validateTemplateParameters(parameters []templateapi.Parameter, file string,
 	}
 
 	a := stringfyTemplateObjects(file, objectsBegin)
+	// regex to get only the env from the template objects to exactly match
+	// with the template parameters
+	var rgx = regexp.MustCompile(`\{(.*?)\}`)
+	paramObjects := make(map[string]struct{})
+	scanner := bufio.NewScanner(strings.NewReader(a))
+	replacer := strings.NewReplacer("{{", "{", "}}","}")
 	for index, param := range param.Parameters {
 
 		if _, err := govalidator.ValidateStruct(param); err != nil {
@@ -99,9 +106,24 @@ func validateTemplateParameters(parameters []templateapi.Parameter, file string,
 			parameterValidationErrors = append(parameterValidationErrors, "Index ["+strconv.Itoa(index+1)+"] Parameter name "+field+" - "+err.Error()+"; ")
 		}
 
-		if !strings.Contains(a, param.Name) {
+		for scanner.Scan() {
+			str := replacer.Replace(scanner.Text())
+			if strings.Contains(str, "${")  {
+				rs := rgx.FindAllStringSubmatch(str, -1)
+				// use map to avoid add duplicated items to the map
+				if len(rs) == 2 {
+					paramObjects[rs[1][1]] = paramObjects[rs[1][1]]
+					paramObjects[rs[0][1]] = paramObjects[rs[0][1]]
+				} else {
+					paramObjects[rs[0][1]] = paramObjects[rs[0][1]]
+				}
+			}
+		}
+
+		if _, present := paramObjects[param.Name]; !present {
 			validationErrors["Parameters"] = append(validationErrors["Parameters"], "Parameter ["+param.Name+"] is defined but is not used in anywhere in the template.")
 		}
+
 	}
 
 	if len(parameterValidationErrors) > 0 {
