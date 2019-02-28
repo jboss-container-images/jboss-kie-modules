@@ -23,6 +23,7 @@ function prepareEnv() {
     unset KIE_SERVER_ID
     unset KIE_SERVER_LOCATION
     unset KIE_SERVER_MGMT_DISABLED
+    unset KIE_SERVER_MODE
     unset KIE_SERVER_PERSISTENCE_DIALECT
     unset KIE_SERVER_PERSISTENCE_DS
     unset KIE_SERVER_PERSISTENCE_SCHEMA
@@ -62,9 +63,10 @@ function configure() {
     configure_executor
     configure_jbpm
     configure_kie_server_mgmt
+    configure_mode
+    configure_prometheus
     # configure_server_state always has to be last
     configure_server_state
-    configure_prometheus
 }
 
 function configure_EJB_Timer_datasource {
@@ -480,6 +482,30 @@ function configure_kie_server_mgmt() {
     fi
 }
 
+function configure_mode() {
+    if [ -n "${KIE_SERVER_MODE}" ]; then
+        if [ "${KIE_SERVER_MODE^^}" = "DEVELOPMENT" ]; then
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.mode=development"
+        elif [ "${KIE_SERVER_MODE^^}" = "PRODUCTION" ]; then
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.mode=production"
+        else
+            log_error "Invalid value \"${KIE_SERVER_MODE}\" for KIE_SERVER_MODE. Must be \"development\" or \"production\"."
+        fi
+    fi
+}
+
+function configure_prometheus() {
+    if [ -n "${PROMETHEUS_SERVER_EXT_DISABLED}" ]; then
+        if [ "${PROMETHEUS_SERVER_EXT_DISABLED^^}" = "TRUE" ]; then
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.prometheus.server.ext.disabled=true"
+        elif [ "${PROMETHEUS_SERVER_EXT_DISABLED^^}" = "FALSE" ]; then
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.prometheus.server.ext.disabled=false"
+        else
+            log_error "Invalid value \"${PROMETHEUS_SERVER_EXT_DISABLED}\" for PROMETHEUS_SERVER_EXT_DISABLED. Must be \"true\" or \"false\"."
+        fi
+    fi
+}
+
 function configure_server_state() {
     # replace all non-alphanumeric characters with a dash
     local kieServerId="${KIE_SERVER_ID//[^[:alnum:].-]/-}"
@@ -534,18 +560,6 @@ function configure_server_state() {
         if [ $ERR -ne 0 ]; then
             log_error "Aborting due to error code $ERR from kie server state file init"
             exit $ERR
-        fi
-    fi
-}
-
-function configure_prometheus() {
-    if [ -n "${PROMETHEUS_SERVER_EXT_DISABLED}" ]; then
-        if [ "${PROMETHEUS_SERVER_EXT_DISABLED^^}" = "TRUE" ]; then
-            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.prometheus.server.ext.disabled=true"
-        elif [ "${PROMETHEUS_SERVER_EXT_DISABLED^^}" = "FALSE" ]; then
-            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.prometheus.server.ext.disabled=false"
-        else
-            log_error "Invalid value \"${PROMETHEUS_SERVER_EXT_DISABLED}\" for PROMETHEUS_SERVER_EXT_DISABLED. Must be \"true\" or \"false\"."
         fi
     fi
 }

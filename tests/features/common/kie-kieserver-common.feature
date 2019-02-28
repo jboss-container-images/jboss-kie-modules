@@ -349,6 +349,29 @@ Feature: Kie Server common features
     And container log should contain KIE_SERVER_CONTAINER_KJAR_GROUP_ID_0: a.b.c
     And container log should contain KIE_SERVER_CONTAINER_KJAR_ARTIFACT_ID_0: 1.0-SNAPSHOT
 
+  Scenario: Check that mode property gets set for development.
+    When container is started with env
+      | variable        | value       |
+      | KIE_SERVER_MODE | development |
+    Then container log should contain -Dorg.kie.server.mode=development
+
+  Scenario: Check that mode property gets set for production.
+    When container is started with env
+      | variable        | value      |
+      | KIE_SERVER_MODE | production |
+    Then container log should contain -Dorg.kie.server.mode=production
+
+  Scenario: Check that mode property is not set without env.
+    When container is started with env
+      | variable        | value  |
+    Then container log should not contain -Dorg.kie.server.mode=
+
+  Scenario: Check that mode property complains given illegal value.
+    When container is started with env
+      | variable        | value  |
+      | KIE_SERVER_MODE | foobar |
+    Then container log should contain Invalid value "foobar" for KIE_SERVER_MODE. Must be "development" or "production".
+
   Scenario: Check that prometheus properties are enabled.
     When container is started with env
       | variable                       | value |
