@@ -491,7 +491,7 @@ main() {
     local build_type
     local build_type_default="nightly"
     local build_date
-    local build_date_default=$(( $(date '+%Y%m%d') - 1 ))
+    local build_date_default=$(date --date="1 day ago" '+%Y%m%d')
     local products_valid=( all \
         rhdm rhdm-controller rhdm-decisioncentral rhdm-kieserver rhdm-optaweb-employee-rostering \
         rhpam rhpam-businesscentral rhpam-businesscentral-monitoring rhpam-controller rhpam-kieserver rhpam-smartrouter )
