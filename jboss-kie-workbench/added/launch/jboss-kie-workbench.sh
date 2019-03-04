@@ -164,48 +164,75 @@ function configure_ha() {
         if [ -n "${OPENSHIFT_DNS_PING_SERVICE_NAME}" -a -n "${OPENSHIFT_DNS_PING_SERVICE_PORT}" ]; then
             log_info "OpenShift DNS_PING protocol envs set, verifying other needed envs for HA setup. Using ${JGROUPS_PING_PROTOCOL}"
             local jmsBrokerUsername="${APPFORMER_JMS_BROKER_USERNAME:-$APPFORMER_JMS_BROKER_USER}"
-            if [ -n "$APPFORMER_ELASTIC_HOST" -a -n "$jmsBrokerUsername" -a -n "$APPFORMER_JMS_BROKER_PASSWORD" -a -n "$APPFORMER_JMS_BROKER_ADDRESS" ] ; then
-                # set the workbench properties for HA
-                local jmsConnectionParams="${APPFORMER_JMS_CONNECTION_PARAMS:-ha=true&retryInterval=1000&retryIntervalMultiplier=1.0&reconnectAttempts=-1}"
-                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer-cluster=true"
-                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer-jms-connection-mode=REMOTE"
-                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer-jms-url=tcp://${APPFORMER_JMS_BROKER_ADDRESS}:${APPFORMTER_JMS_BROKER_PORT:-61616}?${jmsConnectionParams}"
-                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer-jms-username=${jmsBrokerUsername}"
-                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer-jms-password=${APPFORMER_JMS_BROKER_PASSWORD}"
-                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Des.set.netty.runtime.available.processors=false"
-                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.index=elastic"
-                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.host=${APPFORMER_ELASTIC_HOST}"
-                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.port=${APPFORMER_ELASTIC_PORT:-9300}"
-                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.cluster=${APPFORMER_ELASTIC_CLUSTER_NAME:-kie-cluster}"
-                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.retries=${APPFORMER_ELASTIC_RETRIES:-10}"
-
-                # [RHPAM-1522] make the workbench webapp distributable for HA (2 steps)
-                local web_xml="${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/web.xml"
-                sed -i "/^\s*<!--/!b;N;/<distributable\/>/s/.*\n//;T;:a;n;/^\s*-->/!ba;d" "${web_xml}"
-                # step 2) modify the web cache container per https://access.redhat.com/solutions/2776221
-                #         note: the below differs from the EAP 7.1 solution above, since EAP 7.2
-                #               doesn't have "mode", "l1", and "owners" attributes in the original config
-                local web_cache="\
-                    <transport lock-timeout='60000'/>\
-                    <replicated-cache name='repl'>\
-                        <file-store/>\
-                    </replicated-cache>\
-                    <distributed-cache name='dist'>\
-                        <file-store/>\
-                    </distributed-cache>"
-                xmllint --shell "${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml" << SHELL
-                    cd //*[local-name()='cache-container'][@name='web']
-                    set ${web_cache}
-                    save
-SHELL
-# SHELL line above not indented on purpose for correct vim syntax highlighting
+            if [ -n "$jmsBrokerUsername" -a -n "$APPFORMER_JMS_BROKER_PASSWORD" -a -n "$APPFORMER_JMS_BROKER_ADDRESS" ] ; then
+                if [ -n "$APPFORMER_ELASTIC_SERVICE_NAME" -o -n "$APPFORMER_ELASTIC_HOST" ] ; then
+                    # set the workbench properties for HA using Elasticsearch
+                    configure_ha_common
+                    configure_ha_elastic
+                else
+                    log_warning "APPFORMER_ELASTIC_SERVICE_NAME or APPFORMER_ELASTIC_HOST not set; HA will not be available."
+                fi
             else
-                log_warning "HA envs not set, HA will not be configured."
+                log_warning "APPFORMER_JMS_BROKER_USER(NAME), APPFORMER_JMS_BROKER_PASSWORD, and APPFORMER_JMS_BROKER_ADDRESS not set; HA will not be available."
             fi
         else
-            log_warning "Missing configuration for JBoss HA. Envs OPENSHIFT_DNS_PING_SERVICE_NAME and OPENSHIFT_DNS_PING_SERVICE_PORT not found."
+            log_warning "OPENSHIFT_DNS_PING_SERVICE_NAME and OPENSHIFT_DNS_PING_SERVICE_PORT not set; HA will not be available."
         fi
     else
-        log_warning "JGROUPS_PING_PROTOCOL not set, HA will not be available."
+        log_warning "JGROUPS_PING_PROTOCOL not set; HA will not be available."
     fi
+}
+
+function configure_ha_common() {
+    # ---------- enable ----------
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer-cluster=true"
+
+    # ---------- jms ----------
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer-jms-connection-mode=REMOTE"
+    local jmsConnectionParams="${APPFORMER_JMS_CONNECTION_PARAMS:-ha=true&retryInterval=1000&retryIntervalMultiplier=1.0&reconnectAttempts=-1}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer-jms-url=tcp://${APPFORMER_JMS_BROKER_ADDRESS}:${APPFORMTER_JMS_BROKER_PORT:-61616}?${jmsConnectionParams}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer-jms-username=${APPFORMER_JMS_BROKER_USERNAME:-$APPFORMER_JMS_BROKER_USER}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer-jms-password=${APPFORMER_JMS_BROKER_PASSWORD}"
+
+    # ---------- distributable ----------
+    # [RHPAM-1522] make the workbench webapp distributable for HA (2 steps)
+    local web_xml="${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/web.xml"
+    sed -i "/^\s*<!--/!b;N;/<distributable\/>/s/.*\n//;T;:a;n;/^\s*-->/!ba;d" "${web_xml}"
+    # step 2) modify the web cache container per https://access.redhat.com/solutions/2776221
+    #         note: the below differs from the EAP 7.1 solution above, since EAP 7.2
+    #               doesn't have "mode", "l1", and "owners" attributes in the original config
+    local web_cache="\
+        <transport lock-timeout='60000'/>\
+        <replicated-cache name='repl'>\
+            <file-store/>\
+        </replicated-cache>\
+        <distributed-cache name='dist'>\
+            <file-store/>\
+        </distributed-cache>"
+    xmllint --shell "${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml" << SHELL
+        cd //*[local-name()='cache-container'][@name='web']
+        set ${web_cache}
+        save
+SHELL
+# SHELL line above not indented on purpose for correct vim syntax highlighting
+}
+
+function configure_ha_elastic() {
+    local serviceName
+    if [ -n "${APPFORMER_ELASTIC_SERVICE_NAME}" ]; then
+        serviceName=${APPFORMER_ELASTIC_SERVICE_NAME//-/_} # replace - with _
+        serviceName=${serviceName^^} # uppercase
+    fi
+    if [ -z "${APPFORMER_ELASTIC_HOST}" ] && [ -n "${serviceName}" ]; then
+        APPFORMER_ELASTIC_HOST=$(find_env "${serviceName}_SERVICE_HOST")
+    fi
+    if [ -z "${APPFORMER_ELASTIC_PORT}" ] && [ -n "${serviceName}" ]; then
+        APPFORMER_ELASTIC_PORT=$(find_env "${serviceName}_SERVICE_PORT" "9300")
+    fi
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Des.set.netty.runtime.available.processors=false"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.index=elastic"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.cluster=${APPFORMER_ELASTIC_CLUSTER_NAME:-kie-cluster}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.host=${APPFORMER_ELASTIC_HOST}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.port=${APPFORMER_ELASTIC_PORT:-9300}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.retries=${APPFORMER_ELASTIC_RETRIES:-10}"
 }
