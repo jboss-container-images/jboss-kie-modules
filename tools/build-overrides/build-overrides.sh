@@ -496,7 +496,7 @@ main() {
         rhdm rhdm-controller rhdm-decisioncentral rhdm-kieserver rhdm-optaweb-employee-rostering \
         rhpam rhpam-businesscentral rhpam-businesscentral-monitoring rhpam-controller rhpam-kieserver rhpam-smartrouter )
     local product_default="all"
-    local version_example="7.3.0"
+    local version_example="7.4.0"
     local default_dir_example="/tmp/${build_tool}/${build_type_default}/${build_date_default}/${version_example}"
     local default_dir
     local artifacts_dir

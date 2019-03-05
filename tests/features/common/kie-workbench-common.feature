@@ -1,4 +1,4 @@
-@rhdm-7/rhdm73-decisioncentral-openshift @rhpam-7/rhpam73-businesscentral-openshift
+@rhdm-7/rhdm74-decisioncentral-openshift @rhpam-7/rhpam74-businesscentral-openshift
 Feature: Decision/Business Central common features
 
   Scenario: Check custom users are properly configured
@@ -89,4 +89,3 @@ Feature: Decision/Business Central common features
      And container log should contain Make sure to configure a ADMIN user to access the Business Central with the roles kie-server,rest-all,admin,kiemgmt,Administrators
      And container log should contain Make sure to configure the KIE_MAVEN_USER user to interact with Business Central embedded maven server
      And container log should contain Make sure to configure the KIE_SERVER_CONTROLLER_USER user to interact with KIE Server rest api with the roles kie-server,rest-all,guest
-

@@ -1,15 +1,15 @@
-@rhdm-7/rhdm73-decisioncentral-openshift
+@rhdm-7/rhdm74-decisioncentral-openshift
 Feature: RHDM Decision Central configuration tests
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
     When container is ready
-    Then container log should contain rhdm-7/rhdm73decisioncentral-openshift image, version
+    Then container log should contain rhdm-7/rhdm74decisioncentral-openshift image, version
 
   Scenario: Check for product and version environment variables
     When container is ready
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhdm-decisioncentral
-     And run sh -c 'echo $RHDM_DECISION_CENTRAL_VERSION' in container and check its output for 7.3
+     And run sh -c 'echo $RHDM_DECISION_CENTRAL_VERSION' in container and check its output for 7.4
 
   # https://issues.jboss.org/browse/RHPAM-891
   Scenario: Check default users are properly configured

@@ -11,7 +11,7 @@ any Application Template according your needs.
 Verify the tool options by executing the following command:
 
 ```bash
-$ openshift-template-validator-linux-amd64 validate --help 
+$ openshift-template-validator-linux-amd64 validate --help
 NAME:
    openshift-template-validator-linux-amd64 validate - Validate OpenShift Application Template(s)
 
@@ -48,7 +48,7 @@ Validating file /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml -----
 Then, check if the file was generated:
 
 ```bash
-$ ls -la /tmp/rhdm71-full.json 
+$ ls -la /tmp/rhdm71-full.json
 -rw-r--r--. 1 spolti spolti 21145 Aug 31 12:44 /tmp/rhdm71-full.json
 ```
 
@@ -121,7 +121,7 @@ This tool also verify the template parameters, it will check:
 The Strict mode will verify if there is a required parameter with no value, example:
 
 ```bash
-$ openshift-template-validator-linux-amd64 validate -f /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml 
+$ openshift-template-validator-linux-amd64 validate -f /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml
 Validating file /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml -----> No validation issues found.
 
 $ openshift-template-validator-linux-amd64 validate -f /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml --strict
@@ -169,15 +169,15 @@ This tool also validate imagestreams, for this, the ImageStream kind must be *Im
 kind: ImageStreamList
 apiVersion: v1
 metadata:
-  name: rhpam73-image-streams
+  name: rhpam74-image-streams
 ...
 ```
 
 Then, just run the tool:
 
 ```bash
-$ openshift-template-validator-linux-amd64 validate -f rhpam73-image-streams.yaml 
-Validating file rhpam73-image-streams.yaml -----> No validation issues found.
+$ openshift-template-validator-linux-amd64 validate -f rhpam74-image-streams.yaml
+Validating file rhpam74-image-streams.yaml -----> No validation issues found.
 ```
 
 #### Troubleshooting
@@ -185,7 +185,7 @@ Validating file rhpam73-image-streams.yaml -----> No validation issues found.
 If you trying to validate the template and a similar issue happens:
 
 ```bash
-$ openshift-template-validator-linux-amd64 validate -f /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml 
+$ openshift-template-validator-linux-amd64 validate -f /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml
 Validating file /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml
 Errors found: {
   "PreValidation-12-*v1.DeploymentConfig": [
@@ -270,7 +270,7 @@ Just execute the command below in the *$GOPATH/src/github.com/jboss-container-im
  ```bash
  $ sh hack.sh
  ````
-It will download all the needed dependencies and prepare the $GOPATH, after the script gets finished, we can build/install the binaries: 
+It will download all the needed dependencies and prepare the $GOPATH, after the script gets finished, we can build/install the binaries:
 
 The build/install will generate two binaries:
 - openshift-template-validator-linux-amd64
