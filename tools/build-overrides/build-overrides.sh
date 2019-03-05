@@ -127,14 +127,14 @@ get_build_url() {
     local full_version=${1}
     local build_type=${2}
     local build_date=${3}
-    local product_suite_lower=${4}
+    local product_suite_lower=${4,,}
     local product_suite_upper=${4^^}
     local build_url
     if [ "${product_suite_lower}" = "rhdm" ] || [ "${product_suite_lower}" = "rhpam" ]; then
         if [ "${build_type}" = "nightly" ]; then
             build_url="http://download.eng.bos.redhat.com/rcm-guest/staging/${product_suite_lower}/${product_suite_upper}-${full_version}.NIGHTLY/${product_suite_lower}-${build_date}.properties"
         elif [ "${build_type}" = "staging" ]; then
-            build_rul="http://download.eng.bos.redhat.com/rcm-guest/staging/${product_suite_lower}/${product_suite_upper}-${full_version}/${product_suite_lower}-deliverable-list-staging.properties"
+            build_url="http://download.eng.bos.redhat.com/rcm-guest/staging/${product_suite_lower}/${product_suite_upper}-${full_version}/${product_suite_lower}-deliverable-list-staging.properties"
         elif [ "${build_type}" = "candidate" ]; then
             build_url="http://download.devel.redhat.com/devel/candidates/${product_suite_upper}/${product_suite_upper}-${full_version}/${product_suite_lower}-deliverable-list.properties"
         fi
