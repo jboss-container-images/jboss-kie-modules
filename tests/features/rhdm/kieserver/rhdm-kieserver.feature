@@ -1,15 +1,15 @@
-@rhdm-7/rhdm73-kieserver-openshift
+@rhdm-7/rhdm74-kieserver-openshift
 Feature: RHDM KIE Server configuration tests
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
     When container is ready
-    Then container log should contain rhdm-7/rhdm73-kieserver-openshift image, version
+    Then container log should contain rhdm-7/rhdm74-kieserver-openshift image, version
 
   Scenario: Check for product and version environment variables
     When container is ready
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhdm-kieserver
-     And run sh -c 'echo $RHDM_KIESERVER_VERSION' in container and check its output for 7.3
+     And run sh -c 'echo $RHDM_KIESERVER_VERSION' in container and check its output for 7.4
 
 
   # KIECLOUD-11: temporarily ignore since Jenkins CI builds currently fail with this test, even though it passes when run at the command line

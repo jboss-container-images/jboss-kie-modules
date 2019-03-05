@@ -2,8 +2,8 @@
 # gen_template_doc.py
 # Kyle Liberti <kliberti@redhat.com>, Jonathan Dowland <jdowland@redhat.com>, Filippe Spolti<fspolti@redhat.com>
 # ver:  Python 2.7
-# Desc: Generates application-template documentation by cloning application-template 
-#       repository, then translating information from template JSON files into 
+# Desc: Generates application-template documentation by cloning application-template
+#       repository, then translating information from template JSON files into
 #       template asciidoctor files, and stores them in the a directory(Specified by
 #       TEMPLATE_DOCS variable).
 #
@@ -59,10 +59,12 @@ LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-
          "rhdm72-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm72-kieserver-openshift`]",
          "rhdm72-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhdm-7/rhdm72-kieserver-openshift`]",
          "rhdm73-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm73-kieserver-openshift`]",
+         "rhdm74-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm74-kieserver-openshift`]",
          "rhpam71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]",
          "rhpam72-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam72-kieserver-openshift`]",
          "rhpam72-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam72-kieserver-openshift`]",
          "rhpam73-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam73-kieserver-openshift`]",
+         "rhpam74-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam74-kieserver-openshift`]",
          "jboss-processserver64-openshift:1.4": "../../image.yaml[`jboss-processserver64-openshift`]",
          "jboss-decisionserver64-openshift:1.4": "../..iamge.yaml[`jboss-decisionserver64-openshift`]"}
 
@@ -180,7 +182,8 @@ def createTemplate(data, path):
             'rhpam70-authoring-ha.yaml',
             'rhpam71-authoring-ha.yaml', 'rhdm71-authoring-ha.yaml',
             'rhpam72-authoring-ha.yaml', 'rhdm72-authoring-ha.yaml',
-            'rhpam73-authoring-ha.yaml', 'rhdm73-authoring-ha.yaml'
+            'rhpam73-authoring-ha.yaml', 'rhdm73-authoring-ha.yaml',
+            'rhpam74-authoring-ha.yaml', 'rhdm74-authoring-ha.yaml'
         ]
         for template in clusteringTemplates:
             if str(path).rsplit('/', 1)[-1] == template:
