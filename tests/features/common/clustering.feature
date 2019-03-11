@@ -14,7 +14,7 @@ Feature: RHPAM RHDM Workbench clustering configuration
     Then container log should contain OpenShift DNS_PING protocol envs set, verifying other needed envs for HA setup. Using openshift.DNS_PING
      And container log should contain HA envs not set, HA will not be configured.
 
-  Scenario: HA default configuration
+  Scenario: Elastic HA default configuration
     When container is started with env
       | variable                        | value                 |
       | JGROUPS_PING_PROTOCOL           | openshift.DNS_PING    |
@@ -37,7 +37,7 @@ Feature: RHPAM RHDM Workbench clustering configuration
      And container log should contain -Dorg.appformer.ext.metadata.elastic.cluster=kie-cluster
      And container log should contain -Dorg.appformer.ext.metadata.elastic.retries=10
 
-  Scenario: HA custom configuration
+  Scenario: Elastic HA custom configuration
     When container is started with env
       | variable                        | value                 |
       | JGROUPS_PING_PROTOCOL           | openshift.DNS_PING    |
@@ -63,7 +63,7 @@ Feature: RHPAM RHDM Workbench clustering configuration
      And container log should contain -Dorg.appformer.ext.metadata.elastic.cluster=my-custom-cluster
      And container log should contain -Dorg.appformer.ext.metadata.elastic.retries=59
 
-  Scenario: HA custom configuration with custom jms params
+  Scenario: Elastic HA custom configuration with custom jms params
     When container is started with env
       | variable                        | value                 |
       | JGROUPS_PING_PROTOCOL           | openshift.DNS_PING    |
