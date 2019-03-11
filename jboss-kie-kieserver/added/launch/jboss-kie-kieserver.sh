@@ -485,11 +485,11 @@ function configure_kie_server_mgmt() {
 function configure_mode() {
     if [ -n "${KIE_SERVER_MODE}" ]; then
         if [ "${KIE_SERVER_MODE^^}" = "DEVELOPMENT" ]; then
-            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.mode=development"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.mode=DEVELOPMENT"
         elif [ "${KIE_SERVER_MODE^^}" = "PRODUCTION" ]; then
-            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.mode=production"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.mode=PRODUCTION"
         else
-            log_error "Invalid value \"${KIE_SERVER_MODE}\" for KIE_SERVER_MODE. Must be \"development\" or \"production\"."
+            log_error "Invalid value \"${KIE_SERVER_MODE}\" for KIE_SERVER_MODE. Must be \"DEVELOPMENT\" or \"PRODUCTION\"."
         fi
     fi
 }
