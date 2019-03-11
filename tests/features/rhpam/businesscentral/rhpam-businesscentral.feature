@@ -61,7 +61,7 @@ Feature: RHPAM Business Central configuration tests
    Then container log should contain -Dorg.kie.server.controller.openshift.prefer.kieserver.service=false
    Then container log should contain -Dorg.kie.server.controller.template.cache.ttl=60000
 
-
-  
-
-
+  # https://issues.jboss.org/browse/RHDM-871
+  Scenario: Check Workbench profile for rhpam
+    When container is ready
+    Then container log should contain -Dorg.kie.workbench.profile=FORCE_FULL
