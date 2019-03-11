@@ -13,6 +13,7 @@ function prepareEnv() {
     unset APPFORMER_ELASTIC_HOST
     unset APPFORMER_ELASTIC_PORT
     unset APPFORMER_ELASTIC_RETRIES
+    unset APPFORMER_ELASTIC_SERVICE_NAME
     unset APPFORMER_JMS_BROKER_ADDRESS
     unset APPFORMER_JMS_BROKER_PASSWORD
     unset APPFORMER_JMS_BROKER_PORT
@@ -124,7 +125,7 @@ function configure_openshift_enhancement() {
 
 function configure_workbench_profile() {
     # Business Central is unified for RHDM and RHPAM; For rhpam-decisioncentral needs to be set org.kie.workbench.profile
-    # to FORCE_PLANNER_AND_RULES and for rhpam-businesscentral and rhpam-businesscentral-monitoring needst to be set to 
+    # to FORCE_PLANNER_AND_RULES and for rhpam-businesscentral and rhpam-businesscentral-monitoring needst to be set to
     # FORCE_FULL
     if [ "$JBOSS_PRODUCT" = "rhdm-decisioncentral" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.workbench.profile=FORCE_PLANNER_AND_RULES"
@@ -209,6 +210,7 @@ function configure_ha_common() {
     # ---------- distributable ----------
     # [RHPAM-1522] make the workbench webapp distributable for HA (2 steps)
     local web_xml="${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/web.xml"
+    # step 1) uncomment the <distributable/> tag
     sed -i "/^\s*<!--/!b;N;/<distributable\/>/s/.*\n//;T;:a;n;/^\s*-->/!ba;d" "${web_xml}"
     # step 2) modify the web cache container per https://access.redhat.com/solutions/2776221
     #         note: the below differs from the EAP 7.1 solution above, since EAP 7.2
@@ -239,7 +241,7 @@ function configure_ha_elastic() {
         APPFORMER_ELASTIC_HOST=$(find_env "${serviceName}_SERVICE_HOST")
     fi
     if [ -z "${APPFORMER_ELASTIC_PORT}" ] && [ -n "${serviceName}" ]; then
-        APPFORMER_ELASTIC_PORT=$(find_env "${serviceName}_SERVICE_PORT" "9300")
+        APPFORMER_ELASTIC_PORT=$(find_env "${serviceName}_SERVICE_PORT")
     fi
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Des.set.netty.runtime.available.processors=false"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.index=elastic"
