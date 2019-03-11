@@ -352,14 +352,14 @@ Feature: Kie Server common features
   Scenario: Check that mode property gets set for development.
     When container is started with env
       | variable        | value       |
-      | KIE_SERVER_MODE | development |
-    Then container log should contain -Dorg.kie.server.mode=development
+      | KIE_SERVER_MODE | DEVELOPMENT |
+    Then container log should contain -Dorg.kie.server.mode=DEVELOPMENT
 
   Scenario: Check that mode property gets set for production.
     When container is started with env
       | variable        | value      |
-      | KIE_SERVER_MODE | production |
-    Then container log should contain -Dorg.kie.server.mode=production
+      | KIE_SERVER_MODE | PRODUCTION |
+    Then container log should contain -Dorg.kie.server.mode=PRODUCTION
 
   Scenario: Check that mode property is not set without env.
     When container is started with env
@@ -370,7 +370,7 @@ Feature: Kie Server common features
     When container is started with env
       | variable        | value  |
       | KIE_SERVER_MODE | foobar |
-    Then container log should contain Invalid value "foobar" for KIE_SERVER_MODE. Must be "development" or "production".
+    Then container log should contain Invalid value "foobar" for KIE_SERVER_MODE. Must be "DEVELOPMENT" or "PRODUCTION".
 
   Scenario: Check that prometheus properties are enabled.
     When container is started with env
