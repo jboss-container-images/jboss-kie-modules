@@ -209,8 +209,8 @@ function configure_ha_common() {
 
     # ---------- distributable ----------
     # [RHPAM-1522] make the workbench webapp distributable for HA (2 steps)
-    local web_xml="${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/web.xml"
     # step 1) uncomment the <distributable/> tag
+    local web_xml="${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/web.xml"
     sed -i "/^\s*<!--/!b;N;/<distributable\/>/s/.*\n//;T;:a;n;/^\s*-->/!ba;d" "${web_xml}"
     # step 2) modify the web cache container per https://access.redhat.com/solutions/2776221
     #         note: the below differs from the EAP 7.1 solution above, since EAP 7.2
