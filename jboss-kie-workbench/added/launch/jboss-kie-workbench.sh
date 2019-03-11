@@ -39,6 +39,7 @@ function configure() {
     configure_controller_access
     configure_server_access
     configure_openshift_enhancement
+    configure_workbench_profile
     configure_guvnor_settings
     configure_metaspace
     configure_ha
@@ -119,6 +120,17 @@ function configure_openshift_enhancement() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.workbench.controller.openshift.enabled=${kscOpenShiftEnabled}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.openshift.prefer.kieserver.service=${kscPreferKieService}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.template.cache.ttl=${kscTemplateCacheTTL}"
+}
+
+function configure_workbench_profile() {
+    # Business Central is unified for RHDM and RHPAM; For rhpam-decisioncentral needs to be set org.kie.workbench.profile
+    # to FORCE_PLANNER_AND_RULES and for rhpam-businesscentral and rhpam-businesscentral-monitoring needst to be set to 
+    # FORCE_FULL
+    if [ "$JBOSS_PRODUCT" = "rhdm-decisioncentral" ]; then
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.workbench.profile=FORCE_PLANNER_AND_RULES"
+    elif [[ $JBOSS_PRODUCT =~ rhpam\-businesscentral(\-monitoring)? ]]; then
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.workbench.profile=FORCE_FULL"
+    fi
 }
 
 function configure_guvnor_settings() {
