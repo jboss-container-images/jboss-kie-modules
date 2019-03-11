@@ -49,3 +49,8 @@ Feature: RHDM Decision Central configuration tests
   Scenario: Check KieLoginModule is _not_ configured
     When container is ready
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <login-module code="org.kie.security.jaas.KieLoginModule"
+
+  # https://issues.jboss.org/browse/RHDM-871
+  Scenario: Check Workbench profile for rhdm
+    When container is ready
+    Then container log should contain -Dorg.kie.workbench.profile=FORCE_PLANNER_AND_RULES
