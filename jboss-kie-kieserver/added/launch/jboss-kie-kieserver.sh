@@ -153,14 +153,20 @@ function set_timer_defaults {
     EJB_TIMER_MIN_POOL_SIZE=${EJB_TIMER_MIN_POOL_SIZE:-"10"}
     EJB_TIMER_TX_ISOLATION="${EJB_TIMER_TX_ISOLATION:-TRANSACTION_READ_COMMITTED}"
 
+    local url=$(find_env "${prefix}_URL")
+    url=$(find_env "${prefix}_XA_CONNECTION_PROPERTY_URL" "${url}")
     if [[ $EJB_TIMER_DRIVER = *"mysql"* ]]; then
-        local url=$(find_env "${prefix}_URL")
-        url=$(find_env "${prefix}_XA_CONNECTION_PROPERTY_URL" "${url}")
         if [ "x${url}" != "x" ]; then
             EJB_TIMER_XA_CONNECTION_PROPERTY_URL="${url}?pinGlobalTxToPhysicalConnection=true"
         else
             EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection="true"
         fi
+    fi
+
+    # XA Set URL method for postgresql is Url, fixes: Method setURL not found
+    if [[ $EJB_TIMER_DRIVER = *"postgresql"*  && "x${url}" != "x" ]]; then
+        unset EJB_TIMER_XA_CONNECTION_PROPERTY_URL
+        EJB_TIMER_XA_CONNECTION_PROPERTY_Url=${url}
     fi
 }
 
