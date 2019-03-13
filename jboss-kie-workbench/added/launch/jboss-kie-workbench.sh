@@ -162,9 +162,15 @@ function configure_guvnor_settings() {
             JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.hooks=${GIT_HOOKS_DIR}"
         fi
     fi
-    local url=$(build_route_url "${WORKBENCH_ROUTE_NAME}" "http" "${HOSTNAME}" "80" "/maven2")
-    log_info "Setting workbench org.appformer.m2repo.url to: ${url}"
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.m2repo.url=${url}"
+    # maven url
+    local maven_url=$(build_route_url "${WORKBENCH_ROUTE_NAME}" "http" "${HOSTNAME}" "80" "/maven2")
+    log_info "Setting workbench org.appformer.m2repo.url to: ${maven_url}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.m2repo.url=${maven_url}"
+    # workbench host
+    local workbench_host=$(query_route_host "${WORKBENCH_ROUTE_NAME}" "${HOSTNAME}")
+    workbench_host=$(query_route_service_host "${WORKBENCH_ROUTE_NAME}" "${workbench_host}")
+    log_info "Setting workbench org.uberfire.nio.git.ssh.hostname to: ${workbench_host}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.ssh.hostname=${workbench_host}"
 }
 
 # Set the max metaspace size only for the workbench
