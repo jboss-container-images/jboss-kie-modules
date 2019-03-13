@@ -21,14 +21,14 @@ function prepareEnv() {
     unset APPFORMER_JMS_BROKER_USERNAME
     unset APPFORMER_JMS_CONNECTION_PARAMS
     unset GIT_HOOKS_DIR
-    unset KIE_CONTROLLER_OCP_ENABLED
-    unset KIE_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE
-    unset KIE_CONTROLLER_TEMPLATE_CACHE_TTL
     unset_kie_security_env
     unset KIE_SERVER_CONTROLLER_HOST
+    unset KIE_SERVER_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE
     unset KIE_SERVER_CONTROLLER_PORT
     unset KIE_SERVER_CONTROLLER_PROTOCOL
     unset KIE_SERVER_CONTROLLER_SERVICE
+    unset KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL
+    unset KIE_WORKBENCH_CONTROLLER_OPENSHIFT_ENABLED
 }
 
 function configureEnv() {
@@ -114,13 +114,13 @@ function configure_server_access() {
 }
 
 function configure_openshift_enhancement() {
-    local kscOpenShiftEnabled=$(find_env "KIE_CONTROLLER_OCP_ENABLED" "false")
-    local kscPreferKieService=$(find_env "KIE_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE" "false")
-    local kscTemplateCacheTTL=$(find_env "KIE_CONTROLLER_TEMPLATE_CACHE_TTL" "60000")
+    local kscPreferKieService=$(find_env "KIE_SERVER_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE" "false")
+    local kscTemplateCacheTTL=$(find_env "KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL" "60000")
+    local kscOpenShiftEnabled=$(find_env "KIE_WORKBENCH_CONTROLLER_OPENSHIFT_ENABLED" "false")
 
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.workbench.controller.openshift.enabled=${kscOpenShiftEnabled}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.openshift.prefer.kieserver.service=${kscPreferKieService}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.template.cache.ttl=${kscTemplateCacheTTL}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.workbench.controller.openshift.enabled=${kscOpenShiftEnabled}"
 }
 
 function configure_workbench_profile() {
