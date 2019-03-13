@@ -42,9 +42,9 @@ function configure_mbeans() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dkie.mbeans=${kieMbeans} -Dkie.scanner.mbeans=${kieMbeans}"
 }
 
-# Queries the Route host from the Kubernetes API
+# Queries the Route from the Kubernetes API
 # ${1} - route name
-query_route_host() {
+query_route() {
     local routeName=${1}
     # only execute the following lines if this container is running on OpenShift
     if [ -e /var/run/secrets/kubernetes.io/serviceaccount/token ]; then
@@ -56,6 +56,63 @@ query_route_host() {
             https://${KUBERNETES_SERVICE_HOST:-kubernetes.default.svc}:${KUBERNETES_SERVICE_PORT:-443}/apis/route.openshift.io/v1/namespaces/${namespace}/routes/${routeName})
         echo ${response}
     fi
+}
+
+# Queries the Route host from the Kubernetes API
+# ${1} - route name
+# ${2} - default host
+query_route_host() {
+    local routeName=${1}
+    local host=${2}
+    if [ "${routeName}" != "" ]; then
+        local response=$(query_route "${routeName}")
+        if [ "${response: -3}" = "200" ]; then
+            # parse the json response to get the route host
+            host=$(echo ${response::- 3} | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["spec"]["host"]')
+        else
+            log_warning "Fail to query the Route using the Kubernetes API, the Service Account might not have the necessary privileges; defaulting to host [${host}]."
+            if [ ! -z "${response}" ]; then
+                log_warning "Response message: ${response::- 3} - HTTP Status code: ${response: -3}"
+            fi
+        fi
+    fi
+    echo "${host}"
+}
+
+# Queries the Route service from the Kubernetes API
+# ${1} - route name
+query_route_service() {
+    local routeName=${1}
+    local service
+    if [ "${routeName}" != "" ]; then
+        local response=$(query_route "${routeName}")
+        if [ "${response: -3}" = "200" ]; then
+            # parse the json response to get the route service
+            service=$(echo ${response::- 3} | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["spec"]["to"]["name"]')
+        else
+            log_warning "Fail to query the Route using the Kubernetes API, the Service Account might not have the necessary privileges."
+            if [ ! -z "${response}" ]; then
+                log_warning "Response message: ${response::- 3} - HTTP Status code: ${response: -3}"
+            fi
+        fi
+    fi
+    echo "${service}"
+}
+
+# Queries the Route service host from the Kubernetes API and Environment
+# ${1} - route name
+query_route_service_host() {
+    local routeName=${1}
+    local host=${2}
+    if [ "${routeName}" != "" ]; then
+        local service=$(query_route_service "${routeName}")
+        if [ "${service}" != "" ]; then
+            service=${service//-/_}
+            service=${service^^}
+            host=$(find_env "${service}_SERVICE_HOST" "${host}")
+        fi
+    fi
+    echo "${host}"
 }
 
 # Builds a simple URL
@@ -91,16 +148,7 @@ build_route_url() {
             protocol="${protocol:-https}"
             port="${port:-443}"
         fi
-        local response=$(query_route_host ${routeName})
-        if [ "${response: -3}" = "200" ]; then
-            # parse the json response to get the route host
-            host=$(echo ${response::- 3} | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["spec"]["host"]')
-        else
-            log_warning "Fail to query the Route name using Kubernetes API, the Service Account might not have the necessary privileges; defaulting to host [${host}]."
-            if [ ! -z "${response}" ]; then
-                log_warning "Response message: ${response::- 3} - HTTP Status code: ${response: -3}"
-            fi
-        fi
+        host=$(query_route_host "${routeName}" "${host}")
     fi
     echo $(build_simple_url "${protocol}" "${host}" "${port}" "${path}")
 }
