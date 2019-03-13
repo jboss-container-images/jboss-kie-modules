@@ -51,15 +51,18 @@ Feature: RHPAM Business Central configuration tests
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="org.kie.security.jaas.KieLoginModule"
 
   # https://issues.jboss.org/browse/JBPM-7834
+  # https://issues.jboss.org/projects/JBPM/issues/JBPM-8269
   Scenario: Check OpenShiftStartupStrategy is enabled in RHPAM 7
     When container is started with env
-      | variable                                          | value                     |
-      | KIE_CONTROLLER_OCP_ENABLED                        | true                      |
-      | KIE_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE | false                     |
-      | KIE_CONTROLLER_TEMPLATE_CACHE_TTL                 | 60000                     |
-   Then container log should contain -Dorg.kie.workbench.controller.openshift.enabled=true
-   Then container log should contain -Dorg.kie.server.controller.openshift.prefer.kieserver.service=false
-   Then container log should contain -Dorg.kie.server.controller.template.cache.ttl=60000
+      | variable                                                 | value                     |
+      | KIE_SERVER_CONTROLLER_OPENSHIFT_GLOBAL_DISCOVERY_ENABLED | true                      |
+      | KIE_SERVER_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE | true                      |
+      | KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL                 | 10000                     |
+      | KIE_WORKBENCH_CONTROLLER_OPENSHIFT_ENABLED               | true                      |
+    Then container log should contain -Dorg.kie.server.controller.openshift.global.discovery.enabled=true
+    Then container log should contain -Dorg.kie.server.controller.openshift.prefer.kieserver.service=true
+    Then container log should contain -Dorg.kie.server.controller.template.cache.ttl=10000
+    Then container log should contain -Dorg.kie.workbench.controller.openshift.enabled=true
 
   # https://issues.jboss.org/browse/RHDM-871
   Scenario: Check Workbench profile for rhpam
