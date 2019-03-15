@@ -14,6 +14,13 @@ function prepareEnv() {
     unset APPFORMER_ELASTIC_PORT
     unset APPFORMER_ELASTIC_RETRIES
     unset APPFORMER_ELASTIC_SERVICE_NAME
+    unset APPFORMER_INFINISPAN_HOST
+    unset APPFORMER_INFINISPAN_PASSWORD
+    unset APPFORMER_INFINISPAN_PORT
+    unset APPFORMER_INFINISPAN_REALM
+    unset APPFORMER_INFINISPAN_SERVICE_NAME
+    unset APPFORMER_INFINISPAN_USER
+    unset APPFORMER_INFINISPAN_USERNAME
     unset APPFORMER_JMS_BROKER_ADDRESS
     unset APPFORMER_JMS_BROKER_PASSWORD
     unset APPFORMER_JMS_BROKER_PORT
@@ -187,12 +194,16 @@ function configure_ha() {
             log_info "OpenShift DNS_PING protocol envs set, verifying other needed envs for HA setup. Using ${JGROUPS_PING_PROTOCOL}"
             local jmsBrokerUsername="${APPFORMER_JMS_BROKER_USERNAME:-$APPFORMER_JMS_BROKER_USER}"
             if [ -n "$jmsBrokerUsername" -a -n "$APPFORMER_JMS_BROKER_PASSWORD" -a -n "$APPFORMER_JMS_BROKER_ADDRESS" ] ; then
-                if [ -n "$APPFORMER_ELASTIC_SERVICE_NAME" -o -n "$APPFORMER_ELASTIC_HOST" ] ; then
+                if [ -n "$APPFORMER_INFINISPAN_SERVICE_NAME" -o -n "$APPFORMER_INFINISPAN_HOST" ] ; then
+                    # set the workbench properties for HA using Infinispan
+                    configure_ha_common
+                    configure_ha_infinispan
+                elif [ -n "$APPFORMER_ELASTIC_SERVICE_NAME" -o -n "$APPFORMER_ELASTIC_HOST" ] ; then
                     # set the workbench properties for HA using Elasticsearch
                     configure_ha_common
                     configure_ha_elastic
                 else
-                    log_warning "APPFORMER_ELASTIC_SERVICE_NAME or APPFORMER_ELASTIC_HOST not set; HA will not be available."
+                    log_warning "APPFORMER_INFINISPAN_SERVICE_NAME or APPFORMER_INFINISPAN_HOST, or APPFORMER_ELASTIC_SERVICE_NAME or APPFORMER_ELASTIC_HOST not set; HA will not be available."
                 fi
             else
                 log_warning "APPFORMER_JMS_BROKER_USER(NAME), APPFORMER_JMS_BROKER_PASSWORD, and APPFORMER_JMS_BROKER_ADDRESS not set; HA will not be available."
@@ -238,6 +249,30 @@ function configure_ha_common() {
         save
 SHELL
 # SHELL line above not indented on purpose for correct vim syntax highlighting
+}
+
+function configure_ha_infinispan() {
+    local serviceName
+    if [ -n "${APPFORMER_INFINISPAN_SERVICE_NAME}" ]; then
+        serviceName=${APPFORMER_INFINISPAN_SERVICE_NAME//-/_} # replace - with _
+        serviceName=${serviceName^^} # uppercase
+    fi
+    if [ -z "${APPFORMER_INFINISPAN_HOST}" ] && [ -n "${serviceName}" ]; then
+        APPFORMER_INFINISPAN_HOST=$(find_env "${serviceName}_SERVICE_HOST")
+    fi
+    if [ -z "${APPFORMER_INFINISPAN_PORT}" ] && [ -n "${serviceName}" ]; then
+        APPFORMER_INFINISPAN_PORT=$(find_env "${serviceName}_SERVICE_PORT")
+    fi
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.index=infinispan"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.host=${APPFORMER_INFINISPAN_HOST}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.port=${APPFORMER_INFINISPAN_PORT:-11222}"
+    if [ -n "$APPFORMER_INFINISPAN_USERNAME" -o -n "$APPFORMER_INFINISPAN_USER" ] ; then
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.username=${APPFORMER_INFINISPAN_USERNAME:-$APPFORMER_INFINISPAN_USER}"
+    fi
+    if [ -n "$APPFORMER_INFINISPAN_PASSWORD" ] ; then
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.password=${APPFORMER_INFINISPAN_PASSWORD}"
+    fi
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.realm=${APPFORMER_INFINISPAN_REALM:-ApplicationRealm}"
 }
 
 function configure_ha_elastic() {
