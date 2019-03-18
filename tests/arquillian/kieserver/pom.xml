@@ -29,7 +29,7 @@
 
     <properties>
 
-        <version.org.apache.httpclient>4.3.3</version.org.apache.httpclient>
+        <version.org.apache.httpclient>4.3.6</version.org.apache.httpclient>
         <version.org.arquillian.cube>1.18.1</version.org.arquillian.cube>
         <version.org.jboss.as.arquillian.container>7.2.0.Final</version.org.jboss.as.arquillian.container>
         <version.org.jboss.logging>3.3.1.Final-redhat-1</version.org.jboss.logging>
