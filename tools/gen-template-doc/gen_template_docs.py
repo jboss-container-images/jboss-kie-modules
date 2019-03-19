@@ -61,6 +61,7 @@ LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-
          "rhdm73-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm73-kieserver-openshift`]",
          "rhdm74-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm74-kieserver-openshift`]",
          "rhpam71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]",
+         "rhpam71-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]",
          "rhpam72-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam72-kieserver-openshift`]",
          "rhpam72-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam72-kieserver-openshift`]",
          "rhpam73-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam73-kieserver-openshift`]",
@@ -264,11 +265,15 @@ def getVariableInfo(parameters, name, env, field):
 
 def createParameterTable(data):
     text = ""
+    containerEnvs = ""
     for param in data["parameters"]:
         if u"\u2019" in param["description"]:
             param["description"] = param["description"].replace(u"\u2019", "'")
-        containerEnvs = [d["spec"]["template"]["spec"]["containers"][0]["env"] for d in data["objects"] if
-                         d["kind"] == "DeploymentConfig"]
+        try:
+            containerEnvs = [d["spec"]["template"]["spec"]["containers"][0]["env"] for d in data["objects"] if d["kind"] == "DeploymentConfig"]
+        except KeyError, e:
+            pass
+
         parameters = [item for sublist in containerEnvs for item in sublist]
         envVar = getVariableInfo(parameters, param["name"], [], "name")
         value = param["value"] if param.get("value") else getVariableInfo(data['parameters'], param["name"], [], "value")
@@ -393,14 +398,14 @@ def createContainerTable(data, table):
                              + " ".join(container["readinessProbe"]["exec"]["command"]) \
                              + "\n----\n")
 
-        elif table == "ports":
+        elif table == "ports" and "ports" in container:
             text += "\n." + str(len(container["ports"])) + "+| `" + deployment + "`"
             ports = container["ports"]
             for p in ports:
                 columns = ["name", "containerPort", "protocol"]
                 columns = [str(p[col]) if p.get(col) else "--" for col in columns]
                 text += buildRow(columns)
-        elif table == "env":
+        elif table == "env" and "env" in container:
             environment = container["env"]
             text += "\n." + str(len(environment)) + "+| `" + deployment + "`"
             for env in environment:
