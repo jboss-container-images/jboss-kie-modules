@@ -266,11 +266,8 @@ def createParameterTable(data):
     for param in data["parameters"]:
         if u"\u2019" in param["description"]:
             param["description"] = param["description"].replace(u"\u2019", "'")
-        try:
-            containerEnvs = [d["spec"]["template"]["spec"]["containers"][0]["env"] for d in data["objects"] if d["kind"] == "DeploymentConfig"]
-        except KeyError, e:
-            pass
 
+        containerEnvs = [d["spec"]["template"]["spec"]["containers"][0]["env"] for d in data["objects"] if ( d["kind"] == "DeploymentConfig" and "env" in d["spec"]["template"]["spec"]["containers"][0])]
         parameters = [item for sublist in containerEnvs for item in sublist]
         envVar = getVariableInfo(parameters, param["name"], [], "name")
         value = param["value"] if param.get("value") else getVariableInfo(data['parameters'], param["name"], [], "value")
