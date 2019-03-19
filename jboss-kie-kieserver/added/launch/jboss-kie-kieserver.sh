@@ -105,17 +105,27 @@ function configure_EJB_Timer_datasource {
             if [ -z "$(eval echo \$${dsPrefix}_NONXA)" ]; then
                 eval ${dsPrefix}_NONXA="true"
             fi
+
+            # set 4 as default value for ${prefix)_XA_CONNECTION_PROPERTY_DRIVER_TYPE
+            if [[ "$(eval echo \$${dsPrefix}_DRIVER)" = *"db2"* ]]; then
+                local driverType=$(find_env "${dsPrefix}_DRIVER_TYPE" "4")
+                eval ${dsPrefix}_XA_CONNECTION_PROPERTY_DriverType="${driverType}"
+                EJB_TIMER_XA_CONNECTION_PROPERTY_DriverType="${driverType}"
+            fi
         fi
     fi
 }
 
-# Sets the NONXA url if only the PREFIX_XA_CONNECTION_PROPERTY_URL is provided.
+# Sets the NONXA url if only the PREFIX_XA_CONNECTION_PROPERTY_URL is provided and vice-versa.
 # $1 - datasource prefix
 function set_url {
     local prefixedUrl=$(find_env "${1}_URL")
     url=$(find_env "${1}_XA_CONNECTION_PROPERTY_URL" "${prefixedUrl}")
     if [ "${prefixedUrl}x" = "x" ]; then
         eval ${1}_URL="${url}"
+    fi
+    if [ -z "$(eval echo \$${1}_XA_CONNECTION_PROPERTY_URL)" ]; then
+        eval ${1}_XA_CONNECTION_PROPERTY_URL="${url}"
     fi
 }
 
@@ -148,6 +158,9 @@ function set_timer_defaults {
     else
         EJB_TIMER_JNDI=$(find_env "${prefix}_JNDI" "java:jboss/datasources/ejb_timer")
     fi
+
+    # EJB timer needs to be XA.
+    EJB_TIMER_NONXA="false"
 
     EJB_TIMER_MAX_POOL_SIZE=${EJB_TIMER_MAX_POOL_SIZE:-"10"}
     EJB_TIMER_MIN_POOL_SIZE=${EJB_TIMER_MIN_POOL_SIZE:-"10"}

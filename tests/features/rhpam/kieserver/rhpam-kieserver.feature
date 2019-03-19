@@ -525,14 +525,16 @@ Feature: RHPAM KIE Server configuration tests
       | TEST_XA_CONNECTION_PROPERTY_DatabaseName  | bpms                            |
       | TEST_XA_CONNECTION_PROPERTY_PortNumber    | 50000                           |
       | TEST_NONXA                                | false                           |
+      | TEST_DRIVER_TYPE                          | 4                               |
     Then XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value db2 on XPath //*[local-name()='xa-datasource']/*[local-name()='driver']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 127.0.0.1 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="ServerName"]
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpms on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DatabaseName"]
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 50000 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="PortNumber"]
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 4 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DriverType"]
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value db2 on XPath //*[local-name()='database-data-store']/@database
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/test on XPath //*[local-name()='xa-datasource']/@jndi-name
 
-  Scenario: Checks if the EJB Timer was successfully configured for an external DB2 datasource with Type 2 and env using NONXA connection properties
+  Scenario: Checks if the EJB Timer was successfully configured for an external DB2 datasource with Type as default value and env using NONXA connection properties
     When container is started with env
       | variable                                  | value                           |
       | DATASOURCES                               | TEST                            |
@@ -540,11 +542,27 @@ Feature: RHPAM KIE Server configuration tests
       | TEST_PASSWORD                             | bpmPass                         |
       | TEST_DRIVER                               | db2                             |
       | TEST_URL                                  | jdbc:db2://localhost            |
-      | TEST_XA_CONNECTION_PROPERTY_URL           | jdbc:db2://localhost            |
       | TEST_NONXA                                | true                            |
     Then XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value db2 on XPath //*[local-name()='xa-datasource']/*[local-name()='driver']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value db2 on XPath //*[local-name()='datasource']/*[local-name()='driver']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:db2://localhost on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="URL"]
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 4 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DriverType"]
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value db2 on XPath //*[local-name()='database-data-store']/@database
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:db2://localhost on XPath //*[local-name()='datasource']/*[local-name()='connection-url']
+
+  Scenario: Checks if the EJB Timer was successfully configured for an external DB2 datasource with Type 2 and env using XA connection properties
+    When container is started with env
+      | variable                                  | value                           |
+      | DATASOURCES                               | TEST                            |
+      | TEST_USERNAME                             | bpmUser                         |
+      | TEST_PASSWORD                             | bpmPass                         |
+      | TEST_DRIVER                               | db2                             |
+      | TEST_XA_CONNECTION_PROPERTY_URL           | jdbc:db2://localhost            |
+      | TEST_NONXA                                | false                           |
+      | TEST_DRIVER_TYPE                          | 2                               |
+    Then XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value db2 on XPath //*[local-name()='xa-datasource']/*[local-name()='driver']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:db2://localhost on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="URL"]
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 2 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DriverType"]
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value db2 on XPath //*[local-name()='database-data-store']/@database
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:db2://localhost on XPath //*[local-name()='datasource']/*[local-name()='connection-url']
 
