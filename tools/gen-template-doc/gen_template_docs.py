@@ -267,8 +267,9 @@ def createParameterTable(data):
     for param in data["parameters"]:
         if u"\u2019" in param["description"]:
             param["description"] = param["description"].replace(u"\u2019", "'")
+        
         containerEnvs = [d["spec"]["template"]["spec"]["containers"][0]["env"] for d in data["objects"] if
-                         d["kind"] == "DeploymentConfig"]
+                         ( d["kind"] == "DeploymentConfig" and "env" in d["spec"]["template"]["spec"]["containers"][0] ) ]
         parameters = [item for sublist in containerEnvs for item in sublist]
         envVar = getVariableInfo(parameters, param["name"], [], "name")
         value = param["value"] if param.get("value") else getVariableInfo(data['parameters'], param["name"], [], "value")
@@ -394,24 +395,26 @@ def createContainerTable(data, table):
                              + "\n----\n")
 
         elif table == "ports":
-            text += "\n." + str(len(container["ports"])) + "+| `" + deployment + "`"
-            ports = container["ports"]
-            for p in ports:
-                columns = ["name", "containerPort", "protocol"]
-                columns = [str(p[col]) if p.get(col) else "--" for col in columns]
-                text += buildRow(columns)
+    	    if "ports" in container:
+                text += "\n." + str(len(container["ports"])) + "+| `" + deployment + "`"
+                ports = container["ports"]
+                for p in ports:
+                    columns = ["name", "containerPort", "protocol"]
+                    columns = [str(p[col]) if p.get(col) else "--" for col in columns]
+                    text += buildRow(columns)
         elif table == "env":
-            environment = container["env"]
-            text += "\n." + str(len(environment)) + "+| `" + deployment + "`"
-            for env in environment:
-                columns = [env["name"], getVariableInfo(data["parameters"], "", env, "description")]
+    	    if "env" in container:
+                environment = container["env"]
+                text += "\n." + str(len(environment)) + "+| `" + deployment + "`"
+                for env in environment:
+                    columns = [env["name"], getVariableInfo(data["parameters"], "", env, "description")]
 
-                # TODO: handle valueFrom instead of value
-                if "value" in env:
-                    columns.append(env["value"])
-                else:
-                    columns.append("--")
-                text += buildRow(columns)
+                    # TODO: handle valueFrom instead of value
+                    if "value" in env:
+                        columns.append(env["value"])
+                    else:
+                        columns.append("--")
+                    text += buildRow(columns)
     return text
 
 def replacer(string):
