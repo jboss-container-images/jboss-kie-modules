@@ -7,23 +7,28 @@
 #   md5sum, sha1sum, sha256sum
 #   cekit 2.2.4 or higher (includes cekit-cache)
 
-function log_debug() {
-    # blue
-    echo 1>&2 -e "\033[0;34m${1}\033[0m"
-}
-
-function log_info() {
-    # default
+log_help() {
+    # color: none
     echo 1>&2 -e "${1}"
 }
 
-function log_warning() {
-    # yellow
+log_debug() {
+    # color: blue
+    echo 1>&2 -e "\033[0;34m${1}\033[0m"
+}
+
+log_info() {
+    # color: green
+    echo 1>&2 -e "\033[0;32m${1}\033[0m"
+}
+
+log_warning() {
+    # color: yellow
     echo 1>&2 -e "\033[0;33m${1}\033[0m"
 }
 
-function log_error() {
-    # red
+log_error() {
+    # color: red
     echo 1>&2 -e "\033[0;31m${1}\033[0m"
 }
 
@@ -37,7 +42,9 @@ download() {
         code=$?
         if [ ${code} != 0 ] || [ ! -f "${file}" ]; then
             log_error "Downloading to ${file} failed."
-            code=1
+            if [ ${code} = 0 ]; then
+                code=1
+            fi
         fi
     else
         log_info "File ${file} already downloaded."
@@ -58,7 +65,9 @@ extract() {
         code=$?
         if [ ${code} != 0 ] || [ ! -f "${child_file}" ]; then
             log_error "Extracting to ${child_file} failed."
-            code=1
+            if [ ${code} = 0 ]; then
+                code=1
+            fi
         fi
     else
         log_info "File ${child_file} already extracted."
@@ -97,23 +106,26 @@ get_sum() {
 cache() {
     local file=${1}
     local name=$(get_artifact_name "${file}")
-    local grep_cache
-    local code
-    # below we use grep instead of "cekit-cache ls" because of https://github.com/cekit/cekit/issues/359
-    grep_cache=$(grep "${name}" ~/.cekit/cache/*.yaml)
-    code=$?
-    if [ ${code} = 0 ] ; then
-        log_info "File ${file} already cached."
-    else
+    local md5=$(get_sum "md5" "${file}")
+    local grep_yaml
+    local code=1
+    for Y in $(grep -ln "${name}" ~/.cekit/cache/*.yaml) ; do
+        grep_yaml=$(grep "md5: ${md5}" "${Y}")
+        code=$?
+        if [ ${code} = 0 ] ; then
+            log_info "File ${file} already cached."
+            log_debug "Cache entry: ${Y}"
+            break
+        fi
+    done
+    if [ ${code} != 0 ] ; then
         log_info "Caching ${file} ..."
         local sha256=$(get_sum "sha256" "${file}")
         local sha1=$(get_sum "sha1" "${file}")
-        local md5=$(get_sum "md5" "${file}")
         cekit-cache add "${file}" --sha256 "${sha256}" --sha1 "${sha1}" --md5 "${md5}"
         code=$?
         if [ ${code} != 0 ]; then
             log_error "Caching of ${file} failed."
-            code=1
         fi
     fi
     return ${code}
@@ -214,9 +226,10 @@ envs:
     - name: "CONTROLLER_DISTRIBUTION_ZIP"
       value: "${controller_distribution_zip}"
 artifacts:
-    - name: ADD_ONS_DISTRIBUTION.ZIP
-      path: ${add_ons_distribution_zip}
-      md5: ${add_ons_distribution_md5}
+    - name: "ADD_ONS_DISTRIBUTION_ZIP"
+      target: "add_ons_distribution.zip"
+      #     ${add_ons_distribution_zip}
+      md5: "${add_ons_distribution_md5}"
 EOF
         else
             log_info "File ${controller_overrides_file} already generated."
@@ -236,9 +249,10 @@ EOF
                     log_info "Generating ${decisioncentral_overrides_file} ..."
 cat <<EOF > "${decisioncentral_overrides_file}"
 artifacts:
-    - name: DECISION_CENTRAL_DISTRIBUTION.ZIP
-      path: ${decision_central_distribution_zip}
-      md5: ${decision_central_distribution_md5}
+    - name: "DECISION_CENTRAL_DISTRIBUTION_ZIP"
+      target: "decision_central_distribution.zip"
+      #     ${decision_central_distribution_zip}
+      md5: "${decision_central_distribution_md5}"
 EOF
                 else
                     log_info "File ${decisioncentral_overrides_file} already generated."
@@ -264,9 +278,10 @@ EOF
                     log_info "Generating ${kieserver_overrides_file} ..."
 cat <<EOF > "${kieserver_overrides_file}"
 artifacts:
-    - name: KIE_SERVER_DISTRIBUTION.ZIP
-      path: ${kie_server_distribution_zip}
-      md5: ${kie_server_distribution_md5}
+    - name: "KIE_SERVER_DISTRIBUTION_ZIP"
+      target: "kie_server_distribution.zip"
+      #     ${kie_server_distribution_zip}
+      md5: "${kie_server_distribution_md5}"
 EOF
                 else
                     log_info "File ${kieserver_overrides_file} already generated."
@@ -295,9 +310,10 @@ envs:
     - name: "EMPLOYEE_ROSTERING_DISTRIBUTION_WAR"
       value: "${employee_rostering_distribution_war}"
 artifacts:
-    - name: ADD_ONS_DISTRIBUTION.ZIP
-      path: ${add_ons_distribution_zip}
-      md5: ${add_ons_distribution_md5}
+    - name: "ADD_ONS_DISTRIBUTION_ZIP"
+      target: "add_ons_distribution.zip"
+      #     ${add_ons_distribution_zip}
+      md5: "${add_ons_distribution_md5}"
 EOF
             else
                 log_info "File ${optaweb_employee_rostering_overrides_file} already generated."
@@ -356,9 +372,10 @@ handle_rhpam_artifacts() {
                     log_info "Generating ${businesscentral_overrides_file} ..."
 cat <<EOF > "${businesscentral_overrides_file}"
 artifacts:
-    - name: BUSINESS_CENTRAL_DISTRIBUTION.ZIP
-      path: ${business_central_distribution_zip}
-      md5: ${business_central_distribution_md5}
+    - name: "BUSINESS_CENTRAL_DISTRIBUTION_ZIP"
+      target: "business_central_distribution.zip"
+      #     ${business_central_distribution_zip}
+      md5: "${business_central_distribution_md5}"
 EOF
                 else
                     log_info "File ${businesscentral_overrides_file} already generated."
@@ -391,9 +408,10 @@ EOF
                     log_info "Generating ${businesscentral_monitoring_overrides_file} ..."
 cat <<EOF > "${businesscentral_monitoring_overrides_file}"
 artifacts:
-    - name: BUSINESS_CENTRAL_MONITORING_DISTRIBUTION.ZIP
-      path: ${business_central_monitoring_distribution_zip}
-      md5: ${business_central_monitoring_distribution_md5}
+    - name: "BUSINESS_CENTRAL_MONITORING_DISTRIBUTION_ZIP"
+      target: "business_central_monitoring_distribution.zip"
+      #     ${business_central_monitoring_distribution_zip}
+      md5: "${business_central_monitoring_distribution_md5}"
 EOF
                 else
                     log_info "File ${businesscentral_monitoring_overrides_file} already generated."
@@ -417,9 +435,10 @@ envs:
     - name: "CONTROLLER_DISTRIBUTION_ZIP"
       value: "${controller_distribution_zip}"
 artifacts:
-    - name: ADD_ONS_DISTRIBUTION.ZIP
-      path: ${add_ons_distribution_zip}
-      md5: ${add_ons_distribution_md5}
+    - name: "ADD_ONS_DISTRIBUTION_ZIP"
+      target: "add_ons_distribution.zip"
+      #     ${add_ons_distribution_zip}
+      md5: "${add_ons_distribution_md5}"
 EOF
         else
             log_info "File ${controller_overrides_file} already generated."
@@ -444,12 +463,14 @@ envs:
     - name: "JBPM_WB_KIE_SERVER_BACKEND_JAR"
       value: "${jbpm_wb_kie_server_backend_jar}"
 artifacts:
-    - name: KIE_SERVER_DISTRIBUTION.ZIP
-      path: ${kie_server_distribution_zip}
-      md5: ${kie_server_distribution_md5}
-    - name: BUSINESS_CENTRAL_DISTRIBUTION.ZIP
-      path: ${business_central_distribution_zip}
-      md5: ${business_central_distribution_md5}
+    - name: "KIE_SERVER_DISTRIBUTION_ZIP"
+      target: "kie_server_distribution.zip"
+      #     ${kie_server_distribution_zip}
+      md5: "${kie_server_distribution_md5}"
+    - name: "BUSINESS_CENTRAL_DISTRIBUTION_ZIP"
+      target: "business_central_distribution.zip"
+      #     ${business_central_distribution_zip}
+      md5: "${business_central_distribution_md5}"
 EOF
                 else
                     log_info "File ${kieserver_overrides_file} already generated."
@@ -473,9 +494,10 @@ envs:
     - name: "KIE_ROUTER_DISTRIBUTION_JAR"
       value: "${kie_router_distribution_jar}"
 artifacts:
-    - name: ADD_ONS_DISTRIBUTION.ZIP
-      path: ${add_ons_distribution_zip}
-      md5: ${add_ons_distribution_md5}
+    - name: "ADD_ONS_DISTRIBUTION_ZIP"
+      target: "add_ons_distribution.zip"
+      #     ${add_ons_distribution_zip}
+      md5: "${add_ons_distribution_md5}"
 EOF
         else
             log_info "File ${smartrouter_overrides_file} already generated."
@@ -519,18 +541,18 @@ main() {
     shift $((OPTIND -1))
     if [ -n "${usage_help}" ] || [[ $(echo ${args[@]}) =~ .*\-h.* ]]; then
         # usage/help
-        log_info "Usage: ${build_tool}.sh [-v \"#.#.#\"] [-t \"${build_type_default}\"] [-b \"YYYYMMDD\"] [-p \"${product_default}\"] [-d \"DEFAULT_DIR\"] [-a \"ARTIFACT_DIR\"] [-o \"OVERRIDES_DIR\"] [-h]"
-        log_info "-v = [v]ersion (required; format: major.minor.micro; example: ${version_example})"
-        log_info "-t = [t]ype of build (optional; default: ${build_type_default}; allowed: nightly, staging, candidate)"
-        log_info "-b = [b]uild date (optional; default: ${build_date_default})"
+        log_help "Usage: ${build_tool}.sh [-v \"#.#.#\"] [-t \"${build_type_default}\"] [-b \"YYYYMMDD\"] [-p \"${product_default}\"] [-d \"DEFAULT_DIR\"] [-a \"ARTIFACT_DIR\"] [-o \"OVERRIDES_DIR\"] [-h]"
+        log_help "-v = [v]ersion (required; format: major.minor.micro; example: ${version_example})"
+        log_help "-t = [t]ype of build (optional; default: ${build_type_default}; allowed: nightly, staging, candidate)"
+        log_help "-b = [b]uild date (optional; default: ${build_date_default})"
         local ifs_orig=${IFS}
         IFS=","
-        log_info "-p = [p]roduct (optional; default: all; allowed: ${products_valid[*]})";
+        log_help "-p = [p]roduct (optional; default: all; allowed: ${products_valid[*]})";
         IFS=${ifs_orig}
-        log_info "-d = [d]efault directory (optional; default example: ${default_dir_example})"
-        log_info "-a = [a]rtifacts directory (optional; default: default directory)"
-        log_info "-o = [o]verrides directory (optional; default: default directory)"
-        log_info "-h = [h]elp / usage"
+        log_help "-d = [d]efault directory (optional; default example: ${default_dir_example})"
+        log_help "-a = [a]rtifacts directory (optional; default: default directory)"
+        log_help "-o = [o]verrides directory (optional; default: default directory)"
+        log_help "-h = [h]elp / usage"
     elif [ -z "${full_version}" ]; then
         log_error "Version is required. Run ${build_tool}.sh -h for help."
     else
