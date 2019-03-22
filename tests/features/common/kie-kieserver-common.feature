@@ -394,3 +394,56 @@ Feature: Kie Server common features
       | PROMETHEUS_SERVER_EXT_DISABLED | foobar |
     Then container log should contain Invalid value "foobar" for PROMETHEUS_SERVER_EXT_DISABLED. Must be "true" or "false".
      And container log should not contain -javaagent:/opt/jboss/container/prometheus/jmx_prometheus_javaagent.jar
+
+  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, remove unneeded files
+    When container is ready
+    Then file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/weblogic-ejb-jar.xml should not exist
+
+  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, check if the custom jms file configuration are present on the image
+    When container is ready
+    Then file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain org.kie.server.jms.KieServerMDB
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain org.kie.server.jms.executor.KieExecutorMDB
+
+  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, test default request/response queue values on kie-server-jms.xml
+    When container is ready
+    Then file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain <entry name="queue/KIE.SERVER.REQUEST" />
+     And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain <jms-queue name="KIE.SERVER.REQUEST">
+     And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain <entry name="java:jboss/exported/jms/queue/KIE.SERVER.REQUEST" />
+     And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain <entry name="queue/KIE.SERVER.RESPONSE" />
+     And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain <jms-queue name="KIE.SERVER.RESPONSE">
+     And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain <entry name="java:jboss/exported/jms/queue/KIE.SERVER.RESPONSE" />
+     And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain <entry name="queue/KIE.SERVER.EXECUTOR" />
+     And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain <jms-queue name="KIE.SERVER.EXECUTOR">
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value>
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>queue/KIE.SERVER.EXECUTOR</activation-config-property-value>
+
+  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, test custom request/response queue values on kie-server-jms.xml
+    When container is started with env
+      | variable                       | value                        |
+      | KIE_SERVER_JMS_QUEUE_RESPONSE  | queue/MY.KIE.SERVER.RESPONSE |
+      | KIE_SERVER_JMS_QUEUE_REQUEST   | queue/MY.KIE.SERVER.REQUEST  |
+      | KIE_SERVER_JMS_QUEUE_EXECUTOR  | queue/MY.KIE.SERVER.EXECUTOR |
+    Then file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain <entry name="queue/MY.KIE.SERVER.REQUEST" />
+     And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain <entry name="java:jboss/exported/jms/queue/MY.KIE.SERVER.REQUEST" />
+     And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain <entry name="queue/MY.KIE.SERVER.RESPONSE" />
+     And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain <entry name="java:jboss/exported/jms/queue/MY.KIE.SERVER.RESPONSE" />
+     And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain <entry name="queue/MY.KIE.SERVER.EXECUTOR" />
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>queue/MY.KIE.SERVER.REQUEST</activation-config-property-value>
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>queue/MY.KIE.SERVER.EXECUTOR</activation-config-property-value>
+
+  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, verify if the JMS is disabled
+    When container is started with env
+      | variable                | value    |
+      | KIE_SERVER_EXECUTOR_JMS | false    |
+    Then container log should not contain -Dorg.kie.executor.jms=true
+     And container log should contain -Dorg.kie.executor.jms=false
+     And container log should not contain Executor JMS based support successfully activated on queue ActiveMQQueue[jms.queue.KIE.SERVER.EXECUTOR]
+     And container log should not contain -Dorg.kie.executor.jms.transacted
+     And container log should not contain -Dorg.kie.executor.jms.queue
+
+  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, verify META-INF/jms-server-jms.xml is removed if external AMQ integration is enabled
+    When container is started with env
+      | variable                  | value     |
+      | MQ_SERVICE_PREFIX_MAPPING | AMQPREFIX |
+    Then container log should contain Configuring external JMS integration, removing /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml
+     And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should not exist
