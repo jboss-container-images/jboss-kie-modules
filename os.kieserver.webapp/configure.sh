@@ -62,7 +62,9 @@ if [[ "$JBOSS_EAP_VERSION" == "6."* ]]; then
     cp -f -p ${ADDED_METAINF_DIR}/kie-server-jms-eap6x.xml ${KIE_SERVER_METAINF_DIR}/kie-server-jms.xml
     cp -f -p ${ADDED_WEBINF_DIR}/jboss-deployment-structure-eap6x.xml ${KIE_SERVER_WEBINF_DIR}/jboss-deployment-structure.xml
 
+    # https://access.redhat.com/support/cases/#/case/02231548
     # https://access.redhat.com/solutions/3637671
+    # https://issues.jboss.org/browse/RHBPMS-5222
     compiler_patch_name="jboss-bxms-6.4.11-RHBPMS-5222"
     compiler_patch_zip="${SOURCES_DIR}/${compiler_patch_name}.zip"
     compiler_patch_jar="drools-compiler-6.5.0.Final-redhat-25-RHBPMS-5222.jar"

@@ -14,13 +14,13 @@ pushd "$ADDED_DIR" &> /dev/null
 popd &> /dev/null
 
 # supplementary tools only exist in kieserver > 6.2
-if [ -e ${SOURCES_DIR}/jboss-bpmsuite-*-supplementary-tools.zip ]; then
+if [ -e ${SOURCES_DIR}/jboss-*bpmsuite-*-supplementary-tools.zip ]; then
     # Get the DDL files and copy to $JBOSS_HOME/bin/
-    unzip -qj ${SOURCES_DIR}/jboss-bpmsuite-*-supplementary-tools.zip jboss-brms-bpmsuite-*-supplementary-tools/ddl-scripts/mysql5/quartz_tables_mysql.sql -d ${SCRIPT_DIR}
-    unzip -qj ${SOURCES_DIR}/jboss-bpmsuite-*-supplementary-tools.zip jboss-brms-bpmsuite-*-supplementary-tools/ddl-scripts/postgresql/quartz_tables_postgres.sql -d ${SCRIPT_DIR}
-    unzip -qj ${SOURCES_DIR}/jboss-bpmsuite-*-supplementary-tools.zip jboss-brms-bpmsuite-*-supplementary-tools/ddl-scripts/oracle/quartz_tables_oracle.sql -d ${SCRIPT_DIR}
-    unzip -qj ${SOURCES_DIR}/jboss-bpmsuite-*-supplementary-tools.zip jboss-brms-bpmsuite-*-supplementary-tools/ddl-scripts/sqlserver/quartz_tables_sqlserver.sql -d ${SCRIPT_DIR}
-    unzip -qj ${SOURCES_DIR}/jboss-bpmsuite-*-supplementary-tools.zip jboss-brms-bpmsuite-*-supplementary-tools/ddl-scripts/db2/quartz_tables_db2.sql -d ${SCRIPT_DIR}
+    unzip -qj ${SOURCES_DIR}/jboss-*bpmsuite-*-supplementary-tools.zip jboss-*bpmsuite-*-supplementary-tools/ddl-scripts/mysql5/quartz_tables_mysql.sql -d ${SCRIPT_DIR}
+    unzip -qj ${SOURCES_DIR}/jboss-*bpmsuite-*-supplementary-tools.zip jboss-*bpmsuite-*-supplementary-tools/ddl-scripts/postgresql/quartz_tables_postgres.sql -d ${SCRIPT_DIR}
+    unzip -qj ${SOURCES_DIR}/jboss-*bpmsuite-*-supplementary-tools.zip jboss-*bpmsuite-*-supplementary-tools/ddl-scripts/oracle/quartz_tables_oracle.sql -d ${SCRIPT_DIR}
+    unzip -qj ${SOURCES_DIR}/jboss-*bpmsuite-*-supplementary-tools.zip jboss-*bpmsuite-*-supplementary-tools/ddl-scripts/sqlserver/quartz_tables_sqlserver.sql -d ${SCRIPT_DIR}
+    unzip -qj ${SOURCES_DIR}/jboss-*bpmsuite-*-supplementary-tools.zip jboss-*bpmsuite-*-supplementary-tools/ddl-scripts/db2/quartz_tables_db2.sql -d ${SCRIPT_DIR}
     cp -p ${SCRIPT_DIR}/quartz_tables_mysql.sql ${JBOSS_HOME}/bin/
     cp -p ${SCRIPT_DIR}/quartz_tables_postgres.sql ${JBOSS_HOME}/bin/
     cp -p ${SCRIPT_DIR}/quartz_tables_oracle.sql ${JBOSS_HOME}/bin/
