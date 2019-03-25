@@ -343,7 +343,6 @@ handle_rhpam_artifacts() {
     local business_central_distribution_zip
     local business_central_distribution_file
     local business_central_distribution_md5
-    local businesscentral_overrides_file
     if product_matches "${product}" "rhpam" "businesscentral" || product_matches "${product}" "rhpam" "kieserver" ; then
         business_central_distribution_url=$(get_artifact_url "rhpam.business-central-eap7.latest.url" "${build_file}")
         business_central_distribution_zip=$(get_artifact_name "${business_central_distribution_url}")
@@ -351,17 +350,19 @@ handle_rhpam_artifacts() {
         if download "${business_central_distribution_url}" "${business_central_distribution_file}" ; then
             if cache "${business_central_distribution_file}" ; then
                 business_central_distribution_md5=$(get_sum "md5" "${business_central_distribution_file}")
-                businesscentral_overrides_file="${overrides_dir}/rhpam-businesscentral-overrides.yaml"
-                if [ ! -f "${businesscentral_overrides_file}" ]; then
-                    log_info "Generating ${businesscentral_overrides_file} ..."
+                if product_matches "${product}" "rhpam" "businesscentral" ; then
+                    local businesscentral_overrides_file="${overrides_dir}/rhpam-businesscentral-overrides.yaml"
+                    if [ ! -f "${businesscentral_overrides_file}" ]; then
+                        log_info "Generating ${businesscentral_overrides_file} ..."
 cat <<EOF > "${businesscentral_overrides_file}"
 artifacts:
     - name: BUSINESS_CENTRAL_DISTRIBUTION.ZIP
       path: ${business_central_distribution_zip}
       md5: ${business_central_distribution_md5}
 EOF
-                else
-                    log_info "File ${businesscentral_overrides_file} already generated."
+                    else
+                        log_info "File ${businesscentral_overrides_file} already generated."
+                    fi
                 fi
             else
                 return 1
