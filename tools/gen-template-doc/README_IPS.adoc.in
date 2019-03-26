@@ -1,6 +1,6 @@
 = Application Templates
 
-This project contains OpenShift v3 application templates which support applications based on RHDM products.
+This project contains OpenShift v3 application templates which support applications based on RHIPS products.
 Source can be found https://github.com/jboss-container-images/jboss-processserver-6-openshift-image/tree/6.4.x/templates[here].
 
 :icons: font
