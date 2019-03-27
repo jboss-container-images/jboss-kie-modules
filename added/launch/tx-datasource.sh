@@ -1,8 +1,16 @@
 # Openshift EAP launch script datasource generation routines
 
-source $JBOSS_HOME/bin/launch/launch-common.sh
-source ${JBOSS_HOME}/bin/launch/openshift-node-name.sh
-source $JBOSS_HOME/bin/launch/logging.sh
+if [ -f $JBOSS_HOME/bin/launch/launch-common.sh ]; then
+    source $JBOSS_HOME/bin/launch/launch-common.sh
+fi
+
+if [ -f ${JBOSS_HOME}/bin/launch/openshift-node-name.sh ]; then
+    source ${JBOSS_HOME}/bin/launch/openshift-node-name.sh
+fi
+
+if [ -f $JBOSS_HOME/bin/launch/logging.sh ]; then
+    source $JBOSS_HOME/bin/launch/logging.sh
+fi
 
 function clearTxDatasourceEnv() {
   tx_backend=${TX_DATABASE_PREFIX_MAPPING}
