@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <datasources>
-    <datasource jta="true" jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
+    <datasource jta="true" jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true" statistics-enabled="${wildfly.datasources.statistics-enabled:${wildfly.statistics-enabled:false}}">
         <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</connection-url>
         <driver>h2</driver>
         <security>
@@ -8,7 +8,7 @@
             <password>sa</password>
         </security>
     </datasource>
-    <datasource jta="false" jndi-name="java:/jboss/datasources/testds" pool-name="test-TEST" enabled="true" use-java-context="true">
+    <datasource jta="false" jndi-name="java:/jboss/datasources/testds" pool-name="test-TEST" enabled="true" use-java-context="true" statistics-enabled="${wildfly.datasources.statistics-enabled:${wildfly.statistics-enabled:false}}">
         <connection-url>jdbc:oracle:thin:@10.1.1.1:1521:testdb</connection-url>
         <driver>oracle</driver>
         <security>

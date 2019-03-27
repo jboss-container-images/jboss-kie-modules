@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <datasources>
-    <xa-datasource jndi-name="java:/jboss/datasources/testds" pool-name="test_mysql-TEST" enabled="true" use-java-context="true">
+    <xa-datasource jndi-name="java:/jboss/datasources/testds" pool-name="test_mysql-TEST" enabled="true" use-java-context="true" statistics-enabled="${wildfly.datasources.statistics-enabled:${wildfly.statistics-enabled:false}}">
         <xa-datasource-property name="URL">jdbc:mysql://localhost:3306/jbossdb</xa-datasource-property>
         <driver>mysql</driver>
         <security>

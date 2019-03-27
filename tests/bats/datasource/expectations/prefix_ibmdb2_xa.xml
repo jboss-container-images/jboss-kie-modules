@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <datasources>
-    <xa-datasource jndi-name="java:/jboss/datasources/testds" pool-name="test_ibmdb2-TEST" enabled="true" use-java-context="true">
+    <xa-datasource jndi-name="java:/jboss/datasources/testds" pool-name="test_ibmdb2-TEST" enabled="true" use-java-context="true" statistics-enabled="${wildfly.datasources.statistics-enabled:${wildfly.statistics-enabled:false}}">
         <xa-datasource-property name="DatabaseName">ibmdb2db</xa-datasource-property>
         <xa-datasource-property name="PortNumber">50000</xa-datasource-property>
         <xa-datasource-property name="ServerName">localhost</xa-datasource-property>
