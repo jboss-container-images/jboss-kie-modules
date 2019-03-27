@@ -111,10 +111,11 @@ Errors found: {
 
 #### Template parameters validation
 
-This tool also verify the template parameters, it will check:
+This tool also verifies the template parameters, it will check:
 - if the parameter have all the required fields: DisplayName, Description, Name and Required
 - if any parameter is required, but not value provided (--strict-mode)
-- if all defined parameters are being used for any DeploymentConfig defined in the target template
+- if all defined parameters are being used in any DeploymentConfig
+- if there is no duplicated paremeter
 
 ##### Strict mode
 
@@ -136,7 +137,7 @@ Errors found: {
 
 ##### Dumping template parameters for troubleshooting
 
-If for some reason the parameters validation failed and you want to verify the parameters, just use the *dump" flag:
+If for some reason the parameters validation failed and you want to verify the parameters, just use the *dump* flag:
 
 ```bash
  $ openshift-template-validator-linux-amd64 validate -f /sources/rhdm-7-openshift-image/templates/rhdm71-full.yaml --dump
@@ -161,9 +162,10 @@ parameters:
 
 It is also allowed specify a directory with the flag *-d /target/directory/*
 
+
 #### Validating ImageStreams
 
-This tool also validate imagestreams, for this, the ImageStream kind must be *ImageStreamList*, i.e.:
+This tool also validate ImageStream, for this, the ImageStream kind must be *ImageStreamList*, i.e.:
 
 ```yaml
 kind: ImageStreamList
@@ -243,7 +245,6 @@ The next lines contains all the necessary steps to build this tool from source.
 Install Golang, glide, and prepare the GOPATH env.
 
 ```bash
-$
 $ sudo dnf install golang
 $ mkdir -p ~/go/{bin,pkg,src}
 $ echo 'export GOPATH=$HOME/go' >> ~/.bashrc
