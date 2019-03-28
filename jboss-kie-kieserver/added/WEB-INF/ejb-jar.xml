@@ -51,23 +51,24 @@
             </activation-config>
         </message-driven>
 
-        <!-- enable when external signals are required and queue and connection factory is defined
-          <message-driven>
+        <!-- enable when external signals are required and queue and connection factory is defined -->
+        <!--##JMS_SIGNAL
+        <message-driven>
             <ejb-name>JMSSignalReceiver</ejb-name>
             <ejb-class>org.jbpm.process.workitem.jms.JMSSignalReceiver</ejb-class>
             <transaction-type>Bean</transaction-type>
             <activation-config>
-              <activation-config-property>
-                <activation-config-property-name>destinationType</activation-config-property-name>
-                <activation-config-property-value>javax.jms.Queue</activation-config-property-value>
-              </activation-config-property>
-              <activation-config-property>
-                <activation-config-property-name>destination</activation-config-property-name>
-                <activation-config-property-value>java:/queue/KIE.SERVER.SIGNAL</activation-config-property-value>
-              </activation-config-property>
+                <activation-config-property>
+                    <activation-config-property-name>destinationType</activation-config-property-name>
+                    <activation-config-property-value>javax.jms.Queue</activation-config-property-value>
+                </activation-config-property>
+                <activation-config-property>
+                    <activation-config-property-name>destination</activation-config-property-name>
+                    <activation-config-property-value>java:/queue/KIE.SERVER.SIGNAL</activation-config-property-value>
+                </activation-config-property>
             </activation-config>
-          </message-driven>
-          -->
+        </message-driven>
+        JMS_SIGNAL##-->
 
         <!-- enable when jms mode for audit is required and queue and connection factory is defined
         <message-driven>

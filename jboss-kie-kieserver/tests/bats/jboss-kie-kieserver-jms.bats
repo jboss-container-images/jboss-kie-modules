@@ -83,6 +83,51 @@ teardown() {
     [ "${JBOSS_KIE_ARGS}" = "${expected}" ]
 }
 
+@test "test default signal queue configuration kie-jms-file" {
+    KIE_SERVER_JMS_ENABLE_SIGNAL="true"
+    expected_kie_jms_xml='<entry name="queue/KIE.SERVER.REQUEST"/><entry name="queue/KIE.SERVER.RESPONSE"/><entry name="queue/KIE.SERVER.EXECUTOR"/><entry name="queue/KIE.SERVER.SIGNAL"/>'
+    run configureJmsSignal
+    result_kie_jms_xml=$(xmllint --xpath "//*[local-name()='jms-queue']/*[local-name()='entry']"[1] ${KIE_JMS_FILE})
+    echo "Expected kie jms file: ${expected_kie_jms_xml}"
+    echo "Result kie jms file: ${result_kie_jms_xml}"
+    [ "${result_kie_jms_xml}" = "${expected_kie_jms_xml}" ]
+}
+
+@test "test custom signal queue configuration kie-jms-file" {
+    KIE_SERVER_JMS_ENABLE_SIGNAL="true"
+    KIE_SERVER_JMS_QUEUE_SIGNAL="queue/CUSTOM.SIGNAL.QUEUE"
+    expected_kie_jms_xml='<entry name="queue/KIE.SERVER.REQUEST"/><entry name="queue/KIE.SERVER.RESPONSE"/><entry name="queue/KIE.SERVER.EXECUTOR"/><entry name="queue/CUSTOM.SIGNAL.QUEUE"/>'
+    run configureJmsSignal
+    result_kie_jms_xml=$(xmllint --xpath "//*[local-name()='jms-queue']/*[local-name()='entry']"[1] ${KIE_JMS_FILE})
+    echo "Expected kie jms file: ${expected_kie_jms_xml}"
+    echo "Result kie jms file: ${result_kie_jms_xml}"
+    cat ${KIE_JMS_FILE}
+    [ "${result_kie_jms_xml}" = "${expected_kie_jms_xml}" ]
+}
+
+@test "test default signal queue configuration ejb-jar" {
+    KIE_SERVER_JMS_ENABLE_SIGNAL="true"
+    expected_ejb_jar="<activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value><activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>Auto-acknowledge</activation-config-property-value><activation-config-property-value>queue/KIE.SERVER.EXECUTOR</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>Auto-acknowledge</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>java:/queue/KIE.SERVER.SIGNAL</activation-config-property-value>"
+    run configureJmsSignal
+    result_ejb_jar=$(xmllint --xpath "//*[local-name()='activation-config-property-value']" ${KIE_EJB_JAR_FILE})
+    echo "Expected ejb jar: ${expected_ejb_jar}"
+    echo "Result ejb jar: ${result_ejb_jar}"
+    [ "${result_ejb_jar}" = "${expected_ejb_jar}" ]
+}
+
+@test "test custom signal queue configuration ejb-jar" {
+    KIE_SERVER_JMS_ENABLE_SIGNAL="true"
+    KIE_SERVER_JMS_QUEUE_SIGNAL="queue/CUSTOM.SIGNAL.QUEUE"
+    expected_ejb_jar="<activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value><activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>Auto-acknowledge</activation-config-property-value><activation-config-property-value>queue/KIE.SERVER.EXECUTOR</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>Auto-acknowledge</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>java:/queue/CUSTOM.SIGNAL.QUEUE</activation-config-property-value>"
+    run configureJmsSignal
+    result_ejb_jar=$(xmllint --xpath "//*[local-name()='activation-config-property-value']" ${KIE_EJB_JAR_FILE})
+    echo "Expected ejb jar: ${expected_ejb_jar}"
+    echo "Result ejb jar: ${result_ejb_jar}"
+    [ "${result_ejb_jar}" = "${expected_ejb_jar}" ]
+}
+
+
+# keep this test as the last one
 @test "Verify if the kie-server-jms.xml is removed when configuring external resource adapter." {
     MQ_SERVICE_PREFIX_MAPPING="AMQPREFIX"
     run postConfigure
