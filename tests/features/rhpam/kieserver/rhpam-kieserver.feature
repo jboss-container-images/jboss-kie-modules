@@ -91,6 +91,23 @@ Feature: RHPAM KIE Server configuration tests
      And container log should contain -Dorg.kie.executor.jms.transacted=true
      And container log should contain Executor JMS based support successfully activated on queue ActiveMQQueue[jms.queue.KIE.SERVER.EXECUTOR]
 
+  Scenario: RHPAM-640 - Verify if the Signal queue is correctly configured with default configuration
+    When container is started with env
+      | variable                           | value  |
+      | KIE_SERVER_JMS_ENABLE_SIGNAL       | true   |
+    Then container log should contain INFO Configuring Signal messaging queue
+     And container log should contain Started message driven bean 'JMSSignalReceiver' with 'activemq-ra.rar' resource adapter
+
+  Scenario: RHPAM-640 - Verify if the Signal queue is correctly configured with custom configuration
+    When container is started with env
+      | variable                      | value                        |
+      | KIE_SERVER_JMS_ENABLE_SIGNAL  | true                         |
+      | KIE_SERVER_JMS_QUEUE_SIGNAL   | queue/MY.CUSTOM.QUEUE.SIGNAL |
+    Then container log should contain INFO Configuring Signal messaging queue
+     And container log should contain Started message driven bean 'JMSSignalReceiver' with 'activemq-ra.rar' resource adapter
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain queue/MY.CUSTOM.QUEUE.SIGNAL
+     And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain queue/MY.CUSTOM.QUEUE.SIGNAL
+
     Scenario: Checks if the EJB Timer was successfully configured with MySQL with DB_SERVICE_PREFIX_MAPPING env
       When container is started with env
         | variable                   | value                            |
@@ -702,7 +719,7 @@ Feature: RHPAM KIE Server configuration tests
       | variable                         | value                                  |
       | DATASOURCES                      | RHPAM                                  |
       | RHPAM_DATABASE                   | rhpam7                                 |
-      | RHPAM_JNDI                       | java:jboss/datasources/rhpam          |
+      | RHPAM_JNDI                       | java:jboss/datasources/rhpam           |
       | RHPAM_JTA                        | true                                   |
       | RHPAM_DRIVER                     | h2                                     |
       | RHPAM_USERNAME                   | sa                                     |

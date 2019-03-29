@@ -8,10 +8,11 @@ function prepareEnv() {
     # please keep these in alphabetical order
     unset KIE_SERVER_EXECUTOR_JMS
     unset KIE_SERVER_EXECUTOR_JMS_TRANSACTED
+    unset KIE_SERVER_JMS_ENABLE_SIGNAL
     unset KIE_SERVER_JMS_QUEUE_EXECUTOR
     unset KIE_SERVER_JMS_QUEUE_RESPONSE
     unset KIE_SERVER_JMS_QUEUE_REQUEST
-
+    unset KIE_SERVER_JMS_QUEUE_SIGNAL
 }
 
 function preConfigure() {
@@ -22,6 +23,7 @@ function preConfigure() {
 function configure() {
     configureJmsQueues
     configureJmsExecutor
+    configureJmsSignal
 }
 
 function postConfigure {
@@ -34,12 +36,9 @@ function postConfigure {
     fi
 }
 
-
 configureJmsQueues() {
     local queueRequest="${KIE_SERVER_JMS_QUEUE_REQUEST:-queue/KIE.SERVER.REQUEST}"
-    local queueRequestName=${queueRequest#*/}
     local queueResponse="${KIE_SERVER_JMS_QUEUE_RESPONSE:-queue/KIE.SERVER.RESPONSE}"
-    local queueResponseName=${queueResponse#*/}
     sed -i "s,queue/KIE\.SERVER\.REQUEST,${queueRequest},g" ${KIE_JMS_FILE}
     sed -i "s,queue/KIE\.SERVER\.REQUEST,${queueRequest},g" ${KIE_EJB_JAR_FILE}
     sed -i "s,queue/KIE\.SERVER\.RESPONSE,${queueResponse},g" ${KIE_JMS_FILE}
@@ -48,7 +47,6 @@ configureJmsQueues() {
 
 function configureJmsExecutor() {
     local queueExecutor="${KIE_SERVER_JMS_QUEUE_EXECUTOR:-queue/KIE.SERVER.EXECUTOR}"
-    local queueExecutorName=${queueExecutor#*/}
     sed -i "s,queue/KIE\.SERVER\.EXECUTOR,${queueExecutor},g" ${KIE_JMS_FILE}
     sed -i "s,queue/KIE\.SERVER\.EXECUTOR,${queueExecutor},g" ${KIE_EJB_JAR_FILE}
 
@@ -68,4 +66,17 @@ function configureJmsExecutor() {
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.executor.jms=false"
     fi
 
+}
+
+function configureJmsSignal() {
+    if [ "${KIE_SERVER_JMS_ENABLE_SIGNAL^^}" = "TRUE" ]; then
+        log_info "Configuring Signal messaging queue"
+        first=$(grep -B1 -n ' <jms-queue name="KIE.SERVER.SIGNAL.QUEUE">' ${KIE_JMS_FILE} | head -n 1 | cut -d- -f1)
+        last=$(grep -10 -n ' <jms-queue name="KIE.SERVER.SIGNAL.QUEUE">' ${KIE_JMS_FILE} | grep -e '-[[:space:]]*-->' | cut -d- -f1)
+        sed -i "${first}d; ${last}d" ${KIE_JMS_FILE}
+        sed -i 's/<!--##JMS_SIGNAL//; s/JMS_SIGNAL##-->//' ${KIE_EJB_JAR_FILE}
+        local queueSignal="${KIE_SERVER_JMS_QUEUE_SIGNAL:-queue/KIE.SERVER.SIGNAL}"
+        sed -i "s,queue/KIE\.SERVER\.SIGNAL,${queueSignal},g" ${KIE_JMS_FILE}
+        sed -i "s,queue/KIE\.SERVER\.SIGNAL,${queueSignal},g" ${KIE_EJB_JAR_FILE}
+    fi
 }
