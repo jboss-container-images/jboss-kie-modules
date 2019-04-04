@@ -8,7 +8,10 @@ function prepareEnv() {
     # please keep these in alphabetical order
     unset KIE_SERVER_EXECUTOR_JMS
     unset KIE_SERVER_EXECUTOR_JMS_TRANSACTED
+    unset KIE_SERVER_JMS_AUDIT_TRANSACTED
+    unset KIE_SERVER_JMS_ENABLE_AUDIT
     unset KIE_SERVER_JMS_ENABLE_SIGNAL
+    unset KIE_SERVER_JMS_QUEUE_AUDIT
     unset KIE_SERVER_JMS_QUEUE_EXECUTOR
     unset KIE_SERVER_JMS_QUEUE_RESPONSE
     unset KIE_SERVER_JMS_QUEUE_REQUEST
@@ -18,12 +21,21 @@ function prepareEnv() {
 function preConfigure() {
     KIE_JMS_FILE="${JBOSS_HOME}/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml"
     KIE_EJB_JAR_FILE="${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml"
+    mv "${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/classes/wildfly-jbpm.audit.jms.properties" "${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/classes/jbpm.audit.jms.properties"
+    KIE_AUDIT_PROPERTIES_FILE="${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/classes/jbpm.audit.jms.properties"
+}
+
+function postConfigure() {
+    unset KIE_JMS_FILE
+    unset KIE_EJB_JAR_FILE
+    unset KIE_AUDIT_PROPERTIES_FILE
 }
 
 function configure() {
     configureJmsQueues
     configureJmsExecutor
     configureJmsSignal
+    configureJmsAudit
 }
 
 function postConfigure {
@@ -78,5 +90,25 @@ function configureJmsSignal() {
         local queueSignal="${KIE_SERVER_JMS_QUEUE_SIGNAL:-queue/KIE.SERVER.SIGNAL}"
         sed -i "s,queue/KIE\.SERVER\.SIGNAL,${queueSignal},g" ${KIE_JMS_FILE}
         sed -i "s,queue/KIE\.SERVER\.SIGNAL,${queueSignal},g" ${KIE_EJB_JAR_FILE}
+    fi
+}
+
+
+function configureJmsAudit() {
+    if [ "${KIE_SERVER_JMS_ENABLE_AUDIT^^}" = "TRUE" ]; then
+        log_info "Configuring Audit messaging queue"
+        first=$(grep -B1 -n ' <jms-queue name="KIE.SERVER.AUDIT">' ${KIE_JMS_FILE} | head -n 1 | cut -d- -f1)
+        last=$(grep -B1 -10 -n ' <jms-queue name="KIE.SERVER.AUDIT">' ${KIE_JMS_FILE} | grep -e '-[[:space:]]*-->' | cut -d- -f1)
+        sed -i "${first}d; ${last}d" ${KIE_JMS_FILE}
+        sed -i 's/<!--##JMS_AUDIT//; s/JMS_AUDIT##-->//' ${KIE_EJB_JAR_FILE}
+        local queueAudit="${KIE_SERVER_JMS_QUEUE_AUDIT:-queue/KIE.SERVER.AUDIT}"
+        sed -i "s,queue/KIE\.SERVER\.AUDIT,${queueAudit},g" ${KIE_JMS_FILE}
+        sed -i "s,queue/KIE\.SERVER\.AUDIT,${queueAudit},g" ${KIE_EJB_JAR_FILE}
+        sed -i "s,queue/KIE\.SERVER\.AUDIT,${queueAudit},g" "${KIE_AUDIT_PROPERTIES_FILE}"
+
+        local transacted=${KIE_SERVER_JMS_AUDIT_TRANSACTED}
+        if [ "${transacted^^}" = "FALSE" ]; then
+            echo -e "\njbpm.audit.jms.transacted=false" >> "${KIE_AUDIT_PROPERTIES_FILE}"
+        fi
     fi
 }

@@ -3,18 +3,20 @@
 export JBOSS_HOME=$BATS_TMPDIR/jboss_home
 export KIE_JMS_FILE=$JBOSS_HOME/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml
 export KIE_EJB_JAR_FILE=$JBOSS_HOME/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml
+export KIE_AUDIT_PROPERTIES_FILE="${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/classes/jbpm.audit.jms.properties"
 mkdir -p $JBOSS_HOME/bin/launch
 
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/launch-common.sh $JBOSS_HOME/bin/launch
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/logging.bash $JBOSS_HOME/bin/launch/logging.sh
-mkdir -p $JBOSS_HOME/standalone/deployments/ROOT.war/{META-INF,WEB-INF}
+mkdir -p $JBOSS_HOME/standalone/deployments/ROOT.war/{META-INF,WEB-INF/classes}
 
 
 #imports
 source $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-kieserver-jms.sh
 
 setup() {
-    cp $BATS_TEST_DIRNAME/resources/META-INF/kie-server-jms.xml ${KIE_JMS_FILE}
+    cp $BATS_TEST_DIRNAME/resources/kie-server-jms.xml ${KIE_JMS_FILE}
+    cp $BATS_TEST_DIRNAME/resources/jbpm.audit.jms.properties ${KIE_AUDIT_PROPERTIES_FILE}
     cp $BATS_TEST_DIRNAME/../../added/WEB-INF/ejb-jar.xml ${KIE_EJB_JAR_FILE}
 }
 
@@ -36,7 +38,6 @@ teardown() {
     [ "${result_jms_queue_name}" = "${expected_jms_queue_name}" ]
 }
 
-
 @test "test custom request/response queue values on META-INF/kie-server-jms.xml file" {
     KIE_SERVER_JMS_QUEUE_REQUEST="queue/MY.KIE.SERVER.REQUEST"
     KIE_SERVER_JMS_QUEUE_RESPONSE="queue/MY.KIE.SERVER.RESPONSE"
@@ -50,7 +51,6 @@ teardown() {
     echo "Result: ${result_entry_name}"
     [ "${result_entry_name}" = "${expected_entry_name}" ]
 }
-
 
 @test "test default request/executor queue values on WEB-INF/ejb-jar.xml file" {
     expected="<activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value><activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>Auto-acknowledge</activation-config-property-value><activation-config-property-value>queue/KIE.SERVER.EXECUTOR</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>Auto-acknowledge</activation-config-property-value>"
@@ -101,7 +101,6 @@ teardown() {
     result_kie_jms_xml=$(xmllint --xpath "//*[local-name()='jms-queue']/*[local-name()='entry']"[1] ${KIE_JMS_FILE})
     echo "Expected kie jms file: ${expected_kie_jms_xml}"
     echo "Result kie jms file: ${result_kie_jms_xml}"
-    cat ${KIE_JMS_FILE}
     [ "${result_kie_jms_xml}" = "${expected_kie_jms_xml}" ]
 }
 
@@ -124,6 +123,107 @@ teardown() {
     echo "Expected ejb jar: ${expected_ejb_jar}"
     echo "Result ejb jar: ${result_ejb_jar}"
     [ "${result_ejb_jar}" = "${expected_ejb_jar}" ]
+}
+
+@test "test default audit queue configuration kie-jms-file" {
+    KIE_SERVER_JMS_ENABLE_AUDIT="true"
+    expected_kie_jms_xml='<entry name="queue/KIE.SERVER.REQUEST"/><entry name="queue/KIE.SERVER.RESPONSE"/><entry name="queue/KIE.SERVER.EXECUTOR"/><entry name="queue/KIE.SERVER.AUDIT"/>'
+    run configureJmsAudit
+    result_kie_jms_xml=$(xmllint --xpath "//*[local-name()='jms-queue']/*[local-name()='entry']"[1] ${KIE_JMS_FILE})
+    echo "Expected kie jms file: ${expected_kie_jms_xml}"
+    echo "Result kie jms file: ${result_kie_jms_xml}"
+    [ "${result_kie_jms_xml}" = "${expected_kie_jms_xml}" ]
+}
+
+@test "test custom audit queue configuration kie-jms-file" {
+    KIE_SERVER_JMS_ENABLE_AUDIT="true"
+    KIE_SERVER_JMS_QUEUE_AUDIT="queue/CUSTOM.AUDIT.QUEUE"
+    expected_kie_jms_xml='<entry name="queue/KIE.SERVER.REQUEST"/><entry name="queue/KIE.SERVER.RESPONSE"/><entry name="queue/KIE.SERVER.EXECUTOR"/><entry name="queue/CUSTOM.AUDIT.QUEUE"/>'
+    run configureJmsAudit
+    result_kie_jms_xml=$(xmllint --xpath "//*[local-name()='jms-queue']/*[local-name()='entry']"[1] ${KIE_JMS_FILE})
+    echo "Expected kie jms file: ${expected_kie_jms_xml}"
+    echo "Result kie jms file: ${result_kie_jms_xml}"
+    [ "${result_kie_jms_xml}" = "${expected_kie_jms_xml}" ]
+}
+
+@test "test default audit queue configuration ejb-jar" {
+    KIE_SERVER_JMS_ENABLE_AUDIT="true"
+    expected_ejb_jar="<activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value><activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>Auto-acknowledge</activation-config-property-value><activation-config-property-value>queue/KIE.SERVER.EXECUTOR</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>Auto-acknowledge</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>java:/queue/KIE.SERVER.AUDIT</activation-config-property-value><activation-config-property-value>1</activation-config-property-value>"
+    run configureJmsAudit
+    result_ejb_jar=$(xmllint --xpath "//*[local-name()='activation-config-property-value']" ${KIE_EJB_JAR_FILE})
+    echo "Expected ejb jar: ${expected_ejb_jar}"
+    echo "Result ejb jar: ${result_ejb_jar}"
+    [ "${result_ejb_jar}" = "${expected_ejb_jar}" ]
+}
+
+@test "test custom audit queue configuration ejb-jar" {
+    KIE_SERVER_JMS_ENABLE_AUDIT="true"
+    KIE_SERVER_JMS_QUEUE_AUDIT="queue/CUSTOM.AUDIT.QUEUE"
+    expected_ejb_jar="<activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value><activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>Auto-acknowledge</activation-config-property-value><activation-config-property-value>queue/KIE.SERVER.EXECUTOR</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>Auto-acknowledge</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>java:/queue/CUSTOM.AUDIT.QUEUE</activation-config-property-value><activation-config-property-value>1</activation-config-property-value>"
+    run configureJmsAudit
+    result_ejb_jar=$(xmllint --xpath "//*[local-name()='activation-config-property-value']" ${KIE_EJB_JAR_FILE})
+    echo "Expected ejb jar: ${expected_ejb_jar}"
+    echo "Result ejb jar: ${result_ejb_jar}"
+    [ "${result_ejb_jar}" = "${expected_ejb_jar}" ]
+}
+
+@test "test enabling audit and signal with default configuration" {
+    KIE_SERVER_JMS_ENABLE_AUDIT="true"
+    KIE_SERVER_JMS_ENABLE_SIGNAL="true"
+    run configureJmsAudit
+    run configureJmsSignal
+    expected_kie_jms_xml='<entry name="queue/KIE.SERVER.REQUEST"/><entry name="queue/KIE.SERVER.RESPONSE"/><entry name="queue/KIE.SERVER.EXECUTOR"/><entry name="queue/KIE.SERVER.SIGNAL"/><entry name="queue/KIE.SERVER.AUDIT"/>'
+    result_kie_jms_xml=$(xmllint --xpath "//*[local-name()='jms-queue']/*[local-name()='entry']"[1] ${KIE_JMS_FILE})
+    echo "Expected kie jms file: ${expected_kie_jms_xml}"
+    echo "Result kie jms file: ${result_kie_jms_xml}"
+    [ "${result_kie_jms_xml}" = "${expected_kie_jms_xml}" ]
+
+    expected_ejb_jar="<activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value><activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>Auto-acknowledge</activation-config-property-value><activation-config-property-value>queue/KIE.SERVER.EXECUTOR</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>Auto-acknowledge</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>java:/queue/KIE.SERVER.SIGNAL</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>java:/queue/KIE.SERVER.AUDIT</activation-config-property-value><activation-config-property-value>1</activation-config-property-value>"
+    result_ejb_jar=$(xmllint --xpath "//*[local-name()='activation-config-property-value']" ${KIE_EJB_JAR_FILE})
+    echo "Expected ejb jar: ${expected_ejb_jar}"
+    echo "Result ejb jar: ${result_ejb_jar}"
+    [ "${result_ejb_jar}" = "${expected_ejb_jar}" ]
+}
+
+@test "test enabling audit and signal with custom configuration" {
+    KIE_SERVER_JMS_ENABLE_AUDIT="true"
+    KIE_SERVER_JMS_ENABLE_SIGNAL="true"
+    KIE_SERVER_JMS_QUEUE_AUDIT="queue/CUSTOM.AUDIT.QUEUE"
+    KIE_SERVER_JMS_QUEUE_SIGNAL="queue/CUSTOM.SIGNAL.QUEUE"
+    run configureJmsAudit
+    run configureJmsSignal
+
+    expected_kie_jms_xml='<entry name="queue/KIE.SERVER.REQUEST"/><entry name="queue/KIE.SERVER.RESPONSE"/><entry name="queue/KIE.SERVER.EXECUTOR"/><entry name="queue/CUSTOM.SIGNAL.QUEUE"/><entry name="queue/CUSTOM.AUDIT.QUEUE"/>'
+    result_kie_jms_xml=$(xmllint --xpath "//*[local-name()='jms-queue']/*[local-name()='entry']"[1] ${KIE_JMS_FILE})
+    echo "Expected kie jms file: ${expected_kie_jms_xml}"
+    echo "Result kie jms file: ${result_kie_jms_xml}"
+    [ "${result_kie_jms_xml}" = "${expected_kie_jms_xml}" ]
+
+    expected_ejb_jar="<activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value><activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>Auto-acknowledge</activation-config-property-value><activation-config-property-value>queue/KIE.SERVER.EXECUTOR</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>Auto-acknowledge</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>java:/queue/CUSTOM.SIGNAL.QUEUE</activation-config-property-value><activation-config-property-value>javax.jms.Queue</activation-config-property-value><activation-config-property-value>java:/queue/CUSTOM.AUDIT.QUEUE</activation-config-property-value><activation-config-property-value>1</activation-config-property-value>"
+    result_ejb_jar=$(xmllint --xpath "//*[local-name()='activation-config-property-value']" ${KIE_EJB_JAR_FILE})
+    echo "Expected ejb jar: ${expected_ejb_jar}"
+    echo "Result ejb jar: ${result_ejb_jar}"
+    [ "${result_ejb_jar}" = "${expected_ejb_jar}" ]
+}
+
+@test "Test KIE_AUDIT_PROPERTIES_FILE is correctly configured" {
+    KIE_SERVER_JMS_ENABLE_AUDIT="true"
+    KIE_SERVER_JMS_AUDIT_TRANSACTED="false"
+    KIE_SERVER_JMS_QUEUE_AUDIT="queue/CUSTOM.AUDIT.QUEUE"
+    run configureJmsAudit
+
+    expected_queue="jbpm.audit.jms.queue.jndi=queue/CUSTOM.AUDIT.QUEUE"
+    expected_transacted="jbpm.audit.jms.transacted=false"
+    result_queue=$(cat "${KIE_AUDIT_PROPERTIES_FILE}" | grep jbpm.audit.jms.queue.jndi)
+    result_transacted=$(cat "${KIE_AUDIT_PROPERTIES_FILE}" | grep jbpm.audit.jms.transacted)
+
+    echo "Expected queue: ${expected_queue}"
+    echo "Result queue: ${result_queue}"
+    [ "${result_queue}" = "${expected_queue}" ]
+
+    echo "Expected transacted: ${expected_transacted}"
+    echo "Result transacted: ${result_transacted}"
+    [ "${result_transacted}" = "${expected_transacted}" ]
 }
 
 
