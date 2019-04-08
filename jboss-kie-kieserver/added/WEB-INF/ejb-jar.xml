@@ -70,28 +70,28 @@
         </message-driven>
         JMS_SIGNAL##-->
 
-        <!-- enable when jms mode for audit is required and queue and connection factory is defined
+        <!-- enable when jms mode for audit is required and queue and connection factory is defined -->
+        <!--##JMS_AUDIT
         <message-driven>
-          <ejb-name>CompositeAsyncAuditLogReceiver</ejb-name>
-          <ejb-class>org.jbpm.kie.services.impl.CompositeAsyncAuditLogReceiver</ejb-class>
-          <transaction-type>Container</transaction-type>
-          <activation-config>
-            <activation-config-property>
-              <activation-config-property-name>destinationType</activation-config-property-name>
-              <activation-config-property-value>javax.jms.Queue</activation-config-property-value>
-            </activation-config-property>
-            <activation-config-property>
-              <activation-config-property-name>destination</activation-config-property-name>
-              <activation-config-property-value>java:/queue/KIE.SERVER.AUDIT</activation-config-property-value>
-            </activation-config-property>
-            <activation-config-property>
-              <activation-config-property-name>maxSession</activation-config-property-name>
-              <activation-config-property-value>1</activation-config-property-value>
-            </activation-config-property>
-          </activation-config>
+            <ejb-name>CompositeAsyncAuditLogReceiver</ejb-name>
+            <ejb-class>org.jbpm.kie.services.impl.CompositeAsyncAuditLogReceiver</ejb-class>
+            <transaction-type>Container</transaction-type>
+            <activation-config>
+                <activation-config-property>
+                    <activation-config-property-name>destinationType</activation-config-property-name>
+                    <activation-config-property-value>javax.jms.Queue</activation-config-property-value>
+                </activation-config-property>
+                <activation-config-property>
+                    <activation-config-property-name>destination</activation-config-property-name>
+                    <activation-config-property-value>java:/queue/KIE.SERVER.AUDIT</activation-config-property-value>
+                </activation-config-property>
+                <activation-config-property>
+                    <activation-config-property-name>maxSession</activation-config-property-name>
+                    <activation-config-property-value>1</activation-config-property-value>
+                </activation-config-property>
+            </activation-config>
         </message-driven>
-        -->
-
+        JMS_AUDIT##-->
     </enterprise-beans>
 
 </ejb-jar>

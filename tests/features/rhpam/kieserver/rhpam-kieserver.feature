@@ -108,6 +108,52 @@ Feature: RHPAM KIE Server configuration tests
      And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain queue/MY.CUSTOM.QUEUE.SIGNAL
      And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain queue/MY.CUSTOM.QUEUE.SIGNAL
 
+  Scenario: KIECLOUD-45 - Verify if the Audit queue is correctly configured with default configuration
+    When container is started with env
+      | variable                     | value  |
+      | KIE_SERVER_JMS_ENABLE_AUDIT  | true   |
+    Then container log should contain INFO Configuring Audit messaging queue
+     And container log should contain Started message driven bean 'CompositeAsyncAuditLogReceiver' with 'activemq-ra.rar' resource adapter
+
+  Scenario: KIECLOUD-45 - Verify if the Audit  queue is correctly configured with custom configuration
+    When container is started with env
+      | variable                     | value                        |
+      | KIE_SERVER_JMS_ENABLE_AUDIT  | true                         |
+      | KIE_SERVER_JMS_QUEUE_AUDIT   | queue/MY.CUSTOM.QUEUE.AUDIT  |
+    Then container log should contain INFO Configuring Audit messaging queue
+     And container log should contain Started message driven bean 'CompositeAsyncAuditLogReceiver' with 'activemq-ra.rar' resource adapter
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain queue/MY.CUSTOM.QUEUE.AUDIT
+     And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain queue/MY.CUSTOM.QUEUE.AUDIT
+
+  Scenario: Verify if the Audit and Signal queues are correctly configured with default configuration
+    When container is started with env
+      | variable                     | value  |
+      | KIE_SERVER_JMS_ENABLE_AUDIT  | true   |
+      | KIE_SERVER_JMS_ENABLE_SIGNAL | true   |
+    Then container log should contain INFO Configuring Audit messaging queue
+     And container log should contain Started message driven bean 'CompositeAsyncAuditLogReceiver' with 'activemq-ra.rar' resource adapter
+     And container log should contain INFO Configuring Signal messaging queue
+     And container log should contain Started message driven bean 'JMSSignalReceiver' with 'activemq-ra.rar' resource adapter
+
+  Scenario: Verify if the Audit and Signal queues are correctly configured with custom configuration
+    When container is started with env
+      | variable                        | value                        |
+      | KIE_SERVER_JMS_ENABLE_AUDIT     | true                         |
+      | KIE_SERVER_JMS_AUDIT_TRANSACTED | false                        |
+      | KIE_SERVER_JMS_QUEUE_AUDIT      | queue/MY.CUSTOM.QUEUE.AUDIT  |
+      | KIE_SERVER_JMS_ENABLE_SIGNAL    | true                         |
+      | KIE_SERVER_JMS_QUEUE_SIGNAL     | queue/MY.CUSTOM.QUEUE.SIGNAL |
+    Then container log should contain INFO Configuring Audit messaging queue
+     And container log should contain Started message driven bean 'CompositeAsyncAuditLogReceiver' with 'activemq-ra.rar' resource adapter
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain queue/MY.CUSTOM.QUEUE.AUDIT
+     And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain queue/MY.CUSTOM.QUEUE.AUDIT
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/classes/jbpm.audit.jms.properties should contain jbpm.audit.jms.queue.jndi=queue/MY.CUSTOM.QUEUE.AUDIT
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/classes/jbpm.audit.jms.properties should contain jbpm.audit.jms.transacted=false
+     And container log should contain INFO Configuring Signal messaging queue
+     And container log should contain Started message driven bean 'JMSSignalReceiver' with 'activemq-ra.rar' resource adapter
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain queue/MY.CUSTOM.QUEUE.SIGNAL
+     And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain queue/MY.CUSTOM.QUEUE.SIGNAL
+
     Scenario: Checks if the EJB Timer was successfully configured with MySQL with DB_SERVICE_PREFIX_MAPPING env
       When container is started with env
         | variable                   | value                            |
