@@ -19,7 +19,7 @@ Feature: RHPAM Business Central Monitoring configuration tests
      And file /opt/eap/standalone/configuration/application-users.properties should not contain mavenUser
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain mavenUser
      And file /opt/eap/standalone/configuration/application-users.properties should contain controllerUser=b39c9321953da48d982c018bb131c4b0
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain controllerUser=kie-server,rest-all,guest
+     And file /opt/eap/standalone/configuration/application-roles.properties should contain controllerUser=kie-server,rest-all,user
      And file /opt/eap/standalone/configuration/application-users.properties should not contain executionUser
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain executionUser
 
@@ -41,7 +41,7 @@ Feature: RHPAM Business Central Monitoring configuration tests
      And file /opt/eap/standalone/configuration/application-users.properties should not contain customMvn
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain customMvn
      And file /opt/eap/standalone/configuration/application-users.properties should contain customCtl=cc9f10a8ed20f1409b2282f4d5ca4d43
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain customCtl=kie-server,rest-all,guest
+     And file /opt/eap/standalone/configuration/application-roles.properties should contain customCtl=kie-server,rest-all,user
      And file /opt/eap/standalone/configuration/application-users.properties should not contain customExe
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain customExe
 

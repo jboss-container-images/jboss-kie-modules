@@ -52,6 +52,21 @@ function configure() {
     configure_guvnor_settings
     configure_metaspace
     configure_ha
+    # TODO: remove after https://issues.jboss.org/browse/AF-1821
+    temporary_AF-1821
+}
+
+# TODO: remove after https://issues.jboss.org/browse/AF-1821
+function temporary_AF-1821() {
+    local web_xml="${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/web.xml"
+    local number=1
+    # only clear the 'number' of lines following 'BASIC auth resources', otherwise we clear other matches of 'url-pattern' unintentionally
+    for UP in websocket rest maven2 ws ; do
+        sed -i "/^\s*<web-resource-name>BASIC auth resources<\/web-resource-name>\s*$/,+${number}s/^\s*<url-pattern>\/${UP}\/\*<\/url-pattern>\s*$//" "${web_xml}"
+        ((number++))
+    done
+    # put maven2 back
+    sed -i "/^\s*<web-resource-name>BASIC auth resources<\/web-resource-name>\s*$/,+1s/^$/      <url-pattern>\/maven2\/\*<\/url-pattern>/" "${web_xml}"
 }
 
 function configure_admin_security() {

@@ -21,7 +21,7 @@ Feature: RHDM OptaWeb configuration tests
       | KIE_ADMIN_USER  | customExe     |
       | KIE_ADMIN_PWD   | custom" Exe!0 |
     Then file /opt/eap/standalone/configuration/application-users.properties should not contain customExe=d2d5d854411231a97fdbf7fe6f91a786
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain customExe=kie-server,rest-all,guest
+     And file /opt/eap/standalone/configuration/application-roles.properties should not contain customExe=kie-server,rest-all,user
      And container log should contain External authentication/authorization enabled, skipping the embedded users creation.
      And container log should contain KIE_ADMIN_USER is set to customExe, make sure to configure this user with the provided password on the external auth provider with the roles kie-server,rest-all,admin,kiemgmt,Administrators
 
@@ -32,7 +32,7 @@ Feature: RHDM OptaWeb configuration tests
       | KIE_ADMIN_USER  | customExe     |
       | KIE_ADMIN_PWD   | custom" Exe!0 |
     Then file /opt/eap/standalone/configuration/application-users.properties should not contain customExe=d2d5d854411231a97fdbf7fe6f91a786
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain customExe=kie-server,rest-all,guest
+     And file /opt/eap/standalone/configuration/application-roles.properties should not contain customExe=kie-server,rest-all,user
      And container log should contain External authentication/authorization enabled, skipping the embedded users creation.
      And container log should contain KIE_ADMIN_USER is set to customExe, make sure to configure this user with the provided password on the external auth provider with the roles kie-server,rest-all,admin,kiemgmt,Administrators
 
