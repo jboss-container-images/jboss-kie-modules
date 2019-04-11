@@ -19,7 +19,7 @@ envs:
       example: "uid=admin,ou=users,ou=exmample,ou=com"
     - name: "AUTH_LDAP_DEFAULT_ROLE"
       description: "A role included for all authenticated users"
-      example: "guest"
+      example: "user"
     - name: "AUTH_LDAP_DISTINGUISHED_NAME_ATTRIBUTE"
       description: "The name of the attribute in the user entry that contains the DN of the user. This may be necessary if the DN of the user itself contains special characters, backslash for example, that prevent correct user mapping. If the attribute does not exist, the entry’s DN is used."
       example: "distinguishedName"

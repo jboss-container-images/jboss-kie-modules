@@ -110,7 +110,7 @@ Feature: Kie Server common features
      And file /opt/eap/standalone/configuration/application-users.properties should not contain customCtl
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain customCtl
      And file /opt/eap/standalone/configuration/application-users.properties should contain customExe=d2d5d854411231a97fdbf7fe6f91a786
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain customExe=kie-server,rest-all,guest
+     And file /opt/eap/standalone/configuration/application-roles.properties should contain customExe=kie-server,rest-all,user
 
   Scenario: Check if eap users are not being created if SSO is configured
     When container is started with env
@@ -125,10 +125,10 @@ Feature: Kie Server common features
     Then file /opt/eap/standalone/configuration/application-users.properties should not contain customCtl
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain customCtl
      And file /opt/eap/standalone/configuration/application-users.properties should not contain customExe=d2d5d854411231a97fdbf7fe6f91a786
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain customExe=kie-server,rest-all,guest
+     And file /opt/eap/standalone/configuration/application-roles.properties should not contain customExe=kie-server,rest-all,user
      And container log should contain External authentication/authorization enabled, skipping the embedded users creation.
-     And container log should contain KIE_SERVER_USER is set to customExe, make sure to configure this user with the provided password on the external auth provider with the roles kie-server,rest-all,guest
-     And container log should contain KIE_SERVER_CONTROLLER_USER is set to customCtl, make sure to configure this user with the provided password on the external auth provider with the roles kie-server,rest-all,guest
+     And container log should contain KIE_SERVER_USER is set to customExe, make sure to configure this user with the provided password on the external auth provider with the roles kie-server,rest-all,user
+     And container log should contain KIE_SERVER_CONTROLLER_USER is set to customCtl, make sure to configure this user with the provided password on the external auth provider with the roles kie-server,rest-all,user
      And container log should contain KIE_ADMIN_USER is set to customExe, make sure to configure this user with the provided password on the external auth provider with the roles kie-server,rest-all,admin,kiemgmt,Administrators
 
   Scenario: Check if eap users are not being created if LDAP is configured
@@ -144,10 +144,10 @@ Feature: Kie Server common features
     Then file /opt/eap/standalone/configuration/application-users.properties should not contain customCtl
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain customCtl
      And file /opt/eap/standalone/configuration/application-users.properties should not contain customExe=d2d5d854411231a97fdbf7fe6f91a786
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain customExe=kie-server,rest-all,guest
+     And file /opt/eap/standalone/configuration/application-roles.properties should not contain customExe=kie-server,rest-all,user
      And container log should contain External authentication/authorization enabled, skipping the embedded users creation.
-     And container log should contain KIE_SERVER_USER is set to customExe, make sure to configure this user with the provided password on the external auth provider with the roles kie-server,rest-all,guest
-     And container log should contain KIE_SERVER_CONTROLLER_USER is set to customCtl, make sure to configure this user with the provided password on the external auth provider with the roles kie-server,rest-all,guest
+     And container log should contain KIE_SERVER_USER is set to customExe, make sure to configure this user with the provided password on the external auth provider with the roles kie-server,rest-all,user
+     And container log should contain KIE_SERVER_CONTROLLER_USER is set to customCtl, make sure to configure this user with the provided password on the external auth provider with the roles kie-server,rest-all,user
      And container log should contain KIE_ADMIN_USER is set to customExe, make sure to configure this user with the provided password on the external auth provider with the roles kie-server,rest-all,admin,kiemgmt,Administrators
 
   Scenario: Check if eap users are not being created if SSO is configured with no users env
@@ -156,8 +156,8 @@ Feature: Kie Server common features
       | SSO_URL                    | http://url    |
     Then container log should contain External authentication/authorization enabled, skipping the embedded users creation.
      And container log should contain Make sure to configure the KIE_MAVEN_USER user to interact with Business Central embedded maven server
-     And container log should contain Make sure to configure the KIE_SERVER_CONTROLLER_USER user to interact with KIE Server rest api with the roles kie-server,rest-all,guest
-     And container log should contain Make sure to configure the KIE_SERVER_USER user to interact with KIE Server rest api with the roles kie-server,rest-all,guest
+     And container log should contain Make sure to configure the KIE_SERVER_CONTROLLER_USER user to interact with KIE Server rest api with the roles kie-server,rest-all,user
+     And container log should contain Make sure to configure the KIE_SERVER_USER user to interact with KIE Server rest api with the roles kie-server,rest-all,user
      And container log should contain Make sure to configure a ADMIN user to access the Business Central with the roles kie-server,rest-all,admin,kiemgmt,Administrators
 
   Scenario: Check if eap users are not being created if LDAP is configured with no users env
@@ -166,8 +166,8 @@ Feature: Kie Server common features
       | AUTH_LDAP_URL              | ldap://url:389|
     Then container log should contain External authentication/authorization enabled, skipping the embedded users creation.
      And container log should contain Make sure to configure the KIE_MAVEN_USER user to interact with Business Central embedded maven server
-     And container log should contain Make sure to configure the KIE_SERVER_CONTROLLER_USER user to interact with KIE Server rest api with the roles kie-server,rest-all,guest
-     And container log should contain Make sure to configure the KIE_SERVER_USER user to interact with KIE Server rest api with the roles kie-server,rest-all,guest
+     And container log should contain Make sure to configure the KIE_SERVER_CONTROLLER_USER user to interact with KIE Server rest api with the roles kie-server,rest-all,user
+     And container log should contain Make sure to configure the KIE_SERVER_USER user to interact with KIE Server rest api with the roles kie-server,rest-all,user
      And container log should contain Make sure to configure a ADMIN user to access the Business Central with the roles kie-server,rest-all,admin,kiemgmt,Administrators
 
   Scenario: Check custom users are properly configured
@@ -194,7 +194,7 @@ Feature: Kie Server common features
      And file /opt/eap/standalone/configuration/application-users.properties should not contain controllerUser
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain controllerUser
      And file /opt/eap/standalone/configuration/application-users.properties should contain executionUser=69ea96114cd41afa6a9d5be2e1e0531e
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain executionUser=kie-server,rest-all,guest
+     And file /opt/eap/standalone/configuration/application-roles.properties should contain executionUser=kie-server,rest-all,user
 
   Scenario: Configure kie server to use LDAP authentication
     When container is started with env
