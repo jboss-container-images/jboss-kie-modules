@@ -53,11 +53,11 @@ function configure() {
     configure_metaspace
     configure_ha
     # TODO: remove after https://issues.jboss.org/browse/AF-1821
-    temporary_AF-1821
+    temporary_AF_1821
 }
 
 # TODO: remove after https://issues.jboss.org/browse/AF-1821
-function temporary_AF-1821() {
+function temporary_AF_1821() {
     local web_xml="${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/web.xml"
     local number=1
     # only clear the 'number' of lines following 'BASIC auth resources', otherwise we clear other matches of 'url-pattern' unintentionally
