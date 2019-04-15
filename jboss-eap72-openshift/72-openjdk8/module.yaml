@@ -1,0 +1,7 @@
+schema_version: 1
+name: jboss.eap72.openshift
+version: '1.0-openjdk8'
+description: The jboss.eap72.openshift script package. Installs a standalone-openshift.xml compatible with EAP 7.2 using OpenJDK 8.
+execute:
+- script: configure.sh
+  user: '185'
