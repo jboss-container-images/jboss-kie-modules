@@ -15,7 +15,7 @@ function getKieJavaArgs() {
     for javaxJar in ${JBOSS_HOME}/modules/system/layers/base/javax/validation/api/main/*.jar; do
         kieClassPath="${kieClassPath}:${javaxJar}"
     done
-    echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=WARN -jar ${JBOSS_HOME}/jboss-modules.jar -mp ${JBOSS_HOME}/modules -dep javax.enterprise.api,javax.inject.api,sun.jdk -cp ${kieClassPath}"
+    echo "--add-modules java.se -Dorg.slf4j.simpleLogger.defaultLogLevel=WARN -jar ${JBOSS_HOME}/jboss-modules.jar -mp ${JBOSS_HOME}/modules -dep javax.enterprise.api,javax.inject.api,sun.jdk -cp ${kieClassPath}"
 }
 
 function setKieEnv() {
