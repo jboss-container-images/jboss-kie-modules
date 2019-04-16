@@ -114,22 +114,26 @@ Feature: RHPAM RHDM Workbench clustering configuration
      And container log should contain -Dorg.appformer.ext.metadata.infinispan.username=requiredUser
      And container log should contain -Dorg.appformer.ext.metadata.infinispan.password=requiredPwd
      And container log should contain -Dorg.appformer.ext.metadata.infinispan.realm=ApplicationRealm
+     And container log should not contain -Dorg.appformer.ext.metadata.infinispan.sasl.qop=
+     And container log should not contain -Dorg.appformer.ext.metadata.infinispan.server.name=
 
   Scenario: Infinispan HA custom configuration
     When container is started with env
-      | variable                        | value              |
-      | JGROUPS_PING_PROTOCOL           | openshift.DNS_PING |
-      | OPENSHIFT_DNS_PING_SERVICE_NAME | ping               |
-      | OPENSHIFT_DNS_PING_SERVICE_PORT | 8888               |
-      | APPFORMER_INFINISPAN_HOST       | 10.10.10.10        |
-      | APPFORMER_INFINISPAN_PORT       | 11333              |
-      | APPFORMER_INFINISPAN_USERNAME   | customUser         |
-      | APPFORMER_INFINISPAN_PASSWORD   | customPassword     |
-      | APPFORMER_INFINISPAN_REALM      | CustomRealm        |
-      | APPFORMER_JMS_BROKER_USERNAME   | brokerUser         |
-      | APPFORMER_JMS_BROKER_PASSWORD   | brokerPwd          |
-      | APPFORMER_JMS_BROKER_ADDRESS    | 11.11.11.11        |
-      | APPFORMTER_JMS_BROKER_PORT      | 5000               |
+      | variable                         | value              |
+      | JGROUPS_PING_PROTOCOL            | openshift.DNS_PING |
+      | OPENSHIFT_DNS_PING_SERVICE_NAME  | ping               |
+      | OPENSHIFT_DNS_PING_SERVICE_PORT  | 8888               |
+      | APPFORMER_INFINISPAN_HOST        | 10.10.10.10        |
+      | APPFORMER_INFINISPAN_PORT        | 11333              |
+      | APPFORMER_INFINISPAN_USERNAME    | customUser         |
+      | APPFORMER_INFINISPAN_PASSWORD    | customPassword     |
+      | APPFORMER_INFINISPAN_REALM       | CustomRealm        |
+      | APPFORMER_JMS_BROKER_USERNAME    | brokerUser         |
+      | APPFORMER_JMS_BROKER_PASSWORD    | brokerPwd          |
+      | APPFORMER_JMS_BROKER_ADDRESS     | 11.11.11.11        |
+      | APPFORMTER_JMS_BROKER_PORT       | 5000               |
+      | APPFORMER_INFINISPAN_SASL_QOP    | auth               |
+      | APPFORMER_INFINISPAN_SERVER_NAME | jdg-server         |
     Then container log should contain -Dappformer-cluster=true
      And container log should contain -Dappformer-jms-connection-mode=REMOTE
      And container log should contain -Dappformer-jms-url=tcp://11.11.11.11:5000?ha=true&retryInterval=1000&retryIntervalMultiplier=1.0&reconnectAttempts=-1
@@ -141,3 +145,5 @@ Feature: RHPAM RHDM Workbench clustering configuration
      And container log should contain -Dorg.appformer.ext.metadata.infinispan.username=customUser
      And container log should contain -Dorg.appformer.ext.metadata.infinispan.password=customPassword
      And container log should contain -Dorg.appformer.ext.metadata.infinispan.realm=CustomRealm
+     And container log should contain -Dorg.appformer.ext.metadata.infinispan.sasl.qop=auth
+     And container log should contain -Dorg.appformer.ext.metadata.infinispan.server.name=jdg-server
