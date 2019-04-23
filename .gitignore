@@ -13,7 +13,6 @@ hs_err_pid*
 *.iml
 *.ipr
 *.iws
-*.jar
 .metadata/
 .mtj.tmp/
 .project
@@ -24,5 +23,4 @@ tools/gen-template-doc/docs/*
 tools/gen-template-doc/rhdm-*
 tools/gen-template-doc/rhpam-*
 venv/
-*.war
 tools/openshift-template-validator/openshift-template-validator
