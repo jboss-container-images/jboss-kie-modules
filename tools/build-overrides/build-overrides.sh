@@ -4,7 +4,7 @@
 #   awk, bash, date, echo, env, getopts, grep, mkdir, read, realpath
 #   curl
 #   unzip, zipinfo
-#   md5sum, sha1sum, sha256sum
+#   md5sum, sha1sum, sha256sum, sha512sum
 #   cekit 2.2.4 or higher (includes cekit-cache)
 
 log_help() {
@@ -106,21 +106,15 @@ get_sum() {
 cache() {
     local file=${1}
     local work_dir=${2}
+    # if work_dir is null, set the default
+    if [ -z "${work_dir}" ]; then
+        work_dir="${HOME}/.cekit"
+    fi
     local name=$(get_artifact_name "${file}")
     local md5=$(get_sum "md5" "${file}")
     local grep_yaml
     local code=1
-    local workdir_opt
-
-    # If work_dir is null, don't set the option on cekit-cache
-    # and keep the default of ~/.cekit for the search
-    if [ -n "${work_dir}" ]; then
-        workdir_opt="--work-dir=${work_dir}"
-    else
-	work_dir="~/.cekit"
-    fi
-
-    for Y in $(grep -ln "${name}" "${workdir}"/cache/*.yaml) ; do
+    for Y in $(grep -ln "${name}" ${work_dir}/cache/*.yaml) ; do
         grep_yaml=$(grep "md5: ${md5}" "${Y}")
         code=$?
         if [ ${code} = 0 ] ; then
@@ -130,11 +124,27 @@ cache() {
         fi
     done
     if [ ${code} != 0 ] ; then
-        log_info "Caching ${file} ..."
-        local sha256=$(get_sum "sha256" "${file}")
+        # retrieve just the major version of cekit(-cache)
+        local cekit_version=$(cekit-cache --version 2>&1)
+        local cekit_version_array
+        IFS='.' read -r -a cekit_version_array <<< "${cekit_version}"
+        cekit_version="${cekit_version_array[0]}"
+        log_info "Caching ${file} with cekit-cache ${cekit_version} ..."
+
         local sha1=$(get_sum "sha1" "${file}")
-        cekit-cache "${workdir_opt}" add "${file}" --sha256 "${sha256}" --sha1 "${sha1}" --md5 "${md5}"
-        code=$?
+        local sha256=$(get_sum "sha256" "${file}")
+        if [ "${cekit_version}" = "2" ]; then
+            cekit-cache --work-dir "${work_dir}" add --md5 "${md5}" --sha1 "${sha1}" --sha256 "${sha256}" "${file}"
+            code=$?
+        elif [ "${cekit_version}" = "3" ]; then
+            # According to the docs, cekit-cache 3 should support sha512: https://docs.cekit.io/en/latest/handbook/caching.html#listing-cached-artifacts
+            # However, 3.0.dev0 does not yet accept the --sha512 arg. Replace with the below when 3 goes final?
+            #local sha512=$(get_sum "sha512" "${file}")
+            #cekit-cache --work-dir "${work_dir}" add --md5 "${md5}" --sha1 "${sha1}" --sha256 "${sha256}" --sha512 "${sha512}" "${file}"
+
+            cekit-cache --work-dir "${work_dir}" add --md5 "${md5}" --sha1 "${sha1}" --sha256 "${sha256}" "${file}"
+            code=$?
+        fi
         if [ ${code} != 0 ]; then
             log_error "Caching of ${file} failed."
         fi
