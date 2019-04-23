@@ -105,20 +105,21 @@ get_sum() {
 
 cache() {
     local file=${1}
+    local work_dir=${2}
     local name=$(get_artifact_name "${file}")
     local md5=$(get_sum "md5" "${file}")
     local grep_yaml
     local code=1
+    local workdir_opt
 
-    # If we haven't set a work dir for cekit, then leave the location
-    # of the cache set to the default in the search below and leave
-    # the option string empty for the cekit-cache command
-    local workdir="~/.cekit"
-    local workdir_opt=
-    if [ -n "${CEKIT_WORK_DIR}" ]; then
-        workdir=${CEKIT_WORK_DIR}
-        workdir_opt="--work-dir=${CEKIT_WORK_DIR}"
+    # If work_dir is null, don't set the option on cekit-cache
+    # and keep the default of ~/.cekit for the search
+    if [ -n "${work_dir}" ]; then
+        workdir_opt="--work-dir=${work_dir}"
+    else
+	work_dir="~/.cekit"
     fi
+
     for Y in $(grep -ln "${name}" "${workdir}"/cache/*.yaml) ; do
         grep_yaml=$(grep "md5: ${md5}" "${Y}")
         code=$?
@@ -177,16 +178,18 @@ get_cache_item() {
 handle_cache_artifact() {
     local cache_artifact_source="${1}"
     local artifacts_dir="${2}"
+    local work_dir="${3}"
     local cache_artifact_target
     cache_artifact_target=$(get_cache_item "${cache_artifact_source}" "${artifacts_dir}")
     if [ $? = 0 ]; then
-        cache "${cache_artifact_target}"
+        cache "${cache_artifact_target}" "${work_dir}"
     fi
 }
 
 handle_cache_list() {
     local cache_list_source="${1}"
     local artifacts_dir="${2}"
+    local work_dir="${3}"
     local cache_list_target
     cache_list_target=$(get_cache_item "${cache_list_source}" "${artifacts_dir}")
     if [ $? = 0 ]; then
@@ -196,7 +199,7 @@ handle_cache_list() {
                 if [[ "${cache_artifact_source}" =~ \#.* ]]; then
                     log_debug "Ignoring comment line: ${cache_artifact_source}"
                 else
-                    handle_cache_artifact "${cache_artifact_source}" "${artifacts_dir}"
+                    handle_cache_artifact "${cache_artifact_source}" "${artifacts_dir}" "${work_dir}"
                 fi
             fi
         done <"${cache_list_target}"
@@ -263,6 +266,7 @@ handle_rhdm_artifacts() {
     local product=${5}
     local artifacts_dir="${6}"
     local overrides_dir="${7}"
+    local work_dir="${8}"
 
     local build_file=$(get_build_file "${full_version}" "${build_type}" "${build_date}" "rhdm" "${artifacts_dir}")
     if [ -z "${build_file}" ]; then
@@ -277,7 +281,7 @@ handle_rhdm_artifacts() {
         add_ons_distribution_zip=$(get_artifact_name "${add_ons_distribution_url}")
         local add_ons_distribution_file="${artifacts_dir}/${add_ons_distribution_zip}"
         if download "${add_ons_distribution_url}" "${add_ons_distribution_file}" ; then
-            if cache "${add_ons_distribution_file}" ; then
+            if cache "${add_ons_distribution_file}" "${work_dir}"; then
                 add_ons_distribution_md5=$(get_sum "md5" "${add_ons_distribution_file}")
             else
                 return 1
@@ -314,7 +318,7 @@ EOF
         local decision_central_distribution_zip=$(get_artifact_name "${decision_central_distribution_url}")
         local decision_central_distribution_file="${artifacts_dir}/${decision_central_distribution_zip}"
         if download "${decision_central_distribution_url}" "${decision_central_distribution_file}" ; then
-            if cache "${decision_central_distribution_file}" ; then
+            if cache "${decision_central_distribution_file}" "${work_dir}"; then
                 local decision_central_distribution_md5=$(get_sum "md5" "${decision_central_distribution_file}")
                 local decisioncentral_overrides_file="${overrides_dir}/rhdm-decisioncentral-overrides.yaml"
                 if [ ! -f "${decisioncentral_overrides_file}" ]; then
@@ -343,7 +347,7 @@ EOF
         local kie_server_distribution_zip=$(get_artifact_name "${kie_server_distribution_url}")
         local kie_server_distribution_file="${artifacts_dir}/${kie_server_distribution_zip}"
         if download "${kie_server_distribution_url}" "${kie_server_distribution_file}" ; then
-            if cache "${kie_server_distribution_file}" ; then
+            if cache "${kie_server_distribution_file}" "${work_dir}"; then
                 local kie_server_distribution_md5=$(get_sum "md5" "${kie_server_distribution_file}")
                 local kieserver_overrides_file="${overrides_dir}/rhdm-kieserver-overrides.yaml"
                 if [ ! -f "${kieserver_overrides_file}" ]; then
@@ -402,6 +406,7 @@ handle_rhpam_artifacts() {
     local product=${5}
     local artifacts_dir="${6}"
     local overrides_dir="${7}"
+    local work_dir="${8}"
 
     local build_file=$(get_build_file "${full_version}" "${build_type}" "${build_date}" "rhpam" "${artifacts_dir}")
     if [ -z "${build_file}" ]; then
@@ -416,7 +421,7 @@ handle_rhpam_artifacts() {
         add_ons_distribution_zip=$(get_artifact_name "${add_ons_distribution_url}")
         local add_ons_distribution_file="${artifacts_dir}/${add_ons_distribution_zip}"
         if download "${add_ons_distribution_url}" "${add_ons_distribution_file}" ; then
-            if cache "${add_ons_distribution_file}" ; then
+            if cache "${add_ons_distribution_file}" "${work_dir}"; then
                 add_ons_distribution_md5=$(get_sum "md5" "${add_ons_distribution_file}")
             else
                 return 1
@@ -436,7 +441,7 @@ handle_rhpam_artifacts() {
         business_central_distribution_zip=$(get_artifact_name "${business_central_distribution_url}")
         business_central_distribution_file="${artifacts_dir}/${business_central_distribution_zip}"
         if download "${business_central_distribution_url}" "${business_central_distribution_file}" ; then
-            if cache "${business_central_distribution_file}" ; then
+            if cache "${business_central_distribution_file}" "${work_dir}"; then
                 business_central_distribution_md5=$(get_sum "md5" "${business_central_distribution_file}")
                 if product_matches "${product}" "rhpam" "businesscentral" ; then
                     local businesscentral_overrides_file="${overrides_dir}/rhpam-businesscentral-overrides.yaml"
@@ -474,7 +479,7 @@ EOF
         local business_central_monitoring_distribution_zip=$(get_artifact_name "${business_central_monitoring_distribution_url}")
         local business_central_monitoring_distribution_file="${artifacts_dir}/${business_central_monitoring_distribution_zip}"
         if download "${business_central_monitoring_distribution_url}" "${business_central_monitoring_distribution_file}" ; then
-            if cache "${business_central_monitoring_distribution_file}" ; then
+            if cache "${business_central_monitoring_distribution_file}" "${work_dir}"; then
                 local business_central_monitoring_distribution_md5=$(get_sum "md5" "${business_central_monitoring_distribution_file}")
                 local businesscentral_monitoring_overrides_file="${overrides_dir}/rhpam-businesscentral-monitoring-overrides.yaml"
                 if [ ! -f "${businesscentral_monitoring_overrides_file}" ]; then
@@ -524,7 +529,7 @@ EOF
         local kie_server_distribution_zip=$(get_artifact_name "${kie_server_distribution_url}")
         local kie_server_distribution_file="${artifacts_dir}/${kie_server_distribution_zip}"
         if download "${kie_server_distribution_url}" "${kie_server_distribution_file}" && [ -f "${kie_server_distribution_file}" ]; then
-            if cache "${kie_server_distribution_file}" ; then
+            if cache "${kie_server_distribution_file}" "${work_dir}"; then
                 local kie_server_distribution_md5=$(get_sum "md5" "${kie_server_distribution_file}")
                 local jbpm_wb_kie_server_backend_path=$(get_zip_path "${business_central_distribution_file}" '.*jbpm-wb-kie-server-backend.*\.jar')
                 local jbpm_wb_kie_server_backend_jar=$(get_artifact_name "${jbpm_wb_kie_server_backend_path}")
@@ -579,10 +584,6 @@ EOF
 }
 
 main() {
-    # Use a global for the cekit work dir, but make sure that
-    # it's cleared and only set via the w option
-    CEKIT_WORK_DIR=
-
     local args
     IFS=' ' read -r -a args <<< "$(echo ${@})"
     local build_tool="build-overrides"
@@ -604,6 +605,7 @@ main() {
     local default_dir
     local artifacts_dir
     local overrides_dir
+    local work_dir
     local usage_help
     local OPTIND opt
     while getopts ":v:c:C:t:b:p:d:a:o:w:h:" opt ${args[@]}; do
@@ -617,7 +619,7 @@ main() {
             d)          default_dir="${OPTARG}"   ;;
             a)        artifacts_dir="${OPTARG}"   ;;
             o)        overrides_dir="${OPTARG}"   ;;
-            w)        CEKIT_WORK_DIR="${OPTARG}"  ;;
+            w)             work_dir="${OPTARG}"   ;;
             h)           usage_help="${OPTARG,,}" ;;
            \?) log_error "Invalid arg: ${OPTARG}" ;;
         esac
@@ -625,7 +627,7 @@ main() {
     shift $((OPTIND -1))
     if [ -n "${usage_help}" ] || [[ " $(echo ${args[*]})" =~ .*\ -h.* ]]; then
         # usage/help
-        log_help "Usage: ${build_tool}.sh [-v \"#.#.#\"] [-c \"CACHE_ARTIFACT\"] [-C \"CACHE_LIST\"] [-t \"${build_type_default}\"] [-b \"YYYYMMDD\"] [-p \"${product_default}\"] [-d \"DEFAULT_DIR\"] [-a \"ARTIFACT_DIR\"] [-o \"OVERRIDES_DIR\"] [-h]"
+        log_help "Usage: ${build_tool}.sh [-v \"#.#.#\"] [-c \"CACHE_ARTIFACT\"] [-C \"CACHE_LIST\"] [-t \"${build_type_default}\"] [-b \"YYYYMMDD\"] [-p \"${product_default}\"] [-d \"DEFAULT_DIR\"] [-a \"ARTIFACT_DIR\"] [-o \"OVERRIDES_DIR\"] [-w \"WORK_DIR\"] [-h]"
         log_help "-v = [v]ersion (required unless -c or -C is defined; format: major.minor.micro; example: ${version_example})"
         log_help "-c = [c]ache artifact (optional; a local artifact to cache, or a remote one starting with \"http(s)://\"; examples: ${cache_artifact_examples})"
         log_help "-C = [C]ache list (optional; a local text file containing a list of artifacts to cache, or a remote one starting with \"http(s)://\"; examples: ${cache_list_examples})"
@@ -638,7 +640,7 @@ main() {
         log_help "-d = [d]efault directory (optional; default example: ${default_dir_example})"
         log_help "-a = [a]rtifacts directory (optional; default: default directory)"
         log_help "-o = [o]verrides directory (optional; default: default directory)"
-        log_help "-w = [w]orking directory for cekit commands (optional; default: ~/.cekit)"
+        log_help "-w = [w]orking directory used by cekit (optional; default: the cekit default)"
         log_help "-h = [h]elp / usage"
     elif [ -z "${full_version}" ] && [ -z "${cache_artifact}" ] && [ -z "${cache_list}" ]; then
         log_error "Version (-v), cache artifact (-c), or cache list (-C) is required. Run ${build_tool}.sh -h for help."
@@ -708,10 +710,10 @@ main() {
 
         # cache
         if [ -n "${cache_artifact}" ]; then
-            handle_cache_artifact "${cache_artifact}" "${artifacts_dir}"
+            handle_cache_artifact "${cache_artifact}" "${artifacts_dir}" "${work_dir}"
         fi
         if [ -n "${cache_list}" ]; then
-            handle_cache_list "${cache_list}" "${artifacts_dir}"
+            handle_cache_list "${cache_list}" "${artifacts_dir}" "${work_dir}"
         fi
 
         # product
@@ -735,10 +737,10 @@ main() {
 
             # handle artifacts
             if [ "${product}" = "all" ] || [[ "${product}" =~ rhdm.* ]]; then
-                handle_rhdm_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}"
+                handle_rhdm_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}" "${work_dir}"
             fi
             if [ "${product}" = "all" ] || [[ "${product}" =~ rhpam.* ]]; then
-                handle_rhpam_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}"
+                handle_rhpam_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}" "${work_dir}"
             fi
         fi
     fi
