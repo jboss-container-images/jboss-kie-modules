@@ -109,7 +109,17 @@ cache() {
     local md5=$(get_sum "md5" "${file}")
     local grep_yaml
     local code=1
-    for Y in $(grep -ln "${name}" ~/.cekit/cache/*.yaml) ; do
+
+    # If we haven't set a work dir for cekit, then leave the location
+    # of the cache set to the default in the search below and leave
+    # the option string empty for the cekit-cache command
+    local workdir="~/.cekit"
+    local workdir_opt=
+    if [ -n "${CEKIT_WORK_DIR}" ]; then
+        workdir=${CEKIT_WORK_DIR}
+        workdir_opt="--work-dir=${CEKIT_WORK_DIR}"
+    fi
+    for Y in $(grep -ln "${name}" "${workdir}"/cache/*.yaml) ; do
         grep_yaml=$(grep "md5: ${md5}" "${Y}")
         code=$?
         if [ ${code} = 0 ] ; then
@@ -122,7 +132,7 @@ cache() {
         log_info "Caching ${file} ..."
         local sha256=$(get_sum "sha256" "${file}")
         local sha1=$(get_sum "sha1" "${file}")
-        cekit-cache add "${file}" --sha256 "${sha256}" --sha1 "${sha1}" --md5 "${md5}"
+        cekit-cache "${workdir_opt}" add "${file}" --sha256 "${sha256}" --sha1 "${sha1}" --md5 "${md5}"
         code=$?
         if [ ${code} != 0 ]; then
             log_error "Caching of ${file} failed."
@@ -569,6 +579,10 @@ EOF
 }
 
 main() {
+    # Use a global for the cekit work dir, but make sure that
+    # it's cleared and only set via the w option
+    CEKIT_WORK_DIR=
+
     local args
     IFS=' ' read -r -a args <<< "$(echo ${@})"
     local build_tool="build-overrides"
@@ -592,7 +606,7 @@ main() {
     local overrides_dir
     local usage_help
     local OPTIND opt
-    while getopts ":v:c:C:t:b:p:d:a:o:h:" opt ${args[@]}; do
+    while getopts ":v:c:C:t:b:p:d:a:o:w:h:" opt ${args[@]}; do
         case "${opt}" in
             v)         full_version="${OPTARG^^}" ;;
             c)       cache_artifact="${OPTARG}"   ;;
@@ -603,6 +617,7 @@ main() {
             d)          default_dir="${OPTARG}"   ;;
             a)        artifacts_dir="${OPTARG}"   ;;
             o)        overrides_dir="${OPTARG}"   ;;
+            w)        CEKIT_WORK_DIR="${OPTARG}"  ;;
             h)           usage_help="${OPTARG,,}" ;;
            \?) log_error "Invalid arg: ${OPTARG}" ;;
         esac
@@ -623,6 +638,7 @@ main() {
         log_help "-d = [d]efault directory (optional; default example: ${default_dir_example})"
         log_help "-a = [a]rtifacts directory (optional; default: default directory)"
         log_help "-o = [o]verrides directory (optional; default: default directory)"
+        log_help "-w = [w]orking directory for cekit commands (optional; default: ~/.cekit)"
         log_help "-h = [h]elp / usage"
     elif [ -z "${full_version}" ] && [ -z "${cache_artifact}" ] && [ -z "${cache_list}" ]; then
         log_error "Version (-v), cache artifact (-c), or cache list (-C) is required. Run ${build_tool}.sh -h for help."
