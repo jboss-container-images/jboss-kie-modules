@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Required:
-#   awk, bash, date, echo, env, getopts, grep, mkdir, read
+#   awk, bash, date, echo, env, getopts, grep, mkdir, read, realpath
 #   curl
 #   unzip, zipinfo
 #   md5sum, sha1sum, sha256sum
@@ -129,6 +129,68 @@ cache() {
         fi
     fi
     return ${code}
+}
+
+get_cache_item() {
+    local cache_item_source="${1}"
+    local artifacts_dir="${2}"
+    local cache_item_target=$(get_artifact_name "${cache_item_source}")
+    cache_item_target="${artifacts_dir}/${cache_item_target}"
+    if [[ "${cache_item_source}" =~ https?://.* ]]; then
+        if ! download "${cache_item_source}" "${cache_item_target}" ; then
+            return 1
+        fi
+    else
+        if [ -f "${cache_item_source}" ]; then
+            local real_cache_item_source=$(realpath "${cache_item_source}")
+            local real_cache_item_target=$(realpath "${cache_item_target}")
+            if [ "${real_cache_item_source}" = "${real_cache_item_target}" ]; then
+                log_warning "File ${cache_item_source} and ${cache_item_target} are the same file."
+            else
+                if [ -f "${cache_item_target}" ]; then
+                    log_warning "File ${cache_item_target} already exists; overwriting ..."
+                fi
+                log_info "Copying ${cache_item_source} to ${cache_item_target} ..."
+                if ! cp -f "${cache_item_source}" "${cache_item_target}" ; then
+                    log_error "Copying to ${cache_item_target} failed."
+                    return 1
+                fi
+            fi
+        else
+            log_warning "File ${cache_item_source} does not exist; skipping ..."
+            return 1
+        fi
+    fi
+    echo -n "${cache_item_target}"
+}
+
+handle_cache_artifact() {
+    local cache_artifact_source="${1}"
+    local artifacts_dir="${2}"
+    local cache_artifact_target
+    cache_artifact_target=$(get_cache_item "${cache_artifact_source}" "${artifacts_dir}")
+    if [ $? = 0 ]; then
+        cache "${cache_artifact_target}"
+    fi
+}
+
+handle_cache_list() {
+    local cache_list_source="${1}"
+    local artifacts_dir="${2}"
+    local cache_list_target
+    cache_list_target=$(get_cache_item "${cache_list_source}" "${artifacts_dir}")
+    if [ $? = 0 ]; then
+        while IFS= read -r cache_artifact_source ; do
+            cache_artifact_source=$(echo "${cache_artifact_source}" | awk '{gsub(/^ +| +$/,"")} { print $0 }')
+            if [ -n "${cache_artifact_source}" ]; then
+                if [[ "${cache_artifact_source}" =~ \#.* ]]; then
+                    log_debug "Ignoring comment line: ${cache_artifact_source}"
+                else
+                    handle_cache_artifact "${cache_artifact_source}" "${artifacts_dir}"
+                fi
+            fi
+        done <"${cache_list_target}"
+    fi
 }
 
 # http://download.eng.bos.redhat.com/rcm-guest/staging/rhdm/
@@ -511,6 +573,10 @@ main() {
     IFS=' ' read -r -a args <<< "$(echo ${@})"
     local build_tool="build-overrides"
     local full_version
+    local cache_artifact
+    local cache_artifact_examples="/tmp/${build_tool}/artifact.zip or http://${build_tool}.io/artifact.zip"
+    local cache_list
+    local cache_list_examples="/tmp/${build_tool}/artifact-list.txt or http://${build_tool}.io/artifact-list.txt"
     local build_type
     local build_type_default="nightly"
     local build_date
@@ -526,9 +592,11 @@ main() {
     local overrides_dir
     local usage_help
     local OPTIND opt
-    while getopts ":v:t:b:p:d:a:o:h:" opt ${args[@]}; do
+    while getopts ":v:c:C:t:b:p:d:a:o:h:" opt ${args[@]}; do
         case "${opt}" in
             v)         full_version="${OPTARG^^}" ;;
+            c)       cache_artifact="${OPTARG}"   ;;
+            C)           cache_list="${OPTARG}"   ;;
             t)           build_type="${OPTARG,,}" ;;
             b)           build_date="${OPTARG}"   ;;
             p)              product="${OPTARG,,}" ;;
@@ -540,11 +608,13 @@ main() {
         esac
     done
     shift $((OPTIND -1))
-    if [ -n "${usage_help}" ] || [[ $(echo ${args[@]}) =~ .*\-h.* ]]; then
+    if [ -n "${usage_help}" ] || [[ " $(echo ${args[*]})" =~ .*\ -h.* ]]; then
         # usage/help
-        log_help "Usage: ${build_tool}.sh [-v \"#.#.#\"] [-t \"${build_type_default}\"] [-b \"YYYYMMDD\"] [-p \"${product_default}\"] [-d \"DEFAULT_DIR\"] [-a \"ARTIFACT_DIR\"] [-o \"OVERRIDES_DIR\"] [-h]"
-        log_help "-v = [v]ersion (required; format: major.minor.micro; example: ${version_example})"
-        log_help "-t = [t]ype of build (optional; default: ${build_type_default}; allowed: nightly, staging, candidate)"
+        log_help "Usage: ${build_tool}.sh [-v \"#.#.#\"] [-c \"CACHE_ARTIFACT\"] [-C \"CACHE_LIST\"] [-t \"${build_type_default}\"] [-b \"YYYYMMDD\"] [-p \"${product_default}\"] [-d \"DEFAULT_DIR\"] [-a \"ARTIFACT_DIR\"] [-o \"OVERRIDES_DIR\"] [-h]"
+        log_help "-v = [v]ersion (required unless -c or -C is defined; format: major.minor.micro; example: ${version_example})"
+        log_help "-c = [c]ache artifact (optional; a local artifact to cache, or a remote one starting with \"http(s)://\"; examples: ${cache_artifact_examples})"
+        log_help "-C = [C]ache list (optional; a local text file containing a list of artifacts to cache, or a remote one starting with \"http(s)://\"; examples: ${cache_list_examples})"
+        log_help "-t = [t]ype of build (optional; default: ${build_type_default}; allowed: nightly, staging, candidate, cache)"
         log_help "-b = [b]uild date (optional; default: ${build_date_default})"
         local ifs_orig=${IFS}
         IFS=","
@@ -554,21 +624,30 @@ main() {
         log_help "-a = [a]rtifacts directory (optional; default: default directory)"
         log_help "-o = [o]verrides directory (optional; default: default directory)"
         log_help "-h = [h]elp / usage"
-    elif [ -z "${full_version}" ]; then
-        log_error "Version is required. Run ${build_tool}.sh -h for help."
+    elif [ -z "${full_version}" ] && [ -z "${cache_artifact}" ] && [ -z "${cache_list}" ]; then
+        log_error "Version (-v), cache artifact (-c), or cache list (-C) is required. Run ${build_tool}.sh -h for help."
     else
         # parse version
         local version_array
-        IFS='.' read -r -a version_array <<< "${full_version}"
-        local short_version="${version_array[0]}.${version_array[1]}"
-        log_debug "Full version: ${full_version}"
-        log_debug "Short version: ${short_version}"
+        local short_version
+        if [ -n "${full_version}" ]; then
+            IFS='.' read -r -a version_array <<< "${full_version}"
+            short_version="${version_array[0]}.${version_array[1]}"
+            log_debug "Full version: ${full_version}"
+            log_debug "Short version: ${short_version}"
+        else
+            log_warning "No version defined."
+        fi
 
         # build type
         if [ -z "${build_type}" ]; then
-            build_type="${build_type_default}"
-        elif [ "${build_type}" != "nightly" ] && [ "${build_type}" != "staging" ] && [ "${build_type}" != "candidate" ] ; then
-            log_error "Build type not recognized. Must be nightly, staging, or candidate. Run ${build_tool}.sh -h for help."
+            if [ -n "${full_version}" ]; then
+                build_type="${build_type_default}"
+            else
+                build_type="cache"
+            fi
+        elif [ "${build_type}" != "nightly" ] && [ "${build_type}" != "staging" ] && [ "${build_type}" != "candidate" ] && [ "${build_type}" != "cache" ] ; then
+            log_error "Build type not recognized. Must be nightly, staging, candidate, or cache. Run ${build_tool}.sh -h for help."
             return 1
         fi
         log_debug "Build type: ${build_type}"
@@ -581,7 +660,12 @@ main() {
 
         # default directory
         if [ -z "${default_dir}" ]; then
-            default_dir="/tmp/${build_tool}/${build_type}/${build_date}/${full_version}"
+            local build_dir="/tmp/${build_tool}/${build_type}/${build_date}"
+            if [ -n "${full_version}" ]; then
+                default_dir="${build_dir}/${full_version}"
+            else
+                default_dir="${build_dir}/cache"
+            fi
         fi
 
         # artifacts directory
@@ -606,30 +690,40 @@ main() {
             return 1
         fi
 
-        # product
-        if [ -z "${product}" ]; then
-            product="${product_default}"
+        # cache
+        if [ -n "${cache_artifact}" ]; then
+            handle_cache_artifact "${cache_artifact}" "${artifacts_dir}"
         fi
-        local product_valid="false"
-        for pv in ${products_valid[@]}; do
-            if [ "${pv}" = "${product}" ]; then
-                product_valid="true"
-                break
-            fi
-        done
-        if [ "${product_valid}" = "true" ] ; then
-            log_debug "Product: ${product}"
-        else
-            log_error "Invalid product: ${product}"
-            return 1
+        if [ -n "${cache_list}" ]; then
+            handle_cache_list "${cache_list}" "${artifacts_dir}"
         fi
 
-        # handle artifacts
-        if [ "${product}" = "all" ] || [[ "${product}" =~ rhdm.* ]]; then
-            handle_rhdm_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}"
-        fi
-        if [ "${product}" = "all" ] || [[ "${product}" =~ rhpam.* ]]; then
-            handle_rhpam_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}"
+        # product
+        if [ -n "${full_version}" ] && [ "${build_type}" != "cache" ]; then
+            if [ -z "${product}" ]; then
+                product="${product_default}"
+            fi
+            local product_valid="false"
+            for pv in ${products_valid[@]}; do
+                if [ "${pv}" = "${product}" ]; then
+                    product_valid="true"
+                    break
+                fi
+            done
+            if [ "${product_valid}" = "true" ] ; then
+                log_debug "Product: ${product}"
+            else
+                log_error "Invalid product: ${product}"
+                return 1
+            fi
+
+            # handle artifacts
+            if [ "${product}" = "all" ] || [[ "${product}" =~ rhdm.* ]]; then
+                handle_rhdm_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}"
+            fi
+            if [ "${product}" = "all" ] || [[ "${product}" =~ rhpam.* ]]; then
+                handle_rhpam_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}"
+            fi
         fi
     fi
 }
