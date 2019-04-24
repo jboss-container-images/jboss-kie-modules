@@ -129,17 +129,19 @@ cache() {
     fi
     local name=$(get_artifact_name "${file}")
     local md5=$(get_sum "md5" "${file}")
-    local grep_yaml
     local code=1
-    for Y in $(grep -ln "${name}" ${work_dir}/cache/*.yaml) ; do
-        grep_yaml=$(grep "md5: ${md5}" "${Y}")
-        code=$?
-        if [ ${code} = 0 ] ; then
-            log_info "File ${file} already cached."
-            log_debug "Cache entry: ${Y}"
-            break
-        fi
-    done
+    if [ -d "${work_dir}/cache" ]; then
+        local grep_yaml
+        for Y in $(grep -ln "${name}" ${work_dir}/cache/*.yaml) ; do
+            grep_yaml=$(grep "md5: ${md5}" "${Y}")
+            code=$?
+            if [ ${code} = 0 ] ; then
+                log_info "File ${file} already cached."
+                log_debug "Cache entry: ${Y}"
+                break
+            fi
+        done
+    fi
     if [ ${code} != 0 ] ; then
         local cekit_version=$(cekit-cache --version 2>&1)
         local cekit_version_array
@@ -169,7 +171,7 @@ cache() {
 get_cache_item() {
     local cache_item_source="${1}"
     local artifacts_dir="${2}"
-    local work_dir="${2}"
+    local work_dir="${3}"
     local cache_item_target=$(get_artifact_name "${cache_item_source}")
     cache_item_target="${artifacts_dir}/${cache_item_target}"
     if [[ "${cache_item_source}" =~ https?://.* ]]; then
@@ -655,11 +657,11 @@ main() {
     done
     shift $((OPTIND -1))
     local cekit_version=$(cekit --version 2>&1)
+    log_info "${build_tool}.sh (cekit ${cekit_version})"
     if [ -n "${usage_help}" ] || [[ " $(echo ${args[*]})" =~ .*\ -h.* ]]; then
         # usage/help
-        log_help "${build_tool}.sh (cekit ${cekit_version})"
         log_help "Usage: ${build_tool}.sh [-v \"#.#.#\"] [-t \"${build_type_default}\"] [-b \"YYYYMMDD\"] [-p \"${product_default}\"] [-d \"DEFAULT_DIR\"] [-a \"ARTIFACT_DIR\"] [-o \"OVERRIDES_DIR\"] [-w \"WORK_DIR\"] [-c \"CACHE_ARTIFACT\"] [-C \"CACHE_LIST\"] [-h]"
-        log_help "-v = [v]ersion (required unless -c or -C is defined; format: major.minor.micro; example: ${version_example})"
+        log_help "-v = [v]ersion of build (required unless -c or -C is defined; format: major.minor.micro; example: ${version_example})"
         log_help "-t = [t]ype of build (optional; default: ${build_type_default}; allowed: nightly, staging, candidate, cache)"
         log_help "-b = [b]uild date (optional; default: ${build_date_default})"
         local ifs_orig=${IFS}
@@ -674,20 +676,18 @@ main() {
         log_help "-C = [C]ache list (optional; a local text file containing a list of artifacts to cache, or a remote one starting with \"http(s)://\"; examples: ${cache_list_examples})"
         log_help "-h = [h]elp / usage"
     elif [ -z "${full_version}" ] && [ -z "${cache_artifact}" ] && [ -z "${cache_list}" ]; then
-        log_error "${build_tool}.sh (cekit ${cekit_version})"
         log_error "Version (-v), artifact or directory of artifacts to cache (-c), or list file of artifacts to cache (-C) is required. Run ${build_tool}.sh -h for help."
     else
-        log_debug "${build_tool}.sh (cekit ${cekit_version})"
         # parse version
         local version_array
         local short_version
         if [ -n "${full_version}" ]; then
             IFS='.' read -r -a version_array <<< "${full_version}"
             short_version="${version_array[0]}.${version_array[1]}"
-            log_debug "Full version: ${full_version}"
-            log_debug "Short version: ${short_version}"
+            log_debug "Full build version: ${full_version}"
+            log_debug "Short build version: ${short_version}"
         else
-            log_warning "No version defined."
+            log_warning "No build version defined."
         fi
 
         # build type
