@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 # Required:
-#   awk, bash, date, echo, env, getopts, grep, mkdir, read, realpath
+#   awk, bash, date, dirname, echo, env, find, getopts, grep, mkdir, read, realpath
 #   curl
 #   unzip, zipinfo
 #   md5sum, sha1sum, sha256sum, sha512sum
-#   cekit 2.2.4 or higher (includes cekit-cache)
+#   cekit, cekit-cache 2.2.4+
 
 log_help() {
     # color: none
@@ -30,6 +30,23 @@ log_warning() {
 log_error() {
     # color: red
     echo 1>&2 -e "\033[0;31m${1}\033[0m"
+}
+
+validate_cekit_version() {
+    local cekit_version=$(cekit --version 2>&1)
+    local cekit_cache_version=$(cekit-cache --version 2>&1)
+    if [ "${cekit_version}" != "${cekit_cache_version}" ]; then
+        log_error "cekit ${cekit_version} does not match cekit-cache ${cekit_cache_version}"
+        exit 1
+    fi
+    local cekit_exe=$(which cekit)
+    local cekit_cache_exe=$(which cekit-cache)
+    if [ "$(realpath $(dirname ${cekit_exe}))" != "$(realpath $(dirname ${cekit_cache_exe}))" ]; then
+        # See "Warning" here:
+        # https://docs.cekit.io/en/latest/handbook/caching.html#managing-cache
+        log_error "${cekit_exe} does not share the same path as ${cekit_cache_exe}"
+        exit 1
+    fi
 }
 
 download() {
@@ -124,13 +141,11 @@ cache() {
         fi
     done
     if [ ${code} != 0 ] ; then
-        # retrieve just the major version of cekit(-cache)
         local cekit_version=$(cekit-cache --version 2>&1)
         local cekit_version_array
         IFS='.' read -r -a cekit_version_array <<< "${cekit_version}"
         cekit_version="${cekit_version_array[0]}"
-        log_info "Caching ${file} with cekit-cache ${cekit_version} ..."
-
+        log_info "Caching ${file} ..."
         local sha1=$(get_sum "sha1" "${file}")
         local sha256=$(get_sum "sha256" "${file}")
         if [ "${cekit_version}" = "2" ]; then
@@ -141,7 +156,6 @@ cache() {
             # However, 3.0.dev0 does not yet accept the --sha512 arg. Replace with the below when 3 goes final?
             #local sha512=$(get_sum "sha512" "${file}")
             #cekit-cache --work-dir "${work_dir}" add --md5 "${md5}" --sha1 "${sha1}" --sha256 "${sha256}" --sha512 "${sha512}" "${file}"
-
             cekit-cache --work-dir "${work_dir}" add --md5 "${md5}" --sha1 "${sha1}" --sha256 "${sha256}" "${file}"
             code=$?
         fi
@@ -155,32 +169,36 @@ cache() {
 get_cache_item() {
     local cache_item_source="${1}"
     local artifacts_dir="${2}"
+    local work_dir="${2}"
     local cache_item_target=$(get_artifact_name "${cache_item_source}")
     cache_item_target="${artifacts_dir}/${cache_item_target}"
     if [[ "${cache_item_source}" =~ https?://.* ]]; then
         if ! download "${cache_item_source}" "${cache_item_target}" ; then
             return 1
         fi
-    else
-        if [ -f "${cache_item_source}" ]; then
-            local real_cache_item_source=$(realpath "${cache_item_source}")
-            local real_cache_item_target=$(realpath "${cache_item_target}")
-            if [ "${real_cache_item_source}" = "${real_cache_item_target}" ]; then
-                log_warning "File ${cache_item_source} and ${cache_item_target} are the same file."
-            else
-                if [ -f "${cache_item_target}" ]; then
-                    log_warning "File ${cache_item_target} already exists; overwriting ..."
-                fi
-                log_info "Copying ${cache_item_source} to ${cache_item_target} ..."
-                if ! cp -f "${cache_item_source}" "${cache_item_target}" ; then
-                    log_error "Copying to ${cache_item_target} failed."
-                    return 1
-                fi
-            fi
+    elif [ -d "${cache_item_source}" ]; then
+            log_debug "${cache_item_source} is a directory; recursing ..."
+        for child_item in $(find "${cache_item_source}" -maxdepth 1 -type f -name \*.jar -o -name \*.war -o -name \*.zip); do
+            handle_cache_artifact "${child_item}" "${artifacts_dir}" "${work_dir}"
+        done
+    elif [ -f "${cache_item_source}" ]; then
+        local real_cache_item_source=$(realpath "${cache_item_source}")
+        local real_cache_item_target=$(realpath "${cache_item_target}")
+        if [ "${real_cache_item_source}" = "${real_cache_item_target}" ]; then
+            log_warning "File ${cache_item_source} and ${cache_item_target} are the same file."
         else
-            log_warning "File ${cache_item_source} does not exist; skipping ..."
-            return 1
+            if [ -f "${cache_item_target}" ]; then
+                log_warning "File ${cache_item_target} already exists; overwriting ..."
+            fi
+            log_info "Copying ${cache_item_source} to ${cache_item_target} ..."
+            if ! cp -f "${cache_item_source}" "${cache_item_target}" ; then
+                log_error "Copying to ${cache_item_target} failed."
+                return 1
+            fi
         fi
+    else
+        log_warning "File or directory ${cache_item_source} does not exist; skipping ..."
+        return 1
     fi
     echo -n "${cache_item_target}"
 }
@@ -190,8 +208,8 @@ handle_cache_artifact() {
     local artifacts_dir="${2}"
     local work_dir="${3}"
     local cache_artifact_target
-    cache_artifact_target=$(get_cache_item "${cache_artifact_source}" "${artifacts_dir}")
-    if [ $? = 0 ]; then
+    cache_artifact_target=$(get_cache_item "${cache_artifact_source}" "${artifacts_dir}" "${work_dir}")
+    if [ $? = 0 ] && [ -f "${cache_artifact_target}" ]; then
         cache "${cache_artifact_target}" "${work_dir}"
     fi
 }
@@ -201,7 +219,7 @@ handle_cache_list() {
     local artifacts_dir="${2}"
     local work_dir="${3}"
     local cache_list_target
-    cache_list_target=$(get_cache_item "${cache_list_source}" "${artifacts_dir}")
+    cache_list_target=$(get_cache_item "${cache_list_source}" "${artifacts_dir}" "${work_dir}")
     if [ $? = 0 ]; then
         while IFS= read -r cache_artifact_source ; do
             cache_artifact_source=$(echo "${cache_artifact_source}" | awk '{gsub(/^ +| +$/,"")} { print $0 }')
@@ -594,14 +612,11 @@ EOF
 }
 
 main() {
+    validate_cekit_version
     local args
     IFS=' ' read -r -a args <<< "$(echo ${@})"
     local build_tool="build-overrides"
     local full_version
-    local cache_artifact
-    local cache_artifact_examples="/tmp/${build_tool}/artifact.zip or http://${build_tool}.io/artifact.zip"
-    local cache_list
-    local cache_list_examples="/tmp/${build_tool}/artifact-list.txt or http://${build_tool}.io/artifact-list.txt"
     local build_type
     local build_type_default="nightly"
     local build_date
@@ -616,13 +631,15 @@ main() {
     local artifacts_dir
     local overrides_dir
     local work_dir
+    local cache_artifact
+    local cache_artifact_examples="/tmp/${build_tool}/artifact.zip or /tmp/${build_tool}/artifacts/ or http://${build_tool}.io/artifact.zip"
+    local cache_list
+    local cache_list_examples="/tmp/${build_tool}/artifact-list.txt or http://${build_tool}.io/artifact-list.txt"
     local usage_help
     local OPTIND opt
-    while getopts ":v:c:C:t:b:p:d:a:o:w:h:" opt ${args[@]}; do
+    while getopts ":v:t:b:p:d:a:o:w:c:C:h:" opt ${args[@]}; do
         case "${opt}" in
             v)         full_version="${OPTARG^^}" ;;
-            c)       cache_artifact="${OPTARG}"   ;;
-            C)           cache_list="${OPTARG}"   ;;
             t)           build_type="${OPTARG,,}" ;;
             b)           build_date="${OPTARG}"   ;;
             p)              product="${OPTARG,,}" ;;
@@ -630,17 +647,19 @@ main() {
             a)        artifacts_dir="${OPTARG}"   ;;
             o)        overrides_dir="${OPTARG}"   ;;
             w)             work_dir="${OPTARG}"   ;;
+            c)       cache_artifact="${OPTARG}"   ;;
+            C)           cache_list="${OPTARG}"   ;;
             h)           usage_help="${OPTARG,,}" ;;
            \?) log_error "Invalid arg: ${OPTARG}" ;;
         esac
     done
     shift $((OPTIND -1))
+    local cekit_version=$(cekit --version 2>&1)
     if [ -n "${usage_help}" ] || [[ " $(echo ${args[*]})" =~ .*\ -h.* ]]; then
         # usage/help
-        log_help "Usage: ${build_tool}.sh [-v \"#.#.#\"] [-c \"CACHE_ARTIFACT\"] [-C \"CACHE_LIST\"] [-t \"${build_type_default}\"] [-b \"YYYYMMDD\"] [-p \"${product_default}\"] [-d \"DEFAULT_DIR\"] [-a \"ARTIFACT_DIR\"] [-o \"OVERRIDES_DIR\"] [-w \"WORK_DIR\"] [-h]"
+        log_help "${build_tool}.sh (cekit ${cekit_version})"
+        log_help "Usage: ${build_tool}.sh [-v \"#.#.#\"] [-t \"${build_type_default}\"] [-b \"YYYYMMDD\"] [-p \"${product_default}\"] [-d \"DEFAULT_DIR\"] [-a \"ARTIFACT_DIR\"] [-o \"OVERRIDES_DIR\"] [-w \"WORK_DIR\"] [-c \"CACHE_ARTIFACT\"] [-C \"CACHE_LIST\"] [-h]"
         log_help "-v = [v]ersion (required unless -c or -C is defined; format: major.minor.micro; example: ${version_example})"
-        log_help "-c = [c]ache artifact (optional; a local artifact to cache, or a remote one starting with \"http(s)://\"; examples: ${cache_artifact_examples})"
-        log_help "-C = [C]ache list (optional; a local text file containing a list of artifacts to cache, or a remote one starting with \"http(s)://\"; examples: ${cache_list_examples})"
         log_help "-t = [t]ype of build (optional; default: ${build_type_default}; allowed: nightly, staging, candidate, cache)"
         log_help "-b = [b]uild date (optional; default: ${build_date_default})"
         local ifs_orig=${IFS}
@@ -651,10 +670,14 @@ main() {
         log_help "-a = [a]rtifacts directory (optional; default: default directory)"
         log_help "-o = [o]verrides directory (optional; default: default directory)"
         log_help "-w = [w]orking directory used by cekit (optional; default: the cekit default)"
+        log_help "-c = [c]ache artifact (optional; a local artifact file or directory of artifacts to cache, or a remote artifact starting with \"http(s)://\"; examples: ${cache_artifact_examples})"
+        log_help "-C = [C]ache list (optional; a local text file containing a list of artifacts to cache, or a remote one starting with \"http(s)://\"; examples: ${cache_list_examples})"
         log_help "-h = [h]elp / usage"
     elif [ -z "${full_version}" ] && [ -z "${cache_artifact}" ] && [ -z "${cache_list}" ]; then
-        log_error "Version (-v), cache artifact (-c), or cache list (-C) is required. Run ${build_tool}.sh -h for help."
+        log_error "${build_tool}.sh (cekit ${cekit_version})"
+        log_error "Version (-v), artifact or directory of artifacts to cache (-c), or list file of artifacts to cache (-C) is required. Run ${build_tool}.sh -h for help."
     else
+        log_debug "${build_tool}.sh (cekit ${cekit_version})"
         # parse version
         local version_array
         local short_version
