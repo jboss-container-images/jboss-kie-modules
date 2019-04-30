@@ -128,17 +128,15 @@ function get_extra_cekit_overrides_options()
 {
     local gen_overrides_dir=$1
     overrides=
-    extraoverrides=
+    artifactoverrides=
 
     if [ -f "$gen_overrides_dir/$PROD_COMPONENT-overrides.yaml" ]; then
         overrides="--overrides-file $gen_overrides_dir/$PROD_COMPONENT-overrides.yaml"
     fi
 
-    # If we have an additional overrides file included for a particular branch and a particular
-    # component that we're building, then add that extra file
-    local sv=$(get_short_version $PROD_VERSION)
-    if [ -f "/opt/rhba/overrides/$sv/$PROD_COMPONENT-overrides.yaml" ]; then
-	extraoverrides="--overrides-file /opt/rhba/overrides/$sv/$PROD_COMPONENT-overrides.yaml"
+    # If there is an artifact-overrides.yaml in the local dir, use it
+    if [ -f "artifact-overrides.yaml" ]; then
+        artifactsoverrides="--overrides-file artifact-overrides.yaml"
     fi
 }
 
@@ -278,6 +276,6 @@ if [ -n "$OSBS_BUILD_USER" ]; then
 fi
 
 # Invoke cekit and respond with Y to any prompts
-echo cekit $debug --overrides-file branch-overrides.yaml $overrides $extraoverrides --build-engine=osbs --build-osbs-target=$OSBS_BUILD_TARGET $builduser --work-dir "$cekit_cache_dir" $CEKIT_BUILD_OPTIONS build
+echo cekit $debug --overrides-file branch-overrides.yaml $overrides $artifactoverrides --build-engine=osbs --build-osbs-target=$OSBS_BUILD_TARGET $builduser --work-dir "$cekit_cache_dir" $CEKIT_BUILD_OPTIONS build
 
-yes Y | cekit $debug --overrides-file branch-overrides.yaml $overrides $extraoverrides --build-engine=osbs --build-osbs-target=$OSBS_BUILD_TARGET $builduser --work-dir "$cekit_cache_dir" $CEKIT_BUILD_OPTIONS build
+yes Y | cekit $debug --overrides-file branch-overrides.yaml $overrides $artifactoverrides --build-engine=osbs --build-osbs-target=$OSBS_BUILD_TARGET $builduser --work-dir "$cekit_cache_dir" $CEKIT_BUILD_OPTIONS build
