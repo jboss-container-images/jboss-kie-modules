@@ -136,7 +136,7 @@ function get_extra_cekit_overrides_options()
 
     # If there is an artifact-overrides.yaml in the local dir, use it
     if [ -f "artifact-overrides.yaml" ]; then
-        artifactsoverrides="--overrides-file artifact-overrides.yaml"
+        artifactoverrides="--overrides-file artifact-overrides.yaml"
     fi
 }
 
