@@ -18,6 +18,8 @@ function prepareEnv() {
     unset APPFORMER_INFINISPAN_PASSWORD
     unset APPFORMER_INFINISPAN_PORT
     unset APPFORMER_INFINISPAN_REALM
+    unset APPFORMER_INFINISPAN_SASL_QOP
+    unset APPFORMER_INFINISPAN_SERVER_NAME
     unset APPFORMER_INFINISPAN_SERVICE_NAME
     unset APPFORMER_INFINISPAN_USER
     unset APPFORMER_INFINISPAN_USERNAME
@@ -266,13 +268,19 @@ function configure_ha_infinispan() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.index=infinispan"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.host=${APPFORMER_INFINISPAN_HOST}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.port=${APPFORMER_INFINISPAN_PORT:-11222}"
-    if [ -n "$APPFORMER_INFINISPAN_USERNAME" -o -n "$APPFORMER_INFINISPAN_USER" ] ; then
+    if [ -n "${APPFORMER_INFINISPAN_USERNAME}" -o -n "${APPFORMER_INFINISPAN_USER}" ] ; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.username=${APPFORMER_INFINISPAN_USERNAME:-$APPFORMER_INFINISPAN_USER}"
     fi
-    if [ -n "$APPFORMER_INFINISPAN_PASSWORD" ] ; then
+    if [ -n "${APPFORMER_INFINISPAN_PASSWORD}" ] ; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.password=${APPFORMER_INFINISPAN_PASSWORD}"
     fi
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.realm=${APPFORMER_INFINISPAN_REALM:-ApplicationRealm}"
+    if [ -n "${APPFORMER_INFINISPAN_SERVER_NAME}" ] ; then
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.server.name=${APPFORMER_INFINISPAN_SERVER_NAME}"
+    fi
+    if [ -n "${APPFORMER_INFINISPAN_SASL_QOP}" ] ; then
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.sasl.qop=${APPFORMER_INFINISPAN_SASL_QOP}"
+    fi
 }
 
 function configure_ha_elastic() {
