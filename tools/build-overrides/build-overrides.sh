@@ -613,6 +613,39 @@ EOF
     fi
 }
 
+delete_cached_artifacts() {
+    local product=${1}
+    local product_default="all"
+    local products_valid=(all rhdm rhpam)
+    local query="rhpam*\|rhdm*"
+    if [ -z "${product}" ]; then
+        product="${product_default}"
+    else 
+        local product_valid="false"
+        for pv in ${products_valid[@]}; do
+            if [ "${pv}" = "${product}" ]; then
+                product_valid="true"
+                break
+            fi
+        done
+        if [ "${product_valid}" = "true" ] ; then
+            log_debug "Product: ${product}"
+        else
+            log_error "Invalid product: ${product}. Allowed: ${products_valid[*]}"
+            return 1
+        fi
+    fi
+    
+    if [ "${product}" != "all" ]; then
+        query="${product}*"
+    fi
+
+    for artifact in $(cekit-cache ls | grep -B5 "${query}" | grep yaml | awk '{ print substr($0,0,length($0)-6)}'); do 
+        log_info "Deleting artifact ${artifact} from local cache"
+        cekit-cache rm $artifact;
+    done
+}
+
 main() {
     validate_cekit_version
     local args
@@ -637,10 +670,28 @@ main() {
     local cache_artifact_examples="/tmp/${build_tool}/artifact.zip or /tmp/${build_tool}/artifacts/ or http://${build_tool}.io/artifact.zip"
     local cache_list
     local cache_list_examples="/tmp/${build_tool}/artifact-list.txt or http://${build_tool}.io/artifact-list.txt"
+    local delete_product
     local usage_help
     local OPTIND opt
-    while getopts ":v:t:b:p:d:a:o:w:c:C:h:" opt ${args[@]}; do
+    while getopts ":v:t:b:p:d:a:o:w:c:C:-:h:" opt ${args[@]}; do
         case "${opt}" in
+            -)
+                arg="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                case "${OPTARG}" in
+                    version)            full_version="${arg^^}" ;;
+                    build-type)           build_type="${arg,,}" ;;
+                    build-date)           build_date="${arg}"   ;;
+                    product)                 product="${arg,,}" ;;
+                    default-dir)         default_dir="${arg}"   ;;
+                    artifacts-dir)     artifacts_dir="${arg}"   ;;
+                    overrides-dir)     overrides_dir="${arg}"   ;;
+                    work-dir)               work_dir="${arg}"   ;;
+                    cache)            cache_artifact="${arg}"   ;;
+                    cache-list)           cache_list="${arg}"   ;;
+                    delete-cache)     delete_product="${arg}"   ;;
+                    help)                 usage_help="${arg,,}" ;;
+                    *) log_error "Invalid arg: --${OPTARG}"     ;;
+                esac;;
             v)         full_version="${OPTARG^^}" ;;
             t)           build_type="${OPTARG,,}" ;;
             b)           build_date="${OPTARG}"   ;;
@@ -658,25 +709,26 @@ main() {
     shift $((OPTIND -1))
     local cekit_version=$(cekit --version 2>&1)
     log_info "${build_tool}.sh (cekit ${cekit_version})"
-    if [ -n "${usage_help}" ] || [[ " $(echo ${args[*]})" =~ .*\ -h.* ]]; then
+    if [ -n "${usage_help}" ] || [[ " $(echo ${args[*]})" =~ .*\ (-h.*|--help.*) ]]; then
         # usage/help
         log_help "Usage: ${build_tool}.sh [-v \"#.#.#\"] [-t \"${build_type_default}\"] [-b \"YYYYMMDD\"] [-p \"${product_default}\"] [-d \"DEFAULT_DIR\"] [-a \"ARTIFACT_DIR\"] [-o \"OVERRIDES_DIR\"] [-w \"WORK_DIR\"] [-c \"CACHE_ARTIFACT\"] [-C \"CACHE_LIST\"] [-h]"
-        log_help "-v = [v]ersion of build (required unless -c or -C is defined; format: major.minor.micro; example: ${version_example})"
-        log_help "-t = [t]ype of build (optional; default: ${build_type_default}; allowed: nightly, staging, candidate, cache)"
-        log_help "-b = [b]uild date (optional; default: ${build_date_default})"
+        log_help "-v | --version = [v]ersion of build (required unless -c or -C is defined; format: major.minor.micro; example: ${version_example})"
+        log_help "-t | --build-type = [t]ype of build (optional; default: ${build_type_default}; allowed: nightly, staging, candidate, cache)"
+        log_help "-b | --build-date = [b]uild date (optional; default: ${build_date_default})"
         local ifs_orig=${IFS}
         IFS=","
-        log_help "-p = [p]roduct (optional; default: all; allowed: ${products_valid[*]})";
+        log_help "-p | --product = [p]roduct (optional; default: all; allowed: ${products_valid[*]})";
         IFS=${ifs_orig}
-        log_help "-d = [d]efault directory (optional; default example: ${default_dir_example})"
-        log_help "-a = [a]rtifacts directory (optional; default: default directory)"
-        log_help "-o = [o]verrides directory (optional; default: default directory)"
-        log_help "-w = [w]orking directory used by cekit (optional; default: the cekit default)"
-        log_help "-c = [c]ache artifact (optional; a local artifact file or directory of artifacts to cache, or a remote artifact starting with \"http(s)://\"; examples: ${cache_artifact_examples})"
-        log_help "-C = [C]ache list (optional; a local text file containing a list of artifacts to cache, or a remote one starting with \"http(s)://\"; examples: ${cache_list_examples})"
-        log_help "-h = [h]elp / usage"
-    elif [ -z "${full_version}" ] && [ -z "${cache_artifact}" ] && [ -z "${cache_list}" ]; then
-        log_error "Version (-v), artifact or directory of artifacts to cache (-c), or list file of artifacts to cache (-C) is required. Run ${build_tool}.sh -h for help."
+        log_help "-d | --default-dir = [d]efault directory (optional; default example: ${default_dir_example})"
+        log_help "-a | --artifacts-dir = [a]rtifacts directory (optional; default: default directory)"
+        log_help "-o | --overrides-dir = [o]verrides directory (optional; default: default directory)"
+        log_help "-w | --work-dir = [w]orking directory used by cekit (optional; default: the cekit default)"
+        log_help "-c | --cache = [c]ache artifact (optional; a local artifact file or directory of artifacts to cache, or a remote artifact starting with \"http(s)://\"; examples: ${cache_artifact_examples})"
+        log_help "-C | --cache-list = [C]ache list (optional; a local text file containing a list of artifacts to cache, or a remote one starting with \"http(s)://\"; examples: ${cache_list_examples})"
+        log_help "--delete-cache = [delete]s local cached artifacts from specified product (optional; default: won't delete anything; allowed: all rhdm rhpam)"
+        log_help "-h | --help = [h]elp / usage"
+    elif [ -z "${full_version}" ] && [ -z "${cache_artifact}" ] && [ -z "${cache_list}" ] && [ -z "${delete_product}" ]; then
+        log_error "Version (-v), artifact or directory of artifacts to cache (-c), list file of artifacts to cache (-C), or product artifacts to delete (--delete-cache) is required. Run ${build_tool}.sh -h for help."
     else
         # parse version
         local version_array
@@ -694,8 +746,10 @@ main() {
         if [ -z "${build_type}" ]; then
             if [ -n "${full_version}" ]; then
                 build_type="${build_type_default}"
-            else
+            elif [ -n "${cache_artifact}" ] || [ -n "${cache_list}" ]; then
                 build_type="cache"
+            else
+                build_type="delete cache"
             fi
         elif [ "${build_type}" != "nightly" ] && [ "${build_type}" != "staging" ] && [ "${build_type}" != "candidate" ] && [ "${build_type}" != "cache" ] ; then
             log_error "Build type not recognized. Must be nightly, staging, candidate, or cache. Run ${build_tool}.sh -h for help."
@@ -739,6 +793,11 @@ main() {
         else
             log_error "Overrides dir: ${overrides_dir} unusable."
             return 1
+        fi
+
+        # delete artifact cache
+        if [ -n "${delete_product}" ]; then
+            delete_cached_artifacts "${delete_product}"
         fi
 
         # cache
