@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Queries the Route from the Kubernetes API
 # ${1} - route name
 query_route() {
