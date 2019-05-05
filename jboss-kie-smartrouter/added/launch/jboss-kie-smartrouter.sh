@@ -2,8 +2,7 @@
 
 source "${LAUNCH_DIR}/launch-common.sh"
 source "${LAUNCH_DIR}/logging.sh"
-source "${JBOSS_HOME}/bin/launch/jboss-kie-wildfly-common.sh"
-source "${JBOSS_HOME}/bin/launch/jboss-kie-wildfly-security.sh"
+source "${LAUNCH_DIR}/jboss-kie-wildfly-common.sh"
 
 
 function prepareEnv() {
