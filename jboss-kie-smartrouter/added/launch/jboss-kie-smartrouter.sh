@@ -2,7 +2,6 @@
 
 source "${LAUNCH_DIR}/launch-common.sh"
 source "${LAUNCH_DIR}/logging.sh"
-source "${JBOSS_HOME}/bin/launch/jboss-kie-wildfly-common.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
