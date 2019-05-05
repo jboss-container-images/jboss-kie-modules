@@ -3,7 +3,7 @@
 source "${LAUNCH_DIR}/launch-common.sh"
 source "${LAUNCH_DIR}/logging.sh"
 
-#Test2
+#Test3
 
 function prepareEnv() {
     # please keep these in alphabetical order
@@ -32,6 +32,15 @@ function prepareEnv() {
 function configureEnv() {
     configure
 }
+
+function configure() {
+    configure_router_state
+    configure_router_access
+    configure_router_location
+    configure_controller_access
+    configure_router_tls
+}
+
 
 # Queries the Route from the Kubernetes API
 # ${1} - route name
@@ -144,14 +153,6 @@ build_route_url() {
     echo $(build_simple_url "${protocol}" "${host}" "${port}" "${path}")
 }
 
-function configure() {
-    configure_router_state
-    configure_router_access
-    configure_router_location
-    configure_controller_access
-    configure_router_tls
-}
-
 function configure_router_state() {
     # Need to replace whitespaces with something different from space or escaped space (\ ) characters
     local kieServerRouterId="${KIE_SERVER_ROUTER_ID// /_}"
@@ -244,7 +245,7 @@ function configure_router_location() {
             location=$(build_simple_url "${protocol}" "${host}" "${port}" "${path}")
         fi
     fi
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${location}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=http://myapp-smartrouter-policy-quote.apps.mmagnani.lab"
 }
 function configure_controller_access {
     # We will only support one controller, whether running by itself or in business central.
