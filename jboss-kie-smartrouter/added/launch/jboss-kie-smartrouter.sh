@@ -38,117 +38,6 @@ function configure() {
     configure_router_tls
 }
 
-# Queries the Route from the Kubernetes API
-# ${1} - route name
-query_route() {
-    local routeName=${1}
-    # only execute the following lines if this container is running on OpenShift
-    if [ -e /var/run/secrets/kubernetes.io/serviceaccount/token ]; then
-        local namespace=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
-        local token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-        local response=$(curl -s -w "%{http_code}" --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
-            -H "Authorization: Bearer $token" \
-            -H 'Accept: application/json' \
-            https://${KUBERNETES_SERVICE_HOST:-kubernetes.default.svc}:${KUBERNETES_SERVICE_PORT:-443}/apis/route.openshift.io/v1/namespaces/${namespace}/routes/${routeName})
-        echo ${response}
-    fi
-}
-
-# Queries the Route host from the Kubernetes API
-# ${1} - route name
-# ${2} - default host
-query_route_host() {
-    local routeName=${1}
-    local host=${2}
-    if [ "${routeName}" != "" ]; then
-        local response=$(query_route "${routeName}")
-        if [ "${response: -3}" = "200" ]; then
-            # parse the json response to get the route host
-            host=$(echo ${response::- 3} | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["spec"]["host"]')
-        else
-            log_warning "Fail to query the Route using the Kubernetes API, the Service Account might not have the necessary privileges; defaulting to host [${host}]."
-            if [ ! -z "${response}" ]; then
-                log_warning "Response message: ${response::- 3} - HTTP Status code: ${response: -3}"
-            fi
-        fi
-    fi
-    echo "${host}"
-}
-
-# Queries the Route service from the Kubernetes API
-# ${1} - route name
-query_route_service() {
-    local routeName=${1}
-    local service
-    if [ "${routeName}" != "" ]; then
-        local response=$(query_route "${routeName}")
-        if [ "${response: -3}" = "200" ]; then
-            # parse the json response to get the route service
-            service=$(echo ${response::- 3} | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["spec"]["to"]["name"]')
-        else
-            log_warning "Fail to query the Route using the Kubernetes API, the Service Account might not have the necessary privileges."
-            if [ ! -z "${response}" ]; then
-                log_warning "Response message: ${response::- 3} - HTTP Status code: ${response: -3}"
-            fi
-        fi
-    fi
-    echo "${service}"
-}
-
-# Queries the Route service host from the Kubernetes API and Environment
-# ${1} - route name
-query_route_service_host() {
-    local routeName=${1}
-    local host=${2}
-    if [ "${routeName}" != "" ]; then
-        local service=$(query_route_service "${routeName}")
-        if [ "${service}" != "" ]; then
-            service=${service//-/_}
-            service=${service^^}
-            host=$(find_env "${service}_SERVICE_HOST" "${host}")
-        fi
-    fi
-    echo "${host}"
-}
-
-# Builds a simple URL
-# ${1} - protocol (default is http)
-# ${2} - host (default is $HOSTNAME if possible, or localhost)
-# ${3} - port (default is empty)
-# ${4} - path (default is empty)
-build_simple_url() {
-    local protocol=${1:-http}
-    local host=${2:-${HOSTNAME:-localhost}}
-    local port=${3}
-    local path=${4}
-    if [ "${port}" != "" ]; then
-        port=":${port}"
-    fi
-    echo "${protocol}://${host}${port}${path}"
-}
-
-# Builds a Route URL by querying the Kubernetes API
-# ${1} - route name
-# ${2} - default protocol
-# ${3} - default host
-# ${4} - default port
-# ${5} - path
-build_route_url() {
-    local routeName=${1}
-    local protocol=${2}
-    local host=${3}
-    local port=${4}
-    local path=${5}
-    if [ "${routeName}" != "" ]; then
-        if [[ "${routeName},," = *"secure"* ]]; then
-            protocol="${protocol:-https}"
-            port="${port:-443}"
-        fi
-        host=$(query_route_host "${routeName}" "${host}")
-    fi
-    echo $(build_simple_url "${protocol}" "${host}" "${port}" "${path}")
-}
-
 function configure_router_state() {
     # Need to replace whitespaces with something different from space or escaped space (\ ) characters
     local kieServerRouterId="${KIE_SERVER_ROUTER_ID// /_}"
@@ -185,63 +74,38 @@ function configure_router_state() {
     fi
 }
 
-function configure_router_access {
-    local kieServerRouterService="${KIE_SERVER_ROUTER_SERVICE}"
-    kieServerRouterService=${kieServerRouterService^^}
-    kieServerRouterService=${kieServerRouterService//-/_}
-    # host
+function configure_router_location {
+    # DeploymentConfig environment
+    #
+    # name: KIE_SERVER_ROUTER_HOST
+    # valueFrom:
+    #   fieldRef:
+    #     fieldPath: status.podIP
+    #
     local kieServerRouterHost="${KIE_SERVER_ROUTER_HOST}"
     if [ "${kieServerRouterHost}" = "" ]; then
-        kieServerRouterHost=$(find_env "${kieServerRouterService}_SERVICE_HOST")
-    fi
-    if [ "${kieServerRouterHost}" != "" ]; then
-        # protocol
-        local kieServerRouterProtocol=$(find_env "KIE_SERVER_ROUTER_PROTOCOL" "http")
-        # port
-        local kieServerRouterPort="${KIE_SERVER_ROUTER_PORT}"
-        if [ "${kieServerRouterPort}" = "" ]; then
-            kieServerRouterPort=$(find_env "${kieServerRouterService}_SERVICE_PORT" "9000")
+        kieServerRouterHost="${HOSTNAME}"
+        if [ "${kieServerRouterHost}" = "" ]; then
+            kieServerRouterHost="localhost"
         fi
-        # url
-        local kieServerRouterUrl=$(build_simple_url "${kieServerRouterProtocol}" "${kieServerRouterHost}" "${kieServerRouterPort}" "")
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router=${kieServerRouterUrl}"
     fi
-}
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.host=${kieServerRouterHost}"
 
-function configure_router_location() {
-    local location="${KIE_SERVER_ROUTER_URL_EXTERNAL}"
-    if [ -z "${location}" ]; then
-        local protocol="${KIE_SERVER_ROUTER_PROTOCOL,,}"
-        local host="${KIE_SERVER_ROUTER_HOST}"
-        local defaultInsecureHost="${HOSTNAME_HTTP:-${HOSTNAME:-localhost}}"
-        local defaultSecureHost="${HOSTNAME_HTTPS:-${defaultInsecureHost}}"
-        local port="${KIE_SERVER_PORT}"
-        local routeName="${KIE_SERVER_ROUTE_NAME}"
-        if [ -n "${routeName}" ]; then
-            if [ "${KIE_SERVER_USE_SECURE_ROUTE_NAME^^}" = "TRUE" ]; then
-                routeName="secure-${routeName}"
-                protocol="${protocol:-https}"
-                host="${host:-${defaultSecureHost}}"
-                port="${port:-443}"
-            else
-                protocol="${protocol:-http}"
-                host="${host:-${defaultInsecureHost}}"
-                port="${port:-80}"
-            fi
-            location=$(build_route_url "${routeName}" "${protocol}" "${host}" "${port}")
-        else
-            if [ "${protocol}" = "https" ]; then
-                host="${host:-${defaultSecureHost}}"
-                port="${port:-8443}"
-            else
-                protocol="${protocol:-http}"
-                host="${host:-${defaultInsecureHost}}"
-                port="${port:-8080}"
-            fi
-            location=$(build_simple_url "${protocol}" "${host}" "${port}" "${path}")
-        fi
+    local kieServerRouterPort="${KIE_SERVER_ROUTER_PORT}"
+    if [ "${kieServerRouterPort}" = "" ]; then
+        kieServerRouterPort="9000"
     fi
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${location}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.port=${kieServerRouterPort}"
+
+    local kieServerRouterUrlExternal="${KIE_SERVER_ROUTER_URL_EXTERNAL}"
+    if [ "${kieServerRouterUrlExternal}" = "" ]; then
+        local kieServerRouterProtocol="${KIE_SERVER_ROUTER_PROTOCOL}"
+        if [ "${kieServerRouterProtocol}" = "" ]; then
+            kieServerRouterProtocol="http"
+        fi
+        kieServerRouterUrlExternal="${kieServerRouterProtocol}://${kieServerRouterHost}:${kieServerRouterPort}"
+    fi
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${kieServerRouterUrlExternal}"
 }
 
 function configure_controller_access {
