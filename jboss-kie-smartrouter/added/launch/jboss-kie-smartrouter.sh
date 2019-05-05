@@ -244,40 +244,6 @@ function configure_router_location() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${location}"
 }
 
-function configure_router_location {
-    # DeploymentConfig environment
-    #
-    # name: KIE_SERVER_ROUTER_HOST
-    # valueFrom:
-    #   fieldRef:
-    #     fieldPath: status.podIP
-    #
-    local kieServerRouterHost="${KIE_SERVER_ROUTER_HOST}"
-    if [ "${kieServerRouterHost}" = "" ]; then
-        kieServerRouterHost="${HOSTNAME}"
-        if [ "${kieServerRouterHost}" = "" ]; then
-            kieServerRouterHost="localhost"
-        fi
-    fi
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.host=${kieServerRouterHost}"
-
-    local kieServerRouterPort="${KIE_SERVER_ROUTER_PORT}"
-    if [ "${kieServerRouterPort}" = "" ]; then
-        kieServerRouterPort="9000"
-    fi
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.port=${kieServerRouterPort}"
-
-    local kieServerRouterUrlExternal="${KIE_SERVER_ROUTER_URL_EXTERNAL}"
-    if [ "${kieServerRouterUrlExternal}" = "" ]; then
-        local kieServerRouterProtocol="${KIE_SERVER_ROUTER_PROTOCOL}"
-        if [ "${kieServerRouterProtocol}" = "" ]; then
-            kieServerRouterProtocol="http"
-        fi
-        kieServerRouterUrlExternal="${kieServerRouterProtocol}://${kieServerRouterHost}:${kieServerRouterPort}"
-    fi
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${kieServerRouterUrlExternal}"
-}
-
 function configure_controller_access {
     # We will only support one controller, whether running by itself or in business central.
     local controllerService="${KIE_SERVER_CONTROLLER_SERVICE}"
