@@ -237,6 +237,7 @@ bo_options="-w $cekit_cache_dir -d $gen_overrides_dir"
 if [ -n "$BUILD_DATE" ]; then
     bo_options+=" -b $BUILD_DATE"
 fi
+bo_options+=" --no-color"
 
 check_for_required_envs
 set_git_config
