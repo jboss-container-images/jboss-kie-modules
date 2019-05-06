@@ -29,6 +29,7 @@ function prepareEnv() {
     unset APPFORMER_JMS_BROKER_USER
     unset APPFORMER_JMS_BROKER_USERNAME
     unset APPFORMER_JMS_CONNECTION_PARAMS
+    unset BUILD_ENABLE_INCREMENTAL
     unset GIT_HOOKS_DIR
     unset_kie_security_env
     unset KIE_SERVER_CONTROLLER_HOST
@@ -147,6 +148,11 @@ function configure_workbench_profile() {
 }
 
 function configure_guvnor_settings() {
+    local buildEnableIncremental="${BUILD_ENABLE_INCREMENTAL,,}"
+    # only set the system property if we have a valid value, as it is an override and we should not default
+    if [ "${buildEnableIncremental}" = "true" ] || [ "${buildEnableIncremental}" = "false" ]; then
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dbuild.enable-incremental=${buildEnableIncremental}"
+    fi
     # see scripts/jboss-kie-wildfly-common/configure.sh
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.designer.perspective=full -Ddesignerdataobjects=false"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.demo=false -Dorg.kie.example=false"
