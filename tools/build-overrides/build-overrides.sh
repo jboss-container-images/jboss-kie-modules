@@ -4,32 +4,48 @@
 #   awk, bash, date, dirname, echo, env, find, getopts, grep, mkdir, read, realpath
 #   curl
 #   unzip, zipinfo
-#   md5sum, sha1sum, sha256sum, sha512sum
+#   md5sum
 #   cekit, cekit-cache 2.2.4+
+# Optional:
+#   sha1sum, sha256sum, sha512sum
+
+clear_env() {
+    unset NO_COLOR
+}
+
+log() {
+    local msg="${1}"
+    local color="${2}"
+    if [ -n "${color}" ] && [ "${NO_COLOR}" != "enabled" ]; then
+        echo 1>&2 -e "\033[0;${color}m${msg}\033[0m"
+    else
+        echo 1>&2 -e "${msg}"
+    fi
+}
 
 log_help() {
     # color: none
-    echo 1>&2 -e "${1}"
+    log "${1}"
 }
 
 log_debug() {
     # color: blue
-    echo 1>&2 -e "\033[0;34m${1}\033[0m"
+    log "[DEBUG] ${1}" "34"
 }
 
 log_info() {
     # color: green
-    echo 1>&2 -e "\033[0;32m${1}\033[0m"
+    log " [INFO] ${1}" "32"
 }
 
-log_warning() {
+log_warn() {
     # color: yellow
-    echo 1>&2 -e "\033[0;33m${1}\033[0m"
+    log " [WARN] ${1}" "33"
 }
 
 log_error() {
     # color: red
-    echo 1>&2 -e "\033[0;31m${1}\033[0m"
+    log "[ERROR] ${1}" "31"
 }
 
 validate_cekit_version() {
@@ -37,6 +53,7 @@ validate_cekit_version() {
     local cekit_cache_version=$(cekit-cache --version 2>&1)
     if [ "${cekit_version}" != "${cekit_cache_version}" ]; then
         log_error "cekit ${cekit_version} does not match cekit-cache ${cekit_cache_version}"
+        clear_env
         exit 1
     fi
     local cekit_exe=$(which cekit)
@@ -45,6 +62,7 @@ validate_cekit_version() {
         # See "Warning" here:
         # https://docs.cekit.io/en/latest/handbook/caching.html#managing-cache
         log_error "${cekit_exe} does not share the same path as ${cekit_cache_exe}"
+        clear_env
         exit 1
     fi
 }
@@ -116,8 +134,15 @@ get_artifact_name() {
 get_sum() {
     local algo=${1}
     local file=${2}
-    local checksum=$("${algo}sum" "${file}" | awk '{ print $1 }')
-    echo -n ${checksum}
+    local sum_cmd="${algo}sum"
+    if (which "${sum_cmd}" > /dev/null 2>&1) ; then
+        local checksum=$("${sum_cmd}" "${file}" | awk '{ print $1 }')
+        echo -n "${checksum}"
+        return 0
+    else
+        log_warn "Command \"${sum_cmd}\" not found; skipping algorithm \"${algo}\"..."
+        return 1
+    fi
 }
 
 cache() {
@@ -148,19 +173,23 @@ cache() {
         IFS='.' read -r -a cekit_version_array <<< "${cekit_version}"
         cekit_version="${cekit_version_array[0]}"
         log_info "Caching ${file} ..."
+        local sum_opts="--md5 ${md5}"
         local sha1=$(get_sum "sha1" "${file}")
-        local sha256=$(get_sum "sha256" "${file}")
-        if [ "${cekit_version}" = "2" ]; then
-            cekit-cache --work-dir "${work_dir}" add --md5 "${md5}" --sha1 "${sha1}" --sha256 "${sha256}" "${file}"
-            code=$?
-        elif [ "${cekit_version}" = "3" ]; then
-            # According to the docs, cekit-cache 3 should support sha512: https://docs.cekit.io/en/latest/handbook/caching.html#listing-cached-artifacts
-            # However, 3.0.dev0 does not yet accept the --sha512 arg. Replace with the below when 3 goes final?
-            #local sha512=$(get_sum "sha512" "${file}")
-            #cekit-cache --work-dir "${work_dir}" add --md5 "${md5}" --sha1 "${sha1}" --sha256 "${sha256}" --sha512 "${sha512}" "${file}"
-            cekit-cache --work-dir "${work_dir}" add --md5 "${md5}" --sha1 "${sha1}" --sha256 "${sha256}" "${file}"
-            code=$?
+        if [ -n "${sha1}" ]; then
+            sum_opts+=" --sha1 ${sha1}"
         fi
+        local sha256=$(get_sum "sha256" "${file}")
+        if [ -n "${sha256}" ]; then
+            sum_opts+=" --sha256 ${sha256}"
+        fi
+        if [ "${cekit_version}" = "3" ]; then
+            local sha512=$(get_sum "sha512" "${file}")
+            if [ -n "${sha512}" ]; then
+                sum_opts+=" --sha512 ${sha512}"
+            fi
+        fi
+        cekit-cache --work-dir "${work_dir}" add $sum_opts "${file}"
+        code=$?
         if [ ${code} != 0 ]; then
             log_error "Caching of ${file} failed."
         fi
@@ -187,10 +216,10 @@ get_cache_item() {
         local real_cache_item_source=$(realpath "${cache_item_source}")
         local real_cache_item_target=$(realpath "${cache_item_target}")
         if [ "${real_cache_item_source}" = "${real_cache_item_target}" ]; then
-            log_warning "File ${cache_item_source} and ${cache_item_target} are the same file."
+            log_warn "File ${cache_item_source} and ${cache_item_target} are the same file."
         else
             if [ -f "${cache_item_target}" ]; then
-                log_warning "File ${cache_item_target} already exists; overwriting ..."
+                log_warn "File ${cache_item_target} already exists; overwriting ..."
             fi
             log_info "Copying ${cache_item_source} to ${cache_item_target} ..."
             if ! cp -f "${cache_item_source}" "${cache_item_target}" ; then
@@ -199,7 +228,7 @@ get_cache_item() {
             fi
         fi
     else
-        log_warning "File or directory ${cache_item_source} does not exist; skipping ..."
+        log_warn "File or directory ${cache_item_source} does not exist; skipping ..."
         return 1
     fi
     echo -n "${cache_item_target}"
@@ -504,7 +533,7 @@ EOF
                 business_central_distribution_url=$(get_artifact_url "rhpam.business-central-eap7.latest.url" "${build_file}")
             fi
             business_central_monitoring_distribution_url=$(echo "${business_central_distribution_url}" | sed -e 's/business-central-eap7-deployable/monitoring-ee7/')
-            log_warning "Property \"rhpam.monitoring.latest.url\" is not defined. Attempting ${business_central_monitoring_distribution_url} ..."
+            log_warn "Property \"rhpam.monitoring.latest.url\" is not defined. Attempting ${business_central_monitoring_distribution_url} ..."
         fi
         local business_central_monitoring_distribution_zip=$(get_artifact_name "${business_central_monitoring_distribution_url}")
         local business_central_monitoring_distribution_file="${artifacts_dir}/${business_central_monitoring_distribution_zip}"
@@ -620,7 +649,7 @@ delete_cached_artifacts() {
     local query="rhpam*\|rhdm*"
     if [ -z "${product}" ]; then
         product="${product_default}"
-    else 
+    else
         local product_valid="false"
         for pv in ${products_valid[@]}; do
             if [ "${pv}" = "${product}" ]; then
@@ -635,12 +664,12 @@ delete_cached_artifacts() {
             return 1
         fi
     fi
-    
+
     if [ "${product}" != "all" ]; then
         query="${product}*"
     fi
 
-    for artifact in $(cekit-cache ls | grep -B5 "${query}" | grep yaml | awk '{ print substr($0,0,length($0)-6)}'); do 
+    for artifact in $(cekit-cache ls | grep -B5 "${query}" | grep yaml | awk '{ print substr($0,0,length($0)-6)}'); do
         log_info "Deleting artifact ${artifact} from local cache"
         cekit-cache rm $artifact;
     done
@@ -671,6 +700,7 @@ main() {
     local cache_list
     local cache_list_examples="/tmp/${build_tool}/artifact-list.txt or http://${build_tool}.io/artifact-list.txt"
     local delete_product
+    local no_color
     local usage_help
     local OPTIND opt
     while getopts ":v:t:b:p:d:a:o:w:c:C:-:h:" opt ${args[@]}; do
@@ -689,6 +719,7 @@ main() {
                     cache)            cache_artifact="${arg}"   ;;
                     cache-list)           cache_list="${arg}"   ;;
                     delete-cache)     delete_product="${arg}"   ;;
+                    no-color)               no_color="${arg,,}" ;;
                     help)                 usage_help="${arg,,}" ;;
                     *) log_error "Invalid arg: --${OPTARG}"     ;;
                 esac;;
@@ -707,9 +738,13 @@ main() {
         esac
     done
     shift $((OPTIND -1))
+    local all_args=" $(echo ${args[*]})"
+    if [ -n "${no_color}" ] || [[ "${all_args}" =~ .*\ (--no-color.*) ]]; then
+        NO_COLOR="enabled"
+    fi
     local cekit_version=$(cekit --version 2>&1)
     log_info "${build_tool}.sh (cekit ${cekit_version})"
-    if [ -n "${usage_help}" ] || [[ " $(echo ${args[*]})" =~ .*\ (-h.*|--help.*) ]]; then
+    if [ -n "${usage_help}" ] || [[ "${all_args}" =~ .*\ (-h.*|--help.*) ]]; then
         # usage/help
         log_help "Usage: ${build_tool}.sh [-v \"#.#.#\"] [-t \"${build_type_default}\"] [-b \"YYYYMMDD\"] [-p \"${product_default}\"] [-d \"DEFAULT_DIR\"] [-a \"ARTIFACT_DIR\"] [-o \"OVERRIDES_DIR\"] [-w \"WORK_DIR\"] [-c \"CACHE_ARTIFACT\"] [-C \"CACHE_LIST\"] [-h]"
         log_help "-v | --version = [v]ersion of build (required unless -c or -C is defined; format: major.minor.micro; example: ${version_example})"
@@ -725,7 +760,8 @@ main() {
         log_help "-w | --work-dir = [w]orking directory used by cekit (optional; default: the cekit default)"
         log_help "-c | --cache = [c]ache artifact (optional; a local artifact file or directory of artifacts to cache, or a remote artifact starting with \"http(s)://\"; examples: ${cache_artifact_examples})"
         log_help "-C | --cache-list = [C]ache list (optional; a local text file containing a list of artifacts to cache, or a remote one starting with \"http(s)://\"; examples: ${cache_list_examples})"
-        log_help "--delete-cache = [delete]s local cached artifacts from specified product (optional; default: won't delete anything; allowed: all rhdm rhpam)"
+        log_help "--delete-cache = deletes local cached artifacts from specified product (optional; default: don't delete anything; allowed: all rhdm rhpam)"
+        log_help "--no-color = Suppress terminal color output (optional; default: ANSI escape codes for color will be included)"
         log_help "-h | --help = [h]elp / usage"
     elif [ -z "${full_version}" ] && [ -z "${cache_artifact}" ] && [ -z "${cache_list}" ] && [ -z "${delete_product}" ]; then
         log_error "Version (-v), artifact or directory of artifacts to cache (-c), list file of artifacts to cache (-C), or product artifacts to delete (--delete-cache) is required. Run ${build_tool}.sh -h for help."
@@ -739,7 +775,7 @@ main() {
             log_debug "Full build version: ${full_version}"
             log_debug "Short build version: ${short_version}"
         else
-            log_warning "No build version defined."
+            log_warn "No build version defined."
         fi
 
         # build type
@@ -753,6 +789,7 @@ main() {
             fi
         elif [ "${build_type}" != "nightly" ] && [ "${build_type}" != "staging" ] && [ "${build_type}" != "candidate" ] && [ "${build_type}" != "cache" ] ; then
             log_error "Build type not recognized. Must be nightly, staging, candidate, or cache. Run ${build_tool}.sh -h for help."
+            clear_env
             return 1
         fi
         log_debug "Build type: ${build_type}"
@@ -781,6 +818,7 @@ main() {
             log_debug "Artifacts dir: ${artifacts_dir}"
         else
             log_error "Artifacts dir: ${artifacts_dir} unusable."
+            clear_env
             return 1
         fi
 
@@ -792,6 +830,7 @@ main() {
             log_debug "Overrides dir: ${overrides_dir}"
         else
             log_error "Overrides dir: ${overrides_dir} unusable."
+            clear_env
             return 1
         fi
 
@@ -824,6 +863,7 @@ main() {
                 log_debug "Product: ${product}"
             else
                 log_error "Invalid product: ${product}"
+                clear_env
                 return 1
             fi
 
@@ -835,6 +875,7 @@ main() {
                 handle_rhpam_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}" "${work_dir}"
             fi
         fi
+        clear_env
     fi
 }
 
