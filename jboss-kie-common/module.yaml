@@ -1,6 +1,6 @@
 schema_version: 1
 name: jboss-kie-common
 version: '1.0'
-description:  Useful functions for all modules.
+description:  jboss-kie-common module.
 execute:
 - script: configure.sh
