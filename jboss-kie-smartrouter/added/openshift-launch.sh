@@ -12,6 +12,7 @@ fi
 
 CONFIGURE_SCRIPTS=(
   ${LAUNCH_DIR}/jboss-kie-smartrouter.sh
+  $JBOSS_HOME/bin/launch/jboss-kie-common.sh
 )
 
 source ${LAUNCH_DIR}/configure.sh
