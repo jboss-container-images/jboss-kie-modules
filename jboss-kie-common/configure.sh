@@ -9,8 +9,6 @@ ADDED_DIR=${SCRIPT_DIR}/added
 chown -R jboss:root $SCRIPT_DIR
 chmod -R g+rwX $SCRIPT_DIR
 
-mv $JBOSS_HOME/bin/jboss-kie-common.sh $JBOSS_HOME/bin/jboss-kie-common.sh
-
 cp -p "$ADDED_DIR/jboss-kie-common.sh" $JBOSS_HOME/bin/
 
 chmod ug+x $JBOSS_HOME/bin/jboss-kie-common.sh
