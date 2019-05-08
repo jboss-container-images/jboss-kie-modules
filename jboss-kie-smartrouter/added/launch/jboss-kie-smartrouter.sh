@@ -2,7 +2,7 @@
 
 source "${LAUNCH_DIR}/launch-common.sh"
 source "${LAUNCH_DIR}/logging.sh"
-source "${JBOSS_HOME}/bin/launch/jboss-kie-common.sh"
+source "${LAUNCH_DIR}/bin/launch/jboss-kie-common.sh"
 
 
 
