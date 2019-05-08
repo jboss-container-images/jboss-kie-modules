@@ -115,7 +115,7 @@ function configure_router_location {
                 
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${kieServerRouterUrlExternal}"
 
-    if    
+    fi    
 }
 
 function configure_controller_access {
