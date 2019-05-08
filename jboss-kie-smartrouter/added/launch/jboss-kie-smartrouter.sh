@@ -109,7 +109,8 @@ function configure_router_location {
          
         kieServerRouterUrlExternal=$(query_route_host "${kieServerRouteName}" "${kieServerRouterHost}")
 
-        kieServerRouterUrlExternal="${kieServerRouterProtocol}://${kieServerRouterUrlExternal}"
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${kieServerRouterUrlExternal}"
+
     else
                 
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${kieServerRouterUrlExternal}"
