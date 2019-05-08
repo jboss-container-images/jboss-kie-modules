@@ -125,7 +125,7 @@ function configure_router_location {
     
     if [ "${kieServerRouterUrlExternal}" = "" ]; then
 
-        kieServerRouterUrlExternal=$(query_route_host "${routeName}" "${kieServerRouterHost}")
+        kieServerRouterUrlExternal=$(query_route_host "${routeName}" "${host}")
         
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${protocol}://${kieServerRouterUrlExternal}"
     else
