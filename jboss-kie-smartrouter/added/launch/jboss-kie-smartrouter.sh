@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 source "${LAUNCH_DIR}/launch-common.sh"
@@ -77,30 +78,43 @@ function configure_router_state() {
 
 function configure_router_location {
 
-    local protocol="${KIE_SERVER_ROUTER_PROTOCOL,,}"
-    local host="${KIE_SERVER_ROUTER_HOST}"
-    local externalUrl="${KIE_SERVER_ROUTER_URL_EXTERNAL}"
-    local defaultInsecureHost="${HOSTNAME_HTTP:-${HOSTNAME:-localhost}}"
-    local defaultSecureHost="${HOSTNAME_HTTPS:-${defaultInsecureHost}}"
-    local port="${KIE_SERVER_ROUTER_PORT}"
-    local routeName="${KIE_SERVER_ROUTE_NAME}"
 
-   
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.host=${host}"
+    local kieServerRouteName="${KIE_SERVER_ROUTE_NAME}"
+    local kieServerRouterHost="${KIE_SERVER_ROUTER_HOST}"
+    local kieServerRouterPort="${KIE_SERVER_ROUTER_PORT}"
+    local kieServerRouterProtocol="${KIE_SERVER_ROUTER_PROTOCOL}"
+    local kieServerRouterUrlExternal="${KIE_SERVER_ROUTER_URL_EXTERNAL}"
 
 
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.port=${port}"
-    
-    
-    if [ "${externalUrl}" = "" ]; then
-
-        externalUrl=$(query_route_host "${routeName}" "${host}")
-        
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${protocol}://${externalUrl}"
-    else
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${externalUrl}"
+    if [ "${kieServerRouterHost}" = "" ]; then
+        kieServerRouterHost="${HOSTNAME}"
+        if [ "${kieServerRouterHost}" = "" ]; then
+            kieServerRouterHost="localhost"
+        fi
     fi
-    
+
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.host=${kieServerRouterHost}"
+
+    if [ "${kieServerRouterPort}" = "" ]; then
+        kieServerRouterPort="9000"
+    fi
+
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.port=${kieServerRouterPort}"
+
+
+    if [ "${kieServerRouterUrlExternal}" = "" ]; then
+        if [ "${kieServerRouterProtocol}" = "" ]; then
+            kieServerRouterProtocol="http"
+        fi
+         
+        kieServerRouterUrlExternal=$(query_route_host "${kieServerRouteName}" "${kieServerRouterHost}")
+
+        kieServerRouterUrlExternal="${kieServerRouterProtocol}://${kieServerRouterUrlExternal}"
+    else
+                
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${kieServerRouterUrlExternal}"
+
+    if    
 }
 
 function configure_controller_access {
