@@ -2,9 +2,7 @@
 
 source "${LAUNCH_DIR}/launch-common.sh"
 source "${LAUNCH_DIR}/logging.sh"
-source "${LAUNCH_DIR}/jboss-kie-common.sh"
-
-
+source "${JBOSS_HOME}/bin/launch/jboss-kie-common.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
