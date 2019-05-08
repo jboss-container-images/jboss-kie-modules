@@ -1,14 +1,14 @@
-#!/bin/bash
-
+#!/bin/sh
+# Openshift JBoss KIE - Common scripts and helpers
 set -e
 
 SCRIPT_DIR=$(dirname $0)
 ADDED_DIR=${SCRIPT_DIR}/added
 
-# Necessary to permit running with a randomised UID
-chown -R jboss:root $SCRIPT_DIR
-chmod -R g+rwX $SCRIPT_DIR
+# Add common scripts/libraries/snippets
+mkdir -p ${JBOSS_HOME}/bin/launch
+cp -r ${ADDED_DIR}/launch/* ${JBOSS_HOME}/bin/launch
 
-cp -p "$ADDED_DIR/jboss-kie-common.sh" $JBOSS_HOME/bin/
-
-chmod ug+x $JBOSS_HOME/bin/readinessProbe.sh $JBOSS_HOME/bin/jboss-kie-common.sh
+# Set bin permissions
+chown -R jboss:root ${JBOSS_HOME}/bin/
+chmod -R g+rwX ${JBOSS_HOME}/bin/
