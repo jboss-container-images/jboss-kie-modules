@@ -1,20 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
 SCRIPT_DIR=$(dirname $0)
 ADDED_DIR=${SCRIPT_DIR}/added
-ROUTER_DIR=/opt/${JBOSS_PRODUCT}
-
-# Add custom launch script and dependent scripts/libraries/snippets
-cp -p ${ADDED_DIR}/openshift-launch.sh ${ROUTER_DIR}/
-
-mkdir -p ${LAUNCH_DIR}
-cp -r ${ADDED_DIR}/launch/* $LAUNCH_DIR
-
-# Ensure that the local data directory exists
-mkdir -p ${ROUTER_DIR}/data
 
 # Necessary to permit running with a randomised UID
-chown -R jboss:root ${ROUTER_DIR}
-chmod -R 777 ${ROUTER_DIR}
+chown -R jboss:root $SCRIPT_DIR
+chmod -R g+rwX $SCRIPT_DIR
+
+cp -p "$ADDED_DIR/jboss-kie-common.sh" $JBOSS_HOME/bin/
+
+chmod ug+x $JBOSS_HOME/bin/readinessProbe.sh $JBOSS_HOME/bin/jboss-kie-common.sh
