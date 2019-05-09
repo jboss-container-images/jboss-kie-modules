@@ -103,7 +103,7 @@ function configure_router_location {
                 port="${port:-80}"
             fi
 	    local routeHost=$(query_route_host "${routeName}" "${host}")
-	    routerUrlExternal="${protocol}://{$routeHost}"
+	    routerUrlExternal="${protocol}://$routeHost"
         else
             if [ "${protocol}" = "https" ]; then
                 host="${host:-${defaultSecureHost}}"
