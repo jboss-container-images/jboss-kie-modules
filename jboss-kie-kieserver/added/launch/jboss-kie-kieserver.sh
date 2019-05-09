@@ -252,6 +252,8 @@ function configure_controller_access {
     local kieServerControllerService="${KIE_SERVER_CONTROLLER_SERVICE}"
     kieServerControllerService=${kieServerControllerService^^}
     kieServerControllerService=${kieServerControllerService//-/_}
+    # token
+    local kieServerControllerToken="$(get_kie_server_controller_token)"
     # host
     local kieServerControllerHost="${KIE_SERVER_CONTROLLER_HOST}"
     if [ "${kieServerControllerHost}" = "" ]; then
@@ -273,14 +275,13 @@ function configure_controller_access {
         # url
         local kieServerControllerUrl=$(build_simple_url "${kieServerControllerProtocol}" "${kieServerControllerHost}" "${kieServerControllerPort}" "${kieServerControllerPath}")
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller=${kieServerControllerUrl}"
-    fi
-    # user/pwd
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.user=\"$(get_kie_server_controller_user)\""
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.pwd=\"$(esc_kie_server_controller_pwd)\""
-    # token
-    local kieServerControllerToken="$(get_kie_server_controller_token)"
-    if [ "${kieServerControllerToken}" != "" ]; then
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.token=\"${kieServerControllerToken}\""
+        # user/pwd
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.user=\"$(get_kie_server_controller_user)\""
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.pwd=\"$(esc_kie_server_controller_pwd)\""
+        # token
+        if [ "${kieServerControllerToken}" != "" ]; then
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.token=\"${kieServerControllerToken}\""
+        fi
     fi
 }
 

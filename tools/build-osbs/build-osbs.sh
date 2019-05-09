@@ -142,17 +142,6 @@ function get_extra_cekit_overrides_options()
 
 function handle_cache_urls()
 {
-    # See if there is a file for this version/component stored with the overrides that specifies urls to cache
-    # the overrides directory is organized by short branch names
-    local branch_name="$(git symbolic-ref HEAD 2>/dev/null)"
-    branch_name=${branch_name##refs/heads/}
-
-    local sv=$(get_short_version $branch_name)
-    if [ -f "/opt/rhba/overrides/$sv/$PROD_COMPONENT-cache-local.sh" ]; then
-        echo build-overrides.sh -C /opt/rhba/overrides/$sv/$PROD_COMPONENT-cache-local.sh $bo_options
-        build-overrides.sh -C /opt/rhba/overrides/$sv/$PROD_COMPONENT-cache-local.sh $bo_options
-    fi
-
     # Parse and cache extra urls to add to the local cekit cache
     if [ -n "$1" ]; then
         local IFS=,
@@ -248,6 +237,7 @@ bo_options="-w $cekit_cache_dir -d $gen_overrides_dir"
 if [ -n "$BUILD_DATE" ]; then
     bo_options+=" -b $BUILD_DATE"
 fi
+bo_options+=" --no-color"
 
 check_for_required_envs
 set_git_config
