@@ -79,7 +79,7 @@ function configure_router_state() {
 function configure_router_location {
 
 
-    local kieServerRouteName="${KIE_SERVER_ROUTE_NAME}"
+    local kieServerRouteName="${KIE_SERVER_ROUTER_NAME}"
     local kieServerRouterHost="${KIE_SERVER_ROUTER_HOST}"
     local kieServerRouterPort="${KIE_SERVER_ROUTER_PORT}"
     local kieServerRouterProtocol="${KIE_SERVER_ROUTER_PROTOCOL}"
