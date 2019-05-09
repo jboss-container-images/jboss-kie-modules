@@ -86,9 +86,9 @@ function configure_router_location {
     local defaultInsecureHost="${HOSTNAME_HTTP:-${HOSTNAME:-localhost}}"
     local defaultSecureHost="${HOSTNAME_HTTPS:-${defaultInsecureHost}}"
 
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.host=${kieServerRouterHost}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.host=${host}"
 
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.port=${kieServerRouterPort}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.port=${port}"
     
      if [ -z "${routerUrlExternal}" ]; then
 	 if [ -n "${routeName}" ]; then
