@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Queries the Route from the Kubernetes API
-# ${1} - route name
+# ${1} - route name.
 query_route() {
     local routeName=${1}
     # only execute the following lines if this container is running on OpenShift
