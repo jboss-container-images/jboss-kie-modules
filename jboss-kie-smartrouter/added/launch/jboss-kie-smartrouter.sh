@@ -85,31 +85,16 @@ function configure_router_location {
     local kieServerRouterProtocol="${KIE_SERVER_ROUTER_PROTOCOL}"
     local kieServerRouterUrlExternal="${KIE_SERVER_ROUTER_URL_EXTERNAL}"
 
-
-    if [ "${kieServerRouterHost}" = "" ]; then
-        kieServerRouterHost="${HOSTNAME}"
-        if [ "${kieServerRouterHost}" = "" ]; then
-            kieServerRouterHost="localhost"
-        fi
-    fi
-
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.host=${kieServerRouterHost}"
-
-    if [ "${kieServerRouterPort}" = "" ]; then
-        kieServerRouterPort="9000"
-    fi
 
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.port=${kieServerRouterPort}"
 
-
     if [ "${kieServerRouterUrlExternal}" = "" ]; then
-        if [ "${kieServerRouterProtocol}" = "" ]; then
-            kieServerRouterProtocol="http"
-        fi
+
          
         kieServerRouterUrlExternal=$(query_route_host "${kieServerRouteName}" "${kieServerRouterHost}")
 
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${kieServerRouterUrlExternal}"
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=http://${kieServerRouterUrlExternal}"
 
     else
                 
