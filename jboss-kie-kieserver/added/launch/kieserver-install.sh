@@ -1,6 +1,5 @@
 #!/bin/sh
 # if using vim, do ':set ft=zsh' for easier reading
-source /usr/local/s2i/scl-enable-maven
 source $JBOSS_HOME/bin/launch/logging.sh
 
 LOCAL_SOURCE_DIR=/tmp/src

@@ -10,7 +10,7 @@ ROUTER_DIR=/opt/${JBOSS_PRODUCT}
 cp -p ${ADDED_DIR}/openshift-launch.sh ${ROUTER_DIR}/
 
 mkdir -p ${LAUNCH_DIR}
-cp -r ${ADDED_DIR}/launch/* $LAUNCH_DIR
+cp -r ${ADDED_DIR}/launch/* ${LAUNCH_DIR}
 
 # Ensure that the local data directory exists
 mkdir -p ${ROUTER_DIR}/data

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-source /usr/local/s2i/scl-enable-maven
 source "${JBOSS_HOME}/bin/launch/logging.sh"
 source "${JBOSS_HOME}/bin/launch/jboss-kie-wildfly-security-login-modules.sh"
 

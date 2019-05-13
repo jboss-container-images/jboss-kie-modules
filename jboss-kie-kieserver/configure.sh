@@ -19,7 +19,12 @@ mv /usr/local/s2i/assemble /usr/local/s2i/assemble_eap
 cp -r ${ADDED_DIR}/s2i/* /usr/local/s2i/
 # Necessary to permit running with a randomised UID
 chown -R jboss:root /usr/local/s2i
-chmod ug+x /usr/local/s2i/*
+for F in $(ls /usr/local/s2i/*); do
+    # Protect against "chmod: cannot operate on dangling symlink '/usr/local/s2i/scl-enable-maven'"
+    if [ ! -L ${F} ]; then
+        chmod ug+x ${F}
+    fi
+done
 
 # Add custom launch script and dependent scripts/libraries/snippets
 cp -p ${ADDED_DIR}/openshift-launch.sh ${JBOSS_HOME}/bin/
