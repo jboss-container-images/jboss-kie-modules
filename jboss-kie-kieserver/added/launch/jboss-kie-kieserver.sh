@@ -146,6 +146,7 @@ function declare_timer_common_variables {
     for var in ${common_vars[@]}; do
         local value=$(find_env "${prefix}_${var}")
         if [[ -n ${value} ]]; then
+            value=$(echo ${value} | sed -e 's/\;/\\;/g')
             eval EJB_TIMER_${var}="${value}"
         fi
     done
