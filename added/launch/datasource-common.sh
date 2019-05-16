@@ -188,7 +188,10 @@ function generate_datasource_common() {
   local service_name="${11}"
   local jta="${12}"
   local validate="${13}"
-  local url="${14}"
+  # CLOUD-3198 Since Sed replaces '&' with a full match, we need to escape it.
+  local url="${14//&/\\&}"
+  # CLOUD-3198 In addition to that, we also need to escape ';'
+  url="${url//;/\\;}"
 
   if [ -n "$driver" ]; then
     ds=$(generate_external_datasource)
