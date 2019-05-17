@@ -669,7 +669,7 @@ delete_cached_artifacts() {
         query="${product}*"
     fi
 
-    for artifact in $(cekit-cache ls | grep -B5 "${query}" | grep yaml | awk '{ print substr($0,0,length($0)-6)}'); do
+    for artifact in $(cekit-cache ls | grep -B5 "${query}" | egrep "([0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12})" -o); do
         log_info "Deleting artifact ${artifact} from local cache"
         cekit-cache rm $artifact;
     done
