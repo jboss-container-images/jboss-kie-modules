@@ -151,6 +151,7 @@ function configure_workbench_profile() {
 
 function configure_guvnor_settings() {
     local buildEnableIncremental="${BUILD_ENABLE_INCREMENTAL,,}"
+    local kieDataDir="/opt/kie/data"
     # only set the system property if we have a valid value, as it is an override and we should not default
     if [ "${buildEnableIncremental}" = "true" ] || [ "${buildEnableIncremental}" = "false" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dbuild.enable-incremental=${buildEnableIncremental}"
@@ -158,7 +159,6 @@ function configure_guvnor_settings() {
     # see scripts/jboss-kie-wildfly-common/configure.sh
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.designer.perspective=full -Ddesignerdataobjects=false"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.demo=false -Dorg.kie.example=false"
-    local kieDataDir="${JBOSS_HOME}/standalone/data/kie"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.guvnor.m2repo.dir=${kieDataDir}/maven-repository"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.dir=${kieDataDir}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.ssh.cert.dir=${kieDataDir}"
