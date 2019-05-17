@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source "${JBOSS_HOME}/bin/launch/launch-common.sh"
+source "${JBOSS_HOME}/bin/launch/jboss-kie-common.sh"
 source "${JBOSS_HOME}/bin/launch/jboss-kie-wildfly-common.sh"
 source "${JBOSS_HOME}/bin/launch/logging.sh"
 source "${JBOSS_HOME}/bin/launch/jboss-kie-wildfly-security.sh"

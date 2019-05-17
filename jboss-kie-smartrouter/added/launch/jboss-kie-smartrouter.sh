@@ -2,6 +2,7 @@
 
 source "${LAUNCH_DIR}/launch-common.sh"
 source "${LAUNCH_DIR}/logging.sh"
+source "${JBOSS_HOME}/bin/launch/jboss-kie-common.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
@@ -19,6 +20,7 @@ function prepareEnv() {
     unset KIE_SERVER_ROUTER_PROTOCOL
     unset KIE_SERVER_ROUTER_URL_EXTERNAL
     unset KIE_SERVER_ROUTER_REPO
+    unset KIE_SERVER_ROUTER_SERVICE
     unset KIE_SERVER_ROUTER_CONFIG_WATCHER_ENABLED
     unset KIE_SERVER_ROUTER_TLS_KEYSTORE
     unset KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD
@@ -75,37 +77,53 @@ function configure_router_state() {
 }
 
 function configure_router_location {
-    # DeploymentConfig environment
-    #
-    # name: KIE_SERVER_ROUTER_HOST
-    # valueFrom:
-    #   fieldRef:
-    #     fieldPath: status.podIP
-    #
-    local kieServerRouterHost="${KIE_SERVER_ROUTER_HOST}"
-    if [ "${kieServerRouterHost}" = "" ]; then
-        kieServerRouterHost="${HOSTNAME}"
-        if [ "${kieServerRouterHost}" = "" ]; then
-            kieServerRouterHost="localhost"
-        fi
-    fi
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.host=${kieServerRouterHost}"
 
-    local kieServerRouterPort="${KIE_SERVER_ROUTER_PORT}"
-    if [ "${kieServerRouterPort}" = "" ]; then
-        kieServerRouterPort="9000"
-    fi
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.port=${kieServerRouterPort}"
+    local routeName="${KIE_SERVER_ROUTER_NAME}"
+    local routeService="${KIE_SERVER_ROUTER_SERVICE}"
+    local host="${KIE_SERVER_ROUTER_HOST}"
+    local port="${KIE_SERVER_ROUTER_PORT}"
+    local protocol="${KIE_SERVER_ROUTER_PROTOCOL}"
+    local routerUrlExternal="${KIE_SERVER_ROUTER_URL_EXTERNAL}"
+    local defaultInsecureHost="${HOSTNAME_HTTP:-${HOSTNAME:-localhost}}"
+    local defaultSecureHost="${HOSTNAME_HTTPS:-${defaultInsecureHost}}"
 
-    local kieServerRouterUrlExternal="${KIE_SERVER_ROUTER_URL_EXTERNAL}"
-    if [ "${kieServerRouterUrlExternal}" = "" ]; then
-        local kieServerRouterProtocol="${KIE_SERVER_ROUTER_PROTOCOL}"
-        if [ "${kieServerRouterProtocol}" = "" ]; then
-            kieServerRouterProtocol="http"
-        fi
-        kieServerRouterUrlExternal="${kieServerRouterProtocol}://${kieServerRouterHost}:${kieServerRouterPort}"
+    if [ "${host}" = "" ]; then
+        host=$(find_env "${routeService}_SERVICE_HOST")
     fi
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${kieServerRouterUrlExternal}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.host=${host}"
+    if [ "${port}" = "" ]; then
+        port==$(find_env "${controllerService}_SERVICE_PORT" "9000")
+    fi
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.port=${port}"
+    if [ -z "${routerUrlExternal}" ]; then
+       if [ -n "${routeName}" ]; then
+            if [ "${protocol}" = "https" ]; then
+                routeName="secure-${routeName}"
+                host="${host:-${defaultSecureHost}}"
+                port="${port:-443}"
+            else
+                protocol="${protocol:-http}"
+                host="${host:-${defaultInsecureHost}}"
+                port="${port:-80}"
+            fi
+
+	    local routeHost=$(query_route_host "${routeName}" "${host}")
+	    routerUrlExternal="${protocol}://${routeHost}"
+
+        else
+            if [ "${protocol}" = "https" ]; then
+                host="${host:-${defaultSecureHost}}"
+                port="${port:-9443}"
+            else
+                protocol="${protocol:-http}"
+                host="${host:-${defaultInsecureHost}}"
+                port="${port:-9000}"
+            fi
+            routerUrlExternal=$(build_simple_url "${protocol}" "${host}" "${port}")
+        fi
+    fi  
+    
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${routerUrlExternal}"
 }
 
 function configure_controller_access {
