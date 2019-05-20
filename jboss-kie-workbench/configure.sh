@@ -16,8 +16,8 @@ chown -R jboss:root ${JBOSS_HOME}/bin/
 chmod -R g+rwX ${JBOSS_HOME}/bin/
 
 # Ensure that the local data directory exists
-DATA_DIR=${JBOSS_HOME}/standalone/data
-mkdir -p ${DATA_DIR}/kie
+DATA_DIR=/opt/kie/data
+mkdir -p ${DATA_DIR}
 # Necessary to permit running with a randomised UID
 chown -R jboss:root ${DATA_DIR}
 chmod -R 777 ${DATA_DIR}
