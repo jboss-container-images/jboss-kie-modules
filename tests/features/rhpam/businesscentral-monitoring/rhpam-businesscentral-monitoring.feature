@@ -60,6 +60,7 @@ Feature: RHPAM Business Central Monitoring configuration tests
       | KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL                 | 10000                     |
       | KIE_WORKBENCH_CONTROLLER_OPENSHIFT_ENABLED               | true                      |
     Then container log should contain -Dorg.kie.server.controller.openshift.global.discovery.enabled=true
-    Then container log should contain -Dorg.kie.server.controller.openshift.prefer.kieserver.service=true
-    Then container log should contain -Dorg.kie.server.controller.template.cache.ttl=10000
-    Then container log should contain -Dorg.kie.workbench.controller.openshift.enabled=true
+     And container log should contain -Dorg.kie.server.controller.openshift.prefer.kieserver.service=true
+     And container log should contain -Dorg.kie.server.controller.template.cache.ttl=10000
+     And container log should contain -Dorg.kie.workbench.controller.openshift.enabled=true
+     And container log should contain -Dorg.kie.controller.ping.alive.disable=true

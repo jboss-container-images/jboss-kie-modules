@@ -136,6 +136,7 @@ function configure_openshift_enhancement() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.openshift.prefer.kieserver.service=${kscPreferKieService}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.template.cache.ttl=${kscTemplateCacheTTL}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.workbench.controller.openshift.enabled=${kscOpenShiftEnabled}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.controller.ping.alive.disable=${kscOpenShiftEnabled}"
 }
 
 function configure_workbench_profile() {
