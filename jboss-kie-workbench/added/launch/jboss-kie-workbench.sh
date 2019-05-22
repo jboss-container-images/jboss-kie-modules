@@ -49,6 +49,7 @@ function configureEnv() {
 
 function configure() {
     configure_admin_security
+    configure_kie_kiestore
     configure_controller_access
     configure_server_access
     configure_openshift_enhancement
@@ -76,14 +77,46 @@ function configure_admin_security() {
     fi
 }
 
+# https://issues.jboss.org/browse/JBPM-8400
+# https://issues.jboss.org/browse/KIECLOUD-218
+function configure_kie_kiestore() {
+    local keystore="${JBOSS_HOME}/standalone/configuration/kie-keystore.jceks"
+    if [ -f "${keystore}" ]; then
+        rm "${keystore}"
+    fi
+    local storepass="kieKeyStorePassword"
+    local storetype="JCEKS"
+    local keypass="kieKeyPassword"
+    local serveralias="kieServerAlias"
+    echo $(get_kie_server_pwd) | keytool -importpassword \
+        -keystore ${keystore} \
+        -storepass ${storepass} \
+        -storetype ${storetype} \
+        -keypass ${keypass} \
+        -alias ${serveralias} \
+        > /dev/null 2>&1
+    local ctrlalias="kieCtrlAlias"
+    echo $(get_kie_server_controller_pwd) | keytool -importpassword \
+        -keystore ${keystore} \
+        -storepass ${storepass} \
+        -storetype ${storetype} \
+        -keypass ${keypass} \
+        -alias ${ctrlalias} \
+        > /dev/null 2>&1
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dkie.keystore.keyStoreURL=file://${keystore}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dkie.keystore.keyStorePwd=${storepass}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dkie.keystore.key.server.alias=${serveralias}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dkie.keystore.key.server.pwd=${keypass}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dkie.keystore.key.ctrl.alias=${ctrlalias}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dkie.keystore.key.ctrl.pwd=${keypass}"
+}
+
 # here in case the controller is separate from business central
-function configure_controller_access {
+function configure_controller_access() {
     # We will only support one controller, whether running by itself or in business central.
     local kieServerControllerService="${KIE_SERVER_CONTROLLER_SERVICE}"
     kieServerControllerService=${kieServerControllerService^^}
     kieServerControllerService=${kieServerControllerService//-/_}
-    # token
-    local kieServerControllerToken="$(get_kie_server_controller_token)"
     # host
     local kieServerControllerHost="${KIE_SERVER_CONTROLLER_HOST}"
     if [ "${kieServerControllerHost}" = "" ]; then
@@ -109,6 +142,7 @@ function configure_controller_access {
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.user=\"$(get_kie_server_controller_user)\""
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.pwd=\"$(esc_kie_server_controller_pwd)\""
         # token
+        local kieServerControllerToken="$(get_kie_server_controller_token)"
         if [ "${kieServerControllerToken}" != "" ]; then
             JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.token=\"${kieServerControllerToken}\""
         fi
@@ -157,7 +191,6 @@ function configure_guvnor_settings() {
     if [ "${buildEnableIncremental}" = "true" ] || [ "${buildEnableIncremental}" = "false" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dbuild.enable-incremental=${buildEnableIncremental}"
     fi
-    # see scripts/jboss-kie-wildfly-common/configure.sh
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.designer.perspective=full -Ddesignerdataobjects=false"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.demo=false -Dorg.kie.example=false"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.guvnor.m2repo.dir=${kieDataDir}/maven-repository"

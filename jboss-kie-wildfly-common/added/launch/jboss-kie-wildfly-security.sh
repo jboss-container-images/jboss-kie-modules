@@ -216,8 +216,9 @@ print_user_information() {
 }
 
 ########## EAP ##########
-# If LDAP/SSO integration is enabled, do not create eap users.
+
 function add_eap_user() {
+    # If LDAP/SSO integration is enabled, do not create eap users.
      if [ "${AUTH_LDAP_URL}x" == "x" ] && [ "${SSO_URL}x" == "x" ]; then
         local kie_type="${1}"
         local eap_user="${2}"

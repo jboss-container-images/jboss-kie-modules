@@ -89,3 +89,9 @@ Feature: Decision/Business Central common features
      And container log should contain Make sure to configure a ADMIN user to access the Business Central with the roles kie-server,rest-all,admin,kiemgmt,Administrators
      And container log should contain Make sure to configure the KIE_MAVEN_USER user to interact with Business Central embedded maven server
      And container log should contain Make sure to configure the KIE_SERVER_CONTROLLER_USER user to interact with KIE Server rest api with the roles kie-server,rest-all,user
+
+  # https://issues.jboss.org/browse/KIECLOUD-218
+  # https://issues.jboss.org/browse/JBPM-8400
+  Scenario: Check for kie keystore
+    When container is ready
+    Then container log should contain -Dkie.keystore.keyStoreURL=file:///opt/eap/standalone/configuration/kie-kiestore.jceks
