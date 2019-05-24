@@ -40,6 +40,7 @@ function prepareEnv() {
     unset KIE_SERVER_USE_SECURE_ROUTE_NAME
     unset KIE_SERVER_STARTUP_STRATEGY
     unset KIE_SERVER_SYNC_DEPLOY
+    unset MYSQL_ENABLED_TLS_PROTOCOLS
     unset PROMETHEUS_SERVER_EXT_DISABLED
 }
 
@@ -86,7 +87,7 @@ function configure_EJB_Timer_datasource {
             service=${service//-/_}
 
             DB_SERVICE_PREFIX_MAPPING="${serviceMappingName}=EJB_TIMER,${DB_SERVICE_PREFIX_MAPPING}"
-            TIMER_SERVICE_DATA_STORE="${serviceMappingName}"
+            TIMER_SERVICE_DATA_STORE="EJB_TIMER"
             EJB_TIMER_DRIVER=${serviceMappingName##*-}
 
             set_url $prefix
@@ -169,18 +170,29 @@ function set_timer_defaults {
 
     local url=$(find_env "${prefix}_URL")
     url=$(find_env "${prefix}_XA_CONNECTION_PROPERTY_URL" "${url}")
-    if [[ $EJB_TIMER_DRIVER = *"mysql"* ]]; then
+    # Default to the Mariadb property
+    enabledTLSParameterName="enabledSslProtocolSuites"
+    if [[ $EJB_TIMER_DRIVER =~ mysql|mariadb ]]; then
+        if [[ $EJB_TIMER_DRIVER = *"mysql"* ]]; then
+            enabledTLSParameterName="enabledTLSProtocols"
+        fi
+
         if [ "x${url}" != "x" ]; then
-            EJB_TIMER_XA_CONNECTION_PROPERTY_URL="${url}?pinGlobalTxToPhysicalConnection=true"
+            EJB_TIMER_XA_CONNECTION_PROPERTY_URL="${url}?pinGlobalTxToPhysicalConnection=true\&amp;${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
+            eval ${prefix}_URL="${url}?${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
         else
+            # the first character must be upper case
+            local paramName=${enabledTLSParameterName^}
             EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection="true"
+            eval EJB_TIMER_XA_CONNECTION_PROPERTY_${paramName}="${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
         fi
     fi
 
     # XA Set URL method for postgresql is Url, fixes: Method setURL not found
-    if [[ $EJB_TIMER_DRIVER = *"postgresql"*  && "x${url}" != "x" ]]; then
+    if [[ $EJB_TIMER_DRIVER =~ postgresql|mariadb  && "x${url}" != "x" ]]; then
+        EJB_TIMER_XA_CONNECTION_PROPERTY_Url=${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}
         unset EJB_TIMER_XA_CONNECTION_PROPERTY_URL
-        EJB_TIMER_XA_CONNECTION_PROPERTY_Url=${url}
+
     fi
 }
 
@@ -227,13 +239,19 @@ function declare_xa_variables {
             local port=$(find_env "${prefix}_SERVICE_PORT" "${servicePort}")
             local database=$(find_env "${prefix}_DATABASE")
             local dbType="postgresql"
+            local enabledTLSParameterName="enabledSslProtocolSuites"
             if [[ $EJB_TIMER_DRIVER = *"mysql"* ]]; then
+                enabledTLSParameterName="enabledTLSProtocols"
                 dbType="mysql"
             fi
             if [[ $EJB_TIMER_DRIVER = *"mariadb"* ]]; then
                 dbType="mariadb"
             fi
-            eval ${prefix}_URL="jdbc:${dbType}://${host}:${port}/${database}"
+            if [[ $EJB_TIMER_DRIVER =~ mysql|mariadb ]]; then
+                eval ${prefix}_URL="jdbc:${dbType}://${host}:${port}/${database}?${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
+            else
+                eval ${prefix}_URL="jdbc:${dbType}://${host}:${port}/${database}"
+            fi
         fi
     fi
 }
