@@ -1,9 +1,11 @@
 #!/bin/bash
 
-# Queries the Route from the Kubernetes API
-# ${1} - route name.
-query_route() {
-    local routeName=${1}
+# Make a query to OCP rest API, only runs on OpenShift.
+# ${1} - ocp api path
+# $[2} - resource path uri
+query_ocp_api() {
+    local ocpApi="${1}"
+    local resourcePath="${2}"
     # only execute the following lines if this container is running on OpenShift
     if [ -e /var/run/secrets/kubernetes.io/serviceaccount/token ]; then
         local namespace=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
@@ -11,9 +13,16 @@ query_route() {
         local response=$(curl -s -w "%{http_code}" --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
             -H "Authorization: Bearer $token" \
             -H 'Accept: application/json' \
-            https://${KUBERNETES_SERVICE_HOST:-kubernetes.default.svc}:${KUBERNETES_SERVICE_PORT:-443}/apis/route.openshift.io/v1/namespaces/${namespace}/routes/${routeName})
+            https://${KUBERNETES_SERVICE_HOST:-kubernetes.default.svc}:${KUBERNETES_SERVICE_PORT:-443}/${ocpApi}/v1/namespaces/${namespace}/${resourcePath})
         echo ${response}
     fi
+}
+
+# Queries the Route from the Kubernetes API
+# ${1} - route name.
+query_route() {
+    local routeName=${1}
+    echo $(query_ocp_api "apis/route.openshift.io" "routes/${routeName}")
 }
 
 # Queries the Route host from the Kubernetes API
