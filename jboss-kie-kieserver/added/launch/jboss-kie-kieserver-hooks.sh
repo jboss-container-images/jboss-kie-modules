@@ -5,14 +5,16 @@ source "${JBOSS_HOME}/bin/launch/jboss-kie-common.sh"
 source "${JBOSS_HOME}/bin/launch/logging.sh"
 
 # make sure there is a workbench service within the namespace.
-controllerServiceName=${WORKBENCH_SERVICE_NAME/-/_}
+controllerServiceName=${WORKBENCH_SERVICE_NAME//-/_}
 controllerServiceHost=$(find_env "${controllerServiceName^^}_SERVICE_HOST")
 controllerServicePort=$(find_env "${controllerServiceName^^}_SERVICE_PORT_HTTP")
 
 # param
 # ${1} - the config map payload
+# ${2} - ConfigMap name
 update_config_map() {
     local payload=${1}
+    local kieCMName=${2}
     # only execute the following lines if this container is running on OpenShift
     if [ -e /var/run/secrets/kubernetes.io/serviceaccount/token ]; then
         local namespace=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
@@ -22,7 +24,7 @@ update_config_map() {
             -H 'Accept: application/json' \
             -H 'Content-Type: application/strategic-merge-patch+json' \
             -XPATCH \
-            https://${KUBERNETES_SERVICE_HOST:-kubernetes.default.svc}:${KUBERNETES_SERVICE_PORT:-443}/api/v1/namespaces/${namespace}/configmaps/myapp-kieserver -d ${payload} )
+            https://${KUBERNETES_SERVICE_HOST:-kubernetes.default.svc}:${KUBERNETES_SERVICE_PORT:-443}/api/v1/namespaces/${namespace}/configmaps/${kieCMName} -d ${payload} )
     fi
 }
 
@@ -31,6 +33,7 @@ if [ -n ${WORKBENCH_SERVICE_NAME} -a -n "${KIE_SERVER_ID}" ]; then
     kieServeruri="deploymentconfigs?labelSelector=services.server.kie.org%2Fkie-server-id%3D${KIE_SERVER_ID}"
     kieResponse=$(query_ocp_api "apis/apps.openshift.io" "${kieServeruri}")
     kieReplicas=$(echo ${kieResponse:: -3} | python -c 'import json,sys;obj=json.load(sys.stdin);print (obj["items"][0]["spec"]["replicas"])')
+    kieDCName=$(echo ${kieResponse:: -3} | python -c 'import json,sys;obj=json.load(sys.stdin);print (obj["items"][0]["metadata"]["name"])')
 
     controllerResponse=$(query_ocp_api "apis/apps.openshift.io" "deploymentconfigs/${WORKBENCH_SERVICE_NAME}")
     controllerReplicas=$(echo ${controllerResponse:: -3} | python -c 'import json,sys;obj=json.load(sys.stdin);print (obj["spec"]["replicas"])')
@@ -38,7 +41,7 @@ if [ -n ${WORKBENCH_SERVICE_NAME} -a -n "${KIE_SERVER_ID}" ]; then
 
     if [ ${kieReplicas} == 0 ]; then
         log_info "KIE Server Replicas is ${kieReplicas}, updating ${KIE_SERVER_ID} configMap to DETACHED."
-        update_config_map "{\"metadata\":{\"labels\":{\"services.server.kie.org/kie-server-state\":\"DETACHED\"}}}"
+        update_config_map "{\"metadata\":{\"labels\":{\"services.server.kie.org/kie-server-state\":\"DETACHED\"}}}" "${kieDCName}"
 
         if [ "${controllerServiceHost}x" != "x" -a "${controllerServicePort}x" != "x" -a ${controllerReplicas} -gt 0  ]; then
             # curl command may be hanging a bit during dc pod starting up; need to update
@@ -54,7 +57,7 @@ if [ -n ${WORKBENCH_SERVICE_NAME} -a -n "${KIE_SERVER_ID}" ]; then
 
     elif [ ${kieReplicas} -gt 0 ]; then
         log_info "KIE Server Replicas is ${kieReplicas}, updating ${KIE_SERVER_ID} configMap to USED."
-        update_config_map "{\"metadata\":{\"labels\":{\"services.server.kie.org/kie-server-state\":\"USED\"}}}"
+        update_config_map "{\"metadata\":{\"labels\":{\"services.server.kie.org/kie-server-state\":\"USED\"}}}" "${kieDCName}"
 
         if [ "${controllerServiceHost}x" != "x" -a "${controllerServicePort}x" != "x" -a ${controllerReplicas} -gt 0  ]; then
             # curl command may be hanging a bit during dc pod starting up; need to update
