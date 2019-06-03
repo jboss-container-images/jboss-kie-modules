@@ -1,13 +1,13 @@
 #!/bin/bash
 
 function log_info() {
-    echo "[INFO]"$1
+    echo "[INFO]"$1 >&2
 }
 
 function log_error() {
-    echo "[ERROR]"$1
+    echo "[ERROR]"$1 >&2
 }
 
-function log_warn() {
-    echo "[WARN]"$1
+function log_warning() {
+    echo "[WARN]"$1 >&2
 }
