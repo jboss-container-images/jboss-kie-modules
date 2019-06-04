@@ -1,0 +1,264 @@
+{
+  "kind": "DeploymentConfig",
+  "apiVersion": "apps.openshift.io/v1",
+  "metadata": {
+    "name": "rhpam-authoring-rhpamcentr",
+    "namespace": "rhpam-apb",
+    "selfLink": "/apis/apps.openshift.io/v1/namespaces/rhpam-apb/deploymentconfigs/rhpam-authoring-rhpamcentr",
+    "uid": "1724de78-862d-11e9-8c27-28d244a2cc78",
+    "resourceVersion": "10405074",
+    "generation": 2,
+    "creationTimestamp": "2019-06-03T18:26:23Z",
+    "labels": {
+      "app": "rhpam-authoring-rhpamcentr",
+      "application": "rhpam-authoring",
+      "service": "rhpam-businesscentral"
+    }
+  },
+  "spec": {
+    "strategy": {
+      "type": "Recreate",
+      "recreateParams": {
+        "timeoutSeconds": 600
+      },
+      "resources": {},
+      "activeDeadlineSeconds": 21600
+    },
+    "triggers": [
+      {
+        "type": "ImageChange",
+        "imageChangeParams": {
+          "automatic": true,
+          "containerNames": [
+            "businesscentral"
+          ],
+          "from": {
+            "kind": "ImageStreamTag",
+            "namespace": "openshift",
+            "name": "rhpam74-businesscentral-openshift:1.0"
+          },
+          "lastTriggeredImage": "docker-registry.default.svc:5000/openshift/rhpam74-businesscentral-openshift@sha256:bb0ca4074e227c88e91e16674466ced367c2138e0b26a0fd7cdd5f21b3427e16"
+        }
+      },
+      {
+        "type": "ConfigChange"
+      }
+    ],
+    "replicas": 1,
+    "test": false,
+    "selector": {
+      "deploymentConfig": "rhpam-authoring-rhpamcentr"
+    },
+    "template": {
+      "metadata": {
+        "name": "rhpam-authoring-rhpamcentr",
+        "creationTimestamp": null,
+        "labels": {
+          "app": "rhpam-authoring-rhpamcentr",
+          "application": "rhpam-authoring",
+          "deploymentConfig": "rhpam-authoring-rhpamcentr",
+          "service": "rhpam-businesscentral"
+        }
+      },
+      "spec": {
+        "volumes": [
+          {
+            "name": "businesscentral-certs",
+            "secret": {
+              "secretName": "rhpam-authoring-rhpamcentr",
+              "defaultMode": 420
+            }
+          },
+          {
+            "name": "businesscentral-data",
+            "persistentVolumeClaim": {
+              "claimName": "rhpam-authoring-rhpamcentr-data"
+            }
+          }
+        ],
+        "containers": [
+          {
+            "name": "businesscentral",
+            "image": "docker-registry.default.svc:5000/openshift/rhpam74-businesscentral-openshift@sha256:bb0ca4074e227c88e91e16674466ced367c2138e0b26a0fd7cdd5f21b3427e16",
+            "ports": [
+              {
+                "name": "jolokia",
+                "containerPort": 8778,
+                "protocol": "TCP"
+              },
+              {
+                "name": "http",
+                "containerPort": 8080,
+                "protocol": "TCP"
+              },
+              {
+                "name": "https",
+                "containerPort": 8443,
+                "protocol": "TCP"
+              },
+              {
+                "name": "git-ssh",
+                "containerPort": 8001,
+                "protocol": "TCP"
+              }
+            ],
+            "env": [
+              {
+                "name": "KIE_ADMIN_USER",
+                "value": "adminUser"
+              },
+              {
+                "name": "KIE_ADMIN_PWD",
+                "value": "spolti"
+              },
+              {
+                "name": "KIE_MBEANS",
+                "value": "enabled"
+              },
+              {
+                "name": "KIE_SERVER_CONTROLLER_USER",
+                "value": "monitorUser"
+              },
+              {
+                "name": "KIE_SERVER_CONTROLLER_PWD",
+                "value": "28QBgbif"
+              },
+              {
+                "name": "KIE_SERVER_USER",
+                "value": "executionUser"
+              },
+              {
+                "name": "KIE_SERVER_PWD",
+                "value": "BUCENWmU"
+              },
+              {
+                "name": "KIE_SERVER_CONTROLLER_OPENSHIFT_GLOBAL_DISCOVERY_ENABLED",
+                "value": "false"
+              },
+              {
+                "name": "KIE_SERVER_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE",
+                "value": "false"
+              },
+              {
+                "name": "KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL",
+                "value": "60000"
+              },
+              {
+                "name": "KIE_WORKBENCH_CONTROLLER_OPENSHIFT_ENABLED",
+                "value": "true"
+              },
+              {
+                "name": "KIE_MAVEN_USER",
+                "value": "mavenUser"
+              },
+              {
+                "name": "KIE_MAVEN_PWD",
+                "value": "Vor8EJuK"
+              },
+              {
+                "name": "HTTPS_KEYSTORE_DIR",
+                "value": "/etc/businesscentral-certs"
+              },
+              {
+                "name": "HTTPS_KEYSTORE",
+                "value": "keystore.jks"
+              },
+              {
+                "name": "HTTPS_NAME",
+                "value": "jboss"
+              },
+              {
+                "name": "HTTPS_PASSWORD",
+                "value": "PdxVnjaH"
+              }
+            ],
+            "resources": {
+              "limits": {
+                "memory": "2Gi"
+              }
+            },
+            "volumeMounts": [
+              {
+                "name": "businesscentral-certs",
+                "readOnly": true,
+                "mountPath": "/etc/businesscentral-certs"
+              },
+              {
+                "name": "businesscentral-data",
+                "mountPath": "/opt/kie/data"
+              }
+            ],
+            "livenessProbe": {
+              "httpGet": {
+                "path": "/rest/healthy",
+                "port": 8080,
+                "scheme": "HTTP"
+              },
+              "initialDelaySeconds": 180,
+              "timeoutSeconds": 2,
+              "periodSeconds": 15,
+              "successThreshold": 1,
+              "failureThreshold": 3
+            },
+            "readinessProbe": {
+              "httpGet": {
+                "path": "/rest/ready",
+                "port": 8080,
+                "scheme": "HTTP"
+              },
+              "initialDelaySeconds": 60,
+              "timeoutSeconds": 2,
+              "periodSeconds": 30,
+              "successThreshold": 1,
+              "failureThreshold": 6
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "imagePullPolicy": "IfNotPresent"
+          }
+        ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 60,
+        "dnsPolicy": "ClusterFirst",
+        "serviceAccountName": "rhpam-authoring-rhpamsvc",
+        "serviceAccount": "rhpam-authoring-rhpamsvc",
+        "securityContext": {},
+        "schedulerName": "default-scheduler"
+      }
+    }
+  },
+  "status": {
+    "latestVersion": 1,
+    "observedGeneration": 2,
+    "replicas": 1,
+    "updatedReplicas": 1,
+    "availableReplicas": 1,
+    "unavailableReplicas": 0,
+    "details": {
+      "message": "config change",
+      "causes": [
+        {
+          "type": "ConfigChange"
+        }
+      ]
+    },
+    "conditions": [
+      {
+        "type": "Available",
+        "status": "True",
+        "lastUpdateTime": "2019-06-03T18:29:08Z",
+        "lastTransitionTime": "2019-06-03T18:29:08Z",
+        "message": "Deployment config has minimum availability."
+      },
+      {
+        "type": "Progressing",
+        "status": "True",
+        "lastUpdateTime": "2019-06-03T18:29:09Z",
+        "lastTransitionTime": "2019-06-03T18:29:09Z",
+        "reason": "NewReplicationControllerAvailable",
+        "message": "replication controller \"rhpam-authoring-rhpamcentr-1\" successfully rolled out"
+      }
+    ],
+    "readyReplicas": 1
+  }
+}

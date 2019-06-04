@@ -24,7 +24,7 @@ update_config_map() {
             -H 'Accept: application/json' \
             -H 'Content-Type: application/strategic-merge-patch+json' \
             -XPATCH \
-            https://${KUBERNETES_SERVICE_HOST:-kubernetes.default.svc}:${KUBERNETES_SERVICE_PORT:-443}/api/v1/namespaces/${namespace}/configmaps/${kieCMName} -d ${payload} )
+            ${KUBERNETES_SERVICE_PROTOCOL:-https}://${KUBERNETES_SERVICE_HOST:-kubernetes.default.svc}:${KUBERNETES_SERVICE_PORT:-443}/api/v1/namespaces/${namespace}/configmaps/${kieCMName} -d ${payload} )
     fi
 }
 

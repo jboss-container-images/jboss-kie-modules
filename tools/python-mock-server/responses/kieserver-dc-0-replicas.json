@@ -1,0 +1,434 @@
+{
+  "kind": "DeploymentConfigList",
+  "apiVersion": "apps.openshift.io/v1",
+  "metadata": {
+    "selfLink": "/apis/apps.openshift.io/v1/namespaces/rhpam-apb/deploymentconfigs",
+    "resourceVersion": "10412857"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "rhpam-authoring-kieserver-0",
+        "namespace": "rhpam-apb",
+        "selfLink": "/apis/apps.openshift.io/v1/namespaces/rhpam-apb/deploymentconfigs/rhpam-authoring-kieserver-0",
+        "uid": "1e3b1527-862d-11e9-8c27-28d244a2cc78",
+        "resourceVersion": "10405403",
+        "generation": 2,
+        "creationTimestamp": "2019-06-03T18:26:35Z",
+        "labels": {
+          "app": "rhpam-authoring-kieserver-0",
+          "application": "rhpam-authoring",
+          "service": "rhpam-kieserver",
+          "services.server.kie.org/kie-server-id": "rhpam-authoring-kieserver-0"
+        }
+      },
+      "spec": {
+        "strategy": {
+          "type": "Rolling",
+          "rollingParams": {
+            "updatePeriodSeconds": 1,
+            "intervalSeconds": 1,
+            "timeoutSeconds": 600,
+            "maxUnavailable": 0,
+            "maxSurge": "100%"
+          },
+          "resources": {},
+          "activeDeadlineSeconds": 21600
+        },
+        "triggers": [
+          {
+            "type": "ImageChange",
+            "imageChangeParams": {
+              "automatic": true,
+              "containerNames": [
+                "kieserver"
+              ],
+              "from": {
+                "kind": "ImageStreamTag",
+                "namespace": "openshift",
+                "name": "rhpam74-kieserver-openshift:1.0"
+              },
+              "lastTriggeredImage": "docker-registry.default.svc:5000/openshift/rhpam74-kieserver-openshift@sha256:38a14086ccd08f55528ef31484984ec4e8b9e12a8721486fba4d8ad9fd2044f5"
+            }
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "replicas": 0,
+        "revisionHistoryLimit": 10,
+        "test": false,
+        "selector": {
+          "deploymentConfig": "rhpam-authoring-kieserver-0"
+        },
+        "template": {
+          "metadata": {
+            "name": "rhpam-authoring-kieserver-0",
+            "creationTimestamp": null,
+            "labels": {
+              "app": "rhpam-authoring-kieserver-0",
+              "application": "rhpam-authoring",
+              "deploymentConfig": "rhpam-authoring-kieserver-0",
+              "service": "rhpam-kieserver",
+              "services.server.kie.org/kie-server-id": "rhpam-authoring-kieserver-0"
+            }
+          },
+          "spec": {
+            "volumes": [
+              {
+                "name": "kieserver-certs",
+                "secret": {
+                  "secretName": "rhpam-authoring-kieserver-0",
+                  "defaultMode": 420
+                }
+              }
+            ],
+            "initContainers": [
+              {
+                "name": "rhpam-authoring-postgresql-0-init",
+                "image": "busybox",
+                "command": [
+                  "sh",
+                  "-c",
+                  "until nslookup rhpam-authoring-postgresql-0 && nc -vz rhpam-authoring-postgresql-0 5432; do echo waiting for rhpam-kieserver-postgresql; sleep 2; done;"
+                ],
+                "resources": {},
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "FallbackToLogsOnError",
+                "imagePullPolicy": "IfNotPresent"
+              }
+            ],
+            "containers": [
+              {
+                "name": "kieserver",
+                "image": "docker-registry.default.svc:5000/openshift/rhpam74-kieserver-openshift@sha256:38a14086ccd08f55528ef31484984ec4e8b9e12a8721486fba4d8ad9fd2044f5",
+                "ports": [
+                  {
+                    "name": "jolokia",
+                    "containerPort": 8778,
+                    "protocol": "TCP"
+                  },
+                  {
+                    "name": "http",
+                    "containerPort": 8080,
+                    "protocol": "TCP"
+                  },
+                  {
+                    "name": "https",
+                    "containerPort": 8443,
+                    "protocol": "TCP"
+                  },
+                  {
+                    "name": "ping",
+                    "containerPort": 8888,
+                    "protocol": "TCP"
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "WORKBENCH_SERVICE_NAME",
+                    "value": "rhpam-authoring-rhpamcentr"
+                  },
+                  {
+                    "name": "KIE_SERVER_MODE",
+                    "value": "DEVELOPMENT"
+                  },
+                  {
+                    "name": "DATASOURCES",
+                    "value": "RHPAM"
+                  },
+                  {
+                    "name": "RHPAM_DATABASE",
+                    "value": "rhpam7"
+                  },
+                  {
+                    "name": "RHPAM_JNDI",
+                    "value": "java:/jboss/datasources/rhpam"
+                  },
+                  {
+                    "name": "KIE_SERVER_PERSISTENCE_DS",
+                    "value": "java:/jboss/datasources/rhpam"
+                  },
+                  {
+                    "name": "RHPAM_USERNAME",
+                    "value": "rhpam"
+                  },
+                  {
+                    "name": "RHPAM_PASSWORD",
+                    "value": "rFXptLBGCHXZP5W4tTIW"
+                  },
+                  {
+                    "name": "RHPAM_JTA",
+                    "value": "true"
+                  },
+                  {
+                    "name": "RHPAM_DRIVER",
+                    "value": "postgresql"
+                  },
+                  {
+                    "name": "KIE_SERVER_PERSISTENCE_DIALECT",
+                    "value": "org.hibernate.dialect.PostgreSQLDialect"
+                  },
+                  {
+                    "name": "RHPAM_SERVICE_HOST",
+                    "value": "rhpam-authoring-postgresql-0"
+                  },
+                  {
+                    "name": "RHPAM_SERVICE_PORT",
+                    "value": "5432"
+                  },
+                  {
+                    "name": "TIMER_SERVICE_DATA_STORE",
+                    "value": "rhpam-authoring-postgresql-0"
+                  },
+                  {
+                    "name": "TIMER_SERVICE_DATA_STORE_REFRESH_INTERVAL",
+                    "value": "30000"
+                  },
+                  {
+                    "name": "RHPAM_TX_ISOLATION",
+                    "value": "TRANSACTION_READ_COMMITTED"
+                  },
+                  {
+                    "name": "PROMETHEUS_SERVER_EXT_DISABLED",
+                    "value": "True"
+                  },
+                  {
+                    "name": "DROOLS_SERVER_FILTER_CLASSES",
+                    "value": "true"
+                  },
+                  {
+                    "name": "KIE_ADMIN_USER",
+                    "value": "adminUser"
+                  },
+                  {
+                    "name": "KIE_ADMIN_PWD",
+                    "value": "spolti"
+                  },
+                  {
+                    "name": "KIE_MBEANS",
+                    "value": "enabled"
+                  },
+                  {
+                    "name": "KIE_SERVER_BYPASS_AUTH_USER",
+                    "value": "false"
+                  },
+                  {
+                    "name": "KIE_SERVER_CONTROLLER_USER",
+                    "value": "monitorUser"
+                  },
+                  {
+                    "name": "KIE_SERVER_CONTROLLER_PWD",
+                    "value": "28QBgbif"
+                  },
+                  {
+                    "name": "KIE_SERVER_CONTROLLER_SERVICE",
+                    "value": "rhpam-authoring-rhpamcentr"
+                  },
+                  {
+                    "name": "KIE_SERVER_CONTROLLER_PROTOCOL",
+                    "value": "ws"
+                  },
+                  {
+                    "name": "KIE_SERVER_ID",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.labels[services.server.kie.org/kie-server-id]"
+                      }
+                    }
+                  },
+                  {
+                    "name": "KIE_SERVER_ROUTE_NAME",
+                    "value": "rhpam-authoring-kieserver-0"
+                  },
+                  {
+                    "name": "KIE_SERVER_USE_SECURE_ROUTE_NAME",
+                    "value": "true"
+                  },
+                  {
+                    "name": "KIE_SERVER_HOST",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "status.podIP"
+                      }
+                    }
+                  },
+                  {
+                    "name": "KIE_SERVER_USER",
+                    "value": "executionUser"
+                  },
+                  {
+                    "name": "KIE_SERVER_PWD",
+                    "value": "BUCENWmU"
+                  },
+                  {
+                    "name": "MAVEN_REPOS",
+                    "value": "RHPAMCENTR,EXTERNAL"
+                  },
+                  {
+                    "name": "RHPAMCENTR_MAVEN_REPO_SERVICE",
+                    "value": "rhpam-authoring-rhpamcentr"
+                  },
+                  {
+                    "name": "RHPAMCENTR_MAVEN_REPO_PATH",
+                    "value": "/maven2/"
+                  },
+                  {
+                    "name": "RHPAMCENTR_MAVEN_REPO_USERNAME",
+                    "value": "mavenUser"
+                  },
+                  {
+                    "name": "RHPAMCENTR_MAVEN_REPO_PASSWORD",
+                    "value": "Vor8EJuK"
+                  },
+                  {
+                    "name": "MAVEN_MIRROR_URL"
+                  },
+                  {
+                    "name": "KIE_SERVER_MGMT_DISABLED",
+                    "value": "False"
+                  },
+                  {
+                    "name": "KIE_SERVER_STARTUP_STRATEGY",
+                    "value": "OpenShiftStartupStrategy"
+                  },
+                  {
+                    "name": "HTTPS_KEYSTORE_DIR",
+                    "value": "/etc/kieserver-certs"
+                  },
+                  {
+                    "name": "HTTPS_KEYSTORE",
+                    "value": "keystore.jks"
+                  },
+                  {
+                    "name": "HTTPS_NAME",
+                    "value": "jboss"
+                  },
+                  {
+                    "name": "HTTPS_PASSWORD",
+                    "value": "PdxVnjaH"
+                  },
+                  {
+                    "name": "KIE_SERVER_CONTAINER_DEPLOYMENT"
+                  },
+                  {
+                    "name": "JGROUPS_PING_PROTOCOL",
+                    "value": "openshift.DNS_PING"
+                  },
+                  {
+                    "name": "OPENSHIFT_DNS_PING_SERVICE_NAME",
+                    "value": "rhpam-authoring-kieserver-0-ping"
+                  },
+                  {
+                    "name": "OPENSHIFT_DNS_PING_SERVICE_PORT",
+                    "value": "8888"
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "memory": "1Gi"
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "name": "kieserver-certs",
+                    "readOnly": true,
+                    "mountPath": "/etc/kieserver-certs"
+                  }
+                ],
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/services/rest/server/healthcheck",
+                    "port": 8080,
+                    "scheme": "HTTP"
+                  },
+                  "initialDelaySeconds": 180,
+                  "timeoutSeconds": 2,
+                  "periodSeconds": 15,
+                  "successThreshold": 1,
+                  "failureThreshold": 3
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/services/rest/server/readycheck",
+                    "port": 8080,
+                    "scheme": "HTTP"
+                  },
+                  "initialDelaySeconds": 60,
+                  "timeoutSeconds": 2,
+                  "periodSeconds": 30,
+                  "successThreshold": 1,
+                  "failureThreshold": 6
+                },
+                "lifecycle": {
+                  "postStart": {
+                    "exec": {
+                      "command": [
+                        "/bin/sh",
+                        "/opt/eap/bin/launch/jboss-kie-kieserver-hooks.sh"
+                      ]
+                    }
+                  },
+                  "preStop": {
+                    "exec": {
+                      "command": [
+                        "/bin/sh",
+                        "/opt/eap/bin/launch/jboss-kie-kieserver-hooks.sh"
+                      ]
+                    }
+                  }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "imagePullPolicy": "IfNotPresent"
+              }
+            ],
+            "restartPolicy": "Always",
+            "terminationGracePeriodSeconds": 90,
+            "dnsPolicy": "ClusterFirst",
+            "serviceAccountName": "rhpam-authoring-rhpamsvc",
+            "serviceAccount": "rhpam-authoring-rhpamsvc",
+            "securityContext": {},
+            "schedulerName": "default-scheduler"
+          }
+        }
+      },
+      "status": {
+        "latestVersion": 1,
+        "observedGeneration": 2,
+        "replicas": 1,
+        "updatedReplicas": 1,
+        "availableReplicas": 1,
+        "unavailableReplicas": 0,
+        "details": {
+          "message": "config change",
+          "causes": [
+            {
+              "type": "ConfigChange"
+            }
+          ]
+        },
+        "conditions": [
+          {
+            "type": "Available",
+            "status": "True",
+            "lastUpdateTime": "2019-06-03T18:31:10Z",
+            "lastTransitionTime": "2019-06-03T18:31:10Z",
+            "message": "Deployment config has minimum availability."
+          },
+          {
+            "type": "Progressing",
+            "status": "True",
+            "lastUpdateTime": "2019-06-03T18:31:11Z",
+            "lastTransitionTime": "2019-06-03T18:31:11Z",
+            "reason": "NewReplicationControllerAvailable",
+            "message": "replication controller \"rhpam-authoring-kieserver-0-1\" successfully rolled out"
+          }
+        ],
+        "readyReplicas": 1
+      }
+    }
+  ]
+}

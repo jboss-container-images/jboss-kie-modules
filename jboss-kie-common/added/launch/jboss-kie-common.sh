@@ -13,7 +13,7 @@ query_ocp_api() {
         local response=$(curl -s -w "%{http_code}" --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
             -H "Authorization: Bearer $token" \
             -H 'Accept: application/json' \
-            https://${KUBERNETES_SERVICE_HOST:-kubernetes.default.svc}:${KUBERNETES_SERVICE_PORT:-443}/${ocpApi}/v1/namespaces/${namespace}/${resourcePath})
+            ${KUBERNETES_SERVICE_PROTOCOL:-https}://${KUBERNETES_SERVICE_HOST:-kubernetes.default.svc}:${KUBERNETES_SERVICE_PORT:-443}/${ocpApi}/v1/namespaces/${namespace}/${resourcePath})
         echo ${response}
     fi
 }
