@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source $JBOSS_HOME/bin/launch/logging.sh
+
 # Make a query to OCP rest API, only runs on OpenShift.
 # ${1} - ocp api path
 # $[2} - resource path uri
@@ -44,6 +46,31 @@ query_route_host() {
         fi
     fi
     echo "${host}"
+}
+
+# Queries the Route tls spec from the Kubernetes API. If there's a tls definition, returns a secured protocol.
+# ${1} - route name
+# ${2} - protocol (optional, defaults to http)
+query_route_protocol() {
+    local routeName=${1}
+    local protocol=${2}
+    if [ -z $protocol ]; then
+        protocol="http"
+    fi
+    if [ "${routeName}" != "" ]; then
+        local response=$(query_route "${routeName}")
+        if [ "${response: -3}" = "200" ]; then
+            # parse the json response to get the route host
+            local suffix=$(echo ${response::- 3} | python -c 'import json,sys;obj=json.load(sys.stdin); suffix = "s" if "tls" in obj["spec"] else "" ; print (suffix)')
+            protocol="${protocol}${suffix}"
+        else
+            log_warning "Fail to query the Route using the Kubernetes API, the Service Account might not have the necessary privileges; defaulting to protocol [${protocol}]."
+            if [ ! -z "${response}" ]; then
+                log_warning "Response message: ${response::- 3} - HTTP Status code: ${response: -3}"
+            fi
+        fi
+    fi
+    echo "${protocol}"
 }
 
 # Queries the Route service from the Kubernetes API
@@ -111,8 +138,12 @@ build_route_url() {
     local port=${4}
     local path=${5}
     if [ "${routeName}" != "" ]; then
-        if [[ "${routeName},," = *"secure"* ]]; then
-            protocol="${protocol:-https}"
+        protocol=$(query_route_protocol ${routeName} ${protocol})
+        if [ "${protocol}" = "https" ]; then
+            # sanity check to avoid setting port 80 to secure protocol
+            if [ "${port}" = "80" ]; then
+                port="443"
+            fi
             port="${port:-443}"
         fi
         host=$(query_route_host "${routeName}" "${host}")
