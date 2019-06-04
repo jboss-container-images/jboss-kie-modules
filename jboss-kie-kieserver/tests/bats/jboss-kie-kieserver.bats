@@ -34,3 +34,20 @@ teardown() {
   [ "${DATASOURCES}" = "${expected_datasources}" ]
   [ "${RHPAM_NONXA}" = "false" ]
 }
+
+@test "check if kie server location is set according to the route" {
+  local expected="http://${HOSTNAME}:80/services/rest/server"
+  KIE_SERVER_ROUTE_NAME="my-route-name"
+  configure_server_location >&2
+  echo "JBOSS_KIE_ARGS is ${JBOSS_KIE_ARGS}" >&2
+  echo "Expected is ${expected}" >&2
+  [[ $JBOSS_KIE_ARGS == *"-Dorg.kie.server.location=${expected}"* ]]
+}
+
+@test "check if kie server location is set to default" {
+  local expected="http://${HOSTNAME}:8080/services/rest/server"
+  configure_server_location >&2
+  echo "JBOSS_KIE_ARGS is ${JBOSS_KIE_ARGS}" >&2
+  echo "Expected is ${expected}" >&2
+  [[ $JBOSS_KIE_ARGS == *"-Dorg.kie.server.location=${expected}"* ]]
+}
