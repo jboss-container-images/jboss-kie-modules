@@ -1,5 +1,9 @@
 #!/bin/sh
 
+export KUBERNETES_SERVICE_PROTOCOL="http"
+export KUBERNETES_SERVICE_HOST="localhost"
+export KUBERNETES_SERVICE_PORT="8080"
+
 # File from https://github.com/jboss-container-images/jboss-eap-modules/blob/master/os-eap7-launch/added/launch/launch-common.sh
 
 # common subroutines used in various places of the launch scripts
