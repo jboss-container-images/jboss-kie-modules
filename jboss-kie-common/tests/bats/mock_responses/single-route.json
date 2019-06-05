@@ -1,0 +1,50 @@
+{
+    "metadata": {
+        "name": "my-route",
+        "namespace": "my-namespace",
+        "selfLink": "/apis/route.openshift.io/v1/namespaces/my-namespace/routes/my-route",
+        "uid": "eb9ed521-6d0a-11e9-8682-080027e8c7bc",
+        "resourceVersion": "1194535",
+        "creationTimestamp": "2019-05-02T18:48:48Z",
+        "labels": {
+            "app": "my-app",
+            "application": "my-app",
+            "template": "my-app",
+            "xpaas": "1.0.0"
+        },
+        "annotations": {
+            "description": "Route for application's https service.",
+            "openshift.io/generated-by": "OpenShiftNewApp",
+            "openshift.io/host.generated": "true"
+        }
+    },
+    "spec": {
+        "host": "myapp-my-namespace.com",
+        "to": {
+            "kind": "Service",
+            "name": "my-app",
+            "weight": 100
+        },
+        "tls": {
+            "termination": "edge",
+            "insecureEdgeTerminationPolicy": "Redirect"
+        },
+        "wildcardPolicy": "None"
+    },
+    "status": {
+        "ingress": [
+            {
+                "host": "myapp-my-namespace.com",
+                "routerName": "router",
+                "conditions": [
+                    {
+                        "type": "Admitted",
+                        "status": "True",
+                        "lastTransitionTime": "2019-05-02T18:48:48Z"
+                    }
+                ],
+                "wildcardPolicy": "None"
+            }
+        ]
+    }
+}
