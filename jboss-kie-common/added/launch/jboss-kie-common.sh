@@ -61,8 +61,7 @@ query_route_protocol() {
         local response=$(query_route "${routeName}")
         if [ "${response: -3}" = "200" ]; then
             # parse the json response to get the route host
-            local suffix=$(echo ${response::- 3} | python -c 'import json,sys;obj=json.load(sys.stdin); suffix = "s" if "tls" in obj["spec"] else "" ; print (suffix)')
-            protocol="${protocol}${suffix}"
+            local protocol=$(echo ${response::- 3} | python -c 'import json,sys;obj=json.load(sys.stdin); protocol = "https" if "tls" in obj["spec"] else "http" ; print (protocol)')
         else
             log_warning "Fail to query the Route using the Kubernetes API, the Service Account might not have the necessary privileges; defaulting to protocol [${protocol}]."
             if [ ! -z "${response}" ]; then
