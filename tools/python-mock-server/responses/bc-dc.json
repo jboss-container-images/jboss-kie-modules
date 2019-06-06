@@ -137,7 +137,7 @@
               },
               {
                 "name": "KIE_SERVER_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE",
-                "value": "false"
+                "value": "true"
               },
               {
                 "name": "KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL",
