@@ -162,7 +162,7 @@ function configure_server_access() {
 
 function configure_openshift_enhancement() {
     local kscGlobalDiscoveryEnabled=$(find_env "KIE_SERVER_CONTROLLER_OPENSHIFT_GLOBAL_DISCOVERY_ENABLED" "false")
-    local kscPreferKieService=$(find_env "KIE_SERVER_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE" "false")
+    local kscPreferKieService=$(find_env "KIE_SERVER_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE" "true")
     local kscTemplateCacheTTL=$(find_env "KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL" "60000")
     local kscOpenShiftEnabled=$(find_env "KIE_WORKBENCH_CONTROLLER_OPENSHIFT_ENABLED" "false")
 
