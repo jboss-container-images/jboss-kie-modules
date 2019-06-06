@@ -1,9 +1,9 @@
 #!/bin/sh
 # if using vim, do ':set ft=zsh' for easier reading
 
-# source the KIE config
-source $JBOSS_HOME/bin/kieserver-config.sh
-source $JBOSS_HOME/bin/launch/logging.sh
+# source the KIE config (includes logging.sh)
+source ${JBOSS_HOME}/bin/kieserver-config.sh
+
 # set the KIE environment
 setKieContainerEnv
 # dump the KIE environment

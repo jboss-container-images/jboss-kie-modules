@@ -1,8 +1,9 @@
 #!/bin/sh
 # if using vim, do ':set ft=zsh' for easier reading
 
+source ${JBOSS_HOME}/bin/launch/logging.sh
 source ${JBOSS_HOME}/bin/launch/openshift-node-name.sh
-source $JBOSS_HOME/bin/launch/logging.sh
+source ${JBOSS_CONTAINER_MAVEN_DEFAULT_MODULE}/scl-enable-maven
 
 function getJBossModulesOptsForKieUtilities() {
     local kieJarDir="${JBOSS_HOME}/standalone/deployments/kie-server.war/WEB-INF/lib"
