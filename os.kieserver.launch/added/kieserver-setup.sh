@@ -1,7 +1,7 @@
 #!/bin/sh
 # if using vim, do ':set ft=zsh' for easier reading
 
-source $JBOSS_HOME/bin/launch/logging.sh
+source ${JBOSS_HOME}/bin/launch/logging.sh
 
 function prepareEnv() {
     unset KIE_SERVER_JMS_QUEUES_REQUEST
@@ -117,13 +117,13 @@ setupKieServerForOpenShift() {
     setKieFullEnv
     # dump the KIE environment
     dumpKieFullEnv | tee ${JBOSS_HOME}/kieEnv
-    
+
     # save the environment for use by the probes
     sed -ri "s/^([^:]+): *(.*)$/\1=\"\2\"/" ${JBOSS_HOME}/kieEnv
-    
+
     # generate the KIE Server state file
     generateKieServerStateXml > "${KIE_SERVER_STATE_FILE}"
-    
+
     # filter the KIE Server kie-server-jms.xml and ejb-jar.xml files
     filterKieJmsFile "${JBOSS_HOME}/standalone/deployments/kie-server.war/META-INF/kie-server-jms.xml"
     filterKieJmsFile "${JBOSS_HOME}/standalone/deployments/kie-server.war/WEB-INF/ejb-jar.xml"
@@ -133,14 +133,14 @@ setupKieServerForOpenShift() {
 
     # filter the KIE Server quartz.properties file
     filterQuartzPropFile "${JBOSS_HOME}/bin/quartz.properties"
-    
+
     # CLOUD-758 - "Provider com.sun.script.javascript.RhinoScriptEngineFactory not found" is logged every time when a process uses Java Script.
     find $JBOSS_HOME/modules/system/layers/base -name javax.script.ScriptEngineFactory -exec sed -i "s|com.sun.script.javascript.RhinoScriptEngineFactory||" {} \;
-    
+
     # append KIE Server options to JAVA_OPTS
     echo "# Append KIE Server options to JAVA_OPTS" >> $JBOSS_HOME/bin/standalone.conf
     echo "JAVA_OPTS=\"\$JAVA_OPTS ${KIE_SERVER_OPTS}\"" >> $JBOSS_HOME/bin/standalone.conf
-    
+
     # add the KIE Server user
     $JBOSS_HOME/bin/add-user.sh -a -u "${KIE_SERVER_USER}" -p "${KIE_SERVER_PASSWORD}" -ro "kie-server,guest"
     if [ "$?" -ne "0" ]; then
