@@ -107,7 +107,7 @@ def generate_template(path):
             data = json.load(data_file, object_pairs_hook=OrderedDict)
             outfile = TEMPLATE_DOCS + re.sub('\.json$', '',  path.replace('optaweb/', '')) + '.adoc'
         else:
-            data = yaml.load(data_file)
+            data = yaml.load(data_file, Loader=yaml.FullLoader)
             outfile = TEMPLATE_DOCS + re.sub('\.yaml$', '',  path.replace('optaweb/', '')) + '.adoc'
 
     if not 'labels' in data or not "template" in data["labels"]:
