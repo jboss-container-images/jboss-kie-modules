@@ -122,6 +122,7 @@ function configure_EJB_Timer_datasource {
 function set_url {
     local prefixedUrl=$(find_env "${1}_URL")
     url=$(find_env "${1}_XA_CONNECTION_PROPERTY_URL" "${prefixedUrl}")
+    url=$(echo ${url} | sed -e 's/\;/\\;/g')
     if [ "${prefixedUrl}x" = "x" ]; then
         eval ${1}_URL="${url}"
     fi
@@ -155,7 +156,7 @@ function declare_timer_common_variables {
 }
 
 function set_timer_defaults {
-    if [ "x${EJB_TIMER_JNDI}" != "x" ]; then
+   if [ "x${EJB_TIMER_JNDI}" != "x" ]; then
         EJB_TIMER_JNDI="${EJB_TIMER_JNDI}_EJBTimer"
     else
         EJB_TIMER_JNDI=$(find_env "${prefix}_JNDI" "java:jboss/datasources/ejb_timer")
@@ -180,19 +181,26 @@ function set_timer_defaults {
         if [ "x${url}" != "x" ]; then
             EJB_TIMER_XA_CONNECTION_PROPERTY_URL="${url}?pinGlobalTxToPhysicalConnection=true\&amp;${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
             eval ${prefix}_URL="${url}?${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
-        else
-            # the first character must be upper case
-            local paramName=${enabledTLSParameterName^}
-            EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection="true"
-            eval EJB_TIMER_XA_CONNECTION_PROPERTY_${paramName}="${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
         fi
+        # the first character must be upper case
+        local paramName=${enabledTLSParameterName^}
+        # KIECLOUD-243 if this variable is set in the xa-datasource, an exception may occur during server bootstrap
+        eval unset EJB_TIMER_XA_CONNECTION_PROPERTY_${paramName}
+        eval unset ${prefix}_XA_CONNECTION_PROPERTY_${paramName}
+        unset EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection
+        eval unset ${prefix}_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection
     fi
 
-    # XA Set URL method for postgresql is Url, fixes: Method setURL not found
-    if [[ $EJB_TIMER_DRIVER =~ postgresql|mariadb  && "x${url}" != "x" ]]; then
+    if [[ $EJB_TIMER_DRIVER =~ postgresql|mariadb && "x${url}" != "x" ]]; then
+        fix_ejbtimer_xa_url
+    fi
+}
+
+# XA Set URL method for postgresql is Url, fixes: Method setURL not found
+function fix_ejbtimer_xa_url {
+    if [[ $EJB_TIMER_DRIVER =~ postgresql|mariadb ]]; then
         EJB_TIMER_XA_CONNECTION_PROPERTY_Url=${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}
         unset EJB_TIMER_XA_CONNECTION_PROPERTY_URL
-
     fi
 }
 
@@ -247,11 +255,28 @@ function declare_xa_variables {
             if [[ $EJB_TIMER_DRIVER = *"mariadb"* ]]; then
                 dbType="mariadb"
             fi
-            if [[ $EJB_TIMER_DRIVER =~ mysql|mariadb ]]; then
-                eval ${prefix}_URL="jdbc:${dbType}://${host}:${port}/${database}?${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
-            else
-                eval ${prefix}_URL="jdbc:${dbType}://${host}:${port}/${database}"
+
+            # try to find the url connection parameters from the XA properties
+            if [ -z "${host}" ]; then
+                host="${EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName}"
             fi
+            if [ -z "${port}" ]; then
+                port="${EJB_TIMER_XA_CONNECTION_PROPERTY_Port:-${EJB_TIMER_XA_CONNECTION_PROPERTY_PortNumber}}"
+            fi
+            if [ -z "${database}" ]; then
+                database="${EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName}"
+            fi
+
+            local jdbcUrl="jdbc:${dbType}://${host}:${port}/${database}"
+            if [[ $EJB_TIMER_DRIVER =~ mysql|mariadb ]]; then
+                eval ${prefix}_URL="${jdbcUrl}?${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
+                # we also need to set URL property for mysql|mariadb databases, since pinGlobalTxToPhysicalConnection can only be passed this way
+                EJB_TIMER_XA_CONNECTION_PROPERTY_URL="${jdbcUrl}?pinGlobalTxToPhysicalConnection=true\&amp;${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
+            else
+                eval ${prefix}_URL="${jdbcUrl}"
+            fi
+
+            fix_ejbtimer_xa_url
         fi
     fi
 }
