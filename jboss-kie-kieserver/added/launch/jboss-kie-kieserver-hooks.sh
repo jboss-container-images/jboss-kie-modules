@@ -56,7 +56,8 @@ if [ -n ${WORKBENCH_SERVICE_NAME} -a -n "${KIE_SERVER_ID}" ]; then
         fi
 
     elif [ ${kieReplicas} -gt 0 ]; then
-        log_info "KIE Server Replicas is ${kieReplicas}"
+        log_info "KIE Server Replicas is ${kieReplicas}, updating ${KIE_SERVER_ID} configMap to USED."
+        update_config_map "{\"metadata\":{\"labels\":{\"services.server.kie.org/kie-server-state\":\"USED\"}}}" "${kieDCName}"
 
         if [ "${controllerServiceHost}x" != "x" -a "${controllerServicePort}x" != "x" -a ${controllerReplicas} -gt 0  ]; then
             # curl command may be hanging a bit during dc pod starting up; need to update
