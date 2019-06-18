@@ -1,15 +1,15 @@
-@rhpam-7/rhpam74-businesscentral-monitoring-openshift
+@rhpam-7/rhpam75-businesscentral-monitoring-openshift
 Feature: RHPAM Business Central Monitoring configuration tests
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
     When container is ready
-    Then container log should contain rhpam-7/rhpam74-businesscentral-monitoring-openshift image, version
+    Then container log should contain rhpam-7/rhpam75-businesscentral-monitoring-openshift image, version
 
   Scenario: Check for product and version environment variables
     When container is ready
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-businesscentral-monitoring
-     And run sh -c 'echo $RHPAM_BUSINESS_CENTRAL_MONITORING_VERSION' in container and check its output for 7.4
+     And run sh -c 'echo $RHPAM_BUSINESS_CENTRAL_MONITORING_VERSION' in container and check its output for 7.5
 
   # https://issues.jboss.org/browse/RHPAM-891
   Scenario: Check default users are properly configured

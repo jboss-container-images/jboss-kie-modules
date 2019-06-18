@@ -35,9 +35,9 @@
           "from": {
             "kind": "ImageStreamTag",
             "namespace": "openshift",
-            "name": "rhpam74-businesscentral-openshift:1.0"
+            "name": "rhpam75-businesscentral-openshift:1.0"
           },
-          "lastTriggeredImage": "docker-registry.default.svc:5000/openshift/rhpam74-businesscentral-openshift@sha256:bb0ca4074e227c88e91e16674466ced367c2138e0b26a0fd7cdd5f21b3427e16"
+          "lastTriggeredImage": "docker-registry.default.svc:5000/openshift/rhpam75-businesscentral-openshift@sha256:bb0ca4074e227c88e91e16674466ced367c2138e0b26a0fd7cdd5f21b3427e16"
         }
       },
       {
@@ -79,7 +79,7 @@
         "containers": [
           {
             "name": "businesscentral",
-            "image": "docker-registry.default.svc:5000/openshift/rhpam74-businesscentral-openshift@sha256:bb0ca4074e227c88e91e16674466ced367c2138e0b26a0fd7cdd5f21b3427e16",
+            "image": "docker-registry.default.svc:5000/openshift/rhpam75-businesscentral-openshift@sha256:bb0ca4074e227c88e91e16674466ced367c2138e0b26a0fd7cdd5f21b3427e16",
             "ports": [
               {
                 "name": "jolokia",

@@ -1,4 +1,4 @@
-@rhdm-7/rhdm74-kieserver-openshift  @rhpam-7/rhpam74-kieserver-openshift @rhdm-7/rhdm74-decisioncentral-openshift @rhpam-7/rhpam74-businesscentral-openshift @rhpam-7/rhpam74-businesscentral-monitoring-openshift
+@rhdm-7/rhdm75-kieserver-openshift  @rhpam-7/rhpam75-kieserver-openshift @rhdm-7/rhdm75-decisioncentral-openshift @rhpam-7/rhpam75-businesscentral-openshift @rhpam-7/rhpam75-businesscentral-monitoring-openshift
 Feature: RHPAM and RHDM common tests
 
   Scenario: Configure kie-workbench to use LDAP authentication

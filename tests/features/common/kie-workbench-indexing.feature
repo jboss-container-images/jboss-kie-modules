@@ -1,4 +1,4 @@
-@rhpam-7/rhpam74-businesscentral-indexing-openshift @rhdm-7/rhdm74-decisioncentral-indexing-openshift
+@rhpam-7/rhpam75-businesscentral-indexing-openshift @rhdm-7/rhdm75-decisioncentral-indexing-openshift
 Feature: KIE Workbench Indexing configuration tests
 
   Scenario: Test Container Health
