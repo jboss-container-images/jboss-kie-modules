@@ -46,9 +46,9 @@
               "from": {
                 "kind": "ImageStreamTag",
                 "namespace": "openshift",
-                "name": "rhpam74-kieserver-openshift:1.0"
+                "name": "rhpam75-kieserver-openshift:1.0"
               },
-              "lastTriggeredImage": "docker-registry.default.svc:5000/openshift/rhpam74-kieserver-openshift@sha256:38a14086ccd08f55528ef31484984ec4e8b9e12a8721486fba4d8ad9fd2044f5"
+              "lastTriggeredImage": "docker-registry.default.svc:5000/openshift/rhpam75-kieserver-openshift@sha256:38a14086ccd08f55528ef31484984ec4e8b9e12a8721486fba4d8ad9fd2044f5"
             }
           },
           {
@@ -101,7 +101,7 @@
             "containers": [
               {
                 "name": "kieserver",
-                "image": "docker-registry.default.svc:5000/openshift/rhpam74-kieserver-openshift@sha256:38a14086ccd08f55528ef31484984ec4e8b9e12a8721486fba4d8ad9fd2044f5",
+                "image": "docker-registry.default.svc:5000/openshift/rhpam75-kieserver-openshift@sha256:38a14086ccd08f55528ef31484984ec4e8b9e12a8721486fba4d8ad9fd2044f5",
                 "ports": [
                   {
                     "name": "jolokia",
