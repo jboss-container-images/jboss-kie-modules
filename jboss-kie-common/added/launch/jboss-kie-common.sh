@@ -1,7 +1,5 @@
 #!/bin/bash
 
-source $JBOSS_HOME/bin/launch/logging.sh
-
 # Make a query to OCP rest API, only runs on OpenShift.
 # ${1} - ocp api path
 # $[2} - resource path uri
