@@ -35,7 +35,7 @@ chmod ug+x ${JBOSS_HOME}/bin/openshift-launch.sh
 
 # Set bin permissions
 chown -R jboss:root ${JBOSS_HOME}/bin/
-chmod -R g+rwX ${JBOSS_HOME}/bin/
+chmod -R g+rwx ${JBOSS_HOME}/bin/
 
 # Ensure that the local KIE repository exists
 KIE_DIR=${HOME}/.kie
