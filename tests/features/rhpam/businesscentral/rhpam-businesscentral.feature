@@ -69,3 +69,13 @@ Feature: RHPAM Business Central configuration tests
   Scenario: Check Workbench profile for rhpam
     When container is ready
     Then container log should contain -Dorg.kie.workbench.profile=FORCE_FULL
+
+  # https://issues.jboss.org/browse/KIECLOUD-160
+  Scenario: Check Workbench for Git http support
+    When container is started with env
+      | variable         | value       |
+      | HOSTNAME_HTTP    | example.com |
+    Then container log should contain -Dorg.uberfire.nio.git.https.enabled=false
+     And container log should contain -Dorg.uberfire.nio.git.http.enabled=true
+     And container log should contain -Dorg.uberfire.nio.git.http.hostname=example.com
+     And container log should contain -Dorg.uberfire.nio.git.http.port=80
