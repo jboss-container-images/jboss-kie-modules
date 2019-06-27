@@ -917,3 +917,8 @@ Feature: RHPAM KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value h2 on XPath //*[local-name()='database-data-store']/@database
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_part on XPath //*[local-name()='database-data-store']/@partition
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value -1 on XPath //*[local-name()='database-data-store']/@refresh-interval
+  
+  Scenario: Checks if the launch directory has the right permissions set
+    When container is ready
+    Then run sh -c '[ $(ls -l /opt/eap/bin/launch/*.sh | wc -l) -gt 0 ] && echo "has script files"' in container and check its output for has script files
+     And run sh -c 'exec=$(find -L /opt/eap/bin/launch -maxdepth 1 -type f -perm /u+x,g+x -name \*.sh | wc -l); nonexec=$(ls -l /opt/eap/bin/launch/*.sh | wc -l); [ $exec = $nonexec ] && echo "permissions ok"' in container and check its output for permissions ok
