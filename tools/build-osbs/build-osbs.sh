@@ -19,9 +19,9 @@ function help()
     echo "Required:"
     echo "  -v PROD_VERSION           Version being built. Passed to the build-overrides.sh -v option"
     echo "  -c PROD_COMPONENT         Component for which an image is being built. Valid choices are:"
-    echo "                            rhpam-businesscentral, rhpam-businesscentral-monitoring, rhpam-businesscentral-indexing,"
+    echo "                            rhpam-businesscentral, rhpam-businesscentral-monitoring,"
     echo "                            rhpam-controller, rhpam-kieserver, rhpam-smartrouter, rhdm-decisioncentral,"
-    echo "                            rhdm-decisioncentral-indexing, rhdm-controller, rhdm-kieserver, rhdm-optaweb-employee-rostering"
+    echo "                            rhdm-controller, rhdm-kieserver, rhdm-optaweb-employee-rostering"
     echo "  -t OSBS_BUILD_TARGET      Build target for osbs, for example rhba-7.3-openshift-containers-candidate"
     echo ""
     echo "Optional:"
@@ -73,16 +73,14 @@ function check_for_required_envs()
     else
         case "$PROD_COMPONENT" in
             rhpam-businesscentral | \
-            rhpam-businesscentral-indexing | \
             rhpam-businesscentral-monitoring | \
             rhpam-controller | \
             rhpam-kieserver | \
             rhpam-smartrouter | \
-	    rhdm-controller | \
-	    rhdm-decisioncentral | \
-	    rhdm-decisioncentral-indexing | \
-	    rhdm-kieserver | \
-	    rhdm-optaweb-employee-rostering)
+            rhdm-controller | \
+            rhdm-decisioncentral | \
+            rhdm-kieserver | \
+            rhdm-optaweb-employee-rostering)
                 ;;
             *)
                 echo Invalid subcomponent specified with PROD_COMPONENT
@@ -155,11 +153,6 @@ function handle_cache_urls()
 
 function generate_overrides_files()
 {
-    # build-overrides.sh doesn't support indexing images as a product value
-    if [ "$PROD_COMPONENT" == "rhdm-decisioncentral-indexing" -o "$PROD_COMPONENT" == "rhpam-businesscentral-indexing" ]; then
-        return
-    fi
-
     echo build-overrides.sh -v $PROD_VERSION -t nightly -p $PROD_COMPONENT $bo_options
     build-overrides.sh -v $PROD_VERSION -t nightly -p $PROD_COMPONENT $bo_options
 }
@@ -199,15 +192,15 @@ while getopts gu:e:v:c:t:o:r:n:d:p:k:s:b:l:i:w:h option; do
         b)
             BUILD_DATE=$OPTARG
             ;;
-	l)
-	    CEKIT_CACHE_LOCAL=$OPTARG
-	    ;;
-	i)
-	    OSBS_BUILD_USER=$OPTARG
-	    ;;
-	w)
-	    WORK_DIR=$OPTARG
-	    ;;
+        l)
+            CEKIT_CACHE_LOCAL=$OPTARG
+            ;;
+        i)
+            OSBS_BUILD_USER=$OPTARG
+            ;;
+        w)
+            WORK_DIR=$OPTARG
+            ;;
         h)
             help
             exit 0

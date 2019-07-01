@@ -10,11 +10,6 @@ source "${JBOSS_HOME}/bin/launch/jboss-kie-wildfly-security.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
-    unset APPFORMER_ELASTIC_CLUSTER_NAME
-    unset APPFORMER_ELASTIC_HOST
-    unset APPFORMER_ELASTIC_PORT
-    unset APPFORMER_ELASTIC_RETRIES
-    unset APPFORMER_ELASTIC_SERVICE_NAME
     unset APPFORMER_INFINISPAN_HOST
     unset APPFORMER_INFINISPAN_PASSWORD
     unset APPFORMER_INFINISPAN_PORT
@@ -242,12 +237,8 @@ function configure_ha() {
                     # set the workbench properties for HA using Infinispan
                     configure_ha_common
                     configure_ha_infinispan
-                elif [ -n "$APPFORMER_ELASTIC_SERVICE_NAME" -o -n "$APPFORMER_ELASTIC_HOST" ] ; then
-                    # set the workbench properties for HA using Elasticsearch
-                    configure_ha_common
-                    configure_ha_elastic
                 else
-                    log_warning "APPFORMER_INFINISPAN_SERVICE_NAME or APPFORMER_INFINISPAN_HOST, or APPFORMER_ELASTIC_SERVICE_NAME or APPFORMER_ELASTIC_HOST not set; HA will not be available."
+                    log_warning "APPFORMER_INFINISPAN_SERVICE_NAME or APPFORMER_INFINISPAN_HOST not set; HA will not be available."
                 fi
             else
                 log_warning "APPFORMER_JMS_BROKER_USER(NAME), APPFORMER_JMS_BROKER_PASSWORD, and APPFORMER_JMS_BROKER_ADDRESS not set; HA will not be available."
@@ -323,24 +314,4 @@ function configure_ha_infinispan() {
     if [ -n "${APPFORMER_INFINISPAN_SASL_QOP}" ] ; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.sasl.qop=${APPFORMER_INFINISPAN_SASL_QOP}"
     fi
-}
-
-function configure_ha_elastic() {
-    local serviceName
-    if [ -n "${APPFORMER_ELASTIC_SERVICE_NAME}" ]; then
-        serviceName=${APPFORMER_ELASTIC_SERVICE_NAME//-/_} # replace - with _
-        serviceName=${serviceName^^} # uppercase
-    fi
-    if [ -z "${APPFORMER_ELASTIC_HOST}" ] && [ -n "${serviceName}" ]; then
-        APPFORMER_ELASTIC_HOST=$(find_env "${serviceName}_SERVICE_HOST")
-    fi
-    if [ -z "${APPFORMER_ELASTIC_PORT}" ] && [ -n "${serviceName}" ]; then
-        APPFORMER_ELASTIC_PORT=$(find_env "${serviceName}_SERVICE_PORT")
-    fi
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Des.set.netty.runtime.available.processors=false"
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.index=elastic"
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.cluster=${APPFORMER_ELASTIC_CLUSTER_NAME:-kie-cluster}"
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.host=${APPFORMER_ELASTIC_HOST}"
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.port=${APPFORMER_ELASTIC_PORT:-9300}"
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.elastic.retries=${APPFORMER_ELASTIC_RETRIES:-10}"
 }
