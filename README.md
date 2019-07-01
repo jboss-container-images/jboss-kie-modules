@@ -15,7 +15,6 @@ jboss-kie-modules \
 ├── [jboss-kie-smartrouter](jboss-kie-smartrouter): RHPAM Smart Router specific modules. \
 ├── [jboss-kie-wildfly-common](jboss-kie-wildfly-common): Common modules, basically used by all images. \
 ├── [jboss-kie-workbench](jboss-kie-workbench):  RHDM/PAM Decision/Business Central specific modules. \
-├── [jboss-kie-workbench-indexing](jboss-kie-workbench-indexing): RHDM/PAM Decision/Business Central indexing specific modules. \
 ├── [os.kieserver.chmod](os.kieserver.chmod): Process/Decision Server module. \
 ├── [os.kieserver.launch](os.kieserver.launch): Process/Decision Server module. \
 ├── [os.kieserver.probes](os.kieserver.probes): Process/Decision liveness and readineses probes. \
@@ -49,7 +48,7 @@ There are three different kind of tests: bats, arquillian and behave which are d
 ### Running Arquillian tests
 
 The arquillian is a more complete test, which runs a end to end test: reads an application template, deploys it on an
-OpenShift Cluster, completes some tasks, like fire rules, start process, etc. then stops the RHDM/PAM and clean up all 
+OpenShift Cluster, completes some tasks, like fire rules, start process, etc. then stops the RHDM/PAM and clean up all
 the resources created to run the tests (it is only available for bxms 6.4 yet).
 All the needed details and info about how to run these tests are described [here](tests/arquillian/kieserver/64/README.md)
 
@@ -59,7 +58,7 @@ All the needed details and info about how to run these tests are described [here
 To run Bats tests you need to have it installed, to learn more about its installation please visiti this
 [link](https://github.com/bats-core/bats-core#installation)
 
-What is Bats tests? From google: *Bats is a TAP-compliant testing framework for Bash. It provides a simple way to verify 
+What is Bats tests? From google: *Bats is a TAP-compliant testing framework for Bash. It provides a simple way to verify
 that the UNIX programs you write behave as expected. A Bats test file is a Bash script with special syntax for defining
 test cases. Under the hood, each test case is just a function with a description.*
 
@@ -76,7 +75,7 @@ and execute the following command targeting any **\*.bats** file:
 
 ```bash
 cd jboss-kie-wildfly-common/tests/bats
-bats jboss-kie-wildfly-security-ldap.bats 
+bats jboss-kie-wildfly-security-ldap.bats
  ✓ do not replace placeholder when URL is not provided
  ✓ replace placeholder by minimum xml content when URL is provided
  ✓ replace placeholder by all LDAP values when provided
@@ -124,8 +123,8 @@ Took 12m24.078s
 Our tests are driven by annotations, that means each feature or scenario are annotated with the, i.e. [image name](https://github.com/jboss-container-images/jboss-kie-modules/blob/master/tests/features/common/kie-kieserver-common.feature#L1)
 In this link there are two annotations which means that rhpam and rhdm kieserver images will trigger all tests in that feature file.
 
-Note that, to run the tests, you need to have a previously image that match the image name and version in the 
-[image.yaml](https://github.com/jboss-container-images/rhpam-7-openshift-image/blob/master/kieserver/image.yaml#L3-L5) file descriptor. 
+Note that, to run the tests, you need to have a previously image that match the image name and version in the
+[image.yaml](https://github.com/jboss-container-images/rhpam-7-openshift-image/blob/master/kieserver/image.yaml#L3-L5) file descriptor.
 
 
 One useful point is, CeKit allow us to run only one tests, very handy when developing a new test or troubleshooting a existing one.
@@ -134,7 +133,7 @@ Those tests are annotated with the **@wip** annotation, and to run it.
 Example:
 
 ```bash
-  @wip  
+  @wip
   Scenario: Check if JBOSS_HOME is correctly set
     When container is ready
     Then run sh -c 'echo $JBOSS_HOME' in container and check its output for /opt/eap
@@ -172,8 +171,8 @@ Note that, to run the tests, the target image needs to be built and available lo
 
 For more information about behave tests please refer this [link](https://behave.readthedocs.io/en/latest/)
 
-With the Cekit extension of behave we can run, practically, any kind of test on the containers, even source to image tests. 
-There are a few options that you can use to define what action and what kind of validations/verifications your test must do. 
+With the Cekit extension of behave we can run, practically, any kind of test on the containers, even source to image tests.
+There are a few options that you can use to define what action and what kind of validations/verifications your test must do.
 The behave test structure looks like:
 
 ```bash
@@ -217,7 +216,7 @@ The most common sentences are:
  - **Then/And container log should not contain {string}**
 
 
-For a complete list of all available sentences please refer the cekit source code: 
+For a complete list of all available sentences please refer the cekit source code:
 https://github.com/cekit/behave-test-steps/tree/v1/steps
 
 
