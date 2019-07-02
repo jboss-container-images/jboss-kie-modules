@@ -358,13 +358,13 @@ handle_rhdm_artifacts() {
             log_info "Generating ${controller_overrides_file} ..."
 cat <<EOF > "${controller_overrides_file}"
 envs:
-    - name: "CONTROLLER_DISTRIBUTION_ZIP"
-      value: "${controller_distribution_zip}"
+- name: "CONTROLLER_DISTRIBUTION_ZIP"
+  value: "${controller_distribution_zip}"
 artifacts:
-    - name: "ADD_ONS_DISTRIBUTION_ZIP"
-      target: "add_ons_distribution.zip"
-      #     ${add_ons_distribution_zip}
-      md5: "${add_ons_distribution_md5}"
+- name: "ADD_ONS_DISTRIBUTION_ZIP"
+  target: "add_ons_distribution.zip"
+  # ${add_ons_distribution_zip}
+  md5: "${add_ons_distribution_md5}"
 EOF
         else
             log_info "File ${controller_overrides_file} already generated."
@@ -384,10 +384,10 @@ EOF
                     log_info "Generating ${decisioncentral_overrides_file} ..."
 cat <<EOF > "${decisioncentral_overrides_file}"
 artifacts:
-    - name: "DECISION_CENTRAL_DISTRIBUTION_ZIP"
-      target: "decision_central_distribution.zip"
-      #     ${decision_central_distribution_zip}
-      md5: "${decision_central_distribution_md5}"
+- name: "DECISION_CENTRAL_DISTRIBUTION_ZIP"
+  target: "decision_central_distribution.zip"
+  # ${decision_central_distribution_zip}
+  md5: "${decision_central_distribution_md5}"
 EOF
                 else
                     log_info "File ${decisioncentral_overrides_file} already generated."
@@ -413,10 +413,10 @@ EOF
                     log_info "Generating ${kieserver_overrides_file} ..."
 cat <<EOF > "${kieserver_overrides_file}"
 artifacts:
-    - name: "KIE_SERVER_DISTRIBUTION_ZIP"
-      target: "kie_server_distribution.zip"
-      #     ${kie_server_distribution_zip}
-      md5: "${kie_server_distribution_md5}"
+- name: "KIE_SERVER_DISTRIBUTION_ZIP"
+  target: "kie_server_distribution.zip"
+  # ${kie_server_distribution_zip}
+  md5: "${kie_server_distribution_md5}"
 EOF
                 else
                     log_info "File ${kieserver_overrides_file} already generated."
@@ -440,15 +440,15 @@ EOF
                 log_info "Generating ${optaweb_employee_rostering_overrides_file} ..."
 cat <<EOF > "${optaweb_employee_rostering_overrides_file}"
 envs:
-    - name: "EMPLOYEE_ROSTERING_DISTRIBUTION_ZIP"
-      value: "${employee_rostering_distribution_zip}"
-    - name: "EMPLOYEE_ROSTERING_DISTRIBUTION_WAR"
-      value: "${employee_rostering_distribution_war}"
+- name: "EMPLOYEE_ROSTERING_DISTRIBUTION_ZIP"
+  value: "${employee_rostering_distribution_zip}"
+- name: "EMPLOYEE_ROSTERING_DISTRIBUTION_WAR"
+  value: "${employee_rostering_distribution_war}"
 artifacts:
-    - name: "ADD_ONS_DISTRIBUTION_ZIP"
-      target: "add_ons_distribution.zip"
-      #     ${add_ons_distribution_zip}
-      md5: "${add_ons_distribution_md5}"
+- name: "ADD_ONS_DISTRIBUTION_ZIP"
+  target: "add_ons_distribution.zip"
+  # ${add_ons_distribution_zip}
+  md5: "${add_ons_distribution_md5}"
 EOF
             else
                 log_info "File ${optaweb_employee_rostering_overrides_file} already generated."
@@ -508,10 +508,10 @@ handle_rhpam_artifacts() {
                         log_info "Generating ${businesscentral_overrides_file} ..."
 cat <<EOF > "${businesscentral_overrides_file}"
 artifacts:
-    - name: "BUSINESS_CENTRAL_DISTRIBUTION_ZIP"
-      target: "business_central_distribution.zip"
-      #     ${business_central_distribution_zip}
-      md5: "${business_central_distribution_md5}"
+- name: "BUSINESS_CENTRAL_DISTRIBUTION_ZIP"
+  target: "business_central_distribution.zip"
+  # ${business_central_distribution_zip}
+  md5: "${business_central_distribution_md5}"
 EOF
                     else
                         log_info "File ${businesscentral_overrides_file} already generated."
@@ -545,10 +545,10 @@ EOF
                     log_info "Generating ${businesscentral_monitoring_overrides_file} ..."
 cat <<EOF > "${businesscentral_monitoring_overrides_file}"
 artifacts:
-    - name: "BUSINESS_CENTRAL_MONITORING_DISTRIBUTION_ZIP"
-      target: "business_central_monitoring_distribution.zip"
-      #     ${business_central_monitoring_distribution_zip}
-      md5: "${business_central_monitoring_distribution_md5}"
+- name: "BUSINESS_CENTRAL_MONITORING_DISTRIBUTION_ZIP"
+  target: "business_central_monitoring_distribution.zip"
+  # ${business_central_monitoring_distribution_zip}
+  md5: "${business_central_monitoring_distribution_md5}"
 EOF
                 else
                     log_info "File ${businesscentral_monitoring_overrides_file} already generated."
@@ -569,13 +569,13 @@ EOF
             log_info "Generating ${controller_overrides_file} ..."
 cat <<EOF > "${controller_overrides_file}"
 envs:
-    - name: "CONTROLLER_DISTRIBUTION_ZIP"
-      value: "${controller_distribution_zip}"
+- name: "CONTROLLER_DISTRIBUTION_ZIP"
+  value: "${controller_distribution_zip}"
 artifacts:
-    - name: "ADD_ONS_DISTRIBUTION_ZIP"
-      target: "add_ons_distribution.zip"
-      #     ${add_ons_distribution_zip}
-      md5: "${add_ons_distribution_md5}"
+- name: "ADD_ONS_DISTRIBUTION_ZIP"
+  target: "add_ons_distribution.zip"
+  # ${add_ons_distribution_zip}
+  md5: "${add_ons_distribution_md5}"
 EOF
         else
             log_info "File ${controller_overrides_file} already generated."
@@ -597,17 +597,17 @@ EOF
                     log_info "Generating ${kieserver_overrides_file} ..."
 cat <<EOF > "${kieserver_overrides_file}"
 envs:
-    - name: "JBPM_WB_KIE_SERVER_BACKEND_JAR"
-      value: "${jbpm_wb_kie_server_backend_jar}"
+- name: "JBPM_WB_KIE_SERVER_BACKEND_JAR"
+  value: "${jbpm_wb_kie_server_backend_jar}"
 artifacts:
-    - name: "KIE_SERVER_DISTRIBUTION_ZIP"
-      target: "kie_server_distribution.zip"
-      #     ${kie_server_distribution_zip}
-      md5: "${kie_server_distribution_md5}"
-    - name: "BUSINESS_CENTRAL_DISTRIBUTION_ZIP"
-      target: "business_central_distribution.zip"
-      #     ${business_central_distribution_zip}
-      md5: "${business_central_distribution_md5}"
+- name: "KIE_SERVER_DISTRIBUTION_ZIP"
+  target: "kie_server_distribution.zip"
+  # ${kie_server_distribution_zip}
+  md5: "${kie_server_distribution_md5}"
+- name: "BUSINESS_CENTRAL_DISTRIBUTION_ZIP"
+  target: "business_central_distribution.zip"
+  # ${business_central_distribution_zip}
+  md5: "${business_central_distribution_md5}"
 EOF
                 else
                     log_info "File ${kieserver_overrides_file} already generated."
@@ -628,13 +628,13 @@ EOF
             log_info "Generating ${smartrouter_overrides_file} ..."
 cat <<EOF > "${smartrouter_overrides_file}"
 envs:
-    - name: "KIE_ROUTER_DISTRIBUTION_JAR"
-      value: "${kie_router_distribution_jar}"
+- name: "KIE_ROUTER_DISTRIBUTION_JAR"
+  value: "${kie_router_distribution_jar}"
 artifacts:
-    - name: "ADD_ONS_DISTRIBUTION_ZIP"
-      target: "add_ons_distribution.zip"
-      #     ${add_ons_distribution_zip}
-      md5: "${add_ons_distribution_md5}"
+- name: "ADD_ONS_DISTRIBUTION_ZIP"
+  target: "add_ons_distribution.zip"
+  # ${add_ons_distribution_zip}
+  md5: "${add_ons_distribution_md5}"
 EOF
         else
             log_info "File ${smartrouter_overrides_file} already generated."
