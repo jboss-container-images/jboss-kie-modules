@@ -1,6 +1,0 @@
-schema_version: 1
-name: jboss-kie-workbench-indexing
-version: '1.0'
-description: The jboss-kie-workbench-indexing module.
-execute:
-    - script: configure.sh
