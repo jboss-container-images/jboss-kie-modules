@@ -15,7 +15,6 @@ jboss-kie-modules \
 ├── [jboss-kie-smartrouter](jboss-kie-smartrouter): RHPAM Smart Router specific modules. \
 ├── [jboss-kie-wildfly-common](jboss-kie-wildfly-common): Common modules, basically used by all images. \
 ├── [jboss-kie-workbench](jboss-kie-workbench):  RHDM/PAM Decision/Business Central specific modules. \
-├── [jboss-kie-workbench-indexing](jboss-kie-workbench-indexing): RHDM/PAM Decision/Business Central indexing specific modules. \
 ├── [os.kieserver.chmod](os.kieserver.chmod): Process/Decision Server module. \
 ├── [os.kieserver.launch](os.kieserver.launch): Process/Decision Server module. \
 ├── [os.kieserver.probes](os.kieserver.probes): Process/Decision liveness and readineses probes. \
