@@ -194,6 +194,9 @@ function set_timer_defaults {
     if [[ $EJB_TIMER_DRIVER =~ postgresql|mariadb && "x${url}" != "x" ]]; then
         fix_ejbtimer_xa_url
     fi
+
+    # TODO: See comment on fix_ejbtimer_timer_sql function below.
+    fix_ejbtimer_timer_sql "${EJB_TIMER_DRIVER}"
 }
 
 # XA Set URL method for postgresql is Url, fixes: Method setURL not found
@@ -201,6 +204,29 @@ function fix_ejbtimer_xa_url {
     if [[ $EJB_TIMER_DRIVER =~ postgresql|mariadb ]]; then
         EJB_TIMER_XA_CONNECTION_PROPERTY_Url=${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}
         unset EJB_TIMER_XA_CONNECTION_PROPERTY_URL
+    fi
+}
+
+# TODO: Remove after org.jboss.as.ejb3.timerservice.persistence.database.DatabaseTimerPersistence.dentifyDialect()
+#       method correctly identifies the "mssql" driver the same as "microsoft".
+# https://issues.jboss.org/browse/RHPAM-2002
+# https://issues.jboss.org/browse/RHPAM-2260
+# https://issues.jboss.org/browse/WFLY-12280
+# https://issues.jboss.org/browse/JBEAP-17172
+function fix_ejbtimer_timer_sql() {
+    local ejb_timer_driver="${1}"
+    if [ "${ejb_timer_driver}" = "mssql" ]; then
+        for props_file in $(find "${JBOSS_HOME}/modules/system/layers/base" -name "timer-sql.properties"); do
+            local tmp_file="/tmp/timer-sql_$(date '+%Y-%m-%d_%H-%M-%S_%N').properties"
+            local create_table_mssql=$(grep "^create-table.mssql=" "${props_file}")
+            while IFS= read -r prop_line ; do
+                if [[ "${prop_line}"  =~ ^create-table= ]]; then
+                    prop_line=$(echo "${create_table_mssql}" | sed -e 's/^create-table\.mssql=/create-table=/')
+                fi
+                echo "${prop_line}" >> "${tmp_file}"
+            done < "${props_file}"
+            mv "${tmp_file}" "${props_file}"
+        done
     fi
 }
 
