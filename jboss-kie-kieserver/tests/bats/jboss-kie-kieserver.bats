@@ -20,7 +20,7 @@ teardown() {
     rm -rf $JBOSS_HOME
 }
 
-@test "test if the EJB_TIMER datasource has been auto-configured" { 
+@test "test if the EJB_TIMER datasource has been auto-configured" {
   local expected_timer_service="EJB_TIMER"
   local expected_datasources="EJB_TIMER,RHPAM"
   local expected_url="jdbc:h2:/deployments/data/h2/rhpam;AUTO_SERVER=TRUE"
@@ -28,9 +28,9 @@ teardown() {
   export RHPAM_XA_CONNECTION_PROPERTY_URL="${expected_url}"
   export RHPAM_NONXA="false"
   configure_EJB_Timer_datasource >&2
-  echo "Expected EJB_TIMER url is ${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}" >&2 
-  echo "Expected RHPAM_URL is ${RHPAM_URL}" >&2 
-  echo "Expected DATASOURCES is ${DATASOURCES}" >&2 
+  echo "Expected EJB_TIMER url is ${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}" >&2
+  echo "Expected RHPAM_URL is ${RHPAM_URL}" >&2
+  echo "Expected DATASOURCES is ${DATASOURCES}" >&2
   [ "${TIMER_SERVICE_DATA_STORE^^}" = "${expected_timer_service}" ]
   [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}" = "${expected_url}" ]
   [ "${RHPAM_XA_CONNECTION_PROPERTY_URL}" = "${expected_url}" ]
@@ -225,4 +225,22 @@ teardown() {
   echo "JBOSS_KIE_ARGS is ${JBOSS_KIE_ARGS}" >&2
   echo "Expected is ${expected}" >&2
   [[ $JBOSS_KIE_ARGS == *"-Dorg.kie.server.location=${expected}"* ]]
+}
+
+@test "check that fix_ejbtimer_timer_sql fixes timer-sql.properties files for mssql driver" {
+    # create original files
+    local overlay_dir="${JBOSS_HOME}/modules/system/layers/base/.overlays/layer-base-jboss-eap-7.2.1.CP/org/jboss/as/ejb3/main/timers"
+    local base_dir="${JBOSS_HOME}/modules/system/layers/base/org/jboss/as/ejb3/main/timers"
+    for layer_dir in "${overlay_dir}" "${base_dir}" ; do
+        mkdir -p "${layer_dir}"
+        cp "${BATS_TEST_DIRNAME}/resources/timer-sql.properties" "${layer_dir}"
+    done
+    # function to test
+    fix_ejbtimer_timer_sql "mssql" >&2
+    # validate processed files
+    for layer_dir in "${overlay_dir}" "${base_dir}" ; do
+        local create_table_default=$(grep "^create-table=" "${layer_dir}/timer-sql.properties")
+        local create_table_mssql=$(grep "^create-table.mssql=" "${layer_dir}/timer-sql.properties" | sed -e 's/\.mssql=/=/')
+        [ "${create_table_default}" = "${create_table_mssql}" ]
+    done
 }
