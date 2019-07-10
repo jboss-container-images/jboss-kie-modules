@@ -92,7 +92,7 @@ function configure_router_location {
     fi
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.host=${host}"
     if [ "${port}" = "" ]; then
-        port=$(find_env "${controllerService}_SERVICE_PORT" "9000")
+        port=$(find_env "${routeService}_SERVICE_PORT" "9000")
     fi
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.port=${port}"
     if [ -z "${routerUrlExternal}" ]; then
