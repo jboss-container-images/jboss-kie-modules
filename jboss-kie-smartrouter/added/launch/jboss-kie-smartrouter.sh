@@ -20,6 +20,7 @@ function prepareEnv() {
     unset KIE_SERVER_ROUTER_PROTOCOL
     unset KIE_SERVER_ROUTER_URL_EXTERNAL
     unset KIE_SERVER_ROUTER_REPO
+    unset KIE_SERVER_ROUTER_ROUTE_NAME
     unset KIE_SERVER_ROUTER_SERVICE
     unset KIE_SERVER_ROUTER_CONFIG_WATCHER_ENABLED
     unset KIE_SERVER_ROUTER_TLS_KEYSTORE
@@ -78,7 +79,7 @@ function configure_router_state() {
 
 function configure_router_location {
 
-    local routeName="${KIE_SERVER_ROUTER_NAME}"
+    local routeName="${KIE_SERVER_ROUTER_ROUTE_NAME}"
     local routeService="${KIE_SERVER_ROUTER_SERVICE}"
     local host="${KIE_SERVER_ROUTER_HOST}"
     local port="${KIE_SERVER_ROUTER_PORT}"
@@ -94,6 +95,7 @@ function configure_router_location {
     if [ "${port}" = "" ]; then
         port=$(find_env "${routeService}_SERVICE_PORT" "9000")
     fi
+
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.port=${port}"
     if [ -z "${routerUrlExternal}" ]; then
        if [ -n "${routeName}" ]; then
@@ -107,10 +109,10 @@ function configure_router_location {
                 port="${port:-80}"
             fi
 
-	    local routeHost=$(query_route_host "${routeName}" "${host}")
-	    routerUrlExternal="${protocol}://${routeHost}"
+	        local routeHost=$(query_route_host "${routeName}" "${host}:${port}")
+	        routerUrlExternal="${protocol}://${routeHost}"
 
-        else
+       else
             if [ "${protocol}" = "https" ]; then
                 host="${host:-${defaultSecureHost}}"
                 port="${port:-9443}"
@@ -122,7 +124,7 @@ function configure_router_location {
             routerUrlExternal=$(build_simple_url "${protocol}" "${host}" "${port}")
         fi
     fi  
-    
+
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${routerUrlExternal}"
 }
 
