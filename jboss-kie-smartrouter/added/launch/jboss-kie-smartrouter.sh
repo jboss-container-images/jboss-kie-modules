@@ -100,7 +100,7 @@ function configure_router_location {
     if [ -z "${routerUrlExternal}" ]; then
        if [ -n "${routeName}" ]; then
             if [ "${protocol}" = "https" ]; then
-                routeName="secure-${routeName}"
+                routeName="${routeName}"
                 host="${host:-${defaultSecureHost}}"
                 port="${port:-443}"
             else
@@ -115,11 +115,11 @@ function configure_router_location {
        else
             if [ "${protocol}" = "https" ]; then
                 host="${host:-${defaultSecureHost}}"
-                port="${port:-9443}"
+                port="${KIE_SERVER_ROUTER_PORT_TLS:-9443}"
             else
                 protocol="${protocol:-http}"
                 host="${host:-${defaultInsecureHost}}"
-                port="${port:-9000}"
+                port="${KIE_SERVER_ROUTER_PORT:-9000}"
             fi
             routerUrlExternal=$(build_simple_url "${protocol}" "${host}" "${port}")
         fi
