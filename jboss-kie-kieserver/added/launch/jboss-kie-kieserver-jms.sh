@@ -64,6 +64,10 @@ function configureJmsExecutor() {
 
     # JMS is the default executor
     local enableJmsExecutor=${KIE_SERVER_EXECUTOR_JMS:-true}
+    if [ "${enableJmsExecutor^^}" != "TRUE" ]; then
+        enableJmsExecutor="false"
+    fi
+
     # default transacted to faulse
     if [ "${KIE_SERVER_EXECUTOR_JMS_TRANSACTED^^}" = "TRUE" ]; then
         KIE_SERVER_EXECUTOR_JMS_TRANSACTED="true"
