@@ -6,7 +6,6 @@ cct_modules, etc.; all **external** modules can be found on the modules section 
 
 Below, all CeKit modules contained in this repository:
 
-
 jboss-kie-modules \
 ├── [jboss-kie-controller](jboss-kie-controller): RHDM/PAM controller specific modules. \
 ├── [jboss-kie-kieserver](jboss-kie-kieserver): RHDM/PAM Execution Server specific modules. \
@@ -15,13 +14,7 @@ jboss-kie-modules \
 ├── [jboss-kie-smartrouter](jboss-kie-smartrouter): RHPAM Smart Router specific modules. \
 ├── [jboss-kie-wildfly-common](jboss-kie-wildfly-common): Common modules, basically used by all images. \
 ├── [jboss-kie-workbench](jboss-kie-workbench):  RHDM/PAM Decision/Business Central specific modules. \
-├── [os.kieserver.chmod](os.kieserver.chmod): Process/Decision Server module. \
-├── [os.kieserver.launch](os.kieserver.launch): Process/Decision Server module. \
-├── [os.kieserver.probes](os.kieserver.probes): Process/Decision liveness and readineses probes. \
-├── [os.kieserver.s2i](os.kieserver.s2i): Process/Decision Server module. \
-├── [os.kieserver.webapp](os.kieserver.webapp): Process/Decision Server module. \
 ├── [tests](tests): \
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── [arquillian](tests/arquillian): Integrations tests based on Arquillian Cube (IPS/DS 6.4.x). \
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── [bats](tests/bats): Common files for Bats tests. \
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── [features](tests/features): Image tests (behave) \
 └── [tools](tools) \
@@ -40,17 +33,9 @@ jboss-kie-module repo is used and in this [line](https://github.com/jboss-contai
 the [jboss-kie-kieserver](jboss-kie-kieserver) is imported and installed in the target image.
 
 
-## Tests
-
-There are three different kind of tests: bats, arquillian and behave which are described in details in the next topics.
-
-
-### Running Arquillian tests
-
-The arquillian is a more complete test, which runs a end to end test: reads an application template, deploys it on an
-OpenShift Cluster, completes some tasks, like fire rules, start process, etc. then stops the RHDM/PAM and clean up all
-the resources created to run the tests (it is only available for bxms 6.4 yet).
-All the needed details and info about how to run these tests are described [here](tests/arquillian/kieserver/64/README.md)
+-## Tests
+-
+-There are two different kind of tests: bats and behave, which are described in details in the next topics.
 
 
 ### Running Bats tests
