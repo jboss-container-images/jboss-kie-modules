@@ -71,7 +71,11 @@ LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-
          "rhpam74-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam74-kieserver-openshift`]",
          "rhpam74-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam74-kieserver-openshift`]",
          "jboss-processserver64-openshift:1.4": "../../image.yaml[`jboss-processserver64-openshift`]",
-         "jboss-decisionserver64-openshift:1.4": "../..iamge.yaml[`jboss-decisionserver64-openshift`]"}
+         "jboss-processserver64-openshift:1.5": "../../image.yaml[`jboss-processserver64-openshift`]",
+         "jboss-processserver64-openshift:1.6": "../../image.yaml[`jboss-processserver64-openshift`]",
+         "jboss-decisionserver64-openshift:1.4": "../..iamge.yaml[`jboss-decisionserver64-openshift`]",
+         "jboss-decisionserver64-openshift:1.5": "../..iamge.yaml[`jboss-decisionserver64-openshift`]",
+         "jboss-decisionserver64-openshift:1.6": "../..iamge.yaml[`jboss-decisionserver64-openshift`]"}
 
 # used to update template parameters values
 PARAMETER_VALUES = {"EXAMPLE": "var"}
@@ -240,7 +244,7 @@ def getVariableInfo(parameters, name, env, field):
                 envValue = replacer(env["value"])
 
                 if d['name'] == envValue or d["name"] == env['name']:
-                    return d[field]
+                    return str(d[field]).replace("|", "\\|")
 
             elif d["name"] == name and name != "":
                 if field == "value" and d.has_key("example"):
@@ -420,9 +424,7 @@ def createContainerTable(data, table):
             environment = container["env"]
             text += "\n." + str(len(environment)) + "+| `" + deployment + "`"
             for env in environment:
-                desc = getVariableInfo(data["parameters"], "", env, "description")
-                desc = desc.replace("|", "\|", 1)
-                columns = [env["name"], desc]
+                columns = [env["name"], getVariableInfo(data["parameters"], "", env, "description")]
 
                 # TODO: handle valueFrom instead of value
                 if "value" in env:
