@@ -451,7 +451,7 @@ def generate_readme(generate_rhdm, generate_rhpam, generate_ips, generate_ds):
                         prefix=''
                         if "optaweb" in directory:
                             prefix='optaweb-'
-                        fh.write('\n== %s%s\n\n' % (prefix, "rhdm-7-openshift-templates"))
+                        fh.write('\n== %s%s\n\n' % (prefix, "rhdm-7-openshift-image/templates"))
                         # links
                         for template in [os.path.splitext(x)[0] for x in sorted(os.listdir(directory))]:
                             if "image-stream" not in template and template not in black_list:
@@ -475,7 +475,7 @@ def generate_readme(generate_rhdm, generate_rhpam, generate_ips, generate_ds):
                         continue
                     elif "rhpam" in directory:
                         # section header
-                        fh.write('\n== %s\n\n' % "rhpam-7-openshift-templates")
+                        fh.write('\n== %s\n\n' % "rhpam-7-openshift-image/templates")
 
                         # links
                         for template in [os.path.splitext(x)[0] for x in sorted(os.listdir(directory))]:

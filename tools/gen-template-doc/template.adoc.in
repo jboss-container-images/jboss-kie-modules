@@ -155,7 +155,7 @@ information.
 =====  Volumes
 
 |=============
-|Deployment |Name  | mountPath | Purpose | readOnly 
+|Deployment |Name  | mountPath | Purpose | readOnly
 {table}
 |=============
 {/volumes}
