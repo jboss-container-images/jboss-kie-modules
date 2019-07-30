@@ -420,7 +420,9 @@ def createContainerTable(data, table):
             environment = container["env"]
             text += "\n." + str(len(environment)) + "+| `" + deployment + "`"
             for env in environment:
-                columns = [env["name"], getVariableInfo(data["parameters"], "", env, "description")]
+                desc = getVariableInfo(data["parameters"], "", env, "description")
+                desc = desc.replace("|", "\|", 1)
+                columns = [env["name"], desc]
 
                 # TODO: handle valueFrom instead of value
                 if "value" in env:
@@ -500,7 +502,7 @@ def generate_readme(generate_rhdm, generate_rhpam, generate_ips, generate_ds):
                         continue
                     elif "processserver" in directory:
                         # section header
-                        fh.write('\n== %s\n\n' % "ips-openshift-templates")
+                        fh.write('\n== %s\n\n' % "jboss-processserver-6-openshift-image/templates")
                         # links
                         for template in [os.path.splitext(x)[0] for x in sorted(os.listdir(directory))]:
                             if template != "processserver-app-secret" and "image-stream" not in template and template not in black_list:
@@ -524,7 +526,7 @@ def generate_readme(generate_rhdm, generate_rhpam, generate_ips, generate_ds):
                         continue
                     elif "decisionserver" in directory:
                         # section header
-                        fh.write('\n== %s\n\n' % "ds-openshift-templates")
+                        fh.write('\n== %s\n\n' % "jboss-decisionserver-6-openshift-image/templates")
                         # links
                         for template in [os.path.splitext(x)[0] for x in sorted(os.listdir(directory))]:
                             if "image-stream" not in template and template not in black_list:
