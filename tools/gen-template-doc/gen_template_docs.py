@@ -32,6 +32,7 @@ import argparse
 import json
 import yaml
 import os
+import re
 import sys
 import shutil
 import re
@@ -60,6 +61,7 @@ LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-
          "rhdm73-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm73-kieserver-openshift`]",
          "rhdm73-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhdm-7/rhdm73-kieserver-openshift`]",
          "rhdm74-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm74-kieserver-openshift`]",
+         "rhdm74-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhdm-7/rhdm74-kieserver-openshift`]",
          "rhdm75-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm75-kieserver-openshift`]",
          "rhpam71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]",
          "rhpam71-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]",
@@ -68,10 +70,13 @@ LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-
          "rhpam73-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam73-kieserver-openshift`]",
          "rhpam73-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam73-kieserver-openshift`]",
          "rhpam74-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam74-kieserver-openshift`]",
+         "rhpam74-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam74-kieserver-openshift`]",
          "rhpam75-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam75-kieserver-openshift`]",
          "jboss-processserver64-openshift:1.4": "../../image.yaml[`jboss-processserver64-openshift`]",
+         "jboss-processserver64-openshift:1.5": "../../image.yaml[`jboss-processserver64-openshift`]",
          "jboss-processserver64-openshift:1.6": "../../image.yaml[`jboss-processserver64-openshift`]",
          "jboss-decisionserver64-openshift:1.4": "../..iamge.yaml[`jboss-decisionserver64-openshift`]",
+         "jboss-decisionserver64-openshift:1.5": "../..iamge.yaml[`jboss-decisionserver64-openshift`]",
          "jboss-decisionserver64-openshift:1.6": "../..iamge.yaml[`jboss-decisionserver64-openshift`]"}
 
 # used to update template parameters values
@@ -190,8 +195,7 @@ def createTemplate(data, path):
             'rhpam71-authoring-ha.yaml', 'rhdm71-authoring-ha.yaml',
             'rhpam72-authoring-ha.yaml', 'rhdm72-authoring-ha.yaml',
             'rhpam73-authoring-ha.yaml', 'rhdm73-authoring-ha.yaml',
-            'rhpam74-authoring-ha.yaml', 'rhdm74-authoring-ha.yaml',
-            'rhpam75-authoring-ha.yaml', 'rhdm75-authoring-ha.yaml'
+            'rhpam74-authoring-ha.yaml', 'rhdm74-authoring-ha.yaml'
         ]
         for template in clusteringTemplates:
             if str(path).rsplit('/', 1)[-1] == template:
@@ -453,7 +457,7 @@ def generate_readme(generate_rhdm, generate_rhpam, generate_ips, generate_ds):
                         prefix=''
                         if "optaweb" in directory:
                             prefix='optaweb-'
-                        fh.write('\n== %s%s\n\n' % (prefix, "rhdm-7-openshift-templates"))
+                        fh.write('\n== %s%s\n\n' % (prefix, "rhdm-7-openshift-image/templates"))
                         # links
                         for template in [os.path.splitext(x)[0] for x in sorted(os.listdir(directory))]:
                             if "image-stream" not in template and template not in black_list:
@@ -477,7 +481,7 @@ def generate_readme(generate_rhdm, generate_rhpam, generate_ips, generate_ds):
                         continue
                     elif "rhpam" in directory:
                         # section header
-                        fh.write('\n== %s\n\n' % "rhpam-7-openshift-templates")
+                        fh.write('\n== %s\n\n' % "rhpam-7-openshift-image/templates")
 
                         # links
                         for template in [os.path.splitext(x)[0] for x in sorted(os.listdir(directory))]:
@@ -502,7 +506,7 @@ def generate_readme(generate_rhdm, generate_rhpam, generate_ips, generate_ds):
                         continue
                     elif "processserver" in directory:
                         # section header
-                        fh.write('\n== %s\n\n' % "ips-openshift-templates")
+                        fh.write('\n== %s\n\n' % "jboss-processserver-6-openshift-image/templates")
                         # links
                         for template in [os.path.splitext(x)[0] for x in sorted(os.listdir(directory))]:
                             if template != "processserver-app-secret" and "image-stream" not in template and template not in black_list:
@@ -526,7 +530,7 @@ def generate_readme(generate_rhdm, generate_rhpam, generate_ips, generate_ds):
                         continue
                     elif "decisionserver" in directory:
                         # section header
-                        fh.write('\n== %s\n\n' % "ds-openshift-templates")
+                        fh.write('\n== %s\n\n' % "jboss-decisionserver-6-openshift-image/templates")
                         # links
                         for template in [os.path.splitext(x)[0] for x in sorted(os.listdir(directory))]:
                             if "image-stream" not in template and template not in black_list:
