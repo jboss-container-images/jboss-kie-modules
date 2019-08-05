@@ -53,12 +53,22 @@ function setKieEnv() {
         local kieServerContainerDeploymentCount=${#kieServerContainerDeploymentArray[@]}
         KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT="${kieServerContainerDeploymentCount}"
         for (( i=0; i<${kieServerContainerDeploymentCount}; i++ )); do
-            # containerId=releaseId
+            # containerId(containerAlias)=releaseId
             local kieServerContainerDeployment=${kieServerContainerDeploymentArray[i]}
             IFS='=' read -a kieServerContainerDefinitionArray <<< "${kieServerContainerDeployment}"
-            local kieServerContainerId=${kieServerContainerDefinitionArray[0]}
+            local kieIdentification=${kieServerContainerDefinitionArray[0]}
+            local kieServerContainerId
+            local kieServerContainerAlias
+            if [[ $kieIdentification =~ \(.*\) ]]; then
+                kieServerContainerId=$(echo "${kieIdentification}" | sed 's/(.*)//g')
+                kieServerContainerAlias=$(echo "${kieIdentification}" | sed 's/.*(//g' | sed 's/).*//g')
+            else
+                kieServerContainerId=${kieIdentification}
+                kieServerContainerAlias=""
+            fi
             local kjarReleaseId=${kieServerContainerDefinitionArray[1]}
             eval "KIE_SERVER_CONTAINER_ID_${i}=\"${kieServerContainerId}\""
+            eval "KIE_SERVER_CONTAINER_ALIAS_${i}=\"${kieServerContainerAlias}\""
             # groupId:artifactId:version
             IFS=':' read -a kjarReleaseIdArray <<< "${kjarReleaseId}"
             local kjarGroupId=${kjarReleaseIdArray[0]}
@@ -71,7 +81,7 @@ function setKieEnv() {
     else
         KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT=0
         log_warning "Warning: EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT is missing."
-        log_warning "Example: export KIE_SERVER_CONTAINER_DEPLOYMENT='containerId=groupId:artifactId:version|c2=g2:a2:v2'"
+        log_warning "Example: export KIE_SERVER_CONTAINER_DEPLOYMENT='containerId(alias)=groupId:artifactId:version|c2(n2)=g2:a2:v2'"
     fi
 }
 
