@@ -81,7 +81,7 @@ function setKieEnv() {
     else
         KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT=0
         log_warning "Warning: EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT is missing."
-        log_warning "Example: export KIE_SERVER_CONTAINER_DEPLOYMENT='containerId(alias)=groupId:artifactId:version|c2(n2)=g2:a2:v2'"
+        log_warning "Example: export KIE_SERVER_CONTAINER_DEPLOYMENT='containerId(containerAlias)=groupId:artifactId:version|c2(n2)=g2:a2:v2'"
     fi
 }
 
@@ -97,6 +97,7 @@ function dumpKieEnv() {
     echo "KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT: ${KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT}"
     for (( i=0; i<${KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT}; i++ )); do
         echo "KIE_SERVER_CONTAINER_ID_${i}: $(getKieServerContainerVal ID ${i})"
+        echo "KIE_SERVER_CONTAINER_ALIAS_${i}: $(getKieServerContainerVal ALIAS ${i})"
         echo "KIE_SERVER_CONTAINER_KJAR_GROUP_ID_${i}: $(getKieServerContainerVal KJAR_GROUP_ID ${i})"
         echo "KIE_SERVER_CONTAINER_KJAR_ARTIFACT_ID_${i}: $(getKieServerContainerVal KJAR_ARTIFACT_ID ${i})"
         echo "KIE_SERVER_CONTAINER_KJAR_VERSION_${i}: $(getKieServerContainerVal KJAR_VERSION ${i})"
