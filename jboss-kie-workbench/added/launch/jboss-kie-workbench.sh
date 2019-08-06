@@ -192,7 +192,7 @@ function configure_guvnor_settings() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.dir=${kieDataDir}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.ssh.cert.dir=${kieDataDir}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.daemon.enabled=false"
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.ssh.host=0.0.0.0"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.ssh.enabled=false"
     if [[ $JBOSS_PRODUCT != *monitoring && "${GIT_HOOKS_DIR}" != "" ]]; then
         if [ ! -e "${GIT_HOOKS_DIR}" ]; then
             echo "GIT_HOOKS_DIR directory \"${GIT_HOOKS_DIR}\" does not exist; creating..."
@@ -213,10 +213,28 @@ function configure_guvnor_settings() {
     log_info "Setting workbench org.appformer.m2repo.url to: ${maven_url}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.m2repo.url=${maven_url}"
     # workbench host
-    local workbench_host=$(query_route_host "${WORKBENCH_ROUTE_NAME}" "${HOSTNAME}")
-    workbench_host=$(query_route_service_host "${WORKBENCH_ROUTE_NAME}" "${workbench_host}")
-    log_info "Setting workbench org.uberfire.nio.git.ssh.hostname to: ${workbench_host}"
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.ssh.hostname=${workbench_host}"
+    local defaultInsecureHost="${HOSTNAME_HTTP:-${HOSTNAME:-localhost}}"
+    local workbench_host=$(query_route_host "${WORKBENCH_ROUTE_NAME}" "${defaultInsecureHost}")
+    local workbench_host_protocol=$(query_route_protocol "${WORKBENCH_ROUTE_NAME}" "http")
+    if [ -n "${workbench_host}" ]; then
+        if [ "${workbench_host_protocol}" = "https" ]; then
+            log_info "Setting workbench org.uberfire.nio.git.https.hostname to: ${workbench_host}"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.http.enabled=false"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.https.enabled=true"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.https.hostname=${workbench_host}"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.https.port=443"
+        elif [ "${workbench_host_protocol}" = "http" ]; then
+            log_info "Setting workbench org.uberfire.nio.git.http.hostname to: ${workbench_host}"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.https.enabled=false"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.http.enabled=true"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.http.hostname=${workbench_host}"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.http.port=80"
+        fi
+    else
+        # Since we don't have a hostname, the git over http(s) should be disabled
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.https.enabled=false"
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.http.enabled=false"
+    fi
 }
 
 # Set the max metaspace size only for the workbench
