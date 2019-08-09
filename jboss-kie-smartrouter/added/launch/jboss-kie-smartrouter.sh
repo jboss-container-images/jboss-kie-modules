@@ -42,12 +42,23 @@ function configure() {
 }
 
 function configure_router_state() {
-    # Need to replace whitespaces with something different from space or escaped space (\ ) characters
-    local kieServerRouterId="${KIE_SERVER_ROUTER_ID// /_}"
-    if [ "${kieServerRouterId}" = "" ]; then
+    # replace all non-alphanumeric characters with a dash
+    local kieServerRouterId="${KIE_SERVER_ROUTER_ID//[^[:alnum:].-]/-}"
+    if [ "x${kieServerRouterId}" != "x" ]; then
+        # can't start with a dash
+        local firstChar="$(echo -n $kieServerRouterId | head -c 1)"
+        if [ "${firstChar}" = "-" ]; then
+            kieServerRouterId="0${kieServerRouterId}"
+        fi
+        # can't end with a dash
+        local lastChar="$(echo -n $kieServerRouterId | tail -c 1)"
+        if [ "${lastChar}" = "-" ]; then
+            kieServerRouterId="${kieServerRouterId}0"
+        fi
+    else
         if [ "x${HOSTNAME}" != "x" ]; then
             # chop off trailing unique "dash number" so all servers use the same template
-            kieServerRouterId=$(echo "${HOSTNAME}" | sed -e 's/\(.*\)-.*/\1/')
+            kieServerRouterId=$(echo "${HOSTNAME}" | sed -e 's/\(.*\)-[[:digit:]]\+-.*/\1/')
         else
             kieServerRouterId="$(generate_random_id)"
         fi
@@ -123,7 +134,7 @@ function configure_router_location {
             fi
             routerUrlExternal=$(build_simple_url "${protocol}" "${host}" "${port}")
         fi
-    fi  
+    fi
 
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.url.external=${routerUrlExternal}"
 }
