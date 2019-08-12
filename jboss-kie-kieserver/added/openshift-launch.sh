@@ -35,6 +35,8 @@ CONFIGURE_SCRIPTS=(
   $JBOSS_HOME/bin/launch/jboss-kie-kieserver.sh
   $JBOSS_HOME/bin/launch/jboss-kie-kieserver-jms.sh
   $JBOSS_HOME/bin/launch/jboss-kie-wildfly-config-files-formatter.sh
+  # TODO remove once https://issues.jboss.org/browse/CLOUD-2903 is done, follow up task https://issues.jboss.org/browse/KIECLOUD-311
+  $JBOSS_HOME/bin/launch/jboss-kie-cli-datasource-patch.sh
   /opt/run-java/proxy-options
 )
 
