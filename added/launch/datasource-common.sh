@@ -514,9 +514,6 @@ function inject_datasource() {
       checker="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"
       sorter="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"
       ;;
-    "MONGODB")
-      continue
-      ;;
     *)
       driver=$(find_env "${prefix}_DRIVER" )
       checker=$(find_env "${prefix}_CONNECTION_CHECKER" )
