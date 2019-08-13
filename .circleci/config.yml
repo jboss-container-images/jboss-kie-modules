@@ -1,0 +1,39 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/buildpack-deps
+    steps:
+      - checkout
+      - run:
+          type: shell
+          name: install dependencies
+          command: |
+            sudo apt-get install libxml2-utils
+      - run:
+          type: shell
+          name: install bats-core
+          command: |
+            git clone https://github.com/bats-core/bats-core.git
+            cd bats-core
+            ./install.sh $HOME
+      - run:
+          name: Run jboss-kie-common bats tests
+          command: |
+            $HOME/bin/bats jboss-kie-common/tests/bats/
+      - run:
+          name: Run jboss-kie-kieserver bats tests
+          command: |
+            $HOME/bin/bats jboss-kie-kieserver/tests/bats/
+      - run:
+          name: Run jboss-kie-smartrouter bats tests
+          command: |
+            $HOME/bin/bats jboss-kie-smartrouter/tests/bats/
+      - run:
+          name: Run jboss-kie-wildfly-common bats tests
+          command: |
+            $HOME/bin/bats jboss-kie-wildfly-common/tests/bats/
+      - run:
+          name: Run jboss-kie-workbench bats tests
+          command: |
+            $HOME/bin/bats jboss-kie-workbench/tests/bats/
