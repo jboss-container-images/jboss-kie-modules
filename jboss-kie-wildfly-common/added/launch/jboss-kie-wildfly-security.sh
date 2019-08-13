@@ -7,6 +7,8 @@ source "${JBOSS_HOME}/bin/launch/logging.sh"
 
 function unset_kie_security_env() {
     # please keep these in alphabetical order
+    unset APPLICATION_USERS_PROPERTIES
+    unset APPLICATION_ROLES_PROPERTIES
     unset KIE_ADMIN_PWD
     unset KIE_ADMIN_ROLES
     unset KIE_ADMIN_USER
@@ -217,6 +219,52 @@ print_user_information() {
 
 ########## EAP ##########
 
+function get_application_config() {
+    local props_file="${1}"
+    local default_file="${2}"
+    local default_content="${3}"
+    if [ "x${props_file}" = "x" ]; then
+        props_file="${JBOSS_HOME}/standalone/configuration/${default_file}"
+    fi
+    local props_dir=$(dirname "${props_file}")
+    if [ ! -e "${props_dir}" ]; then
+        mkdir -p "${props_dir}"
+    fi
+    if [ ! -f "${props_file}" ]; then
+        if [ "x${default_content}" = "x" ]; then
+            touch "${props_file}"
+        else
+            echo "${default_content}" > "${props_file}"
+        fi
+    fi
+    echo "${props_file}"
+}
+
+function get_application_users_properties() {
+    local application_users_properties=$(get_application_config "${APPLICATION_USERS_PROPERTIES}" "application-users.properties" '#$REALM_NAME=ApplicationRealm$')
+    echo "${application_users_properties}"
+}
+
+function get_application_roles_properties() {
+    echo $(get_application_config "${APPLICATION_ROLES_PROPERTIES}" "application-roles.properties")
+}
+
+function set_application_users_config() {
+    if [ -n "${APPLICATION_USERS_PROPERTIES}" ]; then
+        local application_users_properties="$(get_application_users_properties)"
+        local config_file="${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml"
+        sed -i "s,path=\"application-users.properties\" relative-to=\"jboss.server.config.dir\",path=\"${application_users_properties}\",g" "${config_file}"
+    fi
+}
+
+function set_application_roles_config() {
+    if [ -n "${APPLICATION_ROLES_PROPERTIES}" ]; then
+        local application_roles_properties="$(get_application_roles_properties)"
+        local config_file="${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml"
+        sed -i "s,path=\"application-roles.properties\" relative-to=\"jboss.server.config.dir\",path=\"${application_roles_properties}\",g" "${config_file}"
+    fi
+}
+
 function add_eap_user() {
     # If LDAP/SSO integration is enabled, do not create eap users.
      if [ "${AUTH_LDAP_URL}x" == "x" ] && [ "${SSO_URL}x" == "x" ]; then
@@ -224,15 +272,28 @@ function add_eap_user() {
         local eap_user="${2}"
         local eap_pwd="${3}"
         local eap_roles="${4}"
-        if [ "x${eap_roles}" != "x" ]; then
-            ${JBOSS_HOME}/bin/add-user.sh -a --user "${eap_user}" --password "${eap_pwd}" --role "${eap_roles}"
+        local application_users_properties="$(get_application_users_properties)"
+        local application_roles_properties="$(get_application_roles_properties)"
+        if (grep "^${eap_user}=" "${application_users_properties}" > /dev/null 2>&1); then
+            log_warning "KIE ${kie_type} user \"${eap_user}\" already exists in EAP"
+            log_warning "Skipping..."
         else
-            ${JBOSS_HOME}/bin/add-user.sh -a --user "${eap_user}" --password "${eap_pwd}"
-        fi
-        if [ "$?" -ne "0" ]; then
-            log_error "Failed to add KIE ${kie_type} user \"${eap_user}\" in EAP"
-            log_error "Exiting..."
-            exit
+            local add_user_args=(
+                "-a"
+                "--user" "${eap_user}"
+                "--password" "${eap_pwd}"
+            )
+            add_user_args+=( "--user-properties" "${application_users_properties}" )
+            add_user_args+=( "--group-properties" "${application_roles_properties}" )
+            if [ "x${eap_roles}" != "x" ]; then
+                add_user_args+=( "--role" "${eap_roles}" )
+            fi
+            ${JBOSS_HOME}/bin/add-user.sh ${add_user_args[@]}
+            if [ "$?" -ne "0" ]; then
+                log_error "Failed to add KIE ${kie_type} user \"${eap_user}\" in EAP"
+                log_error "Exiting..."
+                exit
+            fi
         fi
     fi
 }

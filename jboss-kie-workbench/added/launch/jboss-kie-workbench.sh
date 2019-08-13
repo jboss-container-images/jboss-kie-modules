@@ -43,6 +43,9 @@ function configureEnv() {
 }
 
 function configure() {
+    # the "configure_local_security" function needs to be executed
+    # before any direct or indirect calls to add_eap_user
+    configure_local_security
     configure_admin_security
     configure_kie_kiestore
     configure_controller_access
@@ -52,6 +55,11 @@ function configure() {
     configure_guvnor_settings
     configure_metaspace
     configure_ha
+}
+
+function configure_local_security() {
+    set_application_users_config
+    set_application_roles_config
 }
 
 function configure_admin_security() {

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<server xmlns="urn:jboss:domain:8.0">
+    <management>
+        <security-realms>
+            <security-realm name="ApplicationRealm">
+                <authentication>
+                    <properties path="/tmp/opt/kie/data/configuration/application-users.properties"/>
+                </authentication>
+                <authorization>
+                    <properties path="/tmp/opt/kie/data/configuration/application-roles.properties"/>
+                </authorization>
+            </security-realm>
+        </security-realms>
+    </management>
+    <profile>
+        <subsystem xmlns="urn:wildfly:elytron:4.0">
+            <security-realms>
+                <properties-realm name="ApplicationRealm">
+                    <users-properties path="/tmp/opt/kie/data/configuration/application-users.properties" digest-realm-name="ApplicationRealm"/>
+                    <groups-properties path="/tmp/opt/kie/data/configuration/application-roles.properties"/>
+                </properties-realm>
+            </security-realms>
+        </subsystem>
+    </profile>
+</server>
