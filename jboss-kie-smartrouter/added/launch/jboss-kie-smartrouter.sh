@@ -99,10 +99,10 @@ function configure_router_location {
        if [ -n "${routeName}" ]; then
             if [ "${protocol}" = "https" ]; then
                 routeName="${routeName}"
-                port="${port:-443}"
+                port="443"
             else
                 protocol="${protocol:-http}"
-                port="${port:-80}"
+                port="80"
             fi
             routerUrlExternal=$(build_route_url "${routeName}" "${protocol}" "${host}" "${port}")
        else
