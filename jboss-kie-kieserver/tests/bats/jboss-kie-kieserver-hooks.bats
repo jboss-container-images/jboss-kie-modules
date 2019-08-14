@@ -35,7 +35,7 @@ export WORKBENCH_SERVICE_NAME="rhpam-central-console"
 
 @test "test container lifecycle hook - scale up scenario" {
     export KIE_SERVER_ID="rhpam-kieserevr-scale-up"
-    run bash $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-kieserver-hooks.sh
+    run sh $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-kieserver-hooks.sh
     [ "${lines[0]}" = "[INFO]KIE Server Replicas is 1, updating rhpam-kieserevr-scale-up configMap to USED." ]
     [ "${lines[1]}" = "[INFO]Controller successfully notified" ]
 }
