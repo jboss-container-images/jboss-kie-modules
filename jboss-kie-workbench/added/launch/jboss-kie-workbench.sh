@@ -25,6 +25,7 @@ function prepareEnv() {
     unset APPFORMER_JMS_BROKER_USER
     unset APPFORMER_JMS_BROKER_USERNAME
     unset APPFORMER_JMS_CONNECTION_PARAMS
+    unset APPFORMER_SSH_KEYS_STORAGE_FOLDER
     unset BUILD_ENABLE_INCREMENTAL
     unset GIT_HOOKS_DIR
     unset_kie_security_env
@@ -190,6 +191,10 @@ function configure_workbench_profile() {
 function configure_guvnor_settings() {
     local buildEnableIncremental="${BUILD_ENABLE_INCREMENTAL,,}"
     local kieDataDir="/opt/kie/data"
+    # BATS_TMPDIR is only set during shell script testing
+    if [ -n "${BATS_TMPDIR}" ]; then
+        kieDataDir="${BATS_TMPDIR}${kieDataDir}"
+    fi
     # only set the system property if we have a valid value, as it is an override and we should not default
     if [ "${buildEnableIncremental}" = "true" ] || [ "${buildEnableIncremental}" = "false" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dbuild.enable-incremental=${buildEnableIncremental}"
@@ -215,6 +220,12 @@ function configure_guvnor_settings() {
         if [ -d "${GIT_HOOKS_DIR}" ]; then
             JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.hooks=${GIT_HOOKS_DIR}"
         fi
+    fi
+    # https://github.com/kiegroup/appformer/blob/master/uberfire-ssh/uberfire-ssh-backend/src/main/java/org/uberfire/ssh/service/backend/keystore/impl/storage/DefaultSSHKeyStore.java#L40
+    local pkeys_dir=${APPFORMER_SSH_KEYS_STORAGE_FOLDER:-"${kieDataDir}/security/pkeys"}
+    if [ -n "${pkeys_dir}" ]; then
+        mkdir -p "${pkeys_dir}"
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer.ssh.keys.storage.folder=${pkeys_dir}"
     fi
     # maven url
     local maven_url=$(build_route_url "${WORKBENCH_ROUTE_NAME}" "http" "${HOSTNAME}" "80" "/maven2")
