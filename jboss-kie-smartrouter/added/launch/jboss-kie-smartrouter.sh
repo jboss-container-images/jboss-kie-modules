@@ -98,7 +98,7 @@ function configure_router_location {
     if [ -z "${routerUrlExternal}" ]; then
        if [ -n "${routeName}" ]; then
             if [ "${protocol}" = "https" ]; then
-                routeName="secure-${routeName}"
+                routeName="${routeName}"
                 port="${port:-443}"
             else
                 protocol="${protocol:-http}"
