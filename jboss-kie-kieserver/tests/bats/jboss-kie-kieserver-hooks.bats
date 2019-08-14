@@ -18,7 +18,7 @@ source  $JBOSS_HOME/bin/launch/launch-common.sh
 setup() {
     echo "Starting mock http server."
     python3 $BATS_TEST_DIRNAME/../../../tools/python-mock-server/python-mock-server.py &
-    sleep 2
+    sleep 3
 }
 
 teardown() {
@@ -35,14 +35,14 @@ export WORKBENCH_SERVICE_NAME="rhpam-central-console"
 
 @test "test container lifecycle hook - scale up scenario" {
     export KIE_SERVER_ID="rhpam-kieserevr-scale-up"
-    run sh $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-kieserver-hooks.sh
+    run bash $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-kieserver-hooks.sh
     [ "${lines[0]}" = "[INFO]KIE Server Replicas is 1, updating rhpam-kieserevr-scale-up configMap to USED." ]
     [ "${lines[1]}" = "[INFO]Controller successfully notified" ]
 }
 
 @test "test container lifecycle hook - scale down scenario" {
     export KIE_SERVER_ID="rhpam-kieserevr-scale-down"
-    run sh $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-kieserver-hooks.sh
+    run bash $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-kieserver-hooks.sh
     [ "${lines[0]}" = "[INFO]KIE Server Replicas is 0, updating rhpam-kieserevr-scale-down configMap to DETACHED." ]
     [ "${lines[1]}" = "[INFO]Controller successfully notified" ]
 }
