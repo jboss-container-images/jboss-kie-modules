@@ -34,6 +34,7 @@ CONFIGURE_SCRIPTS=(
   $JBOSS_HOME/bin/launch/jboss-kie-wildfly-common.sh
   $JBOSS_HOME/bin/launch/jboss-kie-kieserver.sh
   $JBOSS_HOME/bin/launch/jboss-kie-kieserver-jms.sh
+  $JBOSS_HOME/bin/launch/jboss-kie-wildfly-config-files-formatter.sh
   /opt/run-java/proxy-options
 )
 

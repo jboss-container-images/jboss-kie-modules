@@ -32,6 +32,7 @@ CONFIGURE_SCRIPTS=(
   $JBOSS_HOME/bin/launch/filters.sh
   $JBOSS_HOME/bin/launch/jboss-kie-wildfly-common.sh
   $JBOSS_HOME/bin/launch/jboss-kie-controller.sh
+  $JBOSS_HOME/bin/launch/jboss-kie-wildfly-config-files-formatter.sh
   /opt/run-java/proxy-options
 )
 
