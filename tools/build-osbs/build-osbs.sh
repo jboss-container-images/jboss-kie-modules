@@ -259,6 +259,6 @@ if [ -n "$OSBS_BUILD_USER" ]; then
 fi
 
 # Invoke cekit and respond with Y to any prompts
-echo "cekit $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user=$builduser --koji-target $OSBS_BUILD_TARGET"
+echo "cekit --redhat $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user=$builduser --koji-target $OSBS_BUILD_TARGET"
 
-yes Y | cekit $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user=$builduser --koji-target $OSBS_BUILD_TARGET
+yes Y | cekit --redhat $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user=$builduser --koji-target $OSBS_BUILD_TARGET
