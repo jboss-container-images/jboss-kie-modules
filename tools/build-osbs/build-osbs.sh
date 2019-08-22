@@ -259,6 +259,6 @@ if [ -n "$OSBS_BUILD_USER" ]; then
 fi
 
 # Invoke cekit and respond with Y to any prompts
-echo cekit $debug --overrides-file branch-overrides.yaml $overrides $artifactoverrides --build-engine=osbs --build-osbs-target=$OSBS_BUILD_TARGET $builduser --work-dir "$cekit_cache_dir" $CEKIT_BUILD_OPTIONS build
+echo cekit build $debug --overrides-file branch-overrides.yaml $overrides $artifactoverrides --build-engine=osbs --build-osbs-target=$OSBS_BUILD_TARGET $builduser --work-dir "$cekit_cache_dir" $CEKIT_BUILD_OPTIONS docker
 
-yes Y | cekit $debug --overrides-file branch-overrides.yaml $overrides $artifactoverrides --build-engine=osbs --build-osbs-target=$OSBS_BUILD_TARGET $builduser --work-dir "$cekit_cache_dir" $CEKIT_BUILD_OPTIONS build
+yes Y | cekit build $debug --overrides-file branch-overrides.yaml $overrides $artifactoverrides --build-engine=osbs --build-osbs-target=$OSBS_BUILD_TARGET $builduser --work-dir "$cekit_cache_dir" $CEKIT_BUILD_OPTIONS docker
