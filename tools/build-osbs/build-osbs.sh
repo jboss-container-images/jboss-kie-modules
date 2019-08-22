@@ -250,7 +250,7 @@ get_extra_cekit_overrides_options $gen_overrides_dir
 
 debug=
 if [ -n "$DEBUG" ]; then
-    debug="-v"
+    debug="--verbose"
 fi
 
 builduser=
@@ -259,6 +259,6 @@ if [ -n "$OSBS_BUILD_USER" ]; then
 fi
 
 # Invoke cekit and respond with Y to any prompts
-echo cekit $debug --overrides-file branch-overrides.yaml $overrides $artifactoverrides --build-engine=osbs --build-osbs-target=$OSBS_BUILD_TARGET $builduser --work-dir "$cekit_cache_dir" $CEKIT_BUILD_OPTIONS build
+echo "cekit $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user=$builduser --koji-target $OSBS_BUILD_TARGET"
 
-yes Y | cekit $debug --overrides-file branch-overrides.yaml $overrides $artifactoverrides --build-engine=osbs --build-osbs-target=$OSBS_BUILD_TARGET $builduser --work-dir "$cekit_cache_dir" $CEKIT_BUILD_OPTIONS build
+yes Y | cekit $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user=$builduser --koji-target $OSBS_BUILD_TARGET
