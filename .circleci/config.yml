@@ -9,7 +9,7 @@ jobs:
           type: shell
           name: install dependencies
           command: |
-            sudo apt-get install libxml2-utils
+            sudo apt-get install libxml2-utils maven
       - run:
           type: shell
           name: install bats-core

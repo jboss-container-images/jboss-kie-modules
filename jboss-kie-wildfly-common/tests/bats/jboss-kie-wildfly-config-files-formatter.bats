@@ -16,7 +16,7 @@ teardown() {
     rm -rf $JBOSS_HOME
 }
 
-@test "test if the standalone configuration file is correctly formmated" {
+@test "test if the standalone configuration file is correctly formatted" {
     run format_xml
     assert_xml ${CONFIG_FILE} $BATS_TEST_DIRNAME/expectations/formatter/standalone-expected.xml
 }
