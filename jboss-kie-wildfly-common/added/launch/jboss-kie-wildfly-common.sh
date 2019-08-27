@@ -23,9 +23,24 @@ function configure_maven_settings() {
     # env var used by KIE to first find and load global settings.xml
     local m2Home=$(mvn -v | grep -i 'maven home: ' | sed -E 's/^.{12}//')
     export M2_HOME="${m2Home}"
+
+    # KIECLOUD-304
+    local mavenSettings="${HOME}/.m2/settings.xml"
+    # maven module already takes care if the provided file exist, if a non existent file or directory is set
+    # it will automatically fallback to the default settings.xml
+    if [ ! -z "${MAVEN_SETTINGS_XML}" ]; then
+        log_info "Custom maven settings provided, validating ${MAVEN_SETTINGS_XML}, if this file is not the value that was set, probably the value set points to a non existent file or directory. Enable debug for details."
+        validationResult=$(mvn help:effective-settings -s "${MAVEN_SETTINGS_XML}")
+        if [ $? -eq 0 ]; then
+            mavenSettings="${MAVEN_SETTINGS_XML}"
+        else
+            log_error "$validationResult"
+            log_info "Falling back to ${mavenSettings}"
+        fi
+    fi
     # see scripts/jboss-kie-wildfly-common/configure.sh
     # used by KIE to then override with custom settings.xml
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dkie.maven.settings.custom=${HOME}/.m2/settings.xml"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dkie.maven.settings.custom=${mavenSettings}"
 }
 
 function configure_mbeans() {
