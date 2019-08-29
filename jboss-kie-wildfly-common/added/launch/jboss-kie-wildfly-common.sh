@@ -28,8 +28,8 @@ function configure_maven_settings() {
     local mavenSettings="${HOME}/.m2/settings.xml"
     # maven module already takes care if the provided file exist, if a non existent file or directory is set
     # it will automatically fallback to the default settings.xml
-    if [ ! -z "${MAVEN_SETTINGS_XML}" ]; then
-        log_info "Custom maven settings provided, validating ${MAVEN_SETTINGS_XML}, if this file is not the value that was set, probably the value set points to a non existent file or directory. Enable debug for details."
+    if [ ! -z "${MAVEN_SETTINGS_XML}" -a "${MAVEN_SETTINGS_XML}" != "${mavenSettings}" ]; then
+        log_info "Custom maven settings provided, validating ${MAVEN_SETTINGS_XML}."
         validationResult=$(mvn help:effective-settings -s "${MAVEN_SETTINGS_XML}")
         if [ $? -eq 0 ]; then
             mavenSettings="${MAVEN_SETTINGS_XML}"
