@@ -98,14 +98,15 @@ function configure_EJB_Timer_datasource {
             # EJBTimer datasource
             local dsPrefix="${DATASOURCES%,*}"
             DATASOURCES="EJB_TIMER,${DATASOURCES}"
-            set_url $dsPrefix
-            set_timer_env $dsPrefix
-            TIMER_SERVICE_DATA_STORE="EJB_TIMER"
 
             # default value for ${prefix)_NONXA should be true
             if [ -z "$(eval echo \$${dsPrefix}_NONXA)" ]; then
                 eval ${dsPrefix}_NONXA="true"
             fi
+
+            set_url $dsPrefix
+            set_timer_env $dsPrefix
+            TIMER_SERVICE_DATA_STORE="EJB_TIMER"
 
             # set 4 as default value for ${prefix)_XA_CONNECTION_PROPERTY_DRIVER_TYPE
             if [[ "$(eval echo \$${dsPrefix}_DRIVER)" = *"db2"* ]]; then
@@ -156,7 +157,7 @@ function declare_timer_common_variables {
 }
 
 function set_timer_defaults {
-   if [ "x${EJB_TIMER_JNDI}" != "x" ]; then
+    if [ "x${EJB_TIMER_JNDI}" != "x" ]; then
         EJB_TIMER_JNDI="${EJB_TIMER_JNDI}_EJBTimer"
     else
         EJB_TIMER_JNDI=$(find_env "${prefix}_JNDI" "java:jboss/datasources/ejb_timer")
@@ -164,6 +165,10 @@ function set_timer_defaults {
 
     # EJB timer needs to be XA.
     EJB_TIMER_NONXA="false"
+    # If set, applies the same value to EJB_TIMER datasource
+    # To apply only for EJB_TIMER datasource set the envs using the EJB_TIMER prefix.
+    EJB_TIMER_IS_SAME_RM_OVERRIDE=$(find_env "${prefix}_IS_SAME_RM_OVERRIDE" "${EJB_TIMER_IS_SAME_RM_OVERRIDE}")
+    EJB_TIMER_NO_TX_SEPARATE_POOLS=$(find_env "${prefix}_NO_TX_SEPARATE_POOLS" "${EJB_TIMER_NO_TX_SEPARATE_POOLS}")
 
     EJB_TIMER_MAX_POOL_SIZE=${EJB_TIMER_MAX_POOL_SIZE:-"10"}
     EJB_TIMER_MIN_POOL_SIZE=${EJB_TIMER_MIN_POOL_SIZE:-"10"}
@@ -255,6 +260,11 @@ function declare_xa_variables {
     local url=$(find_env "${prefix}_URL")
     url=$(find_env "${prefix}_XA_CONNECTION_PROPERTY_URL" "${url}")
     if [ "x${url}" == "x" ]; then
+        local serviceHost=$(find_env "${service}_SERVICE_HOST")
+        local host=$(find_env "${prefix}_SERVICE_HOST" "${serviceHost}")
+        local servicePort=$(find_env "${service}_SERVICE_PORT")
+        local port=$(find_env "${prefix}_SERVICE_PORT" "${servicePort}")
+        local database=$(find_env "${prefix}_DATABASE")
         database=$(find_env "${prefix}_DATABASE")
         xa_database=$(find_env "${prefix}_XA_CONNECTION_PROPERTY_DatabaseName")
         EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName=${xa_database:-${database}}
@@ -265,13 +275,32 @@ function declare_xa_variables {
             get_svc_var "PORT" "PortNumber" $prefix $service
         fi
 
+        # keep compatibility with *SERVICE_* envs, set connection-url for non ejb timer ds
+        local jdbcUrl="jdbc:${EJB_TIMER_DRIVER}://${host}:${port}/${database}"
+        case $EJB_TIMER_DRIVER in
+            microsoft|mssql|sqlserver)
+                jdbcUrl=jdbc:sqlserver://${host}:${port};databaseName=${database};
+                ;;
+            *)
+                ;;
+        esac
+
+        local nonxa=$(find_env ${prefix}_NONXA)
+        if [ "${nonxa^^}" = "TRUE" ]; then
+            eval export ${prefix}_URL="${jdbcUrl}"
+        else
+            if [[ "$(eval echo \$${prefix}_DRIVER)" = *"db2"* ]]; then
+                eval ${prefix}_XA_CONNECTION_PROPERTY_DatabaseName="${xa_database:-${database}}"
+                eval ${prefix}_XA_CONNECTION_PROPERTY_ServerName=${host}
+                eval ${prefix}_XA_CONNECTION_PROPERTY_PortNumber=${port}
+
+            else
+                eval ${prefix}_XA_CONNECTION_PROPERTY_URL="${jdbcUrl}"
+            fi
+        fi
+
         #postgresql/mariadb/mysql with custom drivers are not correctly configured if no PREFIX_URL is set
         if [[ $EJB_TIMER_DRIVER = *"postgresql"* ]] || [[ $EJB_TIMER_DRIVER = *"mysql"* ]] || [[ $EJB_TIMER_DRIVER = *"mariadb"* ]]; then
-            local serviceHost=$(find_env "${service}_SERVICE_HOST")
-            local host=$(find_env "${prefix}_SERVICE_HOST" "${serviceHost}")
-            local servicePort=$(find_env "${service}_SERVICE_PORT")
-            local port=$(find_env "${prefix}_SERVICE_PORT" "${servicePort}")
-            local database=$(find_env "${prefix}_DATABASE")
             local dbType="postgresql"
             local enabledTLSParameterName="enabledSslProtocolSuites"
             if [[ $EJB_TIMER_DRIVER = *"mysql"* ]]; then
@@ -303,6 +332,22 @@ function declare_xa_variables {
             fi
 
             fix_ejbtimer_xa_url
+        fi
+
+    elif [ "x${url}" != "x" ]; then
+            # RHPAM-2261 - db2 does not accept URL/Url XA property
+        if [[ $EJB_TIMER_DRIVER = *"db2"* ]]; then
+            local unprefixedUrl=${url#jdbc:db2://}
+            local serverName=${unprefixedUrl%:*}
+            local dataBaseName=${unprefixedUrl#*/}
+            local portNumber=$(echo ${unprefixedUrl%/*} | awk -F: '{print $2}')
+
+            EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName=${dataBaseName}
+            EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName=${serverName}
+            EJB_TIMER_XA_CONNECTION_PROPERTY_PortNumber=${portNumber}
+
+            eval unset EJB_TIMER_XA_CONNECTION_PROPERTY_URL
+            eval unset EJB_TIMER_XA_CONNECTION_PROPERTY_Url
         fi
     fi
 }
