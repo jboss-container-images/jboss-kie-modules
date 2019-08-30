@@ -246,6 +246,17 @@ Feature: Kie Server common features
       | CUSTOM_INSTALL_DIRECTORIES | custom   |
     Then file /opt/eap/standalone/deployments/node-info.war should exist
 
+  # RHPAM-2274: S2I build failure when assembly plugin is used
+  Scenario: Deploy a jar and its pom files using assembly script.
+    Given s2i build https://github.com/spolti/jboss-kie-modules.git from jboss-kie-kieserver/tests/bats/resources/assembly-build using RHPAM-2274_master_test
+     Then file /home/jboss/.m2/repository/org/kie/kieserver/assembly-build-rhpam-2274/1.0.0/assembly-build-rhpam-2274-1.0.0.jar should exist
+      And file /home/jboss/.m2/repository/org/kie/kieserver/assembly-build-rhpam-2274/1.0.0/assembly-build-rhpam-2274-1.0.0.pom should exist
+      And file /home/jboss/.m2/repository/org/kie/kie-internal/7.14.0.Final-redhat-00004/kie-internal-7.14.0.Final-redhat-00004.pom should exist
+      And file /home/jboss/.m2/repository/org/kie/kie-api/7.14.0.Final-redhat-00004/kie-api-7.14.0.Final-redhat-00004.pom should exist
+      And file /home/jboss/.m2/repository/org/kie/soup/kie-soup-maven-support/7.14.0.Final-redhat-00004/kie-soup-maven-support-7.14.0.Final-redhat-00004.pom should exist
+      And file /home/jboss/.m2/repository/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.pom should exist
+
+
   Scenario: Verify the KIE_SERVER_BYPASS_AUTH_USER configuration
     When container is started with env
       | variable                    | value    |
