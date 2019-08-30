@@ -23,6 +23,9 @@ Feature: Decision/Business Central common features
      And file /opt/eap/standalone/configuration/application-roles.properties should contain customCtl=role2
      And file /opt/eap/standalone/configuration/application-users.properties should not contain customExe=d2d5d854411231a97fdbf7fe6f91a786
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain customExe=kie-server,rest-all,user
+     And container log should contain -Dorg.uberfire.ext.security.management.api.userManagementServices=WildflyCLIUserManagementService
+     And container log should not contain -Dorg.uberfire.ext.security.management.keycloak.authServer
+     And container log should not contain -Dorg.jbpm.workbench.kie_server.keycloak
 
   Scenario: Check if eap users are not being created if SSO is configured
     When container is started with env
@@ -48,6 +51,9 @@ Feature: Decision/Business Central common features
      And container log should contain KIE_ADMIN_USER is set to customAdm, make sure to configure this user with the provided password on the external auth provider with the roles role1,admin2
      And container log should contain KIE_MAVEN_USER is set to customMvn, make sure to configure this user with the provided password on the external auth provider.
      And container log should contain KIE_SERVER_CONTROLLER_USER is set to customCtl, make sure to configure this user with the provided password on the external auth provider with the roles role2
+     And container log should contain -Dorg.uberfire.ext.security.management.api.userManagementServices=KCAdapterUserManagementService
+     And container log should contain -Dorg.uberfire.ext.security.management.keycloak.authServer=http://url
+     And container log should contain -Dorg.jbpm.workbench.kie_server.keycloak=true
 
   Scenario: Check if eap users are not being created if LDAP is configured
     When container is started with env
@@ -94,4 +100,4 @@ Feature: Decision/Business Central common features
   # https://issues.jboss.org/browse/JBPM-8400
   Scenario: Check for kie keystore
     When container is ready
-    Then container log should contain -Dkie.keystore.keyStoreURL=file:///opt/eap/standalone/configuration/kie-kiestore.jceks
+    Then container log should contain -Dkie.keystore.keyStoreURL=file:///opt/eap/standalone/configuration/kie-keystore.jceks

@@ -267,7 +267,7 @@ function set_application_roles_config() {
 
 function add_eap_user() {
     # If LDAP/SSO integration is enabled, do not create eap users.
-     if [ "${AUTH_LDAP_URL}x" == "x" ] && [ "${SSO_URL}x" == "x" ]; then
+    if [ "${AUTH_LDAP_URL}x" == "x" ] && [ "${SSO_URL}x" == "x" ]; then
         local kie_type="${1}"
         local eap_user="${2}"
         local eap_pwd="${3}"
@@ -280,15 +280,15 @@ function add_eap_user() {
         else
             local add_user_args=(
                 "-a"
-                "--user" "${eap_user}"
-                "--password" "${eap_pwd}"
+                "--user" "'${eap_user}'"
+                "--password" "'${eap_pwd}'"
             )
-            add_user_args+=( "--user-properties" "${application_users_properties}" )
-            add_user_args+=( "--group-properties" "${application_roles_properties}" )
+            add_user_args+=( "--user-properties" "'${application_users_properties}'" )
+            add_user_args+=( "--group-properties" "'${application_roles_properties}'" )
             if [ "x${eap_roles}" != "x" ]; then
                 add_user_args+=( "--role" "${eap_roles}" )
             fi
-            ${JBOSS_HOME}/bin/add-user.sh ${add_user_args[@]}
+            eval "${JBOSS_HOME}/bin/add-user.sh ${add_user_args[@]}"
             if [ "$?" -ne "0" ]; then
                 log_error "Failed to add KIE ${kie_type} user \"${eap_user}\" in EAP"
                 log_error "Exiting..."
