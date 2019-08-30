@@ -20,34 +20,107 @@ prepare_maven_command() {
     # Add JVM default options
     export MAVEN_OPTS="${MAVEN_OPTS:-$(/opt/run-java/java-default-options)}"
     # Use maven batch mode (CLOUD-579)
-    MAVEN_ARGS_INSTALL="-e -DskipTests install:install-file -Dfile=${1} -DpomFile=${2} -Dpackaging=${3} ${4} --batch-mode -Djava.net.preferIPv4Stack=true -Popenshift -Dcom.redhat.xpaas.repo.redhatga ${MAVEN_ARGS_APPEND}"
-    log_info "Attempting to install jar with 'mvn ${MAVEN_ARGS_INSTALL}'"
+    local maven_args_intall="-e -DskipTests install:install-file -Dfile=${1} -DpomFile=${2} -Dpackaging=${3} ${4} --batch-mode -Djava.net.preferIPv4Stack=true -Popenshift -Dcom.redhat.xpaas.repo.redhatga ${MAVEN_ARGS_APPEND}"
+    log_info "Attempting to install jar with 'mvn ${maven_args_intall}'"
     log_info "Using MAVEN_OPTS '${MAVEN_OPTS}'"
     log_info "Using $(mvn --version)"
-    echo ${MAVEN_ARGS_INSTALL}
+    echo ${maven_args_intall}
 }
 
-if [ -d ${DEPLOY_DIR} ]; then
-    log_info "Verifying if the provided maven project is multi-module"
-    grep -qE '<module>.*</module>' ${LOCAL_SOURCE_DIR}/pom.xml
-    if [ "$?" == "0" ]; then
-        modules=$(grep -E '<module>.*</module>'  ${LOCAL_SOURCE_DIR}/pom.xml  | awk -F '[<>]' '/module/{print $3}' | tr '\n' ' ')
-        log_info "Multi module detected, the modules are: ${modules}"
-        mvn $(prepare_maven_command ${LOCAL_SOURCE_DIR}/pom.xml ${LOCAL_SOURCE_DIR}/pom.xml "pom")
+# $1 - DEPLOY_DIR
+# $2 - TEMP_JARS_DIR
+# $3 - JAR
+# $4 - POM
+install_jar_pom() {
+    local deploy_dir="${1}"
+    local temp_jars_dir="${2}"
+    local jar="${3}"
+    local pom="${4}"
+
+    # explode if it is a directory
+    if [ -d ${deploy_dir}/${jar} ]; then
+        # jar is an exploded directory; replace with zipped file (for mvn install:install-file below to work)
+        zip -r ${deploy_dir}/${jar}.zip ${deploy_dir}/${jar}/*
+        rm -rf ${deploy_dir}/${jar}
+        mv ${deploy_dir}/${jar}.zip ${deploy_dir}/${jar}
+    fi
+
+    # handle artifacts made with maven-assembly-plugin
+    local full_maven_command
+    local pom_artifact=$(echo ${pom} | sed 's|/pom\.xml$||' | sed 's@.*/@@')
+    if [[ ${jar} =~ ^${pom_artifact}-[0-9].*\.jar ]]; then
+        # the jar matches the pom - intall them together
+        local classifier=""
+        if [[ "${jar}" == *"sources"* ]]; then
+            classifier="-Dclassifier=sources"
+        fi
+        full_maven_command=$(prepare_maven_command "${deploy_dir}/${jar}" "${pom}" "jar" "${classifier}")
+    else
+        # the jar does not match the pom - intall only the pom
+        # TODO: Do we really want to do this?
+        full_maven_command=$(prepare_maven_command "${pom}" "${pom}" "pom")
+    fi
+    if [ -n "${full_maven_command}" ]; then
+        mvn ${full_maven_command}
         ERR=$?
         if [ $ERR -ne 0 ]; then
             log_error "Aborting due to error code $ERR from Maven build"
             # cleanup
-            rm -rf ${TEMP_JARS_DIR}
+            rm -rf ${temp_jars_dir}
             exit $ERR
         fi
     fi
 
-    TEMP_JARS_DIR="${LOCAL_SOURCE_DIR}/tmp-jars"
+    # Discover KIE_SERVER_CONTAINER_DEPLOYMENT for when env var not specified, only kjar (has kmodule.xml) should be configured.
+    # verify if the current jar is a kjar
+    if [ -e "${temp_jars_dir}/${jar}/META-INF/kmodule.xml" ]; then
+        log_info "${deploy_dir}/${jar} is a kmodule: Inspecting kjar ${deploy_dir}/${jar} for artifact information..."
+        pushd $(dirname ${pom}) &> /dev/null
+            # Add JVM default options
+            export MAVEN_OPTS="${MAVEN_OPTS:-$(/opt/run-java/java-default-options)}"
+            # Use maven batch mode (CLOUD-579)
+            local maven_args_evaluate="--batch-mode -Djava.net.preferIPv4Stack=true -Popenshift -Dcom.redhat.xpaas.repo.redhatga ${MAVEN_ARGS_APPEND}"
+            # Trigger download of help:evaluate dependencies
+            mvn help:evaluate -Dexpression=project.artifact ${maven_args_evaluate}
+            ERR=$?
+            if [ $ERR -ne 0 ]; then
+                log_error "Aborting due to error code $ERR from Maven artifact discovery"
+                exit $ERR
+            fi
+            # next use help:evaluate to record the kjar as a kie server container deployment
+            local kieServerContainerDeploymentsFile="${JBOSS_HOME}/kieserver-container-deployments.txt"
+            local kjarGroupId="$(mvn help:evaluate -Dexpression=project.artifact.groupId ${maven_args_evaluate} | egrep -v '(^\[.*\])|(Download.*: )')"
+            local kjarArtifactId="$(mvn help:evaluate -Dexpression=project.artifact.artifactId ${maven_args_evaluate} | egrep -v '(^\[.*\])|(Download.*: )')"
+            local kjarVersion="$(mvn help:evaluate -Dexpression=project.artifact.version ${maven_args_evaluate} | egrep -v '(^\[.*\])|(Download.*: )')"
+            local kieServerContainerDeployment="${kjarArtifactId}=${kjarGroupId}:${kjarArtifactId}:${kjarVersion}"
+            log_info "Adding ${kieServerContainerDeployment} to ${kieServerContainerDeploymentsFile}"
+            echo "${kieServerContainerDeployment}" >> ${kieServerContainerDeploymentsFile}
+            chmod --quiet a+rw ${kieServerContainerDeploymentsFile}
+        popd &> /dev/null
+    fi
+}
 
-    # install all jars in the local maven repository, including kjar (has both kmodule.xml and pom.xml)
+if [ -d ${DEPLOY_DIR} ]; then
+    log_info "Verifying if the provided maven project is multi-module"
+    if [ -f "${LOCAL_SOURCE_DIR}/pom.xml" ]; then
+        grep -qE '<module>.*</module>' "${local_source_dir}/pom.xml"
+        if [ "$?" == "0" ]; then
+            modules=$(grep -E '<module>.*</module>' ${LOCAL_SOURCE_DIR}/pom.xml | awk -F '[<>]' '/module/{print $3}' | tr '\n' ' ')
+            log_info "Multi module detected, the modules are: ${modules}"
+            mvn $(prepare_maven_command ${LOCAL_SOURCE_DIR}/pom.xml ${LOCAL_SOURCE_DIR}/pom.xml "pom")
+            ERR=$?
+            if [ $ERR -ne 0 ]; then
+                log_error "Aborting due to error code $ERR from Maven build"
+                # cleanup
+                rm -rf ${TEMP_JARS_DIR}
+                exit $ERR
+            fi
+        fi
+    fi
+
+    TEMP_JARS_DIR="${LOCAL_SOURCE_DIR}/tmp-jars"
+    # install all jars in the local maven repository, including kjars (has both kmodule.xml and pom.xml)
     for JAR in $(find ${DEPLOY_DIR}/ -maxdepth 1 -name *.jar | sed 's|.*/||'); do
-        KJAR=""
         mkdir -p ${TEMP_JARS_DIR}/${JAR}
         if [ -d ${DEPLOY_DIR}/${JAR} ]; then
             # jar is an exploded directory; copy contents
@@ -58,67 +131,18 @@ if [ -d ${DEPLOY_DIR} ]; then
         fi
 
         # at this moment install all jars on local maven repository
-        POM=$(find ${TEMP_JARS_DIR}/${JAR}/META-INF/maven -name 'pom.xml' 2>/dev/null)
-        if [ -e "${POM}" ]; then
+        POMS=( $(find ${TEMP_JARS_DIR}/${JAR}/META-INF/maven -name 'pom.xml' 2>/dev/null) )
+        for POM in ${POMS[@]}; do
+            if [ -e "${POM}" ]; then
+                log_info "${DEPLOY_DIR}/${JAR} has a pom: Attempting to install..."
+                install_jar_pom "${DEPLOY_DIR}" "${TEMP_JARS_DIR}" "${JAR}" "${POM}"
+            fi
+        done
 
-            # verify if the current jar is a kjar
-            if [ -e "${TEMP_JARS_DIR}/${JAR}/META-INF/kmodule.xml" ]; then
-                log_info "${DEPLOY_DIR}/${JAR} is a kjar."
-                KJAR=${JAR}
-            fi
-
-            log_info "${DEPLOY_DIR}/${JAR} has a pom: Attempting to install"
-            if [ -d ${DEPLOY_DIR}/${JAR} ]; then
-                # jar is an exploded directory; replace with zipped file (for mvn install:install-file below to work)
-                zip -r ${DEPLOY_DIR}/${JAR}.zip ${DEPLOY_DIR}/${JAR}/*
-                rm -rf ${DEPLOY_DIR}/${JAR}
-                mv ${DEPLOY_DIR}/${JAR}.zip ${DEPLOY_DIR}/${JAR}
-            fi
-
-            classifier=""
-            if [[ "${JAR}" == *"sources"* ]]; then
-                classifier="-Dclassifier=sources"
-            fi
-            mvn $(prepare_maven_command "${DEPLOY_DIR}/${JAR}" "${POM}" "jar" "${classifier}")
-            ERR=$?
-            if [ $ERR -ne 0 ]; then
-                log_error "Aborting due to error code $ERR from Maven build"
-                # cleanup
-                rm -rf ${TEMP_JARS_DIR}
-                exit $ERR
-            fi
-
-            # Discover KIE_SERVER_CONTAINER_DEPLOYMENT for when env var not specified, only kjar (has kmodule.xml) should be configured.
-            if [ "${KJAR}" != "" ]; then
-                pushd $(dirname ${POM}) &> /dev/null
-                    # first trigger download of help:evaluate dependencies
-                    log_info "Inspecting kjar ${DEPLOY_DIR}/${JAR} for artifact information..."
-                    # Add JVM default options
-                    export MAVEN_OPTS="${MAVEN_OPTS:-$(/opt/run-java/java-default-options)}"
-                    # Use maven batch mode (CLOUD-579)
-                    MAVEN_ARGS_EVALUATE="--batch-mode -Djava.net.preferIPv4Stack=true -Popenshift -Dcom.redhat.xpaas.repo.redhatga ${MAVEN_ARGS_APPEND}"
-                    mvn help:evaluate -Dexpression=project.artifact ${MAVEN_ARGS_EVALUATE}
-                    ERR=$?
-                    if [ $ERR -ne 0 ]; then
-                        log_error "Aborting due to error code $ERR from Maven artifact discovery"
-                        exit $ERR
-                    fi
-                    # next use help:evaluate to record the kjar as a kie server container deployment
-                    kieServerContainerDeploymentsFile="${JBOSS_HOME}/kieserver-container-deployments.txt"
-                    kjarGroupId="$(mvn help:evaluate -Dexpression=project.artifact.groupId ${MAVEN_ARGS_EVALUATE} | egrep -v '(^\[.*\])|(Download.*: )')"
-                    kjarArtifactId="$(mvn help:evaluate -Dexpression=project.artifact.artifactId ${MAVEN_ARGS_EVALUATE} | egrep -v '(^\[.*\])|(Download.*: )')"
-                    kjarVersion="$(mvn help:evaluate -Dexpression=project.artifact.version ${MAVEN_ARGS_EVALUATE} | egrep -v '(^\[.*\])|(Download.*: )')"
-                    kieServerContainerDeployment="${kjarArtifactId}=${kjarGroupId}:${kjarArtifactId}:${kjarVersion}"
-                    log_info "Adding ${kieServerContainerDeployment} to ${kieServerContainerDeploymentsFile}"
-                    echo "${kieServerContainerDeployment}" >> ${kieServerContainerDeploymentsFile}
-                    chmod --quiet a+rw ${kieServerContainerDeploymentsFile}
-                popd &> /dev/null
-            fi
-            # Remove kjar from EAP deployments dir, as KIE loads them from ${HOME}/.m2/repository/ instead.
-            # Leaving this file here could cause classloading collisions if multiple KIE Server Containers
-            # are configured for different versions of the same application.
-            rm -f ${DEPLOY_DIR}/${JAR}
-        fi
+        # Remove kjar from EAP deployments dir, as KIE loads them from ${HOME}/.m2/repository/ instead.
+        # Leaving this file here could cause classloading collisions if multiple KIE Server Containers
+        # are configured for different versions of the same application.
+        rm -f ${DEPLOY_DIR}/${JAR}
     done
     # cleanup
     rm -rf ${TEMP_JARS_DIR}
@@ -127,6 +151,5 @@ if [ -d ${DEPLOY_DIR} ]; then
     chown -R --quiet jboss:root ${MAVEN_REPO}
     chmod -R --quiet g+rwX ${MAVEN_REPO}
 fi
-
 
 exit 0
