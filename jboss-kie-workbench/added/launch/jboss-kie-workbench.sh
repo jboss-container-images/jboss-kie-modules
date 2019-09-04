@@ -254,6 +254,16 @@ function configure_guvnor_settings() {
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.https.enabled=false"
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.http.enabled=false"
     fi
+    # User management service (KIECLOUD-246, AF-2083, AF-2086)
+    if [ -n "${SSO_URL}" ]; then
+        # https://github.com/kiegroup/appformer/tree/master/uberfire-extensions/uberfire-security/uberfire-security-management/uberfire-security-management-keycloak
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.ext.security.management.api.userManagementServices=KCAdapterUserManagementService"
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.ext.security.management.keycloak.authServer=${SSO_URL}"
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.workbench.kie_server.keycloak=true"
+    else
+        # https://github.com/kiegroup/appformer/tree/master/uberfire-extensions/uberfire-security/uberfire-security-management/uberfire-security-management-wildfly
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.ext.security.management.api.userManagementServices=WildflyCLIUserManagementService"
+    fi
 }
 
 # Set the max metaspace size only for the workbench
