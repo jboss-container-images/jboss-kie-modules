@@ -22,13 +22,17 @@ CONFIGURE_SCRIPTS=(
   $JBOSS_HOME/bin/launch/ha.sh
   $JBOSS_HOME/bin/launch/jgroups.sh
   $JBOSS_HOME/bin/launch/https.sh
+  $JBOSS_HOME/bin/launch/elytron.sh
   $JBOSS_HOME/bin/launch/json_logging.sh
+  $JBOSS_HOME/bin/launch/configure_logger_category.sh
   $JBOSS_HOME/bin/launch/security-domains.sh
   $JBOSS_HOME/bin/launch/jboss_modules_system_pkgs.sh
   $JBOSS_HOME/bin/launch/keycloak.sh
   $JBOSS_HOME/bin/launch/deploymentScanner.sh
   $JBOSS_HOME/bin/launch/ports.sh
   $JBOSS_HOME/bin/launch/access_log_valve.sh
+  $JBOSS_HOME/bin/launch/mp-config.sh
+  $JBOSS_HOME/bin/launch/tracing.sh
   $JBOSS_HOME/bin/launch/filters.sh
   $JBOSS_HOME/bin/launch/jboss-kie-wildfly-common.sh
   $JBOSS_HOME/bin/launch/jboss-kie-controller.sh
