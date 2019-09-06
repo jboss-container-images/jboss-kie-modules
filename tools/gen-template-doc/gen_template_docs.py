@@ -195,7 +195,8 @@ def createTemplate(data, path):
             'rhpam71-authoring-ha.yaml', 'rhdm71-authoring-ha.yaml',
             'rhpam72-authoring-ha.yaml', 'rhdm72-authoring-ha.yaml',
             'rhpam73-authoring-ha.yaml', 'rhdm73-authoring-ha.yaml',
-            'rhpam74-authoring-ha.yaml', 'rhdm74-authoring-ha.yaml'
+            'rhpam74-authoring-ha.yaml', 'rhdm74-authoring-ha.yaml',
+            'rhpam75-authoring-ha.yaml', 'rhdm75-authoring-ha.yaml'
         ]
         for template in clusteringTemplates:
             if str(path).rsplit('/', 1)[-1] == template:
