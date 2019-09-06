@@ -87,13 +87,13 @@ cekit test -v
 ...
 2019-03-21 12:32:39,525 cekit        INFO     Tests collected!
 2019-03-21 12:32:39,562 cekit        DEBUG    Running behave in '/data/dev/sources/rhpam-7-openshift-image/smartrouter/target/test'.
-@rhpam-7/rhpam75-smartrouter-openshift
+@rhpam-7/rhpaml76-smartrouter-openshift
 Feature: RHPAM Smart Router configuration tests # features/jboss-kie-modules.git-master/rhpam/smartrouter/rhpam-smartrouter.feature:2
 
   Scenario: Check if image version and release is printed on boot                          # features/jboss-kie-modules.git-master/rhpam/smartrouter/rhpam-smartrouter.feature:5
     When container is ready                                                                # steps/container_steps.py:13 3.692s
-    Then container log should contain rhpam-7/rhpam75-smartrouter-openshift image, version # steps/container_steps.py:27
-    Then container log should contain rhpam-7/rhpam75-smartrouter-openshift image, version # steps/container_steps.py:27 0.058s
+    Then container log should contain rhpam-7/rhpaml76-smartrouter-openshift image, version # steps/container_steps.py:27
+    Then container log should contain rhpam-7/rhpaml76-smartrouter-openshift image, version # steps/container_steps.py:27 0.058s
 2019-03-21 12:32:44,003 - dock.middleware.container - INFO - Removing container '61fab7c508fdd56f9c86bbc054d8574ca267113f73b3145eee5fb20892bbd50c', 1 try...
 2019-03-21 12:32:44,022 - dock.middleware.container - INFO - Container '61fab7c508fdd56f9c86bbc054d8574ca267113f73b3145eee5fb20892bbd50c' removed
 ...

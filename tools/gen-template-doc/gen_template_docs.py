@@ -63,6 +63,7 @@ LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-
          "rhdm74-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm74-kieserver-openshift`]",
          "rhdm74-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhdm-7/rhdm74-kieserver-openshift`]",
          "rhdm75-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm75-kieserver-openshift`]",
+         "rhdm76-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm76-kieserver-openshift`]",
          "rhpam71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]",
          "rhpam71-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]",
          "rhpam72-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam72-kieserver-openshift`]",
@@ -72,6 +73,7 @@ LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-
          "rhpam74-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam74-kieserver-openshift`]",
          "rhpam74-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam74-kieserver-openshift`]",
          "rhpam75-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam75-kieserver-openshift`]",
+         "rhpam76-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam76-kieserver-openshift`]",
          "jboss-processserver64-openshift:1.4": "../../image.yaml[`jboss-processserver64-openshift`]",
          "jboss-processserver64-openshift:1.5": "../../image.yaml[`jboss-processserver64-openshift`]",
          "jboss-processserver64-openshift:1.6": "../../image.yaml[`jboss-processserver64-openshift`]",
@@ -196,6 +198,8 @@ def createTemplate(data, path):
             'rhpam72-authoring-ha.yaml', 'rhdm72-authoring-ha.yaml',
             'rhpam73-authoring-ha.yaml', 'rhdm73-authoring-ha.yaml',
             'rhpam74-authoring-ha.yaml', 'rhdm74-authoring-ha.yaml'
+            'rhpam75-authoring-ha.yaml', 'rhdm75-authoring-ha.yaml'
+            'rhpam76-authoring-ha.yaml', 'rhdm76-authoring-ha.yaml'
         ]
         for template in clusteringTemplates:
             if str(path).rsplit('/', 1)[-1] == template:

@@ -1,15 +1,15 @@
-@rhpam-7/rhpam75-kieserver-openshift
+@rhpam-7/rhpaml76-kieserver-openshift
 Feature: RHPAM KIE Server configuration tests
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
     When container is ready
-    Then container log should contain rhpam-7/rhpam75-kieserver-openshift image, version
+    Then container log should contain rhpam-7/rhpaml76-kieserver-openshift image, version
 
   Scenario: Check for product and version environment variables
     When container is ready
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-kieserver
-     And run sh -c 'echo $RHPAM_KIESERVER_VERSION' in container and check its output for 7.5
+     And run sh -c 'echo $RHPAM_KIESERVER_VERSION' in container and check its output for 7.6
 
   Scenario: Check custom war file was successfully deployed via CUSTOM_INSTALL_DIRECTORIES
     Given s2i build https://github.com/jboss-openshift/openshift-examples.git from custom-install-directories
@@ -232,7 +232,7 @@ Feature: RHPAM KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter on XPath //*[local-name()='validation']/*[local-name()='exception-sorter']/@class-name
      And container log should not contain WARN Missing configuration for XA datasource EJB_TIMER
 
-  
+
   Scenario: Checks if the EJB Timer was successfully configured with PostgreSQL with DATASOURCES env with custom driver name
     When container is started with env
       | variable                                  | value        |
@@ -975,7 +975,7 @@ Feature: RHPAM KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value h2 on XPath //*[local-name()='database-data-store']/@database
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_part on XPath //*[local-name()='database-data-store']/@partition
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value -1 on XPath //*[local-name()='database-data-store']/@refresh-interval
-  
+
   Scenario: Checks if the launch directory has the right permissions set
     When container is ready
     Then run sh -c '[ $(ls -l /opt/eap/bin/launch/*.sh | wc -l) -gt 0 ] && echo "has script files"' in container and check its output for has script files
