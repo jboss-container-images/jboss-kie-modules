@@ -22,7 +22,7 @@ Feature: RHPAM KIE Server configuration tests
   Scenario: deploys the library example, then checks if it's deployed.
     Given s2i build https://github.com/jboss-container-images/rhpam-7-openshift-image from quickstarts/library-process/library using rhpam71-dev
       | variable                        | value                                                                                    |
-      | KIE_SERVER_CONTAINER_DEPLOYMENT | rhpam-kieserver-library=org.openshift.quickstarts:rhpam-kieserver-library:1.4.0-SNAPSHOT |
+      | KIE_SERVER_CONTAINER_DEPLOYMENT | rhpam-kieserver-library=org.openshift.quickstarts:rhpam-kieserver-library:1.5.0-SNAPSHOT |
     Then container log should contain Container rhpam-kieserver-library
 
   # https://issues.jboss.org/browse/JBPM-7834
@@ -232,7 +232,7 @@ Feature: RHPAM KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter on XPath //*[local-name()='validation']/*[local-name()='exception-sorter']/@class-name
      And container log should not contain WARN Missing configuration for XA datasource EJB_TIMER
 
-  
+
   Scenario: Checks if the EJB Timer was successfully configured with PostgreSQL with DATASOURCES env with custom driver name
     When container is started with env
       | variable                                  | value        |
@@ -975,7 +975,7 @@ Feature: RHPAM KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value h2 on XPath //*[local-name()='database-data-store']/@database
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_part on XPath //*[local-name()='database-data-store']/@partition
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value -1 on XPath //*[local-name()='database-data-store']/@refresh-interval
-  
+
   Scenario: Checks if the launch directory has the right permissions set
     When container is ready
     Then run sh -c '[ $(ls -l /opt/eap/bin/launch/*.sh | wc -l) -gt 0 ] && echo "has script files"' in container and check its output for has script files

@@ -17,7 +17,7 @@ Feature: RHDM KIE Server configuration tests
   Scenario: deploys the hellorules example, then checks if it's deployed.
     Given s2i build https://github.com/jboss-container-images/rhdm-7-openshift-image from quickstarts/hello-rules/hellorules using rhdm71-dev
       | variable                        | value                                                                                        |
-      | KIE_SERVER_CONTAINER_DEPLOYMENT | rhdm-kieserver-hellorules=org.openshift.quickstarts:rhdm-kieserver-hellorules:1.4.0-SNAPSHOT |
+      | KIE_SERVER_CONTAINER_DEPLOYMENT | rhdm-kieserver-hellorules=org.openshift.quickstarts:rhdm-kieserver-hellorules:1.5.0-SNAPSHOT |
     Then container log should contain Container rhdm-kieserver-hellorules
 
   # https://issues.jboss.org/browse/RHPAM-846
