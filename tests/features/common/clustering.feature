@@ -1,4 +1,4 @@
-@rhpam-7/rhpaml76-businesscentral-openshift @rhpam-7/rhpaml76-businesscentral-monitoring-openshift @rhdm-7/rhdml76-decisioncentral-openshift
+@rhpam-7/rhpam76-businesscentral-openshift @rhpam-7/rhpam76-businesscentral-monitoring-openshift @rhdm-7/rhdm76-decisioncentral-openshift
 Feature: RHPAM RHDM Workbench clustering configuration
 
   Scenario: HA will not be configured

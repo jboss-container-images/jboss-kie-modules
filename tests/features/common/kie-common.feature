@@ -1,4 +1,4 @@
-@rhdm-7/rhdml76-kieserver-openshift  @rhpam-7/rhpaml76-kieserver-openshift @rhdm-7/rhdml76-decisioncentral-openshift @rhpam-7/rhpaml76-businesscentral-openshift @rhpam-7/rhpaml76-businesscentral-monitoring-openshift
+@rhdm-7/rhdm76-kieserver-openshift  @rhpam-7/rhpam76-kieserver-openshift @rhdm-7/:wq!-decisioncentral-openshift @rhpam-7/rhpam76-businesscentral-openshift @rhpam-7/rhpam76-businesscentral-monitoring-openshift
 Feature: RHPAM and RHDM common tests
 
   Scenario: Configure kie-workbench to use LDAP authentication
@@ -6,7 +6,7 @@ Feature: RHPAM and RHDM common tests
       | variable      | value    |
       | AUTH_LDAP_URL | test_url |
     Then container log should contain AUTH_LDAP_URL is set to test_url. Added LdapExtended login-module
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended"
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended"
 
   Scenario: Configure kie-workbench to use LDAP authentication
     When container is started with env
@@ -34,29 +34,29 @@ Feature: RHPAM and RHDM common tests
       | AUTH_LDAP_USERNAME_BEGIN_STRING               | USER                         |
       | AUTH_LDAP_USERNAME_END_STRING                 | ENDUSER                      |
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="RealmDirect" flag="optional">
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="java.naming.provider.url" value="test_url"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="bindDN" value="cn=Manager,dc=example,dc=com"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="bindCredential" value="admin"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="baseCtxDN" value="ou=Users,dc=example,dc=com"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="baseFilter" value="(uid={0})"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="rolesCtxDN" value="ou=Roles,dc=example,dc=com"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleFilter" value="(member={1})"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleAttributeID" value="cn"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="allowEmptyPasswords" value="true"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="defaultRole" value="test"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="distinguishedNameAttribute" value="name1"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="jaasSecurityDomain" value="other"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="parseRoleNameFromDN" value="true"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="parseUsername" value="true"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="referralUserAttributeIDToCheck" value="uid"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleAttributeIsDN" value="true"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleNameAttributeID" value="roleId"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleRecursion" value="true"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="searchScope" value="SUBTREE"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="searchTimeLimit" value="100"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="usernameBeginString" value="USER"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="usernameEndString" value="ENDUSER"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="java.naming.provider.url" value="test_url"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="bindDN" value="cn=Manager,dc=example,dc=com"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="bindCredential" value="admin"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="baseCtxDN" value="ou=Users,dc=example,dc=com"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="baseFilter" value="(uid={0})"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="rolesCtxDN" value="ou=Roles,dc=example,dc=com"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleFilter" value="(member={1})"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleAttributeID" value="cn"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="allowEmptyPasswords" value="true"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="defaultRole" value="test"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="distinguishedNameAttribute" value="name1"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="jaasSecurityDomain" value="other"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="parseRoleNameFromDN" value="true"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="parseUsername" value="true"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="referralUserAttributeIDToCheck" value="uid"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleAttributeIsDN" value="true"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleNameAttributeID" value="roleId"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleRecursion" value="true"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="searchScope" value="SUBTREE"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="searchTimeLimit" value="100"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="usernameBeginString" value="USER"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="usernameEndString" value="ENDUSER"/>
 
   Scenario: test KIE_MBEANS configuration
     When container is started with env
@@ -69,6 +69,14 @@ Feature: RHPAM and RHDM common tests
       | variable         | value                                     |
       | MAVEN_MIRROR_URL | http://nexus-test.127.0.0.1.nip.ip/nexus/ |
     Given XML namespaces
-       | prefix | url                                    |
-       | ns     | http://maven.apache.org/SETTINGS/1.0.0 |
+      | prefix | url                                    |
+      | ns     | http://maven.apache.org/SETTINGS/1.0.0 |
     Then XML file /home/jboss/.m2/settings.xml should have 1 elements on XPath //ns:mirror[ns:id='mirror.default'][ns:url='http://nexus-test.127.0.0.1.nip.ip/nexus/'][ns:mirrorOf='external:*']
+
+  Scenario: KIECLOUD-274 Prepare PAM/DM images to accept the logger category configuration
+    When container is started with env
+      | variable          | value                                            |
+      | LOGGER_CATEGORIES | com.my.package:TRACE, com.my.other.package:TRACE |
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <logger category="com.my.package">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <logger category="com.my.other.package">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <level name="TRACE"/>
