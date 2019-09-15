@@ -1,0 +1,12 @@
+thorntail:
+  security:
+    security-domains:
+      pim:
+        classic-authentication:
+          login-modules:
+            UsersRoles:
+              code: UsersRoles
+              flag: required
+              module-options:
+                usersProperties: /opt/rhpam-process-migration/config/application-users.properties
+                rolesProperties: /opt/rhpam-process-migration/config/application-roles.properties

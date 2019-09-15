@@ -37,3 +37,7 @@ jobs:
           name: Run jboss-kie-workbench bats tests
           command: |
             $HOME/bin/bats jboss-kie-workbench/tests/bats/
+      - run:
+          name: Run jboss-kie-process-migration bats tests
+          command: |
+            $HOME/bin/bats jboss-kie-process-migration/tests/bats/
