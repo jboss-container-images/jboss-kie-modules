@@ -101,3 +101,18 @@ Feature: Decision/Business Central common features
   Scenario: Check for kie keystore
     When container is ready
     Then container log should contain -Dkie.keystore.keyStoreURL=file:///opt/eap/standalone/configuration/kie-keystore.jceks
+
+  # https://issues.jboss.org/browse/AF-2240
+  Scenario: Check that thread limit settings are respected
+    When container is started with env
+      | variable                                    | value |
+      | APPFORMER_CONCURRENT_MANAGED_THREAD_LIMIT   | 1234  |
+      | APPFORMER_CONCURRENT_UNMANAGED_THREAD_LIMIT | 4321  |
+    Then container log should contain -Dorg.appformer.concurrent.managed.thread.limit=1234
+     And container log should contain -Dorg.appformer.concurrent.unmanaged.thread.limit=4321
+
+  # https://issues.jboss.org/browse/AF-2240
+    Scenario: Check that thread limit settings use defaults
+    When container is ready
+    Then container log should contain -Dorg.appformer.concurrent.managed.thread.limit=1000
+     And container log should contain -Dorg.appformer.concurrent.unmanaged.thread.limit=1000
