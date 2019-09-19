@@ -264,6 +264,9 @@ function configure_guvnor_settings() {
         # https://github.com/kiegroup/appformer/tree/master/uberfire-extensions/uberfire-security/uberfire-security-management/uberfire-security-management-wildfly
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.ext.security.management.api.userManagementServices=WildflyCLIUserManagementService"
     fi
+    # resource constraints (AF-2240)
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.concurrent.managed.thread.limit=${APPFORMER_CONCURRENT_MANAGED_THREAD_LIMIT:-1000}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.concurrent.unmanaged.thread.limit=${APPFORMER_CONCURRENT_UNMANAGED_THREAD_LIMIT:-1000}"
 }
 
 # Set the max metaspace size only for the workbench
