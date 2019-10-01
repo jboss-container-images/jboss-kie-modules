@@ -475,7 +475,7 @@ handle_rhpam_artifacts() {
     # RHPAM Add-Ons
     local add_ons_distribution_zip
     local add_ons_distribution_md5
-    if product_matches "${product}" "rhpam" "controller" || product_matches "${product}" "rhpam" "smartrouter" ; then
+    if product_matches "${product}" "rhpam" "controller" || product_matches "${product}" "rhpam" "process-migration" || product_matches "${product}" "rhpam" "smartrouter" ; then
         local add_ons_distribution_url=$(get_artifact_url "rhpam.addons.latest.url" "${build_file}")
         add_ons_distribution_zip=$(get_artifact_name "${add_ons_distribution_url}")
         local add_ons_distribution_file="${artifacts_dir}/${add_ons_distribution_zip}"
@@ -620,6 +620,27 @@ EOF
         fi
     fi
 
+    # RHPAM Process Migration
+    if product_matches "${product}" "rhpam" "process-migration" ; then
+        local process_migration_distribution_jar="rhpam-${short_version}-process-migration-service-standalone.jar"
+        local process_migration_overrides_file="${overrides_dir}/rhpam-process-migration-overrides.yaml"
+        if [ ! -f "${process_migration_overrides_file}" ]; then
+            log_info "Generating ${process_migration_overrides_file} ..."
+cat <<EOF > "${process_migration_overrides_file}"
+envs:
+- name: "PROCESS_MIGRATION_DISTRIBUTION_JAR"
+  value: "${process_migration_distribution_jar}"
+artifacts:
+- name: "ADD_ONS_DISTRIBUTION_ZIP"
+  target: "add_ons_distribution.zip"
+  # ${add_ons_distribution_zip}
+  md5: "${add_ons_distribution_md5}"
+EOF
+        else
+            log_info "File ${process_migration_overrides_file} already generated."
+        fi
+    fi
+
     # RHPAM Smart Router
     if product_matches "${product}" "rhpam" "smartrouter" ; then
         local kie_router_distribution_jar="rhpam-${short_version}-smart-router.jar"
@@ -687,7 +708,7 @@ main() {
     local build_date_default=$(date --date="1 day ago" '+%Y%m%d')
     local products_valid=( all \
         rhdm rhdm-controller rhdm-decisioncentral rhdm-kieserver rhdm-optaweb-employee-rostering \
-        rhpam rhpam-businesscentral rhpam-businesscentral-monitoring rhpam-controller rhpam-kieserver rhpam-smartrouter )
+        rhpam rhpam-businesscentral rhpam-businesscentral-monitoring rhpam-controller rhpam-kieserver rhpam-process-migration rhpam-smartrouter )
     local product_default="all"
     local version_example="7.6.0"
     local default_dir_example="/tmp/${build_tool}/${build_type_default}/${build_date_default}/${version_example}"
