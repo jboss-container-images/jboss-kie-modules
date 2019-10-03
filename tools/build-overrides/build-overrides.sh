@@ -353,10 +353,11 @@ handle_rhdm_artifacts() {
     # RHDM Controller
     if product_matches "${product}" "rhdm" "controller" ; then
         local controller_distribution_zip="rhdm-${short_version}-controller-ee7.zip"
-        local controller_overrides_file="${overrides_dir}/rhdm-controller-overrides.yaml"
-        if [ ! -f "${controller_overrides_file}" ]; then
-            log_info "Generating ${controller_overrides_file} ..."
-cat <<EOF > "${controller_overrides_file}"
+        local controller_overrides_yaml="${overrides_dir}/rhdm-controller-overrides.yaml"
+        local controller_overrides_json="${overrides_dir}/rhdm-controller-overrides.json"
+        if [ ! -f "${controller_overrides_yaml}" ]; then
+            log_info "Generating ${controller_overrides_yaml} ..."
+cat <<EOF > "${controller_overrides_yaml}"
 envs:
 - name: "CONTROLLER_DISTRIBUTION_ZIP"
   value: "${controller_distribution_zip}"
@@ -365,9 +366,33 @@ artifacts:
   target: "add_ons_distribution.zip"
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
+  url: "${add_ons_distribution_url}"
 EOF
         else
-            log_info "File ${controller_overrides_file} already generated."
+            log_info "File ${controller_overrides_yaml} already generated."
+        fi
+        if [ ! -f "${controller_overrides_json}" ]; then
+            log_info "Generating ${controller_overrides_json} ..."
+cat <<EOF > "${controller_overrides_json}"
+{
+  "envs": [
+    {
+      "name": "CONTROLLER_DISTRIBUTION_ZIP",
+      "value": "${controller_distribution_zip}"
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "ADD_ONS_DISTRIBUTION_ZIP",
+      "target": "add_ons_distribution.zip",
+      "md5": "${add_ons_distribution_md5}",
+      "url": "${add_ons_distribution_url}"
+    }
+  ]
+}
+EOF
+        else
+            log_info "File ${controller_overrides_json} already generated."
         fi
     fi
 
@@ -379,18 +404,37 @@ EOF
         if download "${decision_central_distribution_url}" "${decision_central_distribution_file}" ; then
             if cache "${decision_central_distribution_file}" "${work_dir}"; then
                 local decision_central_distribution_md5=$(get_sum "md5" "${decision_central_distribution_file}")
-                local decisioncentral_overrides_file="${overrides_dir}/rhdm-decisioncentral-overrides.yaml"
-                if [ ! -f "${decisioncentral_overrides_file}" ]; then
-                    log_info "Generating ${decisioncentral_overrides_file} ..."
-cat <<EOF > "${decisioncentral_overrides_file}"
+                local decisioncentral_overrides_yaml="${overrides_dir}/rhdm-decisioncentral-overrides.yaml"
+                local decisioncentral_overrides_json="${overrides_dir}/rhdm-decisioncentral-overrides.json"
+                if [ ! -f "${decisioncentral_overrides_yaml}" ]; then
+                    log_info "Generating ${decisioncentral_overrides_yaml} ..."
+cat <<EOF > "${decisioncentral_overrides_yaml}"
 artifacts:
 - name: "DECISION_CENTRAL_DISTRIBUTION_ZIP"
   target: "decision_central_distribution.zip"
   # ${decision_central_distribution_zip}
   md5: "${decision_central_distribution_md5}"
+  url: "${decision_central_distribution_url}"
 EOF
                 else
-                    log_info "File ${decisioncentral_overrides_file} already generated."
+                    log_info "File ${decisioncentral_overrides_yaml} already generated."
+                fi
+                if [ ! -f "${decisioncentral_overrides_json}" ]; then
+                    log_info "Generating ${decisioncentral_overrides_json} ..."
+cat <<EOF > "${decisioncentral_overrides_json}"
+{
+  "artifacts": [
+    {
+      "name": "DECISION_CENTRAL_DISTRIBUTION_ZIP",
+      "target": "decision_central_distribution.zip",
+      "md5": "${decision_central_distribution_md5}",
+      "url": "${decision_central_distribution_url}"
+    }
+  ]
+}
+EOF
+                else
+                    log_info "File ${decisioncentral_overrides_json} already generated."
                 fi
             else
                 return 1
@@ -408,18 +452,37 @@ EOF
         if download "${kie_server_distribution_url}" "${kie_server_distribution_file}" ; then
             if cache "${kie_server_distribution_file}" "${work_dir}"; then
                 local kie_server_distribution_md5=$(get_sum "md5" "${kie_server_distribution_file}")
-                local kieserver_overrides_file="${overrides_dir}/rhdm-kieserver-overrides.yaml"
-                if [ ! -f "${kieserver_overrides_file}" ]; then
-                    log_info "Generating ${kieserver_overrides_file} ..."
-cat <<EOF > "${kieserver_overrides_file}"
+                local kieserver_overrides_yaml="${overrides_dir}/rhdm-kieserver-overrides.yaml"
+                local kieserver_overrides_json="${overrides_dir}/rhdm-kieserver-overrides.json"
+                if [ ! -f "${kieserver_overrides_yaml}" ]; then
+                    log_info "Generating ${kieserver_overrides_yaml} ..."
+cat <<EOF > "${kieserver_overrides_yaml}"
 artifacts:
 - name: "KIE_SERVER_DISTRIBUTION_ZIP"
   target: "kie_server_distribution.zip"
   # ${kie_server_distribution_zip}
   md5: "${kie_server_distribution_md5}"
+  url: "${kie_server_distribution_url}"
 EOF
                 else
-                    log_info "File ${kieserver_overrides_file} already generated."
+                    log_info "File ${kieserver_overrides_yaml} already generated."
+                fi
+                if [ ! -f "${kieserver_overrides_json}" ]; then
+                    log_info "Generating ${kieserver_overrides_json} ..."
+cat <<EOF > "${kieserver_overrides_json}"
+{
+  "artifacts": [
+    {
+      "name": "KIE_SERVER_DISTRIBUTION_ZIP",
+      "target": "kie_server_distribution.zip",
+      "md5": "${kie_server_distribution_md5}",
+      "url": "${kie_server_distribution_url}"
+    }
+  ]
+}
+EOF
+                else
+                    log_info "File ${kieserver_overrides_json} already generated."
                 fi
             else
                 return 1
@@ -435,10 +498,11 @@ EOF
         if extract "${add_ons_distribution_file}" "${employee_rostering_distribution_zip}" "${artifacts_dir}" ; then
             local employee_rostering_distribution_file="${artifacts_dir}/${employee_rostering_distribution_zip}"
             local employee_rostering_distribution_war=$(get_zip_path "${employee_rostering_distribution_file}" '.*binaries.*war')
-            local optaweb_employee_rostering_overrides_file="${overrides_dir}/rhdm-optaweb-employee-rostering-overrides.yaml"
-            if [ ! -f "${optaweb_employee_rostering_overrides_file}" ]; then
-                log_info "Generating ${optaweb_employee_rostering_overrides_file} ..."
-cat <<EOF > "${optaweb_employee_rostering_overrides_file}"
+            local optaweb_employee_rostering_overrides_yaml="${overrides_dir}/rhdm-optaweb-employee-rostering-overrides.yaml"
+            local optaweb_employee_rostering_overrides_json="${overrides_dir}/rhdm-optaweb-employee-rostering-overrides.json"
+            if [ ! -f "${optaweb_employee_rostering_overrides_yaml}" ]; then
+                log_info "Generating ${optaweb_employee_rostering_overrides_yaml} ..."
+cat <<EOF > "${optaweb_employee_rostering_overrides_yaml}"
 envs:
 - name: "EMPLOYEE_ROSTERING_DISTRIBUTION_ZIP"
   value: "${employee_rostering_distribution_zip}"
@@ -449,9 +513,37 @@ artifacts:
   target: "add_ons_distribution.zip"
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
+  url: "${add_ons_distribution_url}"
 EOF
             else
-                log_info "File ${optaweb_employee_rostering_overrides_file} already generated."
+                log_info "File ${optaweb_employee_rostering_overrides_yaml} already generated."
+            fi
+            if [ ! -f "${optaweb_employee_rostering_overrides_json}" ]; then
+                log_info "Generating ${optaweb_employee_rostering_overrides_json} ..."
+cat <<EOF > "${optaweb_employee_rostering_overrides_json}"
+{
+  "envs": [
+    {
+      "name": "EMPLOYEE_ROSTERING_DISTRIBUTION_ZIP",
+      "value": "${employee_rostering_distribution_zip}"
+    },
+    {
+      "name": "EMPLOYEE_ROSTERING_DISTRIBUTION_WAR",
+      "value": "${employee_rostering_distribution_war}"
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "ADD_ONS_DISTRIBUTION_ZIP",
+      "target": "add_ons_distribution.zip",
+      "md5": "${add_ons_distribution_md5}",
+      "url": "${add_ons_distribution_url}"
+    }
+  ]
+}
+EOF
+            else
+                log_info "File ${optaweb_employee_rostering_overrides_json} already generated."
             fi
         fi
     fi
@@ -503,18 +595,37 @@ handle_rhpam_artifacts() {
             if cache "${business_central_distribution_file}" "${work_dir}"; then
                 business_central_distribution_md5=$(get_sum "md5" "${business_central_distribution_file}")
                 if product_matches "${product}" "rhpam" "businesscentral" ; then
-                    local businesscentral_overrides_file="${overrides_dir}/rhpam-businesscentral-overrides.yaml"
-                    if [ ! -f "${businesscentral_overrides_file}" ]; then
-                        log_info "Generating ${businesscentral_overrides_file} ..."
-cat <<EOF > "${businesscentral_overrides_file}"
+                    local businesscentral_overrides_yaml="${overrides_dir}/rhpam-businesscentral-overrides.yaml"
+                    local businesscentral_overrides_json="${overrides_dir}/rhpam-businesscentral-overrides.json"
+                    if [ ! -f "${businesscentral_overrides_yaml}" ]; then
+                        log_info "Generating ${businesscentral_overrides_yaml} ..."
+cat <<EOF > "${businesscentral_overrides_yaml}"
 artifacts:
 - name: "BUSINESS_CENTRAL_DISTRIBUTION_ZIP"
   target: "business_central_distribution.zip"
   # ${business_central_distribution_zip}
   md5: "${business_central_distribution_md5}"
+  url: "${business_central_distribution_url}"
 EOF
                     else
-                        log_info "File ${businesscentral_overrides_file} already generated."
+                        log_info "File ${businesscentral_overrides_yaml} already generated."
+                    fi
+                    if [ ! -f "${businesscentral_overrides_json}" ]; then
+                        log_info "Generating ${businesscentral_overrides_json} ..."
+cat <<EOF > "${businesscentral_overrides_json}"
+{
+  "artifacts": [
+    {
+      "name": "BUSINESS_CENTRAL_DISTRIBUTION_ZIP",
+      "target": "business_central_distribution.zip",
+      "md5": "${business_central_distribution_md5}",
+      "url": "${business_central_distribution_url}"
+    }
+  ]
+}
+EOF
+                    else
+                        log_info "File ${businesscentral_overrides_json} already generated."
                     fi
                 fi
             else
@@ -540,18 +651,37 @@ EOF
         if download "${business_central_monitoring_distribution_url}" "${business_central_monitoring_distribution_file}" ; then
             if cache "${business_central_monitoring_distribution_file}" "${work_dir}"; then
                 local business_central_monitoring_distribution_md5=$(get_sum "md5" "${business_central_monitoring_distribution_file}")
-                local businesscentral_monitoring_overrides_file="${overrides_dir}/rhpam-businesscentral-monitoring-overrides.yaml"
-                if [ ! -f "${businesscentral_monitoring_overrides_file}" ]; then
-                    log_info "Generating ${businesscentral_monitoring_overrides_file} ..."
-cat <<EOF > "${businesscentral_monitoring_overrides_file}"
+                local businesscentral_monitoring_overrides_yaml="${overrides_dir}/rhpam-businesscentral-monitoring-overrides.yaml"
+                local businesscentral_monitoring_overrides_json="${overrides_dir}/rhpam-businesscentral-monitoring-overrides.json"
+                if [ ! -f "${businesscentral_monitoring_overrides_yaml}" ]; then
+                    log_info "Generating ${businesscentral_monitoring_overrides_yaml} ..."
+cat <<EOF > "${businesscentral_monitoring_overrides_yaml}"
 artifacts:
 - name: "BUSINESS_CENTRAL_MONITORING_DISTRIBUTION_ZIP"
   target: "business_central_monitoring_distribution.zip"
   # ${business_central_monitoring_distribution_zip}
   md5: "${business_central_monitoring_distribution_md5}"
+  url: "${business_central_monitoring_distribution_url}"
 EOF
                 else
-                    log_info "File ${businesscentral_monitoring_overrides_file} already generated."
+                    log_info "File ${businesscentral_monitoring_overrides_yaml} already generated."
+                fi
+                if [ ! -f "${businesscentral_monitoring_overrides_json}" ]; then
+                    log_info "Generating ${businesscentral_monitoring_overrides_json} ..."
+cat <<EOF > "${businesscentral_monitoring_overrides_json}"
+{
+  "artifacts": [
+    {
+      "name": "BUSINESS_CENTRAL_MONITORING_DISTRIBUTION_ZIP",
+      "target": "business_central_monitoring_distribution.zip",
+      "md5": "${business_central_monitoring_distribution_md5}",
+      "url": "${business_central_monitoring_distribution_url}"
+    }
+  ]
+}
+EOF
+                else
+                    log_info "File ${businesscentral_monitoring_overrides_json} already generated."
                 fi
             else
                 return 1
@@ -564,10 +694,11 @@ EOF
     # RHPAM Controller
     if product_matches "${product}" "rhpam" "controller" ; then
         local controller_distribution_zip="rhpam-${short_version}-controller-ee7.zip"
-        local controller_overrides_file="${overrides_dir}/rhpam-controller-overrides.yaml"
-        if [ ! -f "${controller_overrides_file}" ]; then
-            log_info "Generating ${controller_overrides_file} ..."
-cat <<EOF > "${controller_overrides_file}"
+        local controller_overrides_yaml="${overrides_dir}/rhpam-controller-overrides.yaml"
+        local controller_overrides_json="${overrides_dir}/rhpam-controller-overrides.json"
+        if [ ! -f "${controller_overrides_yaml}" ]; then
+            log_info "Generating ${controller_overrides_yaml} ..."
+cat <<EOF > "${controller_overrides_yaml}"
 envs:
 - name: "CONTROLLER_DISTRIBUTION_ZIP"
   value: "${controller_distribution_zip}"
@@ -576,9 +707,33 @@ artifacts:
   target: "add_ons_distribution.zip"
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
+  url: "${add_ons_distribution_url}"
 EOF
         else
-            log_info "File ${controller_overrides_file} already generated."
+            log_info "File ${controller_overrides_yaml} already generated."
+        fi
+        if [ ! -f "${controller_overrides_json}" ]; then
+            log_info "Generating ${controller_overrides_json} ..."
+cat <<EOF > "${controller_overrides_json}"
+{
+  "envs": [
+    {
+      "name": "CONTROLLER_DISTRIBUTION_ZIP",
+      "value": "${controller_distribution_zip}"
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "ADD_ONS_DISTRIBUTION_ZIP",
+      "target": "add_ons_distribution.zip",
+      "md5": "${add_ons_distribution_md5}",
+      "url": "${add_ons_distribution_url}"
+    }
+  ]
+}
+EOF
+        else
+            log_info "File ${controller_overrides_json} already generated."
         fi
     fi
 
@@ -592,10 +747,11 @@ EOF
                 local kie_server_distribution_md5=$(get_sum "md5" "${kie_server_distribution_file}")
                 local jbpm_wb_kie_server_backend_path=$(get_zip_path "${business_central_distribution_file}" '.*jbpm-wb-kie-server-backend.*\.jar')
                 local jbpm_wb_kie_server_backend_jar=$(get_artifact_name "${jbpm_wb_kie_server_backend_path}")
-                local kieserver_overrides_file="${overrides_dir}/rhpam-kieserver-overrides.yaml"
-                if [ ! -f "${kieserver_overrides_file}" ]; then
-                    log_info "Generating ${kieserver_overrides_file} ..."
-cat <<EOF > "${kieserver_overrides_file}"
+                local kieserver_overrides_yaml="${overrides_dir}/rhpam-kieserver-overrides.yaml"
+                local kieserver_overrides_json="${overrides_dir}/rhpam-kieserver-overrides.json"
+                if [ ! -f "${kieserver_overrides_yaml}" ]; then
+                    log_info "Generating ${kieserver_overrides_yaml} ..."
+cat <<EOF > "${kieserver_overrides_yaml}"
 envs:
 - name: "JBPM_WB_KIE_SERVER_BACKEND_JAR"
   value: "${jbpm_wb_kie_server_backend_jar}"
@@ -604,13 +760,44 @@ artifacts:
   target: "kie_server_distribution.zip"
   # ${kie_server_distribution_zip}
   md5: "${kie_server_distribution_md5}"
+  url: "${kie_server_distribution_url}"
 - name: "BUSINESS_CENTRAL_DISTRIBUTION_ZIP"
   target: "business_central_distribution.zip"
   # ${business_central_distribution_zip}
   md5: "${business_central_distribution_md5}"
+  url: "${business_central_distribution_url}"
 EOF
                 else
-                    log_info "File ${kieserver_overrides_file} already generated."
+                    log_info "File ${kieserver_overrides_yaml} already generated."
+                fi
+                if [ ! -f "${kieserver_overrides_json}" ]; then
+                    log_info "Generating ${kieserver_overrides_json} ..."
+cat <<EOF > "${kieserver_overrides_json}"
+{
+  "envs": [
+    {
+      "name": "JBPM_WB_KIE_SERVER_BACKEND_JAR",
+      "value": "${jbpm_wb_kie_server_backend_jar}"
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "KIE_SERVER_DISTRIBUTION_ZIP",
+      "target": "kie_server_distribution.zip",
+      "md5": "${kie_server_distribution_md5}",
+      "url": "${kie_server_distribution_url}"
+    },
+    {
+      "name": "BUSINESS_CENTRAL_DISTRIBUTION_ZIP",
+      "target": "business_central_distribution.zip",
+      "md5": "${business_central_distribution_md5}",
+      "url": "${business_central_distribution_url}"
+    }
+  ]
+}
+EOF
+                else
+                    log_info "File ${kieserver_overrides_json} already generated."
                 fi
             else
                 return 1
@@ -623,10 +810,11 @@ EOF
     # RHPAM Process Migration
     if product_matches "${product}" "rhpam" "process-migration" ; then
         local process_migration_distribution_jar="rhpam-${short_version}-process-migration-service-standalone.jar"
-        local process_migration_overrides_file="${overrides_dir}/rhpam-process-migration-overrides.yaml"
-        if [ ! -f "${process_migration_overrides_file}" ]; then
-            log_info "Generating ${process_migration_overrides_file} ..."
-cat <<EOF > "${process_migration_overrides_file}"
+        local process_migration_overrides_yaml="${overrides_dir}/rhpam-process-migration-overrides.yaml"
+        local process_migration_overrides_json="${overrides_dir}/rhpam-process-migration-overrides.json"
+        if [ ! -f "${process_migration_overrides_yaml}" ]; then
+            log_info "Generating ${process_migration_overrides_yaml} ..."
+cat <<EOF > "${process_migration_overrides_yaml}"
 envs:
 - name: "PROCESS_MIGRATION_DISTRIBUTION_JAR"
   value: "${process_migration_distribution_jar}"
@@ -635,19 +823,44 @@ artifacts:
   target: "add_ons_distribution.zip"
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
+  url: "${add_ons_distribution_url}"
 EOF
         else
-            log_info "File ${process_migration_overrides_file} already generated."
+            log_info "File ${process_migration_overrides_yaml} already generated."
+        fi
+        if [ ! -f "${process_migration_overrides_json}" ]; then
+            log_info "Generating ${process_migration_overrides_json} ..."
+cat <<EOF > "${process_migration_overrides_json}"
+{
+  "envs": [
+    {
+      "name": "PROCESS_MIGRATION_DISTRIBUTION_JAR",
+      "value": "${process_migration_distribution_jar}"
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "ADD_ONS_DISTRIBUTION_ZIP",
+      "target": "add_ons_distribution.zip",
+      "md5": "${add_ons_distribution_md5}",
+      "url": "${add_ons_distribution_url}"
+    }
+  ]
+}
+EOF
+        else
+            log_info "File ${process_migration_overrides_json} already generated."
         fi
     fi
 
     # RHPAM Smart Router
     if product_matches "${product}" "rhpam" "smartrouter" ; then
         local kie_router_distribution_jar="rhpam-${short_version}-smart-router.jar"
-        local smartrouter_overrides_file="${overrides_dir}/rhpam-smartrouter-overrides.yaml"
-        if [ ! -f "${smartrouter_overrides_file}" ]; then
-            log_info "Generating ${smartrouter_overrides_file} ..."
-cat <<EOF > "${smartrouter_overrides_file}"
+        local smartrouter_overrides_yaml="${overrides_dir}/rhpam-smartrouter-overrides.yaml"
+        local smartrouter_overrides_json="${overrides_dir}/rhpam-smartrouter-overrides.json"
+        if [ ! -f "${smartrouter_overrides_yaml}" ]; then
+            log_info "Generating ${smartrouter_overrides_yaml} ..."
+cat <<EOF > "${smartrouter_overrides_yaml}"
 envs:
 - name: "KIE_ROUTER_DISTRIBUTION_JAR"
   value: "${kie_router_distribution_jar}"
@@ -656,9 +869,33 @@ artifacts:
   target: "add_ons_distribution.zip"
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
+  url: "${add_ons_distribution_url}"
 EOF
         else
-            log_info "File ${smartrouter_overrides_file} already generated."
+            log_info "File ${smartrouter_overrides_yaml} already generated."
+        fi
+        if [ ! -f "${smartrouter_overrides_json}" ]; then
+            log_info "Generating ${smartrouter_overrides_json} ..."
+cat <<EOF > "${smartrouter_overrides_json}"
+{
+  "envs": [
+    {
+      "name": "KIE_ROUTER_DISTRIBUTION_JAR",
+      "value": "${kie_router_distribution_jar}"
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "ADD_ONS_DISTRIBUTION_ZIP",
+      "target": "add_ons_distribution.zip",
+      "md5": "${add_ons_distribution_md5}",
+      "url": "${add_ons_distribution_url}"
+    }
+  ]
+}
+EOF
+        else
+            log_info "File ${smartrouter_overrides_json} already generated."
         fi
     fi
 }
