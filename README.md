@@ -9,8 +9,6 @@ Below, all CeKit modules contained in this repository:
 jboss-kie-modules \
 ├── [jboss-kie-controller](jboss-kie-controller): RHDM/PAM controller specific modules. \
 ├── [jboss-kie-kieserver](jboss-kie-kieserver): RHDM/PAM Execution Server specific modules. \
-├── [jboss-kie-optaweb-common](jboss-kie-optaweb-common): Optaweb common modules. \
-├── [jboss-kie-optaweb-employeerostering](jboss-kie-optaweb-employeerostering): Optaweb Employee Rostering specific modules. \
 ├── [jboss-kie-smartrouter](jboss-kie-smartrouter): RHPAM Smart Router specific modules. \
 ├── [jboss-kie-wildfly-common](jboss-kie-wildfly-common): Common modules, basically used by all images. \
 ├── [jboss-kie-workbench](jboss-kie-workbench):  RHDM/PAM Decision/Business Central specific modules. \
