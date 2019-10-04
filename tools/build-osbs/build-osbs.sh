@@ -20,8 +20,8 @@ function help()
     echo "  -v PROD_VERSION           Version being built. Passed to the build-overrides.sh -v option"
     echo "  -c PROD_COMPONENT         Component for which an image is being built. Valid choices are:"
     echo "                            rhpam-businesscentral, rhpam-businesscentral-monitoring,"
-    echo "                            rhpam-controller, rhpam-kieserver, rhpam-smartrouter, rhdm-decisioncentral,"
-    echo "                            rhdm-controller, rhdm-kieserver, rhdm-optaweb-employee-rostering"
+    echo "                            rhpam-controller, rhpam-kieserver, rhpam-smartrouter, rhpam-process-migration,"
+    echo "                            rhdm-decisioncentral, rhdm-controller, rhdm-kieserver"
     echo "  -t OSBS_BUILD_TARGET      Build target for osbs, for example rhba-7.3-openshift-containers-candidate"
     echo ""
     echo "Optional:"
@@ -76,11 +76,11 @@ function check_for_required_envs()
             rhpam-businesscentral-monitoring | \
             rhpam-controller | \
             rhpam-kieserver | \
+            rhpam-process-migration | \
             rhpam-smartrouter | \
             rhdm-controller | \
             rhdm-decisioncentral | \
-            rhdm-kieserver | \
-            rhdm-optaweb-employee-rostering)
+            rhdm-kieserver)
                 ;;
             *)
                 echo Invalid subcomponent specified with PROD_COMPONENT

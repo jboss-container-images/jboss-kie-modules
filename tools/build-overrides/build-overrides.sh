@@ -335,7 +335,7 @@ handle_rhdm_artifacts() {
     # RHDM Add-Ons
     local add_ons_distribution_zip
     local add_ons_distribution_md5
-    if product_matches "${product}" "rhdm" "controller" || product_matches "${product}" "rhdm" "optaweb-employee-rostering" ; then
+    if product_matches "${product}" "rhdm" "controller" ; then
         local add_ons_distribution_url=$(get_artifact_url "rhdm.addons.latest.url" "${build_file}")
         add_ons_distribution_zip=$(get_artifact_name "${add_ons_distribution_url}")
         local add_ons_distribution_file="${artifacts_dir}/${add_ons_distribution_zip}"
@@ -489,62 +489,6 @@ EOF
             fi
         else
             return 1
-        fi
-    fi
-
-    # RHDM Optaweb Employee Rostering
-    if product_matches "${product}" "rhdm" "optaweb-employee-rostering" ; then
-        local employee_rostering_distribution_zip="rhdm-${short_version}-employee-rostering.zip"
-        if extract "${add_ons_distribution_file}" "${employee_rostering_distribution_zip}" "${artifacts_dir}" ; then
-            local employee_rostering_distribution_file="${artifacts_dir}/${employee_rostering_distribution_zip}"
-            local employee_rostering_distribution_war=$(get_zip_path "${employee_rostering_distribution_file}" '.*binaries.*war')
-            local optaweb_employee_rostering_overrides_yaml="${overrides_dir}/rhdm-optaweb-employee-rostering-overrides.yaml"
-            local optaweb_employee_rostering_overrides_json="${overrides_dir}/rhdm-optaweb-employee-rostering-overrides.json"
-            if [ ! -f "${optaweb_employee_rostering_overrides_yaml}" ]; then
-                log_info "Generating ${optaweb_employee_rostering_overrides_yaml} ..."
-cat <<EOF > "${optaweb_employee_rostering_overrides_yaml}"
-envs:
-- name: "EMPLOYEE_ROSTERING_DISTRIBUTION_ZIP"
-  value: "${employee_rostering_distribution_zip}"
-- name: "EMPLOYEE_ROSTERING_DISTRIBUTION_WAR"
-  value: "${employee_rostering_distribution_war}"
-artifacts:
-- name: "ADD_ONS_DISTRIBUTION_ZIP"
-  target: "add_ons_distribution.zip"
-  # ${add_ons_distribution_zip}
-  md5: "${add_ons_distribution_md5}"
-  url: "${add_ons_distribution_url}"
-EOF
-            else
-                log_info "File ${optaweb_employee_rostering_overrides_yaml} already generated."
-            fi
-            if [ ! -f "${optaweb_employee_rostering_overrides_json}" ]; then
-                log_info "Generating ${optaweb_employee_rostering_overrides_json} ..."
-cat <<EOF > "${optaweb_employee_rostering_overrides_json}"
-{
-  "envs": [
-    {
-      "name": "EMPLOYEE_ROSTERING_DISTRIBUTION_ZIP",
-      "value": "${employee_rostering_distribution_zip}"
-    },
-    {
-      "name": "EMPLOYEE_ROSTERING_DISTRIBUTION_WAR",
-      "value": "${employee_rostering_distribution_war}"
-    }
-  ],
-  "artifacts": [
-    {
-      "name": "ADD_ONS_DISTRIBUTION_ZIP",
-      "target": "add_ons_distribution.zip",
-      "md5": "${add_ons_distribution_md5}",
-      "url": "${add_ons_distribution_url}"
-    }
-  ]
-}
-EOF
-            else
-                log_info "File ${optaweb_employee_rostering_overrides_json} already generated."
-            fi
         fi
     fi
 }
@@ -944,7 +888,7 @@ main() {
     local build_date
     local build_date_default=$(date --date="1 day ago" '+%Y%m%d')
     local products_valid=( all \
-        rhdm rhdm-controller rhdm-decisioncentral rhdm-kieserver rhdm-optaweb-employee-rostering \
+        rhdm rhdm-controller rhdm-decisioncentral rhdm-kieserver \
         rhpam rhpam-businesscentral rhpam-businesscentral-monitoring rhpam-controller rhpam-kieserver rhpam-process-migration rhpam-smartrouter )
     local product_default="all"
     local version_example="7.6.0"
