@@ -335,13 +335,31 @@ handle_rhdm_artifacts() {
     # RHDM Add-Ons
     local add_ons_distribution_zip
     local add_ons_distribution_md5
-    if product_matches "${product}" "rhdm" "controller" || product_matches "${product}" "rhdm" "optaweb-employee-rostering" ; then
+    if product_matches "${product}" "rhdm" "controller" ; then
         local add_ons_distribution_url=$(get_artifact_url "rhdm.addons.latest.url" "${build_file}")
         add_ons_distribution_zip=$(get_artifact_name "${add_ons_distribution_url}")
         local add_ons_distribution_file="${artifacts_dir}/${add_ons_distribution_zip}"
         if download "${add_ons_distribution_url}" "${add_ons_distribution_file}" ; then
             if cache "${add_ons_distribution_file}" "${work_dir}"; then
                 add_ons_distribution_md5=$(get_sum "md5" "${add_ons_distribution_file}")
+            else
+                return 1
+            fi
+        else
+            return 1
+        fi
+    fi
+
+    # RHDM Reference-Implementation
+    local reference_implementation_distribution_zip
+    local reference_implementation_distribution_md5
+    if product_matches "${product}" "rhdm" "optaweb-employee-rostering" ; then
+        local reference_implementation_distribution_url=$(get_artifact_url "rhdm.reference-implementation.latest.url" "${build_file}")
+        reference_implementation_distribution_zip=$(get_artifact_name "${reference_implementation_distribution_url}")
+        local reference_implementation_distribution_file="${artifacts_dir}/${reference_implementation_distribution_zip}"
+        if download "${reference_implementation_distribution_url}" "${reference_implementation_distribution_file}" ; then
+            if cache "${reference_implementation_distribution_file}" "${work_dir}"; then
+                reference_implementation_distribution_md5=$(get_sum "md5" "${reference_implementation_distribution_file}")
             else
                 return 1
             fi
@@ -495,7 +513,7 @@ EOF
     # RHDM Optaweb Employee Rostering
     if product_matches "${product}" "rhdm" "optaweb-employee-rostering" ; then
         local employee_rostering_distribution_zip="rhdm-${short_version}-employee-rostering.zip"
-        if extract "${add_ons_distribution_file}" "${employee_rostering_distribution_zip}" "${artifacts_dir}" ; then
+        if extract "${reference_implementation_distribution_file}" "${employee_rostering_distribution_zip}" "${artifacts_dir}" ; then
             local employee_rostering_distribution_file="${artifacts_dir}/${employee_rostering_distribution_zip}"
             local employee_rostering_distribution_war=$(get_zip_path "${employee_rostering_distribution_file}" '.*binaries.*war')
             local optaweb_employee_rostering_overrides_yaml="${overrides_dir}/rhdm-optaweb-employee-rostering-overrides.yaml"
@@ -509,11 +527,11 @@ envs:
 - name: "EMPLOYEE_ROSTERING_DISTRIBUTION_WAR"
   value: "${employee_rostering_distribution_war}"
 artifacts:
-- name: "ADD_ONS_DISTRIBUTION_ZIP"
-  target: "add_ons_distribution.zip"
-  # ${add_ons_distribution_zip}
-  md5: "${add_ons_distribution_md5}"
-  url: "${add_ons_distribution_url}"
+- name: "REFERENCE_IMPLEMENTATION_DISTRIBUTION_ZIP"
+  target: "reference_implementation_distribution.zip"
+  # ${reference_implementation_distribution_zip}
+  md5: "${reference_implementation_distribution_md5}"
+  url: "${reference_implementation_distribution_url}"
 EOF
             else
                 log_info "File ${optaweb_employee_rostering_overrides_yaml} already generated."
@@ -534,10 +552,10 @@ cat <<EOF > "${optaweb_employee_rostering_overrides_json}"
   ],
   "artifacts": [
     {
-      "name": "ADD_ONS_DISTRIBUTION_ZIP",
-      "target": "add_ons_distribution.zip",
-      "md5": "${add_ons_distribution_md5}",
-      "url": "${add_ons_distribution_url}"
+      "name": "REFERENCE_IMPLEMENTATION_DISTRIBUTION_ZIP",
+      "target": "reference_implementation_distribution.zip",
+      "md5": "${reference_implementation_distribution_md5}",
+      "url": "${reference_implementation_distribution_url}"
     }
   ]
 }
