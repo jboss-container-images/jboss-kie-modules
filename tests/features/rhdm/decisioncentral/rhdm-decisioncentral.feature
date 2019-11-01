@@ -1,4 +1,4 @@
-@rhdm-7/rhdm76-decisioncentral-openshift
+@rhdm-7/rhdm-decisioncentral-rhel8
 Feature: RHDM Decision Central configuration tests
 
   # https://issues.jboss.org/browse/CLOUD-180

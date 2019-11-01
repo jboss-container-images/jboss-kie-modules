@@ -1,4 +1,4 @@
-@rhdm-7/rhdm76-controller-openshift @rhpam-7/rhpam76-controller-openshift
+@rhdm-7/rhdm-controller-rhel8 @rhpam-7/rhpam-controller-rhel8
 Feature: KIE Controller configuration common tests
 
     # https://issues.jboss.org/browse/RHPAM-891
