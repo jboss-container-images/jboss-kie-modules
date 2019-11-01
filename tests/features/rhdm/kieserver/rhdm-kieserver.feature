@@ -1,10 +1,10 @@
-@rhdm-7/rhdm75-kieserver-openshift
+@rhdm-7/rhdm-kieserver-rhel8
 Feature: RHDM KIE Server configuration tests
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
     When container is ready
-    Then container log should contain rhdm-7/rhdm75-kieserver-openshift image, version
+    Then container log should contain rhdm-7/rhdm-kieserver-rhel8 image, version
 
   Scenario: Check for product and version environment variables
     When container is ready
