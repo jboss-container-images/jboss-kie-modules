@@ -1,4 +1,4 @@
-@rhdm-7/rhdm75-decisioncentral-openshift @rhpam-7/rhpam75-businesscentral-openshift
+@rhdm-7/rhdm-decisioncentral-rhel8 @rhpam-7/rhpam-businesscentral-rhel8
 Feature: Decision/Business Central common features
 
   Scenario: Check custom users are properly configured
