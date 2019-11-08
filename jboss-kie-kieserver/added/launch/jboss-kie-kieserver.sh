@@ -42,6 +42,7 @@ function prepareEnv() {
     unset KIE_SERVER_SYNC_DEPLOY
     unset MYSQL_ENABLED_TLS_PROTOCOLS
     unset PROMETHEUS_SERVER_EXT_DISABLED
+    unset OPTAPLANNER_SERVER_EXT_THREAD_POOL_QUEUE_SIZE
 }
 
 function preConfigure() {
@@ -66,6 +67,7 @@ function configure() {
     configure_kie_server_mgmt
     configure_mode
     configure_prometheus
+    configure_optaplanner
     # configure_server_state always has to be last
     configure_server_state
 }
@@ -584,6 +586,12 @@ function configure_jbpm() {
         fi
     elif [ "${JBOSS_PRODUCT}" = "rhdm-kieserver" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.server.ext.disabled=true -Dorg.jbpm.ui.server.ext.disabled=true -Dorg.jbpm.case.server.ext.disabled=true"
+    fi
+}
+
+function configure_optaplanner() {
+    if [ -n "${OPTAPLANNER_SERVER_EXT_THREAD_POOL_QUEUE_SIZE}" ]; then
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.optaplanner.server.ext.thread.pool.queue.size=${OPTAPLANNER_SERVER_EXT_THREAD_POOL_QUEUE_SIZE}"
     fi
 }
 
