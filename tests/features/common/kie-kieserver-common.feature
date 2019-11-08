@@ -458,3 +458,14 @@ Feature: Kie Server common features
       | MQ_SERVICE_PREFIX_MAPPING | AMQPREFIX |
     Then container log should contain Configuring external JMS integration, removing /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml
      And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should not exist
+
+  Scenario: RHDM-1096 - Check that optaplanner thread pool queue size property is not set without env.
+    When container is started with env
+      | variable        | value  |
+    Then container log should not contain -Dorg.optaplanner.server.ext.thread.pool.queue.size=
+
+  Scenario: RHDM-1096 - Check that optaplanner thread pool queue size property is set
+    When container is started with env
+      | variable        | value      |
+      | OPTAPLANNER_SERVER_EXT_THREAD_POOL_QUEUE_SIZE | 4 |
+    Then container log should contain -Dorg.optaplanner.server.ext.thread.pool.queue.size=4

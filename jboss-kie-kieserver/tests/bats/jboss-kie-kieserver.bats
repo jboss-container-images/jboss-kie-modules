@@ -332,3 +332,12 @@ teardown() {
         [ "${create_table_default}" = "${create_table_mssql}" ]
     done
 }
+
+@test "Check if the optaplanner thread pool queue size is set" {
+    export OPTAPLANNER_SERVER_EXT_THREAD_POOL_QUEUE_SIZE="4"
+    local expected="4"
+    configure_optaplanner >&2
+    echo "Result: ${JBOSS_KIE_ARGS}"
+    echo "Expected: ${expected}"
+    [[ $JBOSS_KIE_ARGS == *"-Dorg.optaplanner.server.ext.thread.pool.queue.size=${expected}"* ]]
+}
