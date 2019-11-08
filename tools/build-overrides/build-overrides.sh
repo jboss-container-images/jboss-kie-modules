@@ -760,7 +760,7 @@ EOF
             log_info "Generating ${process_migration_overrides_yaml} ..."
 cat <<EOF > "${process_migration_overrides_yaml}"
 envs:
-- name: "PROCESS_MIGRATION_DISTRIBUTION_JAR"
+- name: "KIE_PROCESS_MIGRATION_DISTRIBUTION_JAR"
   value: "${process_migration_distribution_jar}"
 artifacts:
 - name: "ADD_ONS_DISTRIBUTION_ZIP"
@@ -778,7 +778,7 @@ cat <<EOF > "${process_migration_overrides_json}"
 {
   "envs": [
     {
-      "name": "PROCESS_MIGRATION_DISTRIBUTION_JAR",
+      "name": "KIE_PROCESS_MIGRATION_DISTRIBUTION_JAR",
       "value": "${process_migration_distribution_jar}"
     }
   ],
