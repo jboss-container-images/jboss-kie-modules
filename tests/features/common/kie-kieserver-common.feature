@@ -266,6 +266,7 @@ Feature: Kie Server common features
   Scenario: Verify the KIE_SERVER_CONTROLLER_TOKEN configuration
     When container is started with env
       | variable                    | value    |
+      | KIE_SERVER_CONTROLLER_HOST  | myhost   |
       | KIE_SERVER_CONTROLLER_TOKEN | mytoken  |
     Then container log should contain -Dorg.kie.server.controller.token=mytoken
 
