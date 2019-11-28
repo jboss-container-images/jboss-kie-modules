@@ -119,7 +119,7 @@ function get_kie_server_token() {
 }
 
 function get_kie_server_roles() {
-    local default_kie_roles="kie-server,rest-all,user"
+    local default_kie_roles="kie-server,rest-all,user,admin"
     echo $(find_env "KIE_SERVER_ROLES" "${default_kie_roles}")
 }
 
@@ -163,7 +163,7 @@ function get_kie_server_controller_token() {
 }
 
 function get_kie_server_controller_roles() {
-    local default_kie_roles="kie-server,rest-all,user"
+    local default_kie_roles="kie-server,rest-all,user,admin"
     echo $(find_env "KIE_SERVER_CONTROLLER_ROLES" "${default_kie_roles}")
 }
 
