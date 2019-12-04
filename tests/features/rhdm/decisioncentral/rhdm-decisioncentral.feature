@@ -4,7 +4,7 @@ Feature: RHDM Decision Central configuration tests
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
     When container is ready
-    Then container log should contain rhdm-7/rhdm77decisioncentral-openshift image, version
+    Then container log should contain rhdm-7/rhdm-decisioncentral-rhel8 image, version
 
   Scenario: Check for product and version environment variables
     When container is ready
