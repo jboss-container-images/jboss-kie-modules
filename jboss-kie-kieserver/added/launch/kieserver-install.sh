@@ -103,7 +103,7 @@ install_jar_pom() {
 if [ -d ${DEPLOY_DIR} ]; then
     log_info "Verifying if the provided maven project is multi-module"
     if [ -f "${LOCAL_SOURCE_DIR}/pom.xml" ]; then
-        grep -qE '<module>.*</module>' "${local_source_dir}/pom.xml"
+        grep -qE '<module>.*</module>' "${LOCAL_SOURCE_DIR}/pom.xml"
         if [ "$?" == "0" ]; then
             modules=$(grep -E '<module>.*</module>' ${LOCAL_SOURCE_DIR}/pom.xml | awk -F '[<>]' '/module/{print $3}' | tr '\n' ' ')
             log_info "Multi module detected, the modules are: ${modules}"
