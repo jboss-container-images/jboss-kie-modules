@@ -248,7 +248,7 @@ Feature: Kie Server common features
 
   # RHPAM-2274: S2I build failure when assembly plugin is used
   Scenario: Deploy a jar and its pom files using assembly script.
-    Given s2i build https://github.com/master/jboss-kie-modules.git from jboss-kie-kieserver/tests/bats/resources/assembly-build using master
+    Given s2i build https://github.com/jboss-container-images/jboss-kie-modules.git from jboss-kie-kieserver/tests/bats/resources/assembly-build using master
      Then file /home/jboss/.m2/repository/org/kie/kieserver/assembly-build-rhpam-2274/1.0.0/assembly-build-rhpam-2274-1.0.0.jar should exist
       And file /home/jboss/.m2/repository/org/kie/kieserver/assembly-build-rhpam-2274/1.0.0/assembly-build-rhpam-2274-1.0.0.pom should exist
       And file /home/jboss/.m2/repository/org/kie/kie-internal/7.14.0.Final-redhat-00004/kie-internal-7.14.0.Final-redhat-00004.pom should exist
