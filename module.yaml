@@ -4,7 +4,7 @@ version: '1.0'
 description: Legacy os-eap7-openshift script package.
 modules:
   install:
-  - name: os-java-run
+  - name: jboss.container.java.jvm.bash
 execute:
 - script: prepare.sh
 - script: configure.sh
