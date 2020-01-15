@@ -12,9 +12,14 @@ fi
 
 CONFIGURE_SCRIPTS=(
   ${LAUNCH_DIR}/jboss-kie-smartrouter.sh
+  /opt/run-java/proxy-options
 )
 
 source ${LAUNCH_DIR}/configure.sh
+
+# for JVM property settings please refer to this link https://github.com/jboss-openshift/cct_module/blob/master/jboss/container/java/jvm/api/module.yaml
+source /usr/local/dynamic-resources/dynamic_resources.sh
+JAVA_OPTS="$(adjust_java_options ${JAVA_OPTS})"
 
 log_info "Running $JBOSS_IMAGE_NAME image, version $PRODUCT_VERSION"
 
@@ -37,4 +42,5 @@ while [[ $D_STR ]]; do
     D_STR=${D_STR#*"$D_DLM"}
 done
 
-exec ${JAVA_HOME}/bin/java ${SHOW_JVM_SETTINGS} "${D_ARR[@]}" -jar /opt/${JBOSS_PRODUCT}/${KIE_ROUTER_DISTRIBUTION_JAR}
+# handle JAVA_OPTS_APPEND at startup
+exec ${JAVA_HOME}/bin/java ${SHOW_JVM_SETTINGS} ${JAVA_OPTS} ${JAVA_OPTS_APPEND} ${JAVA_PROXY_OPTIONS} "${D_ARR[@]}" -jar /opt/${JBOSS_PRODUCT}/${KIE_ROUTER_DISTRIBUTION_JAR}
