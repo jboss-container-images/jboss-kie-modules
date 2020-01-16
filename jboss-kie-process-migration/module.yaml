@@ -4,11 +4,7 @@ version: '1.0'
 description: The jboss-kie-process-migration module.
 execute:
     - script: configure.sh
-artifacts:
-    - name: postgresql-jdbc
-      target: postgresql-9.4.1207.jar
-      md5: b06c414b40f5db51a314e32e2cda3027
-    - name: mariadb-jdbc
-      target: mariadb-java-client-2.4.4.jar
-      md5: 22330c5b473ac23ba71285c6451da4cc
-
+packages:
+    install:
+        - postgresql-jdbc
+        - mariadb-java-client
