@@ -255,11 +255,11 @@ function generate_external_datasource() {
       ds="$ds
              <driver>${driver}</driver>"
     fi
+  fi
 
-    if [ -n "$tx_isolation" ]; then
-      ds="$ds
-             <transaction-isolation>$tx_isolation</transaction-isolation>"
-    fi
+  if [ -n "$tx_isolation" ]; then
+    ds="$ds
+           <transaction-isolation>$tx_isolation</transaction-isolation>"
   fi
 
   if [ -n "$min_pool_size" ] || [ -n "$max_pool_size" ]; then
