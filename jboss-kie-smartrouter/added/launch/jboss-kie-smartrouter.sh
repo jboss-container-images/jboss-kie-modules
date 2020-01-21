@@ -6,13 +6,13 @@ source "${JBOSS_HOME}/bin/launch/jboss-kie-common.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
+    unset KIE_ADMIN_USER
+    unset KIE_ADMIN_PWD
     unset KIE_SERVER_CONTROLLER_HOST
     unset KIE_SERVER_CONTROLLER_PORT
     unset KIE_SERVER_CONTROLLER_PROTOCOL
-    unset KIE_SERVER_CONTROLLER_PWD
     unset KIE_SERVER_CONTROLLER_SERVICE
     unset KIE_SERVER_CONTROLLER_TOKEN
-    unset KIE_SERVER_CONTROLLER_USER
     unset KIE_SERVER_ROUTER_HOST
     unset KIE_SERVER_ROUTER_ID
     unset KIE_SERVER_ROUTER_NAME
@@ -168,8 +168,8 @@ function configure_controller_access {
     fi
     # NOTE: the below must match what is in jboss-kie-modules/jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-security.sh
     # user/pwd
-    local kieServerControllerUser=$(find_env "KIE_SERVER_CONTROLLER_USER" "controllerUser")
-    local kieServerControllerPwd=$(find_env "KIE_SERVER_CONTROLLER_PWD" "controller1!")
+    local kieServerControllerUser=$(find_env "KIE_ADMIN_USER" "adminUser")
+    local kieServerControllerPwd=$(find_env "KIE_ADMIN_PWD" "adminPwd1!")
     kieServerControllerPwd=${kieServerControllerPwd//\"/\\\"}
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.user=\"${kieServerControllerUser}\""
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.pwd=\"${kieServerControllerPwd}\""

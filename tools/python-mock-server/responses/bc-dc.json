@@ -116,22 +116,6 @@
                 "value": "enabled"
               },
               {
-                "name": "KIE_SERVER_CONTROLLER_USER",
-                "value": "monitorUser"
-              },
-              {
-                "name": "KIE_SERVER_CONTROLLER_PWD",
-                "value": "28QBgbif"
-              },
-              {
-                "name": "KIE_SERVER_USER",
-                "value": "executionUser"
-              },
-              {
-                "name": "KIE_SERVER_PWD",
-                "value": "BUCENWmU"
-              },
-              {
                 "name": "KIE_SERVER_CONTROLLER_OPENSHIFT_GLOBAL_DISCOVERY_ENABLED",
                 "value": "false"
               },
@@ -146,14 +130,6 @@
               {
                 "name": "KIE_WORKBENCH_CONTROLLER_OPENSHIFT_ENABLED",
                 "value": "true"
-              },
-              {
-                "name": "KIE_MAVEN_USER",
-                "value": "mavenUser"
-              },
-              {
-                "name": "KIE_MAVEN_PWD",
-                "value": "Vor8EJuK"
               },
               {
                 "name": "HTTPS_KEYSTORE_DIR",

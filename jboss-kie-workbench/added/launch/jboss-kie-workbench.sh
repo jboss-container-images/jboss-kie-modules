@@ -66,11 +66,6 @@ function configure_local_security() {
 function configure_admin_security() {
     # add eap users (see jboss-kie-wildfly-security.sh)
     add_kie_admin_user
-    add_kie_server_controller_user
-    if [[ $JBOSS_PRODUCT != *monitoring ]]; then
-        add_kie_maven_user
-    fi
-    print_user_information "central"
 
     # (see management-common.sh and login-modules-common.sh)
     add_management_interface_realm
@@ -92,7 +87,7 @@ function configure_kie_kiestore() {
     local storetype="JCEKS"
     local keypass="kieKeyPassword"
     local serveralias="kieServerAlias"
-    echo $(get_kie_server_pwd) | keytool -importpassword \
+    echo $(get_kie_admin_pwd) | keytool -importpassword \
         -keystore ${keystore} \
         -storepass ${storepass} \
         -storetype ${storetype} \
@@ -100,7 +95,7 @@ function configure_kie_kiestore() {
         -alias ${serveralias} \
         > /dev/null 2>&1
     local ctrlalias="kieCtrlAlias"
-    echo $(get_kie_server_controller_pwd) | keytool -importpassword \
+    echo $(get_kie_admin_pwd) | keytool -importpassword \
         -keystore ${keystore} \
         -storepass ${storepass} \
         -storetype ${storetype} \
@@ -143,8 +138,8 @@ function configure_controller_access() {
         local kieServerControllerUrl=$(build_simple_url "${kieSererControllerProtocol}" "${kieServerControllerHost}" "${kieServerControllerPort}" "${kieServerControllerPath}")
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller=${kieServerControllerUrl}"
         # user/pwd
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.user=\"$(get_kie_server_controller_user)\""
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.pwd=\"$(esc_kie_server_controller_pwd)\""
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.user=\"$(get_kie_admin_user)\""
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.pwd=\"$(esc_kie_admin_pwd)\""
         # token
         local kieServerControllerToken="$(get_kie_server_controller_token)"
         if [ "${kieServerControllerToken}" != "" ]; then
@@ -155,8 +150,8 @@ function configure_controller_access() {
 
 function configure_server_access() {
     # user/pwd
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.user=\"$(get_kie_server_user)\""
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.pwd=\"$(esc_kie_server_pwd)\""
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.user=\"$(get_kie_admin_user)\""
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.pwd=\"$(esc_kie_admin_pwd)\""
     # token
     local kieServerToken="$(get_kie_server_token)"
     if [ "${kieServerToken}" != "" ]; then
