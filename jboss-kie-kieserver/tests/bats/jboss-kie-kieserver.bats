@@ -315,24 +315,6 @@ teardown() {
   [[ $JBOSS_KIE_ARGS == *"-Dorg.kie.server.location=${expected}"* ]]
 }
 
-@test "check that fix_ejbtimer_timer_sql fixes timer-sql.properties files for mssql driver" {
-    # create original files
-    local overlay_dir="${JBOSS_HOME}/modules/system/layers/base/.overlays/layer-base-jboss-eap-7.2.1.CP/org/jboss/as/ejb3/main/timers"
-    local base_dir="${JBOSS_HOME}/modules/system/layers/base/org/jboss/as/ejb3/main/timers"
-    for layer_dir in "${overlay_dir}" "${base_dir}" ; do
-        mkdir -p "${layer_dir}"
-        cp "${BATS_TEST_DIRNAME}/resources/timer-sql.properties" "${layer_dir}"
-    done
-    # function to test
-    fix_ejbtimer_timer_sql "mssql" >&2
-    # validate processed files
-    for layer_dir in "${overlay_dir}" "${base_dir}" ; do
-        local create_table_default=$(grep "^create-table=" "${layer_dir}/timer-sql.properties")
-        local create_table_mssql=$(grep "^create-table.mssql=" "${layer_dir}/timer-sql.properties" | sed -e 's/\.mssql=/=/')
-        [ "${create_table_default}" = "${create_table_mssql}" ]
-    done
-}
-
 @test "Check if the optaplanner thread pool queue size is set" {
     export OPTAPLANNER_SERVER_EXT_THREAD_POOL_QUEUE_SIZE="4"
     local expected="4"
