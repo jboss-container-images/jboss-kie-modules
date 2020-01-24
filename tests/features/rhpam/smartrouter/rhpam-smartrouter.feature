@@ -91,12 +91,12 @@ Feature: RHPAM Smart Router configuration tests
     When container is started with env
       | variable                                  | value        |
       | SCRIPT_DEBUG                              | true         |
+      | KIE_ADMIN_PWD                             | 123changeme  |
+      | KIE_ADMIN_USER                            | userA        |
       | KIE_SERVER_CONTROLLER_HOST                | 10.1.1.190   |
       | KIE_SERVER_CONTROLLER_PORT                | 9005         |
       | KIE_SERVER_CONTROLLER_PROTOCOL            | http         |
-      | KIE_SERVER_CONTROLLER_PWD                 | 123changeme  |
       | KIE_SERVER_CONTROLLER_TOKEN               | tokenA       |
-      | KIE_SERVER_CONTROLLER_USER                | userA        |
       | KIE_SERVER_ROUTER_HOST                    | routerHost   |
       | KIE_SERVER_ROUTER_ID                      | routerID     |
       | KIE_SERVER_ROUTER_NAME                    | routerName   |

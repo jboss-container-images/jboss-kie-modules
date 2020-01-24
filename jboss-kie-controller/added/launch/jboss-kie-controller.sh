@@ -20,14 +20,13 @@ function configure() {
 
 function configure_controller_security() {
     # add eap user (see jboss-kie-wildfly-security.sh)
-    add_kie_server_controller_user
-    print_user_information "controller"
+    add_kie_admin_user
 }
 
 function configure_server_access() {
     # user/pwd
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.user=\"$(get_kie_server_user)\""
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.pwd=\"$(esc_kie_server_pwd)\""
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.user=\"$(get_kie_admin_user)\""
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.pwd=\"$(esc_kie_admin_pwd)\""
     # token
     local kieServerToken="$(get_kie_server_token)"
     if [ "${kieServerToken}" != "" ]; then
