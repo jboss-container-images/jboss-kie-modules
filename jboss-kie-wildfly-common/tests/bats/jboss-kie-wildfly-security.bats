@@ -6,7 +6,7 @@ export JBOSS_HOME=$BATS_TMPDIR/jboss_home
 mkdir -p $JBOSS_HOME/standalone/configuration
 mkdir -p $JBOSS_HOME/bin/launch
 
-touch $JBOSS_HOME/bin/launch/launch-common.sh
+cp $BATS_TEST_DIRNAME/../../../tests/bats/common/launch-common.sh $JBOSS_HOME/bin/launch
 touch $JBOSS_HOME/bin/launch/logging.sh
 
 export CONFIG_FILE=$JBOSS_HOME/standalone/configuration/standalone-openshift.xml
