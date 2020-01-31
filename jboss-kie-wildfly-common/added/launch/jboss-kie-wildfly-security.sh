@@ -157,7 +157,7 @@ function set_application_roles_config() {
 
 function add_eap_user() {
     # If LDAP/SSO integration is enabled and only external auth is set, do not create eap users.
-    if [ "${EXTERNAL_AUTH_ONLY}" == "true" ] && ["${AUTH_LDAP_URL}x" == "x" ] && [ "${SSO_URL}x" == "x" ]; then
+    if [ "${EXTERNAL_AUTH_ONLY}" != "true" ] || ([ "${AUTH_LDAP_URL}x" == "x" ] && [ "${SSO_URL}x" == "x" ]); then
         local kie_type="${1}"
         local eap_user="${2}"
         local eap_pwd="${3}"
