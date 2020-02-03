@@ -9,13 +9,15 @@ Feature: Decision/Business Central common features
       | KIE_ADMIN_ROLES             | role1,admin2  |
     Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=a4d41e50a4ae17a50c1ceabe21e41a80
      And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=role1,admin2
+application-roles.properties'
      And container log should contain -Dorg.uberfire.ext.security.management.api.userManagementServices=WildflyCLIUserManagementService
      And container log should not contain -Dorg.uberfire.ext.security.management.keycloak.authServer
      And container log should not contain -Dorg.jbpm.workbench.kie_server.keycloak
 
-  Scenario: Check if eap users are not being created if SSO is configured
+  Scenario: Check if eap users are not being created if SSO is configured and EXTERNAL_AUTH_ONLY is set
     When container is started with env
       | variable                    | value         |
+      | EXTERNAL_AUTH_ONLY          | true          |
       | SSO_URL                     | http://url    |
       | KIE_ADMIN_USER              | customAdm     |
       | KIE_ADMIN_PWD               | custom" Adm!0 |
@@ -28,30 +30,28 @@ Feature: Decision/Business Central common features
      And container log should contain -Dorg.uberfire.ext.security.management.keycloak.authServer=http://url
      And container log should contain -Dorg.jbpm.workbench.kie_server.keycloak=true
 
-  Scenario: Check if eap users are not being created if LDAP is configured
+  Scenario: Check if eap users are being created if LDAP is configured but EXTERNAL_AUTH_ONLY is not set to TRUE
     When container is started with env
       | variable                    | value         |
       | AUTH_LDAP_URL               | ldap://url:389|
       | KIE_ADMIN_USER              | customAdm     |
       | KIE_ADMIN_PWD               | custom" Adm!0 |
-    Then file /opt/eap/standalone/configuration/application-users.properties should not contain customAdm=a4d41e50a4ae17a50c1ceabe21e41a80
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain customAdm=role1,admin2
-     And container log should contain External authentication/authorization enabled, skipping the embedded users creation.
-     And container log should contain KIE_ADMIN_USER is set to customAdm, make sure to configure this user with the provided password on the external auth provider with the roles kie-server,rest-all,admin,kiemgmt,Administrators
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=a4d41e50a4ae17a50c1ceabe21e41a80
+     And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=role1,admin2
 
   Scenario: Check if eap users are not being created if SSO is configured with no users env
     When container is started with env
       | variable                    | value         |
       | SSO_URL                     | http://url    |
-    Then container log should contain External authentication/authorization enabled, skipping the embedded users creation.
-     And container log should contain Make sure to configure a ADMIN user with the roles kie-server,rest-all,admin,kiemgmt,Administrators
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain adminUser=c8eba23482b0e1ef8579593d9e29d064
+     And file /opt/eap/standalone/configuration/application-roles.properties should contain adminUser=kie-server,rest-all,admin,kiemgmt,Administrators,user
 
-  Scenario: Check if eap users are not being created if LDAP is configured with no users env
+  Scenario: Check if eap users are being created if LDAP is configured with no users env
     When container is started with env
       | variable                    | value         |
       | AUTH_LDAP_URL               | ldap://url:389|
-    Then container log should contain External authentication/authorization enabled, skipping the embedded users creation.
-     And container log should contain Make sure to configure a ADMIN user with the roles kie-server,rest-all,admin,kiemgmt,Administrators
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain adminUser=c8eba23482b0e1ef8579593d9e29d064
+     And file /opt/eap/standalone/configuration/application-roles.properties should contain adminUser=kie-server,rest-all,admin,kiemgmt,Administrators,user
 
   # https://issues.jboss.org/browse/KIECLOUD-218
   # https://issues.jboss.org/browse/JBPM-8400
