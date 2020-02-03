@@ -30,13 +30,13 @@ function prepareEnv() {
     unset GIT_HOOKS_DIR
     unset_kie_security_env
     unset KIE_SERVER_CONTROLLER_HOST
+    unset KIE_SERVER_CONTROLLER_OPENSHIFT_ENABLED
     unset KIE_SERVER_CONTROLLER_OPENSHIFT_GLOBAL_DISCOVERY_ENABLED
     unset KIE_SERVER_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE
     unset KIE_SERVER_CONTROLLER_PORT
     unset KIE_SERVER_CONTROLLER_PROTOCOL
     unset KIE_SERVER_CONTROLLER_SERVICE
     unset KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL
-    unset KIE_WORKBENCH_CONTROLLER_OPENSHIFT_ENABLED
 }
 
 function configureEnv() {
@@ -160,16 +160,16 @@ function configure_server_access() {
 }
 
 function configure_openshift_enhancement() {
+    local kscOpenShiftEnabled=$(find_env "KIE_SERVER_CONTROLLER_OPENSHIFT_ENABLED" "false")
     local kscGlobalDiscoveryEnabled=$(find_env "KIE_SERVER_CONTROLLER_OPENSHIFT_GLOBAL_DISCOVERY_ENABLED" "false")
     local kscPreferKieService=$(find_env "KIE_SERVER_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE" "true")
-    local kscTemplateCacheTTL=$(find_env "KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL" "60000")
-    local kscOpenShiftEnabled=$(find_env "KIE_WORKBENCH_CONTROLLER_OPENSHIFT_ENABLED" "false")
+    local kscTemplateCacheTTL=$(find_env "KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL" "5000")
 
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.controller.ping.alive.disable=${kscOpenShiftEnabled}"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.openshift.enabled=${kscOpenShiftEnabled}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.openshift.global.discovery.enabled=${kscGlobalDiscoveryEnabled}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.openshift.prefer.kieserver.service=${kscPreferKieService}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.template.cache.ttl=${kscTemplateCacheTTL}"
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.workbench.controller.openshift.enabled=${kscOpenShiftEnabled}"
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.controller.ping.alive.disable=${kscOpenShiftEnabled}"
 }
 
 function configure_workbench_profile() {
