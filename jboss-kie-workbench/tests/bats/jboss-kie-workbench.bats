@@ -74,3 +74,32 @@ teardown() {
     configure_guvnor_settings >&2
     [[ $JBOSS_KIE_ARGS == *"-Dorg.appformer.m2repo.url=${expected}"* ]]
 }
+
+@test "verify if the GC_MAX_METASPACE_SIZE is set to 1024 if WORKBENCH_MAX_METASPACE_SIZE is not set" {
+    configure_metaspace
+    echo "GC_MAX_METASPACE_SIZE=${GC_MAX_METASPACE_SIZE}"
+    [[ "${GC_MAX_METASPACE_SIZE}" == "1024" ]]
+}
+
+@test "verify if the WORKBENCH_MAX_METASPACE_SIZE is correctly set" {
+    export WORKBENCH_MAX_METASPACE_SIZE="2048"
+    configure_metaspace
+    echo "GC_MAX_METASPACE_SIZE=${GC_MAX_METASPACE_SIZE}"
+    [[ "${GC_MAX_METASPACE_SIZE}" == "2048" ]]
+}
+
+@test "verify if the GC_MAX_METASPACE_SIZE is correctly set and bypass WORKBENCH_MAX_METASPACE_SIZE env" {
+    export GC_MAX_METASPACE_SIZE="4096"
+    configure_metaspace
+    echo "GC_MAX_METASPACE_SIZE=${GC_MAX_METASPACE_SIZE}"
+    [[ "${GC_MAX_METASPACE_SIZE}" == "4096" ]]
+}
+
+@test "verify if the WORKBENCH_MAX_METASPACE_SIZE takes precedence when WORKBENCH_MAX_METASPACE_SIZE and GC_MAX_METASPACE_SIZE are set" {
+    export WORKBENCH_MAX_METASPACE_SIZE="4096"
+    export GC_MAX_METASPACE_SIZE="2048"
+    configure_metaspace
+    echo "GC_MAX_METASPACE_SIZE=${GC_MAX_METASPACE_SIZE}"
+    [[ "${GC_MAX_METASPACE_SIZE}" == "${WORKBENCH_MAX_METASPACE_SIZE}" ]]
+}
+
