@@ -267,7 +267,8 @@ function configure_guvnor_settings() {
 # Set the max metaspace size only for the workbench
 # It avoid to set the max metaspace size if there is a multiple container instantiation.
 function configure_metaspace() {
-    export GC_MAX_METASPACE_SIZE=${WORKBENCH_MAX_METASPACE_SIZE:-1024}
+    local gcMaxMetaspace=${GC_MAX_METASPACE_SIZE:-1024}
+    export GC_MAX_METASPACE_SIZE=${WORKBENCH_MAX_METASPACE_SIZE:-${gcMaxMetaspace}}
 }
 
 # required envs for HA

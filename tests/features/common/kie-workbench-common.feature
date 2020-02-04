@@ -73,3 +73,26 @@ Feature: Decision/Business Central common features
     When container is ready
     Then container log should contain -Dorg.appformer.concurrent.managed.thread.limit=1000
      And container log should contain -Dorg.appformer.concurrent.unmanaged.thread.limit=1000
+
+  Scenario: Check if the GC_MAX_METASPACE_SIZE is set to 1024 if WORKBENCH_MAX_METASPACE_SIZE is not set
+    When container is ready
+    Then container log should contain -XX:MaxMetaspaceSize=1024m
+
+  Scenario: Check if the WORKBENCH_MAX_METASPACE_SIZE is correctly set
+    When container is started with env
+      | variable                       | value   |
+      | WORKBENCH_MAX_METASPACE_SIZE   | 2048    |
+    Then container log should contain -XX:MaxMetaspaceSize=2048m
+
+  Scenario: Check if the GC_MAX_METASPACE_SIZE is correctly set and bypass WORKBENCH_MAX_METASPACE_SIZE env
+    When container is started with env
+      | variable                | value   |
+      | GC_MAX_METASPACE_SIZE   | 4096    |
+    Then container log should contain -XX:MaxMetaspaceSize=4096m
+
+  Scenario: Check if the WORKBENCH_MAX_METASPACE_SIZE takes precedence when WORKBENCH_MAX_METASPACE_SIZE and GC_MAX_METASPACE_SIZE are set
+    When container is started with env
+      | variable                       | value   |
+      | WORKBENCH_MAX_METASPACE_SIZE   | 4096    |
+      | GC_MAX_METASPACE_SIZE          | 2048    |
+    Then container log should contain -XX:MaxMetaspaceSize=4096m
