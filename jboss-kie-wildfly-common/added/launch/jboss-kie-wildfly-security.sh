@@ -181,6 +181,6 @@ print_external_user_information() {
     if [ "${KIE_ADMIN_USER}x" != "x" ]; then
             log_info "KIE_ADMIN_USER is set to ${KIE_ADMIN_USER}, make sure to configure this user with the provided password on the external auth provider with the roles $(get_kie_admin_roles)"
     else
-        log_info "Make sure to configure a ADMIN user to access the Business Central with the roles $(get_kie_admin_roles)"
+        log_info "Make sure to configure ${KIE_ADMIN_USER} user to access the application with the roles $(get_kie_admin_roles)"
     fi
 }

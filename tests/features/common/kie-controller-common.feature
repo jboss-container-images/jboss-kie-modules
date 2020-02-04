@@ -15,8 +15,8 @@ Feature: KIE Controller configuration common tests
       | KIE_ADMIN_USER             | customAdm     |
       | KIE_ADMIN_PWD              | custom" Adm!0 |
       | KIE_SERVER_TOKEN           | token         |
-    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=a4d41e50a4ae17a50c1ceabe21e41a80
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain adminUser=kie-server,rest-all,admin,kiemgmt,Administrators,user
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=b9dd729626b3df0d8070dc832dc1bf36
+     And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=kie-server,rest-all,admin,kiemgmt,Administrators,user
 
   Scenario: Check if eap users are not being created if SSO is configured and EXTERNAL_AUTH_ONLY is not set
     When container is started with env
@@ -24,8 +24,8 @@ Feature: KIE Controller configuration common tests
       | SSO_URL                    | http://url    |
       | KIE_ADMIN_USER             | customAdm     |
       | KIE_ADMIN_PWD              | custom" Adm!0 |
-    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=a4d41e50a4ae17a50c1ceabe21e41a80
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain adminUser=kie-server,rest-all,admin,kiemgmt,Administrators,user
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=b9dd729626b3df0d8070dc832dc1bf36
+     And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=kie-server,rest-all,admin,kiemgmt,Administrators,user
 
   Scenario: Check if eap users are not being created if SSO is configured and EXTERNAL_AUTH_ONLY is set to true
     When container is started with env
@@ -45,8 +45,8 @@ Feature: KIE Controller configuration common tests
       | AUTH_LDAP_URL              | ldap://url:389|
       | KIE_ADMIN_USER             | customAdm     |
       | KIE_ADMIN_PWD              | custom" Adm!0 |
-    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=a4d41e50a4ae17a50c1ceabe21e41a80
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain adminUser=kie-server,rest-all,admin,kiemgmt,Administrators,user
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=b9dd729626b3df0d8070dc832dc1bf36
+     And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=kie-server,rest-all,admin,kiemgmt,Administrators,user
 
   Scenario: Check if eap users are not being created if LDAP is configured and EXTERNAL_AUTH_ONLY is set to true
     When container is started with env
@@ -64,12 +64,32 @@ Feature: KIE Controller configuration common tests
     When container is started with env
       | variable                   | value         |
       | SSO_URL                    | http://url    |
-    Then container log should contain External authentication/authorization enabled, skipping the embedded users creation.
-     And container log should contain Make sure to configure a ADMIN user with the roles kie-server,rest-all,admin,kiemgmt,Administrators
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain adminUser=c8eba23482b0e1ef8579593d9e29d064
+     And file /opt/eap/standalone/configuration/application-roles.properties should contain adminUser=kie-server,rest-all,admin,kiemgmt,Administrators,user
 
   Scenario: Check if eap users are not being created if LDAP is configured with no users env
     When container is started with env
       | variable                   | value         |
       | AUTH_LDAP_URL              | ldap://url:389|
-    Then container log should contain External authentication/authorization enabled, skipping the embedded users creation.
-     And container log should contain Make sure to configure a ADMIN user with the roles kie-server,rest-all,admin,kiemgmt,Administrators
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain adminUser=c8eba23482b0e1ef8579593d9e29d064
+     And file /opt/eap/standalone/configuration/application-roles.properties should contain adminUser=kie-server,rest-all,admin,kiemgmt,Administrators,user
+
+  Scenario: Check if eap users are not being created if SSO is configured with no users env
+    When container is started with env
+      | variable                   | value         |
+      | EXTERNAL_AUTH_ONLY         | true          |
+      | SSO_URL                    | http://url    |
+    Then file /opt/eap/standalone/configuration/application-users.properties should not contain adminUser
+     And file /opt/eap/standalone/configuration/application-roles.properties should not contain adminUser
+     And container log should contain External authentication/authorization enabled, skipping the embedded users creation.
+     And container log should contain Make sure to configure adminUser user to access the application with the roles kie-server,rest-all,admin,kiemgmt,Administrators,user
+
+  Scenario: Check if eap users are not being created if LDAP is configured with no users env
+    When container is started with env
+      | variable                   | value         |
+      | EXTERNAL_AUTH_ONLY         | true          |
+      | AUTH_LDAP_URL              | ldap://url:389|
+    Then file /opt/eap/standalone/configuration/application-users.properties should not contain adminUser
+     And file /opt/eap/standalone/configuration/application-roles.properties should not contain adminUser
+     And container log should contain External authentication/authorization enabled, skipping the embedded users creation.
+     And container log should contain Make sure to configure adminUser user to access the application with the roles kie-server,rest-all,admin,kiemgmt,Administrators,user
