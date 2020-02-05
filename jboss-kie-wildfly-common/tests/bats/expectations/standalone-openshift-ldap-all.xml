@@ -7,10 +7,10 @@
                 <login-module code="Remoting" flag="optional">
                     <module-option name="password-stacking" value="useFirstPass"/>
                 </login-module>
-                <login-module code="RealmDirect" flag="sufficient">
+                <login-module code="RealmDirect" flag="optional">
                     <module-option name="password-stacking" value="useFirstPass"/>
                 </login-module>
-                <login-module code="LdapExtended" flag="sufficient">
+                <login-module code="LdapExtended" flag="required">
                     <module-option name="java.naming.provider.url" value="test AUTH_LDAP_URL"/>
                     <module-option name="jaasSecurityDomain" value="test AUTH_LDAP_JAAS_SECURITY_DOMAIN"/>
                     <module-option name="bindDN" value="test AUTH_LDAP_BIND_DN"/>

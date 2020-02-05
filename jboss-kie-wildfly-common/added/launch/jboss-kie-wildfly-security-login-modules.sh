@@ -70,13 +70,8 @@ function configure_ldap_login_module() {
 
     # RHPAM-1422, if the RealmDirect is set as Required, ldap auth will fail.
     # TODO remove it out as part of the CLOUD-2750
-    if [ "${EXTERNAL_AUTH_ONLY}" == "true" ]; then
-        sed -i 's|<login-module code="RealmDirect" flag="required">|<login-module code="RealmDirect" flag="optional">|' "${CONFIG_FILE}"
-        local login_module=$(build_login_module "LdapExtended" "required")
-    else
-        sed -i 's|<login-module code="RealmDirect" flag="required">|<login-module code="RealmDirect" flag="sufficient">|' "${CONFIG_FILE}"
-        local login_module=$(build_login_module "LdapExtended" "sufficient")
-    fi
+    sed -i 's|<login-module code="RealmDirect" flag="required">|<login-module code="RealmDirect" flag="optional">|' "${CONFIG_FILE}"
+    local login_module=$(build_login_module "LdapExtended" "required")
     login_module=$(add_option "$login_module" "java.naming.provider.url" "${AUTH_LDAP_URL}")
     login_module=$(add_option "$login_module" "jaasSecurityDomain" "${AUTH_LDAP_JAAS_SECURITY_DOMAIN}")
     login_module=$(add_option "$login_module" "bindDN" "${AUTH_LDAP_BIND_DN}")
@@ -114,15 +109,7 @@ function configure_role_mapper_login_module() {
     add_login_module "${login_module}"
 }
 
-function configure_keycloak_login_module() {
-    if [ "${EXTERNAL_AUTH_ONLY}" != "true" ] && [ "${SSO_URL}x" != "x" ]; then
-        log_info "KeycloakLoginModule is set to sufficient."
-        sed -i 's|<login-module code="org.keycloak.adapters.jboss.KeycloakLoginModule" flag="required"/>|<login-module code="org.keycloak.adapters.jboss.KeycloakLoginModule" flag="sufficient"/>|' "${CONFIG_FILE}"
-    fi
-}
-
 function configure_auth_login_modules() {
     configure_ldap_login_module
     configure_role_mapper_login_module
-    configure_keycloak_login_module
 }
