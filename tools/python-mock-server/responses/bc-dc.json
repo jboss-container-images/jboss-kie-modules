@@ -116,6 +116,10 @@
                 "value": "enabled"
               },
               {
+                "name": "KIE_SERVER_CONTROLLER_OPENSHIFT_ENABLED",
+                "value": "true"
+              },
+              {
                 "name": "KIE_SERVER_CONTROLLER_OPENSHIFT_GLOBAL_DISCOVERY_ENABLED",
                 "value": "false"
               },
@@ -125,11 +129,7 @@
               },
               {
                 "name": "KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL",
-                "value": "60000"
-              },
-              {
-                "name": "KIE_WORKBENCH_CONTROLLER_OPENSHIFT_ENABLED",
-                "value": "true"
+                "value": "5000"
               },
               {
                 "name": "HTTPS_KEYSTORE_DIR",
