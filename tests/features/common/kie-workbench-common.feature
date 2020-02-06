@@ -9,7 +9,6 @@ Feature: Decision/Business Central common features
       | KIE_ADMIN_ROLES             | role1,admin2  |
     Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=b9dd729626b3df0d8070dc832dc1bf36
      And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=role1,admin2
-application-roles.properties'
      And container log should contain -Dorg.uberfire.ext.security.management.api.userManagementServices=WildflyCLIUserManagementService
      And container log should not contain -Dorg.uberfire.ext.security.management.keycloak.authServer
      And container log should not contain -Dorg.jbpm.workbench.kie_server.keycloak
