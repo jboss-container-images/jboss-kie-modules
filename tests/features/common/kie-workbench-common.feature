@@ -20,7 +20,7 @@ Feature: Decision/Business Central common features
       | KIE_ADMIN_USER              | customAdm     |
       | KIE_ADMIN_PWD               | custom" Adm!0 |
       | KIE_ADMIN_ROLES             | role1,admin2  |
-    Then file /opt/eap/standalone/configuration/application-users.properties should not contain customAdm=b9dd729626b3df0d8070dc832dc1bf36
+    Then file /opt/eap/standalone/configuration/application-users.properties should not contain customAdm=a4d41e50a4ae17a50c1ceabe21e41a80
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain customAdm=role1,admin2
      And container log should contain External authentication/authorization enabled, skipping the embedded users creation.
      And container log should contain KIE_ADMIN_USER is set to customAdm, make sure to configure this user with the provided password on the external auth provider with the roles role1,admin2

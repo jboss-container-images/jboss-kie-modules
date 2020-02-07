@@ -97,7 +97,7 @@ Feature: Kie Server common features
       | variable                   | value         |
       | KIE_ADMIN_USER             | customAdm     |
       | KIE_ADMIN_PWD              | custom" Adm!0 |
-    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=b9dd729626b3df0d8070dc832dc1bf36
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=a4d41e50a4ae17a50c1ceabe21e41a80
      And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=kie-server,rest-all,admin,kiemgmt,Administrators,user
 
   Scenario: Check if eap users are not being created if SSO is configured
@@ -146,7 +146,7 @@ Feature: Kie Server common features
       | KIE_ADMIN_USER             | customAdm     |
       | KIE_ADMIN_PWD              | custom" Adm!0 |
       | KIE_ADMIN_ROLES            | role1,admin2  |
-    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=b9dd729626b3df0d8070dc832dc1bf36
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=a4d41e50a4ae17a50c1ceabe21e41a80
      And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=role1,admin2
 
   # https://issues.jboss.org/browse/RHPAM-891
