@@ -14,8 +14,8 @@ Feature: RHPAM Controller configuration tests
   # https://issues.jboss.org/browse/RHPAM-891
   Scenario: Check default users are properly configured
     When container is ready
-    Then file /opt/eap/standalone/configuration/application-users.properties should not contain adminUser
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain adminUser
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain adminUser=de3155e1927c6976555925dec24a53ac
+     And file /opt/eap/standalone/configuration/application-roles.properties should contain adminUser=kie-server,rest-all,admin,kiemgmt,Administrators
 
   # https://issues.jboss.org/browse/RHPAM-891
   # https://issues.jboss.org/browse/RHPAM-1135
@@ -24,5 +24,5 @@ Feature: RHPAM Controller configuration tests
       | variable                   | value         |
       | KIE_ADMIN_USER             | customAdm     |
       | KIE_ADMIN_PWD              | custom" Adm!0 |
-    Then file /opt/eap/standalone/configuration/application-users.properties should not contain customAdm
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain customAdm
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=a4d41e50a4ae17a50c1ceabe21e41a80
+     And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=kie-server,rest-all,admin,kiemgmt,Administrators
