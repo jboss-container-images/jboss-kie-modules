@@ -89,24 +89,6 @@ function get_kie_server_controller_token() {
     echo $(find_env "KIE_SERVER_CONTROLLER_TOKEN" "${default_kie_token}")
 }
 
-# print information if the users creation is skipped
-# This function only have the purpose to print user information based on product
-# to guide the user about what users they need to create on the external auth provider, if enabled.
-#
-# $1 - type/component
-print_user_information() {
-    if [ "${EXTERNAL_AUTH_ONLY}" == "true" ] && [ "${AUTH_LDAP_URL}x" != "x" ] || [ "${SSO_URL}x" != "x" ]; then
-        log_info "External authentication/authorization enabled, skipping the embedded users creation."
-        if [ "${1}" == "kieadmin" ] || [ "${1}" == "central" ] || [ "${1}" == "kieserver" ]; then
-            if [ "${KIE_ADMIN_USER}x" != "x" ]; then
-                log_info "KIE_ADMIN_USER is set to ${KIE_ADMIN_USER}, make sure to configure this user with the provided password on the external auth provider with the roles $(get_kie_admin_roles)"
-            else
-                log_info "Make sure to configure a ADMIN user to access the Business Central with the roles $(get_kie_admin_roles)"
-            fi
-        fi
-    fi
-}
-
 ########## EAP ##########
 
 function get_application_config() {
@@ -156,8 +138,8 @@ function set_application_roles_config() {
 }
 
 function add_eap_user() {
-    # If LDAP/SSO integration is enabled and only external auth is set, do not create eap users.
-    if [ "${EXTERNAL_AUTH_ONLY}" != "true" ] || ([ "${AUTH_LDAP_URL}x" == "x" ] && [ "${SSO_URL}x" == "x" ]); then
+    # If LDAP/SSO integration is enabled do not create eap users.
+    if [ "${AUTH_LDAP_URL}x" == "x" ] && [ "${SSO_URL}x" == "x" ]; then
         local kie_type="${1}"
         local eap_user="${2}"
         local eap_pwd="${3}"
@@ -185,5 +167,20 @@ function add_eap_user() {
                 exit
             fi
         fi
+    else
+        print_external_user_information
+    fi
+}
+
+# print information if the users creation is skipped
+# This function only have the purpose to print user information to guide the user about what
+# users they need to create on the external auth provider when enabled.
+#
+print_external_user_information() {
+    log_info "External authentication/authorization enabled, skipping the embedded users creation."
+    if [ "${KIE_ADMIN_USER}x" != "x" ]; then
+            log_info "KIE_ADMIN_USER is set to ${KIE_ADMIN_USER}, make sure to configure this user with the provided password on the external auth provider with the roles $(get_kie_admin_roles)"
+    else
+        log_info "Make sure to configure KIE_ADMIN_USER user to access the application with the roles $(get_kie_admin_roles)"
     fi
 }

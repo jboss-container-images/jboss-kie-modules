@@ -75,14 +75,3 @@ setup() {
     [ "$status" -eq 0 ]
     assert_xml $CONFIG_FILE $BATS_TEST_DIRNAME/expectations/standalone-openshift-ldap-all.xml
 }
-
-@test "set EXTERNAL_AUTH_ONLY" {
-    EXTERNAL_AUTH_ONLY="true"
-    AUTH_LDAP_URL="test AUTH_LDAP_URL"
-
-    run configure_ldap_login_module
-
-    [ "$output" = "[INFO]AUTH_LDAP_URL is set to test AUTH_LDAP_URL. Added LdapExtended login-module" ]
-    [ "$status" -eq 0 ]
-    assert_xml $CONFIG_FILE $BATS_TEST_DIRNAME/expectations/standalone-openshift-ldap-required.xml
-}
