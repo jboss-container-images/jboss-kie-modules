@@ -27,11 +27,13 @@ Feature: RHPAM RHDM Workbench clustering configuration
       | APPFORMER_JMS_BROKER_PASSWORD   | brokerPwd          |
       | APPFORMER_JMS_BROKER_ADDRESS    | 11.11.11.11        |
       | APPFORMER_JMS_BROKER_PORT       | 8885               |
+      | SCRIPT_DEBUG                    | true               |
     Then container log should contain -Dappformer-cluster=true
      And container log should contain -Dappformer-jms-connection-mode=REMOTE
      And container log should contain -Dappformer-jms-url=tcp://11.11.11.11:61616
      And container log should contain -Dappformer-jms-username=brokerUser
      And container log should contain -Dappformer-jms-password=brokerPwd
+     And container log should contain -Dappformer-jms-password=<redacted>
      And container log should contain -Dorg.appformer.ext.metadata.index=infinispan
      And container log should contain -Dorg.appformer.ext.metadata.infinispan.host=10.10.10.10
      And container log should contain -Dorg.appformer.ext.metadata.infinispan.port=11222
@@ -58,11 +60,13 @@ Feature: RHPAM RHDM Workbench clustering configuration
       | APPFORMTER_JMS_BROKER_PORT       | 5000               |
       | APPFORMER_INFINISPAN_SASL_QOP    | auth               |
       | APPFORMER_INFINISPAN_SERVER_NAME | jdg-server         |
+      | SCRIPT_DEBUG                     | true               |
     Then container log should contain -Dappformer-cluster=true
      And container log should contain -Dappformer-jms-connection-mode=REMOTE
      And container log should contain -Dappformer-jms-url=tcp://11.11.11.11:5000?ha=true&retryInterval=1000&retryIntervalMultiplier=1.0&reconnectAttempts=-1
      And container log should contain -Dappformer-jms-username=brokerUser
      And container log should contain -Dappformer-jms-password=brokerPwd
+     And container log should contain -Dappformer-jms-password=<redacted>
      And container log should contain -Dorg.appformer.ext.metadata.index=infinispan
      And container log should contain -Dorg.appformer.ext.metadata.infinispan.host=10.10.10.10
      And container log should contain -Dorg.appformer.ext.metadata.infinispan.port=11333

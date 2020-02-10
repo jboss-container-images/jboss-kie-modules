@@ -10,14 +10,14 @@ Feature: Kie Server common features
   Scenario: Test REST API is available and valid
     When container is started with env
       | variable         | value       |
-      | KIE_ADMIN_ROLES  | kieserver   |
+      | KIE_ADMIN_ROLES  | kie-server  |
       | KIE_ADMIN_PWD    | kieserver1! |
     Then check that page is served
       | property        | value                 |
       | port            | 8080                  |
       | path            | /services/rest/server |
       | wait            | 80                    |
-      | username        | kieserver             |
+      | username        | adminUser             |
       | password        | kieserver1!           |
       | expected_phrase | SUCCESS               |
 
@@ -152,7 +152,7 @@ Feature: Kie Server common features
   # https://issues.jboss.org/browse/RHPAM-891
   Scenario: Check default users are properly configured
     When container is ready
-    Then file /opt/eap/standalone/configuration/application-users.properties should contain adminUser=c8eba23482b0e1ef8579593d9e29d064
+    Then file /opt/eap/standalone/configuration/application-users.properties should contain adminUser=de3155e1927c6976555925dec24a53ac
      And file /opt/eap/standalone/configuration/application-roles.properties should contain adminUser=kie-server,rest-all,admin,kiemgmt,Administrators,user
 
   Scenario: Configure kie server to use LDAP authentication
@@ -166,8 +166,8 @@ Feature: Kie Server common features
       | AUTH_LDAP_ROLE_ATTRIBUTE_ID | cn                            |
       | AUTH_LDAP_ROLES_CTX_DN      | ou=Roles,dc=example,dc=com    |
       | AUTH_LDAP_ROLE_FILTER       | (member={1})                  |
-    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="RealmDirect" flag="sufficient">
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="sufficient">
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="RealmDirect" flag="optional">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="java.naming.provider.url" value="test_url"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="bindDN" value="cn=Manager,dc=example,dc=com"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="bindCredential" value="admin"/>
@@ -215,7 +215,6 @@ Feature: Kie Server common features
       And file /home/jboss/.m2/repository/org/kie/soup/kie-soup-maven-support/7.14.0.Final-redhat-00004/kie-soup-maven-support-7.14.0.Final-redhat-00004.pom should exist
       And file /home/jboss/.m2/repository/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.pom should exist
 
-
   Scenario: Verify the KIE_SERVER_BYPASS_AUTH_USER configuration
     When container is started with env
       | variable                    | value    |
@@ -261,10 +260,8 @@ Feature: Kie Server common features
       | KIE_SERVER_CONTAINER_DEPLOYMENT   | hellorules=org.openshift.quickstarts:rhdm-kieserver-hellorules:1.6.0-SNAPSHOT |
       | ARTIFACT_DIR                      | hellorules/target,hellorules-model/target                                     |
     Then run sh -c 'test -d /home/jboss/.m2/repository/org/openshift/quickstarts/rhdm-kieserver-parent/ && echo all good' in container and check its output for all good
-    And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rhdm-kieserver-hellorules/1.6.0-SNAPSHOT/rhdm-kieserver-hellorules-1.6.0-SNAPSHOT.jar && echo all good' in container and check its output for all good
-    And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rhdm-kieserver-hellorules/1.6.0-SNAPSHOT/rhdm-kieserver-hellorules-1.6.0-SNAPSHOT-sources.jar && echo all good' in container and check its output for all good
-    And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rhdm-kieserver-hellorules-model/1.6.0-SNAPSHOT/rhdm-kieserver-hellorules-model-1.6.0-SNAPSHOT.jar && echo all good' in container and check its output for all good
-    And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rhdm-kieserver-hellorules-model/1.6.0-SNAPSHOT/rhdm-kieserver-hellorules-model-1.6.0-SNAPSHOT-sources.jar && echo all good' in container and check its output for all good
+     And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rhdm-kieserver-hellorules/1.6.0-SNAPSHOT/rhdm-kieserver-hellorules-1.6.0-SNAPSHOT.jar && echo all good' in container and check its output for all good
+     And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rhdm-kieserver-hellorules-model/1.6.0-SNAPSHOT/rhdm-kieserver-hellorules-model-1.6.0-SNAPSHOT.jar && echo all good' in container and check its output for all good
 
   Scenario: test Kie Server controller configuration
     When container is started with env

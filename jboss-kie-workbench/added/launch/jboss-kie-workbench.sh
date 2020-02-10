@@ -69,7 +69,7 @@ function configure_admin_security() {
 
     # (see management-common.sh and login-modules-common.sh)
     add_management_interface_realm
-    # KieLoginModule breaks Decision Central; it needs to be added only for Business Central & Business Central Monitoring
+    # KieLoginModule breaks Busineses Central; it needs to be added only for Business Central & Business Central Monitoring
     # rhpam-businesscentral, rhpam-businesscentral-monitoring
     if [[ $JBOSS_PRODUCT =~ rhpam\-businesscentral(\-monitoring)? ]]; then
         configure_login_modules "org.kie.security.jaas.KieLoginModule" "optional" "deployment.ROOT.war"

@@ -68,10 +68,9 @@ Feature: RHPAM and RHDM common tests
     When container is started with env
       | variable         | value                                     |
       | MAVEN_MIRROR_URL | http://nexus-test.127.0.0.1.nip.ip/nexus/ |
-    Given XML namespaces
-      | prefix | url                                    |
-      | ns     | http://maven.apache.org/SETTINGS/1.0.0 |
-    Then XML file /home/jboss/.m2/settings.xml should have 1 elements on XPath //ns:mirror[ns:id='mirror.default'][ns:url='http://nexus-test.127.0.0.1.nip.ip/nexus/'][ns:mirrorOf='external:*']
+    Then file /home/jboss/.m2/settings.xml should contain <id>mirror.default</id>
+     And file /home/jboss/.m2/settings.xml should contain <url>http://nexus-test.127.0.0.1.nip.ip/nexus/</url>
+     And file /home/jboss/.m2/settings.xml should contain <mirrorOf>external:*</mirrorOf>
 
   Scenario: KIECLOUD-274 Prepare PAM/DM images to accept the logger category configuration
     When container is started with env
@@ -80,3 +79,4 @@ Feature: RHPAM and RHDM common tests
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <logger category="com.my.package">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <logger category="com.my.other.package">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <level name="TRACE"/>
+
