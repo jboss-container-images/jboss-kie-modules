@@ -30,7 +30,7 @@ Feature: RHPAM Business Central Monitoring configuration tests
   # https://issues.jboss.org/browse/CLOUD-2221
   Scenario: Check KieLoginModule is configured
     When container is ready
-    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="org.kie.security.jaas.KieLoginModule"
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="org.kie.security.jaas.KieLoginModule" flag="optional" module="deployment.ROOT.war"/>
 
   # https://issues.jboss.org/browse/JBPM-7834
   # https://issues.jboss.org/projects/JBPM/issues/JBPM-8269

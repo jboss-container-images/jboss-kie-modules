@@ -9,7 +9,7 @@ Feature: RHPAM Business Central configuration tests
   Scenario: Check for product and version environment variables
     When container is ready
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-businesscentral
-     And run sh -c 'echo $RHPAM_BUSINESS_CENTRAL_VERSION' in container and check its output for 7.7
+     And run sh -c 'echo $RHPAM_BUSINESS_CENTRAL_VERSION' in container and check its output for 7.7.0
 
   # https://issues.jboss.org/browse/RHPAM-891
   Scenario: Check default users are properly configured
@@ -37,7 +37,7 @@ Feature: RHPAM Business Central configuration tests
   Scenario: Check OpenShiftStartupStrategy is enabled in RHPAM 7
     When container is started with env
       | variable                                                 | value                     |
-      | KIE_SERVERH_CONTROLLER_OPENSHIFT_ENABLED                 | true                      |
+      | KIE_SERVER_CONTROLLER_OPENSHIFT_ENABLED                  | true                      |
       | KIE_SERVER_CONTROLLER_OPENSHIFT_GLOBAL_DISCOVERY_ENABLED | true                      |
       | KIE_SERVER_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE | true                      |
       | KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL                 | 10000                     |
