@@ -37,7 +37,7 @@ Feature: RHPAM Business Central configuration tests
   Scenario: Check OpenShiftStartupStrategy is enabled in RHPAM 7
     When container is started with env
       | variable                                                 | value                     |
-      | KIE_SERVERH_CONTROLLER_OPENSHIFT_ENABLED                 | true                      |
+      | KIE_SERVER_CONTROLLER_OPENSHIFT_ENABLED                  | true                      |
       | KIE_SERVER_CONTROLLER_OPENSHIFT_GLOBAL_DISCOVERY_ENABLED | true                      |
       | KIE_SERVER_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE | true                      |
       | KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL                 | 10000                     |
