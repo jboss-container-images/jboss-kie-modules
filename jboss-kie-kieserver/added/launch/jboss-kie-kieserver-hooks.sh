@@ -4,6 +4,9 @@ source "${JBOSS_HOME}/bin/launch/launch-common.sh"
 source "${JBOSS_HOME}/bin/launch/jboss-kie-common.sh"
 source "${JBOSS_HOME}/bin/launch/logging.sh"
 
+# Hooks script applies to OpenShiftStartupStrategy only
+startupStrategy=$(find_env "KIE_SERVER_STARTUP_STRATEGY")
+
 # make sure there is a workbench service within the namespace.
 controllerServiceName=${WORKBENCH_SERVICE_NAME//-/_}
 controllerServiceHost=$(find_env "${controllerServiceName^^}_SERVICE_HOST")
@@ -58,7 +61,7 @@ update_config_map() {
     fi
 }
 
-if [ -n ${WORKBENCH_SERVICE_NAME} -a -n "${KIE_SERVER_ID}" ]; then
+if [ ${startupStrategy} == "OpenShiftStartupStrategy" -a -n ${WORKBENCH_SERVICE_NAME} -a -n "${KIE_SERVER_ID}" ]; then
     check_kieserver_state
     kieServeruri="deploymentconfigs?labelSelector=services.server.kie.org%2Fkie-server-id%3D${KIE_SERVER_ID}"
     kieResponse=$(query_ocp_api "apis/apps.openshift.io" "${kieServeruri}")
@@ -123,5 +126,5 @@ if [ -n ${WORKBENCH_SERVICE_NAME} -a -n "${KIE_SERVER_ID}" ]; then
         fi
     fi
 else
-    log_warning "No Controller found or KIE_SERVER_ID is not set, skipping..."
+    log_warning "Not supported startup strategy, or no Controller found, or KIE_SERVER_ID is not set, skipping..."
 fi
