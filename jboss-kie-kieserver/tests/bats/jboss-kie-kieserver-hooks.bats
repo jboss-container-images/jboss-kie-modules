@@ -32,6 +32,7 @@ teardown() {
 export RHPAM_CENTRAL_CONSOLE_SERVICE_HOST="localhost"
 export RHPAM_CENTRAL_CONSOLE_SERVICE_PORT_HTTP="8080"
 export WORKBENCH_SERVICE_NAME="rhpam-central-console"
+export KIE_SERVER_STARTUP_STRATEGY="OpenShiftStartupStrategy"
 
 @test "test container lifecycle hook - scale up scenario" {
     export KIE_SERVER_ID="rhpam-kieserevr-scale-up"
