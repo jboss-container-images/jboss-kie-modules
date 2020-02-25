@@ -171,15 +171,15 @@ This tool also validate ImageStream, for this, the ImageStream kind must be *Ima
 kind: ImageStreamList
 apiVersion: v1
 metadata:
-  name: rhpam77-image-streams
+  name: rhpam78-image-streams
 ...
 ```
 
 Then, just run the tool:
 
 ```bash
-$ openshift-template-validator-linux-amd64 validate -f rhpam77-image-streams.yaml
-Validating file rhpam77-image-streams.yaml -----> No validation issues found.
+$ openshift-template-validator-linux-amd64 validate -f rhpam78-image-streams.yaml
+Validating file rhpam78-image-streams.yaml -----> No validation issues found.
 ```
 
 #### Troubleshooting
