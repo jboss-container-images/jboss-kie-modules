@@ -9,7 +9,7 @@ Feature: RHDM KIE Server configuration tests
   Scenario: Check for product and version environment variables
     When container is ready
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhdm-kieserver
-     And run sh -c 'echo $RHDM_KIESERVER_VERSION' in container and check its output for 7.7
+     And run sh -c 'echo $RHDM_KIESERVER_VERSION' in container and check its output for 7.8
 
 
   # KIECLOUD-11: temporarily ignore since Jenkins CI builds currently fail with this test, even though it passes when run at the command line
