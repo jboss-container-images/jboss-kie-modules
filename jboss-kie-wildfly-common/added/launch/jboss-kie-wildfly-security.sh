@@ -147,25 +147,24 @@ function add_eap_user() {
         local application_users_properties="$(get_application_users_properties)"
         local application_roles_properties="$(get_application_roles_properties)"
         if (grep "^${eap_user}=" "${application_users_properties}" > /dev/null 2>&1); then
-            log_warning "KIE ${kie_type} user \"${eap_user}\" already exists in EAP"
-            log_warning "Skipping..."
-        else
-            local add_user_args=(
-                "-a"
-                "--user" "'${eap_user}'"
-                "--password" "'${eap_pwd}'"
-            )
-            add_user_args+=( "--user-properties" "'${application_users_properties}'" )
-            add_user_args+=( "--group-properties" "'${application_roles_properties}'" )
-            if [ "x${eap_roles}" != "x" ]; then
-                add_user_args+=( "--role" "${eap_roles}" )
-            fi
-            eval "${JBOSS_HOME}/bin/add-user.sh ${add_user_args[@]}"
-            if [ "$?" -ne "0" ]; then
-                log_error "Failed to add KIE ${kie_type} user \"${eap_user}\" in EAP"
-                log_error "Exiting..."
-                exit
-            fi
+            log_warning "KIE ${kie_type} user \"${eap_user}\" already exists in EAP, user will be updated."
+        fi
+
+        local add_user_args=(
+            "-a"
+            "--user" "'${eap_user}'"
+            "--password" "'${eap_pwd}'"
+        )
+        add_user_args+=( "--user-properties" "'${application_users_properties}'" )
+        add_user_args+=( "--group-properties" "'${application_roles_properties}'" )
+        if [ "x${eap_roles}" != "x" ]; then
+            add_user_args+=( "--role" "${eap_roles}" )
+        fi
+        eval "${JBOSS_HOME}/bin/add-user.sh ${add_user_args[@]}"
+        if [ "$?" -ne "0" ]; then
+           log_error "Failed to add KIE ${kie_type} user \"${eap_user}\" in EAP"
+           log_error "Exiting..."
+           exit
         fi
     else
         print_external_user_information
