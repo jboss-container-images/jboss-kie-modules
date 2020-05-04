@@ -146,9 +146,18 @@ function add_eap_user() {
         local eap_roles="${4}"
         local application_users_properties="$(get_application_users_properties)"
         local application_roles_properties="$(get_application_roles_properties)"
+        local current_admin_user_file=$(dirname "${application_users_properties}")/current-admin-user
         if (grep "^${eap_user}=" "${application_users_properties}" > /dev/null 2>&1); then
-            log_warning "KIE ${kie_type} user \"${eap_user}\" already exists in EAP, user will be updated."
-        fi
+            log_warning "KIE ${kie_type} user \"${eap_user}\" already exists in EAP, user will be updated if changes were made."
+        else
+            # if there are any user persisted saved previously, let's remove it from user properties
+            local old_user=$(cat ${current_admin_user_file} 2> /dev/null)
+            if [[ -f "${current_admin_user_file}" ]] && [[ "${old_user}" != "${eap_user}" ]]; then
+                log_info "User \"${old_user}\" will be removed, new user \"${eap_user}\"."
+                sed -i "/^$old_user/ d" "${application_users_properties}"
+                sed -i "/^$old_user/ d" "${application_roles_properties}"
+            fi
+         fi
 
         local add_user_args=(
             "-a"
@@ -166,6 +175,9 @@ function add_eap_user() {
            log_error "Exiting..."
            exit
         fi
+
+        # save current admin user
+        echo $KIE_ADMIN_USER > ${current_admin_user_file}
     else
         print_external_user_information
     fi
