@@ -26,3 +26,26 @@ Feature: RHPAM Controller configuration tests
       | KIE_ADMIN_PWD              | custom" Adm!0 |
     Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=a4d41e50a4ae17a50c1ceabe21e41a80
      And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=kie-server,rest-all,admin,kiemgmt,Administrators
+
+  Scenario: Verify if the properties were correctly set using DEFAULT MEM RATIO
+    When container is started with args
+      | arg       | value                                                    |
+      | mem_limit | 1073741824                                               |
+      | env_json  | {"JAVA_MAX_MEM_RATIO": 80, "JAVA_INITIAL_MEM_RATIO": 25} |
+    Then container log should match regex -Xms205m
+     And container log should match regex -Xmx819m
+
+  Scenario: Verify if the DEFAULT MEM RATIO properties are overridden with different values
+    When container is started with args
+      | arg       | value                                                    |
+      | mem_limit | 1073741824                                               |
+      | env_json  | {"JAVA_MAX_MEM_RATIO": 50, "JAVA_INITIAL_MEM_RATIO": 10} |
+    Then container log should match regex -Xms51m
+    And container log should match regex -Xmx512m
+
+  Scenario: Verify if the properties were correctly set when aren't passed
+    When container is started with args
+      | arg       | value                                                    |
+      | mem_limit | 1073741824                                               |
+    Then container log should match regex -Xms205m
+     And container log should match regex -Xmx819m

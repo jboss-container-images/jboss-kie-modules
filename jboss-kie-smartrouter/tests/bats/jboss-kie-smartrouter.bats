@@ -34,3 +34,20 @@ teardown() {
   echo "Expected is ${expected}" >&2
   [[ $JBOSS_KIE_ARGS == *"-Dorg.kie.server.router.id=${expected}"* ]]
 }
+
+
+@test "verify if the JAVA_MAX_MEM_RATIO is set to 80 and JAVA_INITIAL_MEM_RATIO is set to 25" {
+    configure_mem_ratio
+    [[ "${JAVA_MAX_MEM_RATIO}" == 80 ]]
+    [[ "${JAVA_INITIAL_MEM_RATIO}" == 25 ]]
+}
+
+@test "verify if the JAVA_MAX_MEM_RATIO is set with the values passed" {
+    export JAVA_INITIAL_MEM_RATIO=10
+    export JAVA_MAX_MEM_RATIO=25
+    configure_mem_ratio
+    [[ "${JAVA_MAX_MEM_RATIO}" == 25 ]]
+    [[ "${JAVA_INITIAL_MEM_RATIO}" == 10 ]]
+    unset JAVA_INITIAL_MEM_RATIO
+    unset JAVA_MAX_MEM_RATIO
+}
