@@ -46,3 +46,11 @@ Feature: RHPAM Business Central Monitoring configuration tests
      And container log should contain -Dorg.kie.server.controller.openshift.prefer.kieserver.service=true
      And container log should contain -Dorg.kie.server.controller.template.cache.ttl=10000
      And container log should contain -Dorg.kie.controller.ping.alive.disable=true
+
+  # https://issues.redhat.com/projects/KIECLOUD/issues/KIECLOUD-394
+  Scenario: Check the simplifed monitoring switch is available
+    When container is started with env
+      | variable                                                 | value                     |
+      | ORG_APPFORMER_SERVER_SIMPLIFIED_MONITORING_ENABLED       | true                      |
+    Then container log should contain -Dorg.appformer.server.simplified.monitoring.enabled=true
+
