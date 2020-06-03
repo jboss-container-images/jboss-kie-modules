@@ -63,9 +63,10 @@ Feature: RHPAM Business Central Monitoring configuration tests
     Then container log should match regex -Xms51m
     And container log should match regex -Xmx512m
 
-  Scenario: Verify if the properties were correctly set when aren't passed
-    When container is started with args
-      | arg       | value                                                    |
-      | mem_limit | 1073741824                                               |
-    Then container log should match regex -Xms205m
-     And container log should match regex -Xmx819m
+  # https://issues.redhat.com/projects/KIECLOUD/issues/KIECLOUD-394
+  Scenario: Check the simplifed monitoring switch is available
+    When container is started with env
+      | variable                                                 | value                     |
+      | ORG_APPFORMER_SERVER_SIMPLIFIED_MONITORING_ENABLED       | true                      |
+    Then container log should contain -Dorg.appformer.server.simplified.monitoring.enabled=true
+
