@@ -47,6 +47,22 @@ Feature: RHPAM Business Central Monitoring configuration tests
      And container log should contain -Dorg.kie.server.controller.template.cache.ttl=10000
      And container log should contain -Dorg.kie.controller.ping.alive.disable=true
 
+  Scenario: Verify if the properties were correctly set using DEFAULT MEM RATIO
+    When container is started with args
+      | arg       | value                                                    |
+      | mem_limit | 1073741824                                               |
+      | env_json  | {"JAVA_MAX_MEM_RATIO": 80, "JAVA_INITIAL_MEM_RATIO": 25} |
+    Then container log should match regex -Xms205m
+     And container log should match regex -Xmx819m
+
+  Scenario: Verify if the DEFAULT MEM RATIO properties are overridden with different values
+    When container is started with args
+      | arg       | value                                                    |
+      | mem_limit | 1073741824                                               |
+      | env_json  | {"JAVA_MAX_MEM_RATIO": 50, "JAVA_INITIAL_MEM_RATIO": 10} |
+    Then container log should match regex -Xms51m
+    And container log should match regex -Xmx512m
+
   # https://issues.redhat.com/projects/KIECLOUD/issues/KIECLOUD-394
   Scenario: Check the simplifed monitoring switch is available
     When container is started with env

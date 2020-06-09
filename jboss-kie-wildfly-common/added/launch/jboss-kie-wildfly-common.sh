@@ -14,9 +14,15 @@ function configureEnv() {
 }
 
 function configure() {
+    configure_mem_ratio
     configure_maven_settings
     configure_mbeans
     configure_auth_login_modules
+}
+
+function configure_mem_ratio() {
+    export JAVA_MAX_MEM_RATIO=${JAVA_MAX_MEM_RATIO:-80}
+    export JAVA_INITIAL_MEM_RATIO=${JAVA_INITIAL_MEM_RATIO:-25}
 }
 
 function configure_maven_settings() {

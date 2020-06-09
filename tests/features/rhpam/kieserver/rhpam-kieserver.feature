@@ -980,3 +980,26 @@ Feature: RHPAM KIE Server configuration tests
     When container is ready
     Then run sh -c '[ $(ls -l /opt/eap/bin/launch/*.sh | wc -l) -gt 0 ] && echo "has script files"' in container and check its output for has script files
      And run sh -c 'exec=$(find -L /opt/eap/bin/launch -maxdepth 1 -type f -perm /u+x,g+x -name \*.sh | wc -l); nonexec=$(ls -l /opt/eap/bin/launch/*.sh | wc -l); [ $exec = $nonexec ] && echo "permissions ok"' in container and check its output for permissions ok
+
+  Scenario: Verify if the properties were correctly set using DEFAULT MEM RATIO
+    When container is started with args
+      | arg       | value                                                    |
+      | mem_limit | 1073741824                                               |
+      | env_json  | {"JAVA_MAX_MEM_RATIO": 80, "JAVA_INITIAL_MEM_RATIO": 25} |
+    Then container log should match regex -Xms205m
+     And container log should match regex -Xmx819m
+
+  Scenario: Verify if the DEFAULT MEM RATIO properties are overridden with different values
+    When container is started with args
+      | arg       | value                                                    |
+      | mem_limit | 1073741824                                               |
+      | env_json  | {"JAVA_MAX_MEM_RATIO": 50, "JAVA_INITIAL_MEM_RATIO": 10} |
+    Then container log should match regex -Xms51m
+     And container log should match regex -Xmx512m
+
+  Scenario: Verify if the properties were correctly set when aren't passed
+    When container is started with args
+      | arg       | value                                                    |
+      | mem_limit | 1073741824                                               |
+    Then container log should match regex -Xms205m
+     And container log should match regex -Xmx819m
