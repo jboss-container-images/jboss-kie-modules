@@ -186,8 +186,23 @@ function set_timer_defaults {
         fi
 
         if [ "x${url}" != "x" ]; then
-            EJB_TIMER_XA_CONNECTION_PROPERTY_URL="${url}?pinGlobalTxToPhysicalConnection=true\&amp;${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
-            eval ${prefix}_URL="${url}?${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
+            paramDelimiterCharacter="?"
+	        xaParamDelimiterCharacter="?"
+	        xaUrl=${url}
+	        cdataBegin=""
+	        cdataEnd=""
+            if [[ ${url} = *"?"* ]]; then
+                xaParamDelimiterCharacter="\&amp;"
+                # for non XA needs to use CDATA, datasources scripts scape the prefix_URL even if it is already scaped, leading to error
+                paramDelimiterCharacter="&"
+                cdataBegin="\<\![CDATA["
+                cdataEnd="]]\>"
+                # make sure there is no & character for xa-url.
+                xaUrl=${url//\&/$xaParamDelimiterCharacter}
+            fi
+            EJB_TIMER_XA_CONNECTION_PROPERTY_URL="${xaUrl}${xaParamDelimiterCharacter}pinGlobalTxToPhysicalConnection=true\&amp;${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
+            eval ${prefix}_URL='${cdataBegin}${url}${paramDelimiterCharacter}${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}${cdataEnd}'
+
         fi
         # the first character must be upper case
         local paramName=${enabledTLSParameterName^}
