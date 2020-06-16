@@ -1,4 +1,14 @@
 thorntail:
+  deployment:
+    process-migration.war:
+      web:
+        login-config:
+          auth-method: BASIC
+          security-domain: pim
+        security-constraints:
+          - url-pattern: /*
+            roles: [ admin ]
+          - url-pattern: /health/*
   security:
     security-domains:
       pim:
