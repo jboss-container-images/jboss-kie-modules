@@ -8,6 +8,8 @@ ROUTER_DIR=/opt/${JBOSS_PRODUCT}
 
 # Add custom launch script and dependent scripts/libraries/snippets
 cp -p ${ADDED_DIR}/openshift-launch.sh ${ROUTER_DIR}/
+# Add logging configuration
+cp -p ${ADDED_DIR}/configuration/logging.properties ${ROUTER_DIR}/
 
 mkdir -p ${LAUNCH_DIR}
 cp -r ${ADDED_DIR}/launch/* ${LAUNCH_DIR}

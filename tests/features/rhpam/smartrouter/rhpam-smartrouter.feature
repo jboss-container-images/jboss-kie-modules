@@ -9,7 +9,7 @@ Feature: RHPAM Smart Router configuration tests
   Scenario: Check for product and version environment variables
     When container is ready
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-smartrouter
-     And run sh -c 'echo $RHPAM_SMARTROUTER_VERSION' in container and check its output for 7.8
+     And run sh -c 'echo $RHPAM_SMARTROUTER_VERSION' in container and check its output for 7.9
 
   # If KIE_SERVER_ROUTER_TLS_TEST is true the launch script will generate a certificate at /tmp/keystore.jks
   # with key alias "jboss" and password "mykeystorepass" and reset KIE_SERVER_ROUTER_TLS_KEYSTORE to /tmp/keystore.jks
@@ -149,3 +149,16 @@ Feature: RHPAM Smart Router configuration tests
       | mem_limit | 1073741824                                               |
     Then container log should match regex -Xms205m
      And container log should match regex -Xmx819m
+    
+  Scenario: Verify if the logging properties is set correctly
+    When container is started with env
+      | variable                | value                   |
+      | SCRIPT_DEBUG            | true                    |
+      | LOG_LEVEL               | SEVERE                  |
+      | LOGGER_CATEGORIES       | org.xyz=INFO            |
+    Then container log should match regex JAVA_OPTS_APPEND=' -Djava.util.logging.config.file=/opt/rhpam-smartrouter/logging.properties'
+     And container log should match regex LOGGER_CATEGORIES=org.xyz=INFO
+     And container log should match regex LOG_LEVEL=SEVERE
+     And file /opt/rhpam-smartrouter/logging.properties should contain org.xyz=INFO
+     And file /opt/rhpam-smartrouter/logging.properties should contain SEVERE
+
