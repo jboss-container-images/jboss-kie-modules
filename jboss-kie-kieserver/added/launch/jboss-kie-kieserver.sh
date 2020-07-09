@@ -58,7 +58,7 @@ function configure() {
     configure_server_env
     configure_controller_access
     configure_router_access
-    configure_server_location
+    assign_server_location
     configure_server_persistence
     configure_server_security
     configure_server_sync_deploy
@@ -432,6 +432,14 @@ function configure_drools() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.drools.server.filter.classes=${DROOLS_SERVER_FILTER_CLASSES}"
 }
 
+function assign_server_location(){
+  local location=$( callSecureKieServer )
+  if [ -z "$location" ]; then
+    location=$( configure_server_location )
+  fi
+  JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${location}"
+}
+
 # ---------- KIE SERVER LOCATION URL VIA ROUTE ----------
 # External location of all KIE Servers via a Route.
 # Example template parameters:
@@ -494,7 +502,20 @@ function configure_server_location() {
             location=$(build_simple_url "${protocol}" "${host}" "${port}" "${path}")
         fi
     fi
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${location}"
+    echo ${location}
+}
+
+function callSecureKieServer(){
+  local APISERVER=https://kubernetes.default.svc
+  local SERVICEACCOUNT=/var/run/secrets/kubernetes.io/serviceaccount
+  local NAMESPACE=$(cat ${SERVICEACCOUNT}/namespace)
+  local TOKEN=$(cat ${SERVICEACCOUNT}/token)
+  local CACERT=${SERVICEACCOUNT}/ca.crt
+  local jsonRoutes=$(curl --cacert ${CACERT} --header "Authorization: Bearer ${TOKEN}" -X GET ${APISERVER}/apis/route.openshift.io/v1/namespaces/${NAMESPACE}/routes/${KIE_SERVER_ROUTE_NAME})
+  local hostS=$( ${jsonRoute} | grep -Po '"host": *\K"[^"]*"' | sort -u |  tr '"' ' ' | tr -d '[:space:]' )
+  local protocolS=$( ${jsonRoute} | grep -Po '"targetPort": *\K"[^"]*"' |  tr '"' ' ' | tr -d '[:space:]' )
+  local location=$( ${protocolS}://${hostS}/services/rest/server)
+  echo ${location}
 }
 
 function configure_server_persistence() {
