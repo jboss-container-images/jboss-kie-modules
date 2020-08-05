@@ -1,0 +1,616 @@
+{
+  "kind": "RouteList",
+  "apiVersion": "route.openshift.io/v1",
+  "metadata": {
+    "selfLink": "/apis/route.openshift.io/v1/namespaces/max/routes/",
+    "resourceVersion": "3495145"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "console-cr-form",
+        "namespace": "max",
+        "selfLink": "/apis/route.openshift.io/v1/namespaces/max/routes/console-cr-form",
+        "uid": "a255eec6-469a-4617-8b13-f43da27c25a3",
+        "resourceVersion": "3491865",
+        "creationTimestamp": "2020-08-04T11:41:11Z",
+        "labels": {
+          "app": "business-automation-operator",
+          "name": "console-cr-form"
+        },
+        "annotations": {
+          "openshift.io/host.generated": "true"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "operators.coreos.com/v1alpha1",
+            "kind": "ClusterServiceVersion",
+            "name": "businessautomation-operator.7.8.0",
+            "uid": "8ffe0855-e919-4d75-b06f-008235973aa8",
+            "controller": false,
+            "blockOwnerDeletion": false
+          }
+        ],
+        "managedFields": [
+          {
+            "manager": "kie-cloud-operator",
+            "operation": "Update",
+            "apiVersion": "route.openshift.io/v1",
+            "time": "2020-08-04T11:41:11Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:app": {},
+                  "f:name": {}
+                },
+                "f:ownerReferences": {
+                  ".": {},
+                  "k:{\"uid\":\"8ffe0855-e919-4d75-b06f-008235973aa8\"}": {
+                    ".": {},
+                    "f:apiVersion": {},
+                    "f:blockOwnerDeletion": {},
+                    "f:controller": {},
+                    "f:kind": {},
+                    "f:name": {},
+                    "f:uid": {}
+                  }
+                }
+              },
+              "f:spec": {
+                "f:tls": {
+                  ".": {},
+                  "f:termination": {}
+                },
+                "f:to": {
+                  "f:kind": {},
+                  "f:name": {},
+                  "f:weight": {}
+                },
+                "f:wildcardPolicy": {}
+              }
+            }
+          },
+          {
+            "manager": "openshift-router",
+            "operation": "Update",
+            "apiVersion": "route.openshift.io/v1",
+            "time": "2020-08-04T11:41:11Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:status": {
+                "f:ingress": {}
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "host": "console-cr-form-max.apps.playground.rhba.openshift-aws.rhocf-dev.com",
+        "to": {
+          "kind": "Service",
+          "name": "console-cr-form",
+          "weight": 100
+        },
+        "tls": {
+          "termination": "reencrypt"
+        },
+        "wildcardPolicy": "None"
+      },
+      "status": {
+        "ingress": [
+          {
+            "host": "console-cr-form-max.apps.playground.rhba.openshift-aws.rhocf-dev.com",
+            "routerName": "default",
+            "conditions": [
+              {
+                "type": "Admitted",
+                "status": "True",
+                "lastTransitionTime": "2020-08-04T11:41:13Z"
+              }
+            ],
+            "wildcardPolicy": "None",
+            "routerCanonicalHostname": "apps.playground.rhba.openshift-aws.rhocf-dev.com"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "rhpam-trial-kieserver",
+        "namespace": "max",
+        "selfLink": "/apis/route.openshift.io/v1/namespaces/max/routes/rhpam-trial-kieserver",
+        "uid": "337d6101-dcdf-4d41-9b2a-e7e025fa12af",
+        "resourceVersion": "3491878",
+        "creationTimestamp": "2020-08-04T11:41:11Z",
+        "labels": {
+          "app": "rhpam-trial",
+          "application": "rhpam-trial",
+          "service": "rhpam-trial-kieserver"
+        },
+        "annotations": {
+          "description": "Route for KIE server's https service.",
+          "haproxy.router.openshift.io/timeout": "60s",
+          "openshift.io/host.generated": "true"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "app.kiegroup.org/v2",
+            "kind": "KieApp",
+            "name": "rhpam-trial",
+            "uid": "f869cd49-b403-4268-8d7c-6ca0bdd9857d",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "managedFields": [
+          {
+            "manager": "kie-cloud-operator",
+            "operation": "Update",
+            "apiVersion": "route.openshift.io/v1",
+            "time": "2020-08-04T11:41:11Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:description": {},
+                  "f:haproxy.router.openshift.io/timeout": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app": {},
+                  "f:application": {},
+                  "f:service": {}
+                },
+                "f:ownerReferences": {
+                  ".": {},
+                  "k:{\"uid\":\"f869cd49-b403-4268-8d7c-6ca0bdd9857d\"}": {
+                    ".": {},
+                    "f:apiVersion": {},
+                    "f:blockOwnerDeletion": {},
+                    "f:controller": {},
+                    "f:kind": {},
+                    "f:name": {},
+                    "f:uid": {}
+                  }
+                }
+              },
+              "f:spec": {
+                "f:port": {
+                  ".": {},
+                  "f:targetPort": {}
+                },
+                "f:tls": {
+                  ".": {},
+                  "f:insecureEdgeTerminationPolicy": {},
+                  "f:termination": {}
+                },
+                "f:to": {
+                  "f:kind": {},
+                  "f:name": {},
+                  "f:weight": {}
+                },
+                "f:wildcardPolicy": {}
+              }
+            }
+          },
+          {
+            "manager": "openshift-router",
+            "operation": "Update",
+            "apiVersion": "route.openshift.io/v1",
+            "time": "2020-08-04T11:41:15Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:status": {
+                "f:ingress": {}
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "host": "rhpam-trial-kieserver-max.apps.playground.rhba.openshift-aws.rhocf-dev.com",
+        "to": {
+          "kind": "Service",
+          "name": "rhpam-trial-kieserver",
+          "weight": 100
+        },
+        "port": {
+          "targetPort": "https"
+        },
+        "tls": {
+          "termination": "passthrough",
+          "insecureEdgeTerminationPolicy": "Redirect"
+        },
+        "wildcardPolicy": "None"
+      },
+      "status": {
+        "ingress": [
+          {
+            "host": "rhpam-trial-kieserver-max.apps.playground.rhba.openshift-aws.rhocf-dev.com",
+            "routerName": "default",
+            "conditions": [
+              {
+                "type": "Admitted",
+                "status": "True",
+                "lastTransitionTime": "2020-08-04T11:41:13Z"
+              }
+            ],
+            "wildcardPolicy": "None",
+            "routerCanonicalHostname": "apps.playground.rhba.openshift-aws.rhocf-dev.com"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "rhpam-trial-kieserver-http",
+        "namespace": "max",
+        "selfLink": "/apis/route.openshift.io/v1/namespaces/max/routes/rhpam-trial-kieserver-http",
+        "uid": "5988c91e-9881-4a79-bee2-23b7992c69c4",
+        "resourceVersion": "3491879",
+        "creationTimestamp": "2020-08-04T11:41:11Z",
+        "labels": {
+          "app": "rhpam-trial",
+          "application": "rhpam-trial",
+          "service": "rhpam-trial-kieserver"
+        },
+        "annotations": {
+          "description": "Route for KIE server's http service.",
+          "haproxy.router.openshift.io/balance": "source",
+          "haproxy.router.openshift.io/timeout": "60s",
+          "openshift.io/host.generated": "true"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "app.kiegroup.org/v2",
+            "kind": "KieApp",
+            "name": "rhpam-trial",
+            "uid": "f869cd49-b403-4268-8d7c-6ca0bdd9857d",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "managedFields": [
+          {
+            "manager": "kie-cloud-operator",
+            "operation": "Update",
+            "apiVersion": "route.openshift.io/v1",
+            "time": "2020-08-04T11:41:11Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:description": {},
+                  "f:haproxy.router.openshift.io/balance": {},
+                  "f:haproxy.router.openshift.io/timeout": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app": {},
+                  "f:application": {},
+                  "f:service": {}
+                },
+                "f:ownerReferences": {
+                  ".": {},
+                  "k:{\"uid\":\"f869cd49-b403-4268-8d7c-6ca0bdd9857d\"}": {
+                    ".": {},
+                    "f:apiVersion": {},
+                    "f:blockOwnerDeletion": {},
+                    "f:controller": {},
+                    "f:kind": {},
+                    "f:name": {},
+                    "f:uid": {}
+                  }
+                }
+              },
+              "f:spec": {
+                "f:port": {
+                  ".": {},
+                  "f:targetPort": {}
+                },
+                "f:to": {
+                  "f:kind": {},
+                  "f:name": {},
+                  "f:weight": {}
+                },
+                "f:wildcardPolicy": {}
+              }
+            }
+          },
+          {
+            "manager": "openshift-router",
+            "operation": "Update",
+            "apiVersion": "route.openshift.io/v1",
+            "time": "2020-08-04T11:41:15Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:status": {
+                "f:ingress": {}
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "host": "rhpam-trial-kieserver-http-max.apps.playground.rhba.openshift-aws.rhocf-dev.com",
+        "to": {
+          "kind": "Service",
+          "name": "rhpam-trial-kieserver",
+          "weight": 100
+        },
+        "port": {
+          "targetPort": "http"
+        },
+        "wildcardPolicy": "None"
+      },
+      "status": {
+        "ingress": [
+          {
+            "host": "rhpam-trial-kieserver-http-max.apps.playground.rhba.openshift-aws.rhocf-dev.com",
+            "routerName": "default",
+            "conditions": [
+              {
+                "type": "Admitted",
+                "status": "True",
+                "lastTransitionTime": "2020-08-04T11:41:13Z"
+              }
+            ],
+            "wildcardPolicy": "None",
+            "routerCanonicalHostname": "apps.playground.rhba.openshift-aws.rhocf-dev.com"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "rhpam-trial-rhpamcentr",
+        "namespace": "max",
+        "selfLink": "/apis/route.openshift.io/v1/namespaces/max/routes/rhpam-trial-rhpamcentr",
+        "uid": "f46fda96-6176-4d1e-a498-aab807d8a711",
+        "resourceVersion": "3491876",
+        "creationTimestamp": "2020-08-04T11:41:15Z",
+        "labels": {
+          "app": "rhpam-trial",
+          "application": "rhpam-trial",
+          "service": "rhpam-trial-rhpamcentr"
+        },
+        "annotations": {
+          "description": "Route for Business Central's https service.",
+          "haproxy.router.openshift.io/timeout": "60s",
+          "openshift.io/host.generated": "true"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "app.kiegroup.org/v2",
+            "kind": "KieApp",
+            "name": "rhpam-trial",
+            "uid": "f869cd49-b403-4268-8d7c-6ca0bdd9857d",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "managedFields": [
+          {
+            "manager": "kie-cloud-operator",
+            "operation": "Update",
+            "apiVersion": "route.openshift.io/v1",
+            "time": "2020-08-04T11:41:15Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:description": {},
+                  "f:haproxy.router.openshift.io/timeout": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app": {},
+                  "f:application": {},
+                  "f:service": {}
+                },
+                "f:ownerReferences": {
+                  ".": {},
+                  "k:{\"uid\":\"f869cd49-b403-4268-8d7c-6ca0bdd9857d\"}": {
+                    ".": {},
+                    "f:apiVersion": {},
+                    "f:blockOwnerDeletion": {},
+                    "f:controller": {},
+                    "f:kind": {},
+                    "f:name": {},
+                    "f:uid": {}
+                  }
+                }
+              },
+              "f:spec": {
+                "f:port": {
+                  ".": {},
+                  "f:targetPort": {}
+                },
+                "f:tls": {
+                  ".": {},
+                  "f:insecureEdgeTerminationPolicy": {},
+                  "f:termination": {}
+                },
+                "f:to": {
+                  "f:kind": {},
+                  "f:name": {},
+                  "f:weight": {}
+                },
+                "f:wildcardPolicy": {}
+              }
+            }
+          },
+          {
+            "manager": "openshift-router",
+            "operation": "Update",
+            "apiVersion": "route.openshift.io/v1",
+            "time": "2020-08-04T11:41:15Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:status": {
+                "f:ingress": {}
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "host": "rhpam-trial-rhpamcentr-max.apps.playground.rhba.openshift-aws.rhocf-dev.com",
+        "to": {
+          "kind": "Service",
+          "name": "rhpam-trial-rhpamcentr",
+          "weight": 100
+        },
+        "port": {
+          "targetPort": "https"
+        },
+        "tls": {
+          "termination": "passthrough",
+          "insecureEdgeTerminationPolicy": "Redirect"
+        },
+        "wildcardPolicy": "None"
+      },
+      "status": {
+        "ingress": [
+          {
+            "host": "rhpam-trial-rhpamcentr-max.apps.playground.rhba.openshift-aws.rhocf-dev.com",
+            "routerName": "default",
+            "conditions": [
+              {
+                "type": "Admitted",
+                "status": "True",
+                "lastTransitionTime": "2020-08-04T11:41:13Z"
+              }
+            ],
+            "wildcardPolicy": "None",
+            "routerCanonicalHostname": "apps.playground.rhba.openshift-aws.rhocf-dev.com"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "rhpam-trial-rhpamcentr-http",
+        "namespace": "max",
+        "selfLink": "/apis/route.openshift.io/v1/namespaces/max/routes/rhpam-trial-rhpamcentr-http",
+        "uid": "98a2e098-1281-47ea-8dc3-6cf32be9080b",
+        "resourceVersion": "3491877",
+        "creationTimestamp": "2020-08-04T11:41:11Z",
+        "labels": {
+          "app": "rhpam-trial",
+          "application": "rhpam-trial",
+          "service": "rhpam-trial-rhpamcentr"
+        },
+        "annotations": {
+          "description": "Route for Business Central's http service.",
+          "haproxy.router.openshift.io/timeout": "60s",
+          "openshift.io/host.generated": "true"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "app.kiegroup.org/v2",
+            "kind": "KieApp",
+            "name": "rhpam-trial",
+            "uid": "f869cd49-b403-4268-8d7c-6ca0bdd9857d",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "managedFields": [
+          {
+            "manager": "kie-cloud-operator",
+            "operation": "Update",
+            "apiVersion": "route.openshift.io/v1",
+            "time": "2020-08-04T11:41:11Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:description": {},
+                  "f:haproxy.router.openshift.io/timeout": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app": {},
+                  "f:application": {},
+                  "f:service": {}
+                },
+                "f:ownerReferences": {
+                  ".": {},
+                  "k:{\"uid\":\"f869cd49-b403-4268-8d7c-6ca0bdd9857d\"}": {
+                    ".": {},
+                    "f:apiVersion": {},
+                    "f:blockOwnerDeletion": {},
+                    "f:controller": {},
+                    "f:kind": {},
+                    "f:name": {},
+                    "f:uid": {}
+                  }
+                }
+              },
+              "f:spec": {
+                "f:port": {
+                  ".": {},
+                  "f:targetPort": {}
+                },
+                "f:to": {
+                  "f:kind": {},
+                  "f:name": {},
+                  "f:weight": {}
+                },
+                "f:wildcardPolicy": {}
+              }
+            }
+          },
+          {
+            "manager": "openshift-router",
+            "operation": "Update",
+            "apiVersion": "route.openshift.io/v1",
+            "time": "2020-08-04T11:41:15Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:status": {
+                "f:ingress": {}
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "host": "rhpam-trial-rhpamcentr-http-max.apps.playground.rhba.openshift-aws.rhocf-dev.com",
+        "to": {
+          "kind": "Service",
+          "name": "rhpam-trial-rhpamcentr",
+          "weight": 100
+        },
+        "port": {
+          "targetPort": "http"
+        },
+        "wildcardPolicy": "None"
+      },
+      "status": {
+        "ingress": [
+          {
+            "host": "rhpam-trial-rhpamcentr-http-max.apps.playground.rhba.openshift-aws.rhocf-dev.com",
+            "routerName": "default",
+            "conditions": [
+              {
+                "type": "Admitted",
+                "status": "True",
+                "lastTransitionTime": "2020-08-04T11:41:13Z"
+              }
+            ],
+            "wildcardPolicy": "None",
+            "routerCanonicalHostname": "apps.playground.rhba.openshift-aws.rhocf-dev.com"
+          }
+        ]
+      }
+    }
+  ]
+}
