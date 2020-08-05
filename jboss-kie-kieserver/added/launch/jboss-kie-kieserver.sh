@@ -433,7 +433,7 @@ function configure_drools() {
 }
 
 function assign_server_location(){
-  local location=$( callSecureKieServer )
+  local location=$( callSecureKieServer "https://kubernetes.default.svc" )
   if [ -z "$location" ]; then
     location=$( configure_server_location )
   fi
@@ -506,15 +506,28 @@ function configure_server_location() {
 }
 
 function callSecureKieServer(){
-  local APISERVER=https://kubernetes.default.svc
+  local APISERVER="${1}"
   local SERVICEACCOUNT=/var/run/secrets/kubernetes.io/serviceaccount
   local NAMESPACE=$(cat ${SERVICEACCOUNT}/namespace)
   local TOKEN=$(cat ${SERVICEACCOUNT}/token)
   local CACERT=${SERVICEACCOUNT}/ca.crt
-  local jsonRoutes=$(curl --cacert ${CACERT} --header "Authorization: Bearer ${TOKEN}" -X GET ${APISERVER}/apis/route.openshift.io/v1/namespaces/${NAMESPACE}/routes/${KIE_SERVER_ROUTE_NAME})
-  local hostS=$( ${jsonRoute} | grep -Po '"host": *\K"[^"]*"' | sort -u |  tr '"' ' ' | tr -d '[:space:]' )
-  local protocolS=$( ${jsonRoute} | grep -Po '"targetPort": *\K"[^"]*"' |  tr '"' ' ' | tr -d '[:space:]' )
-  local location=$( ${protocolS}://${hostS}/services/rest/server)
+  local hostsList=$(curl --cacert ${CACERT} --header "Authorization: Bearer ${TOKEN}" -X GET ${APISERVER}/apis/route.openshift.io/v1/namespaces/${NAMESPACE}/routes/${KIE_SERVER_ROUTE_NAME} | grep -Po '"host": *\K"[^"]*"' | sort -u |  tr '"' ' ' )
+  for ((i = 0; i < ${#hostsList[@]}; i++))
+  do
+    if [[ ${hostsList[$i]} == *"kieserver-http"* ]]; then
+      local httpHost=hostsList[$i]
+    fi
+    if [[ ${hostsList[$i]} == *"kieserver."* ]]; then
+      local httpsHost=hostsList[$i]
+    fi
+  done
+
+  if [[ -v $httpHost ]]; then
+    local location=$( http://${httpHost}/services/rest/server)
+  fi
+  if [[ -v httpsHost ]]; then
+    local location=$( https://${httpsHost}/services/rest/server)
+  fi
   echo ${location}
 }
 

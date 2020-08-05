@@ -45,7 +45,7 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            test = os.path.join(sys.path[0], "responses/bc-dc.json")
+            test = os.path.join(sys.path[0], "responses/kubernetes.defaul.svc.json")
             response = open(test, "r").read()
             self.wfile.write(response.encode(encoding='utf_8'))
 
