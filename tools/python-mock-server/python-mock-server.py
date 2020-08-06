@@ -40,12 +40,12 @@ class MyHandler(BaseHTTPRequestHandler):
             self.end_headers()
             sys.exit()
 
-        if self.path == '/kubernetes.default.svc':
-            print("kubernetes.default.svc")
+        if self.path == '/kubernetes.default.svc/apis/route.openshift.io/v1/namespaces/max/routes/my-route-name':
+            print("Kubernetes.default.svc")
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            test = os.path.join(sys.path[0], "responses/kubernetes.defaul.svc.json")
+            test = os.path.join(sys.path[0], "responses/kubernetes.default.svc.json")
             response = open(test, "r").read()
             self.wfile.write(response.encode(encoding='utf_8'))
 
