@@ -281,16 +281,20 @@ function generate_external_datasource() {
       ds="$ds
              <max-pool-size>$max_pool_size</max-pool-size>"
     fi
+
     # CLOUD-2903: For Oracle XA Datasources, this configuration is required
-    if [ -n "$is_same_rm_override" ]; then
-      ds="$ds
-            <is-same-rm-override>$is_same_rm_override</is-same-rm-override>"
+    if [ -n "$NON_XA_DATASOURCE" ] && [ "$NON_XA_DATASOURCE" != "true" ]; then
+        if [ -n "$is_same_rm_override" ]; then
+          ds="$ds
+                <is-same-rm-override>$is_same_rm_override</is-same-rm-override>"
+        fi
+        # RHPAM-2261
+        if [ -n "$no_tx_separate_pools" ]; then
+          ds="$ds
+                <no-tx-separate-pools>$no_tx_separate_pools</no-tx-separate-pools>"
+        fi
     fi
-    # RHPAM-2261
-    if [ -n "$no_tx_separate_pools" ]; then
-      ds="$ds
-            <no-tx-separate-pools />"
-    fi
+
     if [ -n "$NON_XA_DATASOURCE" ] && [ "$NON_XA_DATASOURCE" = "true" ]; then
       ds="$ds
              </pool>"
@@ -542,10 +546,10 @@ function inject_datasource() {
       else
         validate="false"
       fi
-
-      service_name=$prefix
       ;;
   esac
+
+  service_name=$prefix
 
   if [ -z "$jta" ]; then
     log_warning "JTA flag not set, defaulting to true for datasource  ${service_name}"
