@@ -441,7 +441,7 @@ Feature: RHPAM KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10.1.1.1 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="ServerName"]
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 3306 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Port"]
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpms on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DatabaseName"]
-          And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmUser on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmUser on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmPass on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='password']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value TRANSACTION_READ_COMMITTED on XPath //*[local-name()='xa-datasource']/*[local-name()='transaction-isolation']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_ds on XPath //*[local-name()='timer-service']/@default-data-store
@@ -921,6 +921,76 @@ Feature: RHPAM KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value db2 on XPath //*[local-name()='database-data-store']/@database
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_part on XPath //*[local-name()='database-data-store']/@partition
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10000 on XPath //*[local-name()='database-data-store']/@refresh-interval
+
+  Scenario: Checks if the EJB Timer was successfully configured with DB2 with SERVICE_HOST and PORT envs with IS_SAME_OVERRIDE and NO_TX_SEPARATE_TOOLS envs set
+    When container is started with env
+      | variable                                  | value        |
+      | DATASOURCES                               | TEST         |
+      | TEST_DATABASE                             | bpms         |
+      | TEST_USERNAME                             | bpmUser      |
+      | TEST_PASSWORD                             | bpmPass      |
+      | TEST_DRIVER                               | db2          |
+      | TEST_SERVICE_HOST                         | 10.1.1.1     |
+      | TEST_SERVICE_PORT                         | 50000        |
+      | TEST_NONXA                                | true         |
+      | TEST_IS_SAME_RM_OVERRIDE                  | true         |
+      | TEST_NO_TX_SEPARATE_POOLS                 | true         |
+      | TIMER_SERVICE_DATA_STORE_REFRESH_INTERVAL | 10000        |
+    Then XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/test on XPath //*[local-name()='datasource']/@jndi-name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value test-TEST on XPath //*[local-name()='datasource']/@pool-name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value db2 on XPath //*[local-name()='xa-datasource']/*[local-name()='driver']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER on XPath //*[local-name()='xa-datasource']/@pool-name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/ejb_timer on XPath //*[local-name()='xa-datasource']/@jndi-name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@use-java-context
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@enabled
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:db2://10.1.1.1:50000/bpms on XPath //*[local-name()='datasource']/*[local-name()='connection-url']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmUser on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmPass on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='password']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value TRANSACTION_READ_COMMITTED on XPath //*[local-name()='xa-datasource']/*[local-name()='transaction-isolation']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_ds on XPath //*[local-name()='timer-service']/@default-data-store
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_ds on XPath //*[local-name()='database-data-store']/@name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-pool']/*[local-name()='is-same-rm-override']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-pool']/*[local-name()='no-tx-separate-pools']
+
+  Scenario: Test external xa datasource extension
+    When container is started with env
+      | variable                          | value                                      |
+      | DATASOURCES                       | TEST                                       |
+      | TEST_JNDI                         | java:/jboss/datasources/testds             |
+      | TEST_DRIVER                       | oracle                                     |
+      | TEST_USERNAME                     | tombrady                                   |
+      | TEST_PASSWORD                     | password                                   |
+      | TEST_XA_CONNECTION_PROPERTY_URL   | jdbc:oracle:thin:@samplehost:1521:oracledb |
+      | TEST_NONXA                        | false                                      |
+      | TEST_JTA                          | true                                       |
+      | TEST_IS_SAME_RM_OVERRIDE          | false                                      |
+      | TEST_NO_TX_SEPARATE_POOLS         | true                                       |
+    Then XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:/jboss/datasources/testds on XPath //*[local-name()='xa-datasource']/@jndi-name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:oracle:thin:@samplehost:1521:oracledb on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="URL"]
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value oracle on XPath //*[local-name()='xa-datasource']/*[local-name()='driver']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value tombrady on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value password on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='password']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value false on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-pool']/*[local-name()='is-same-rm-override']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-pool']/*[local-name()='no-tx-separate-pools']
+
+  Scenario: Test external datasource extension, should not contain is-same-override and shouldnot contain no-tx-separate-pools
+    When container is started with env
+      | variable                          | value                                      |
+      | DATASOURCES                       | TEST                                       |
+      | TEST_JNDI                         | java:/jboss/datasources/testds             |
+      | TEST_DRIVER                       | oracle                                     |
+      | TEST_USERNAME                     | tombrady                                   |
+      | TEST_PASSWORD                     | password                                   |
+      | TEST_CONNECTION_PROPERTY_URL      | jdbc:oracle:thin:@samplehost:1521:oracledb |
+      | TEST_JTA                          | true                                       |
+      | TEST_IS_SAME_RM_OVERRIDE          | false                                      |
+      | TEST_NO_TX_SEPARATE_POOLS         | true                                       |
+    Then XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:/jboss/datasources/testds on XPath //*[local-name()='datasource']/@jndi-name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value oracle on XPath //*[local-name()='datasource']/*[local-name()='driver']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value tombrady on XPath //*[local-name()='datasource']/*[local-name()='security']/*[local-name()='user-name']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value password on XPath //*[local-name()='datasource']/*[local-name()='security']/*[local-name()='password']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should have 0 elements on XPath //*[local-name()='datasource']/*[local-name()='pool']/*[local-name()='is-same-rm-override']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should have 0 elements on XPath //*[local-name()='datasource']/*[local-name()='pool']/*[local-name()='no-tx-separate-pools']
 
   Scenario: Verify if the DB Schema and persistence dialect is correctly set.
     When container is started with env
