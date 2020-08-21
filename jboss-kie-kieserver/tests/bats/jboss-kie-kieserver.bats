@@ -323,3 +323,9 @@ teardown() {
     echo "Expected: ${expected}"
     [[ $JBOSS_KIE_ARGS == *"-Dorg.optaplanner.server.ext.thread.pool.queue.size=${expected}"* ]]
 }
+
+@test "test deserialization whitelist backward compatibility" {
+    configure_jackson_deserialization_backward_compatibility >&2
+    echo "Result: ${JBOSS_KIE_ARGS}"
+    [[ $JBOSS_KIE_ARGS == *"-Djackson.deserialization.whitelist.packages=\"\""* ]]
+}
