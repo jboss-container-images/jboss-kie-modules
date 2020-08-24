@@ -70,6 +70,7 @@ function configure() {
     configure_optaplanner
     # configure_server_state always has to be last
     configure_server_state
+    configure_jackson_deserialization_backward_compatibility
 }
 
 function configure_EJB_Timer_datasource {
@@ -672,6 +673,13 @@ function configure_server_state() {
         fi
     fi
 }
+
+# Adds backwards compatibility for jackson deserialization, for more details see
+# https://issues.redhat.com/browse/RHPAM-3118
+function configure_jackson_deserialization_backward_compatibility() {
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Djackson.deserialization.whitelist.packages=\"\""
+}
+
 
 function generate_random_id() {
     cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1
