@@ -16,8 +16,16 @@ touch $JBOSS_HOME/bin/launch/datasource-common.sh
 #imports
 source $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-kieserver.sh
 
+setup() {
+    echo "Starting mock http server."
+    python3 $BATS_TEST_DIRNAME/../../../tools/python-mock-server/python-mock-server.py &
+    sleep 3
+}
+
 teardown() {
     rm -rf $JBOSS_HOME
+    #close mock server
+    curl -s http://localhost:8080/halt
 }
 
 @test "test if the EJB_TIMER datasource has been auto-configured" {
@@ -452,3 +460,14 @@ teardown() {
     echo "Expected: ${expected}"
     [[ $JBOSS_KIE_ARGS == *"-Dorg.optaplanner.server.ext.thread.pool.queue.size=${expected}"* ]]
 }
+
+@test "Check is exists a secure KieRouter" {
+  export KIE_SERVER_ROUTE_NAME="my-route-name"
+  local expected="https://${HOSTNAME}:8080/kubernetes.default.svc"
+  run bash $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-kieserver.sh
+  callSecureKieServer "localhost:8080/kubernetes.default.svc"  $BATS_TEST_DIRNAME/../../tests/bats/resources >&2
+  echo "location is ${location}" >&2
+  echo "expected is ${expected}" >&2
+  [[ $location == *"https://test-kieserver-max.apps.playground.rhba.openshift-aws.rhocf-dev.com/services/rest/server"* ]]
+}
+
