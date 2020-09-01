@@ -433,7 +433,7 @@ function configure_drools() {
 }
 
 function assign_server_location(){
-  local location=$( callSecureKieServer "https://kubernetes.default.svc" )
+  local location=$( callSecureKieServer "https://kubernetes.default.svc" "/var/run/secrets/kubernetes.io/serviceaccount" )
   if [ -z "$location" ]; then
     location=$( configure_server_location )
   fi
@@ -502,31 +502,26 @@ function configure_server_location() {
             location=$(build_simple_url "${protocol}" "${host}" "${port}" "${path}")
         fi
     fi
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${location}"
+
     echo ${location}
 }
 
 function callSecureKieServer(){
   local APISERVER="${1}"
-  local SERVICEACCOUNT=/var/run/secrets/kubernetes.io/serviceaccount
+  local SERVICEACCOUNT="${2}"
   local NAMESPACE=$(cat ${SERVICEACCOUNT}/namespace)
   local TOKEN=$(cat ${SERVICEACCOUNT}/token)
   local CACERT=${SERVICEACCOUNT}/ca.crt
-  local hostsList=$(curl --cacert ${CACERT} --header "Authorization: Bearer ${TOKEN}" -X GET ${APISERVER}/apis/route.openshift.io/v1/namespaces/${NAMESPACE}/routes/${KIE_SERVER_ROUTE_NAME} | grep -Po '"host": *\K"[^"]*"' | sort -u |  tr '"' ' ' )
-  for ((i = 0; i < ${#hostsList[@]}; i++))
-  do
-    if [[ ${hostsList[$i]} == *"kieserver-http"* ]]; then
-      local httpHost=hostsList[$i]
-    fi
-    if [[ ${hostsList[$i]} == *"kieserver."* ]]; then
-      local httpsHost=hostsList[$i]
-    fi
-  done
+  local raw=$(curl --cacert ${CACERT} --header "Authorization: Bearer ${TOKEN}" -X GET ${APISERVER}/apis/route.openshift.io/v1/namespaces/${NAMESPACE}/routes/${KIE_SERVER_ROUTE_NAME})
+  local host=$(echo ${raw} | grep -Po '"host": *\K"[^"]*"' | sort -u |  tr '"' ' ' | xargs)
+  local targetPort=$(echo ${raw} | grep -Po '"targetPort": *\K"[^"]*"' | sort -u |  tr '"' ' ' | xargs)
 
-  if [[ -v $httpHost ]]; then
-    local location=$( http://${httpHost}/services/rest/server)
+  if [ ${targetPort} = "https" ]; then
+    location=https://${host##*( )}/services/rest/server
   fi
-  if [[ -v httpsHost ]]; then
-    local location=$( https://${httpsHost}/services/rest/server)
+  if [ ${targetPort} = "http" ]; then
+     location=http://${host##*( )}/services/rest/server
   fi
   echo ${location}
 }
