@@ -53,14 +53,14 @@ function configure_logger_config_file() {
     local allowed_log_levels=("ALL" "CONFIG" "FINE" "FINER" "FINEST" "INFO" "OFF" "SEVERE" "WARNING")
     local config_dir=${CONFIG_DIR:-"/opt/rhpam-smartrouter"}
     if [[ ! "${allowed_log_levels[@]}" =~ "${LOG_LEVEL}" ]]; then
-      log_warning "Log Level ${LOG_LEVEL} is not allowed, the allowed levels are ${allowed_log_levels[*]}"
+        log_warning "Log Level ${LOG_LEVEL} is not allowed, the allowed levels are ${allowed_log_levels[*]}"
     else
-      local log_level=${LOG_LEVEL:-INFO}
-      sed -i "s/{LOG_LEVEL}/${log_level}/" ${config_dir}/logging.properties
-      local logger_categories=$(echo $LOGGER_CATEGORIES | awk '{gsub(",", "\\n")}1')
-      sed -i "s/{PACKAGES_LOG_LEVEL}/${logger_categories}/" ${config_dir}/logging.properties
-      log_info "Configuring logger categories ${logger_categories} with level ${log_level}"
-      JAVA_OPTS_APPEND="${JAVA_OPTS_APPEND} -Djava.util.logging.config.file=${config_dir}/logging.properties"
+        local log_level=${LOG_LEVEL:-INFO}
+        sed -i "s/{LOG_LEVEL}/${log_level}/" ${config_dir}/logging.properties
+        local logger_categories=$(echo $LOGGER_CATEGORIES | awk '{gsub(",", "\\n")}1')
+        sed -i "s/{PACKAGES_LOG_LEVEL}/${logger_categories}/" ${config_dir}/logging.properties
+        log_info "Configuring logger categories ${logger_categories} with level ${log_level}"
+        JAVA_OPTS_APPEND="${JAVA_OPTS_APPEND} -Djava.util.logging.config.file=${config_dir}/logging.properties"
     fi
 }
 
