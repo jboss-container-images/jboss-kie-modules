@@ -149,3 +149,16 @@ Feature: RHPAM Smart Router configuration tests
       | mem_limit | 1073741824                                               |
     Then container log should match regex -Xms205m
      And container log should match regex -Xmx819m
+    
+  Scenario: Verify if the logging properties is set correctly
+    When container is started with env
+      | variable                | value                   |
+      | SCRIPT_DEBUG            | true                    |
+      | LOG_LEVEL               | SEVERE                  |
+      | LOGGER_CATEGORIES       | org.xyz=INFO            |
+    Then container log should match regex JAVA_OPTS_APPEND=' -Djava.util.logging.config.file=/opt/rhpam-smartrouter/logging.properties'
+     And container log should match regex LOGGER_CATEGORIES=org.xyz=INFO
+     And container log should match regex LOG_LEVEL=SEVERE
+     And file /opt/rhpam-smartrouter/logging.properties should contain org.xyz=INFO
+     And file /opt/rhpam-smartrouter/logging.properties should contain SEVERE
+
