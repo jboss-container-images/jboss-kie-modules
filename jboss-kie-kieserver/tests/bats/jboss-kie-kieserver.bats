@@ -465,6 +465,6 @@ teardown() {
   export KIE_SERVER_ROUTE_NAME="my-route-name"
   local expected="https://${HOSTNAME}:8080/kubernetes.default.svc"
   callSecureKieServer "localhost:8080/kubernetes.default.svc"  $BATS_TEST_DIRNAME/../../tests/bats/resources >&2
-  [[ $location == *"https://test-kieserver-max.apps.playground.rhba.openshift-aws.rhocf-dev.com/services/rest/server"* ]]
+  [[ $location == *"https://test-kieserver-max.apps.playground.dev.com/services/rest/server"* ]]
 }
 
