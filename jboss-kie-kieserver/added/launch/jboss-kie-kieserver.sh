@@ -503,8 +503,6 @@ function configure_server_location() {
         fi
     fi
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${location}"
-
-    echo ${location}
 }
 
 function callSecureKieServer(){
@@ -523,7 +521,6 @@ function callSecureKieServer(){
   if [ ${targetPort} = "http" ]; then
      location=http://${host##*( )}/services/rest/server
   fi
-  echo ${location}
 }
 
 function configure_server_persistence() {

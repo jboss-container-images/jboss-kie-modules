@@ -464,10 +464,7 @@ teardown() {
 @test "Check is exists a secure KieRouter" {
   export KIE_SERVER_ROUTE_NAME="my-route-name"
   local expected="https://${HOSTNAME}:8080/kubernetes.default.svc"
-  run bash $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-kieserver.sh
   callSecureKieServer "localhost:8080/kubernetes.default.svc"  $BATS_TEST_DIRNAME/../../tests/bats/resources >&2
-  echo "location is ${location}" >&2
-  echo "expected is ${expected}" >&2
   [[ $location == *"https://test-kieserver-max.apps.playground.rhba.openshift-aws.rhocf-dev.com/services/rest/server"* ]]
 }
 
