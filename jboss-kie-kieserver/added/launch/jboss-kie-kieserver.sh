@@ -433,11 +433,11 @@ function configure_drools() {
 }
 
 function assign_server_location(){
-  local location=$( callSecureKieServer "https://kubernetes.default.svc" "/var/run/secrets/kubernetes.io/serviceaccount" )
-  if [ -z "$location" ]; then
-    location=$( configure_server_location )
-  fi
-  JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${location}"
+    local location=$( callSecureKieServer "https://kubernetes.default.svc" "/var/run/secrets/kubernetes.io/serviceaccount" )
+    if [ -z "$location" ]; then
+      location=$( configure_server_location )
+    fi
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${location}"
 }
 
 # ---------- KIE SERVER LOCATION URL VIA ROUTE ----------
@@ -516,10 +516,10 @@ function callSecureKieServer(){
     local targetPort=$(echo ${raw} | grep -Po '"targetPort": *\K"[^"]*"' | sort -u |  tr '"' ' ' | xargs)
 
     if [ ${targetPort} = "https" ]; then
-      location=https://${host##*( )}/services/rest/server
+        location=https://${host##*( )}/services/rest/server
     fi
     if [ ${targetPort} = "http" ]; then
-       location=http://${host##*( )}/services/rest/server
+        location=http://${host##*( )}/services/rest/server
     fi
 }
 
