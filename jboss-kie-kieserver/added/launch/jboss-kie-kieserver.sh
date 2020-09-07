@@ -58,7 +58,7 @@ function configure() {
     configure_server_env
     configure_controller_access
     configure_router_access
-    configure_server_location
+    assign_server_location
     configure_server_persistence
     configure_server_security
     configure_server_sync_deploy
@@ -432,6 +432,14 @@ function configure_drools() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.drools.server.filter.classes=${DROOLS_SERVER_FILTER_CLASSES}"
 }
 
+function assign_server_location(){
+  local location=$( callSecureKieServer "https://kubernetes.default.svc" "/var/run/secrets/kubernetes.io/serviceaccount" )
+  if [ -z "$location" ]; then
+    location=$( configure_server_location )
+  fi
+  JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${location}"
+}
+
 # ---------- KIE SERVER LOCATION URL VIA ROUTE ----------
 # External location of all KIE Servers via a Route.
 # Example template parameters:
@@ -495,6 +503,24 @@ function configure_server_location() {
         fi
     fi
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${location}"
+}
+
+function callSecureKieServer(){
+    local APISERVER="${1}"
+    local SERVICEACCOUNT="${2}"
+    local NAMESPACE=$(cat ${SERVICEACCOUNT}/namespace)
+    local TOKEN=$(cat ${SERVICEACCOUNT}/token)
+    local CACERT=${SERVICEACCOUNT}/ca.crt
+    local raw=$(curl --cacert ${CACERT} --header "Authorization: Bearer ${TOKEN}" -X GET ${APISERVER}/apis/route.openshift.io/v1/namespaces/${NAMESPACE}/routes/${KIE_SERVER_ROUTE_NAME})
+    local host=$(echo ${raw} | grep -Po '"host": *\K"[^"]*"' | sort -u |  tr '"' ' ' | xargs)
+    local targetPort=$(echo ${raw} | grep -Po '"targetPort": *\K"[^"]*"' | sort -u |  tr '"' ' ' | xargs)
+
+    if [ ${targetPort} = "https" ]; then
+      location=https://${host##*( )}/services/rest/server
+    fi
+    if [ ${targetPort} = "http" ]; then
+       location=http://${host##*( )}/services/rest/server
+    fi
 }
 
 function configure_server_persistence() {
