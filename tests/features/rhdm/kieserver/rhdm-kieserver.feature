@@ -17,7 +17,7 @@ Feature: RHDM KIE Server configuration tests
   Scenario: deploys the hellorules example, then checks if it's deployed.
     Given s2i build https://github.com/jboss-container-images/rhdm-7-openshift-image from quickstarts/hello-rules/hellorules using rhdm71-dev
       | variable                        | value                                                                                        |
-      | KIE_SERVER_CONTAINER_DEPLOYMENT | rhdm-kieserver-hellorules=org.openshift.quickstarts:rhdm-kieserver-hellorules:1.4.0-SNAPSHOT |
+      | KIE_SERVER_CONTAINER_DEPLOYMENT | rhdm-kieserver-hellorules=org.openshift.quickstarts:rhdm-kieserver-hellorules:1.7.0-SNAPSHOT |
     Then container log should contain Container rhdm-kieserver-hellorules
 
   # https://issues.jboss.org/browse/RHPAM-846
@@ -31,3 +31,16 @@ Feature: RHDM KIE Server configuration tests
   Scenario: Check rhdm-kieserver extensions
     When container is ready
     Then container log should contain -Dorg.jbpm.server.ext.disabled=true -Dorg.jbpm.ui.server.ext.disabled=true -Dorg.jbpm.case.server.ext.disabled=true
+
+  Scenario: Check JAVA_OPTS_APPEND on s2i build
+    Given s2i build https://github.com/desmax74/rhdm-7-openshift-image from quickstarts/hello-rules/hellorules using rhdm-1419
+      | variable                        | value                                                                                        |
+      | JAVA_OPTS_APPEND                | -Dawesome.java.params                                                                        |
+      | KIE_SERVER_CONTAINER_DEPLOYMENT | rhdm-kieserver-hellorules=org.openshift.quickstarts:rhdm-kieserver-hellorules:1.7.0-SNAPSHOT |
+    Then container log should contain java -Dawesome.java.params org.kie.server.services.impl.KieServerContainerVerifier  org.openshift.quickstarts:rhdm-kieserver-hellorules:1.7.0-SNAPSHOT
+    
+  Scenario: Check s2i build without JAVA_OPTS_APPEND
+    Given s2i build https://github.com/desmax74/rhdm-7-openshift-image from quickstarts/hello-rules/hellorules using rhdm-1419
+      | variable                        | value                                                                                        |
+      | KIE_SERVER_CONTAINER_DEPLOYMENT | rhdm-kieserver-hellorules=org.openshift.quickstarts:rhdm-kieserver-hellorules:1.7.0-SNAPSHOT |
+    Then container log should contain java  org.kie.server.services.impl.KieServerContainerVerifier  org.openshift.quickstarts:rhdm-kieserver-hellorules:1.7.0-SNAPSHOT

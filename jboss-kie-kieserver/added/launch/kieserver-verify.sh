@@ -19,8 +19,8 @@ function verifyServerContainers() {
             releaseIds="${releaseIds} ${groupId}:${artifactId}:${version}"
         done
         local containerVerifier="org.kie.server.services.impl.KieServerContainerVerifier"
-        log_info "Attempting to verify kie server containers with 'java ${containerVerifier} ${releaseIds}'"
-        java $(getKieJavaArgs) ${containerVerifier} ${releaseIds}
+        log_info "Attempting to verify kie server containers with 'java ${JAVA_OPTS_APPEND} ${containerVerifier} ${releaseIds}'"
+        java ${JAVA_OPTS_APPEND} $(getKieJavaArgs) ${containerVerifier} ${releaseIds}
     fi
 }
 

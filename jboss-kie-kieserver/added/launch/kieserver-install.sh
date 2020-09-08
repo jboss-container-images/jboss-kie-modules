@@ -20,11 +20,11 @@ prepare_maven_command() {
     # Add JVM default options
     export MAVEN_OPTS="${MAVEN_OPTS:-$(/opt/run-java/java-default-options)}"
     # Use maven batch mode (CLOUD-579)
-    local maven_args_intall="-e -DskipTests install:install-file -Dfile=${1} -DpomFile=${2} -Dpackaging=${3} ${4} --batch-mode -Djava.net.preferIPv4Stack=true -Popenshift -Dcom.redhat.xpaas.repo.redhatga ${MAVEN_ARGS_APPEND}"
-    log_info "Attempting to install jar with 'mvn ${maven_args_intall}'"
+    local maven_args_install="-e -DskipTests install:install-file -Dfile=${1} -DpomFile=${2} -Dpackaging=${3} ${4} --batch-mode -Djava.net.preferIPv4Stack=true -Popenshift -Dcom.redhat.xpaas.repo.redhatga ${MAVEN_ARGS_APPEND}"
+    log_info "Attempting to install jar with 'mvn ${maven_args_install}'"
     log_info "Using MAVEN_OPTS '${MAVEN_OPTS}'"
     log_info "Using $(mvn --version)"
-    echo ${maven_args_intall}
+    echo ${maven_args_install}
 }
 
 # $1 - DEPLOY_DIR
