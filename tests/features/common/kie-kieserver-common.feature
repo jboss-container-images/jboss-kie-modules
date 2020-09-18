@@ -423,6 +423,7 @@ Feature: Kie Server common features
 
   Scenario: RHDM-1096 - Check that optaplanner thread pool queue size property is set
     When container is started with env
-      | variable        | value      |
-      | OPTAPLANNER_SERVER_EXT_THREAD_POOL_QUEUE_SIZE | 4 |
+      | variable                                      | value |
+      | OPTAPLANNER_SERVER_EXT_THREAD_POOL_QUEUE_SIZE | 4     |
     Then container log should contain -Dorg.optaplanner.server.ext.thread.pool.queue.size=4
+
