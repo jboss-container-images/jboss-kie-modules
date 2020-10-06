@@ -12,3 +12,8 @@ cp -r ${ADDED_DIR}/launch/* ${JBOSS_HOME}/bin/launch
  # Set bin permissions
 chown -R jboss:root ${JBOSS_HOME}/bin/
 chmod -R g+rwX ${JBOSS_HOME}/bin/
+
+##we create an empty known_hosts global if the user forgot to pass the known-hosts with the id_rsa
+mkdir /etc/ssh/
+>/etc/ssh/known_hosts
+chmod 664 /etc/ssh/known_hosts
