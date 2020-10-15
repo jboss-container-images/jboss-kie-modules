@@ -53,7 +53,7 @@ function configure() {
     configure_server_access
     configure_openshift_enhancement
     configure_workbench_profile
-    checkSSHFiles
+    check_SSH_Files
     configure_guvnor_settings
     configure_metaspace
     configure_ha
@@ -187,14 +187,14 @@ function configure_workbench_profile() {
 }
 
 # Checks if the know_hosts is present when id_rsa is provided
-checkSSHFiles(){
+check_SSH_Files(){
     local id_rsa=/home/jboss/.ssh/id_rsa
     local know_hosts=/home/jboss/.ssh/known_hosts
     if [ -f ${id_rsa} ]; then
         if [ -f ${know_hosts} ]; then
             log_info "/home/jboss/.ssh/id_rsa and /home/jboss/.ssh/known_hosts provided."
         else
-            log_error "/home/jboss/.ssh/id_rsa is present but /home/jboss/.ssh/known_hosts wasn't provided, will be used known_hosts in /etc/ssh/known_hosts"
+            log_error "/home/jboss/.ssh/id_rsa is present but /home/jboss/.ssh/known_hosts wasn't provided, please redeploy and provide id_rsa and known_hosts when the secret is created"
         fi
     fi
 }
