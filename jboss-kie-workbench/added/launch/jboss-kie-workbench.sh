@@ -53,7 +53,7 @@ function configure() {
     configure_server_access
     configure_openshift_enhancement
     configure_workbench_profile
-    check_SSH_Files
+    check_ssh_Files
     configure_guvnor_settings
     configure_metaspace
     configure_ha
@@ -187,7 +187,7 @@ function configure_workbench_profile() {
 }
 
 # Checks if the know_hosts is present when id_rsa is provided
-check_SSH_Files(){
+check_ssh_Files(){
     local id_rsa=/home/jboss/.ssh/id_rsa
     local know_hosts=/home/jboss/.ssh/known_hosts
     if [ -f ${id_rsa} ]; then
