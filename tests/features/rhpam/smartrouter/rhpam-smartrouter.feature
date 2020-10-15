@@ -9,7 +9,7 @@ Feature: RHPAM Smart Router configuration tests
   Scenario: Check for product and version environment variables
     When container is ready
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-smartrouter
-     And run sh -c 'echo $RHPAM_SMARTROUTER_VERSION' in container and check its output for 7.9
+     And run sh -c 'echo $RHPAM_SMARTROUTER_VERSION' in container and check its output for 7.10
 
   # If KIE_SERVER_ROUTER_TLS_TEST is true the launch script will generate a certificate at /tmp/keystore.jks
   # with key alias "jboss" and password "mykeystorepass" and reset KIE_SERVER_ROUTER_TLS_KEYSTORE to /tmp/keystore.jks
