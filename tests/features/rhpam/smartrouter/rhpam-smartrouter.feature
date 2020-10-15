@@ -1,6 +1,16 @@
 @rhpam-7/rhpam-smartrouter-rhel8
 Feature: RHPAM Smart Router configuration tests
 
+  Scenario: Test REST API is available and valid
+    When container is started with env
+      | variable               | value   |
+      | KIE_SERVER_ROUTER_HOST | 0.0.0.0 |
+    Then check that page is served
+      | property        | value   |
+      | port            | 9000    |
+      | path            | /       |
+      | expected_phrase | SUCCESS |
+
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
     When container is ready
@@ -149,7 +159,7 @@ Feature: RHPAM Smart Router configuration tests
       | mem_limit | 1073741824                                               |
     Then container log should match regex -Xms205m
      And container log should match regex -Xmx819m
-    
+
   Scenario: Verify if the logging properties is set correctly
     When container is started with env
       | variable                | value                   |
@@ -157,8 +167,8 @@ Feature: RHPAM Smart Router configuration tests
       | LOG_LEVEL               | SEVERE                  |
       | LOGGER_CATEGORIES       | org.xyz=INFO            |
     Then container log should match regex JAVA_OPTS_APPEND=' -Djava.util.logging.config.file=/opt/rhpam-smartrouter/logging.properties'
-     And container log should match regex LOGGER_CATEGORIES=org.xyz=INFO
-     And container log should match regex LOG_LEVEL=SEVERE
+     And container log should match regex logger_categories=org.xyz=INFO
+     And container log should match regex log_level=SEVERE
      And file /opt/rhpam-smartrouter/logging.properties should contain org.xyz=INFO
      And file /opt/rhpam-smartrouter/logging.properties should contain SEVERE
 
