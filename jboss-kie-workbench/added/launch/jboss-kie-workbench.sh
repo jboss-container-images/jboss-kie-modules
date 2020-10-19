@@ -39,6 +39,10 @@ function prepareEnv() {
     unset KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL
 }
 
+function preConfigure() {
+    configure_maven_settings
+}
+
 function configureEnv() {
     configure
 }

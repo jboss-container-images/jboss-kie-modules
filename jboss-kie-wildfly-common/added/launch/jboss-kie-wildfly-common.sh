@@ -15,7 +15,8 @@ function configureEnv() {
 
 function configure() {
     configure_mem_ratio
-    configure_maven_settings
+    # TODO move it out from this common module
+    # configure_maven_settings
     configure_mbeans
     configure_auth_login_modules
 }
