@@ -85,4 +85,20 @@ Feature: RHPAM Business Central configuration tests
     Then container log should match regex -Xms205m
      And container log should match regex -Xmx819m
 
+  Scenario: Verify if the PWD is escaped
+    When container is started with env
+      | variable                   | value         |
+      | KIE_ADMIN_USER             | customAdm     |
+      | KIE_ADMIN_PWD              | passw${0}rd   |
+      | SCRIPT_DEBUG               | true          |
+    Then container log should match regex passw${0}rd
+
+  Scenario: Verify if the PWD is set correctly
+    When container is started with env
+      | variable                   | value         |
+      | KIE_ADMIN_USER             | customAdm     |
+      | KIE_ADMIN_PWD              | passw$0rd   |
+      | SCRIPT_DEBUG               | true          |
+    Then container log should match regex passw$0rd
+
 

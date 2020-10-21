@@ -172,3 +172,57 @@ Feature: RHPAM Smart Router configuration tests
      And file /opt/rhpam-smartrouter/logging.properties should contain org.xyz=INFO
      And file /opt/rhpam-smartrouter/logging.properties should contain SEVERE
 
+  Scenario: Verify if the passw$0rd is correctly set
+    When container is started with env
+      | variable                                  | value        |
+      | SCRIPT_DEBUG                              | true         |
+      | KIE_ADMIN_PWD                             | passw$0rd  |
+      | KIE_ADMIN_USER                            | userA        |
+    Then container log should contain org.kie.server.controller.user = userA
+    And container log should contain org.kie.server.controller.pwd = passw$0rd
+
+  Scenario: Verify if the passw${0}rd is correctly set
+    When container is started with env
+      | variable                                  | value        |
+      | SCRIPT_DEBUG                              | true         |
+      | KIE_ADMIN_PWD                             | passw${0}rd  |
+      | KIE_ADMIN_USER                            | userA        |
+    Then container log should contain org.kie.server.controller.user = userA
+    And container log should contain org.kie.server.controller.pwd = passw${0}rd
+
+  Scenario: Verify if the $0password is correctly set
+    When container is started with env
+      | variable                                  | value        |
+      | SCRIPT_DEBUG                              | true         |
+      | KIE_ADMIN_PWD                             | $0password  |
+      | KIE_ADMIN_USER                            | userA        |
+    Then container log should contain org.kie.server.controller.user = userA
+    And container log should contain org.kie.server.controller.pwd = $0password
+
+  Scenario: Verify if the ${0}password is correctly set
+    When container is started with env
+      | variable                                  | value        |
+      | SCRIPT_DEBUG                              | true         |
+      | KIE_ADMIN_PWD                             | ${0}password  |
+      | KIE_ADMIN_USER                            | userA        |
+    Then container log should contain org.kie.server.controller.user = userA
+    And container log should contain org.kie.server.controller.pwd = ${0}password
+
+  Scenario: Verify if the passw$1rd  is correctly set
+    When container is started with env
+      | variable                                  | value        |
+      | SCRIPT_DEBUG                              | true         |
+      | KIE_ADMIN_PWD                             | passw$1rd  |
+      | KIE_ADMIN_USER                            | userA        |
+    Then container log should contain org.kie.server.controller.user = userA
+    And container log should contain org.kie.server.controller.pwd = passw$1rd
+
+  Scenario: Verify if the passw${1}rd  is correctly set
+    When container is started with env
+      | variable                                  | value        |
+      | SCRIPT_DEBUG                              | true         |
+      | KIE_ADMIN_PWD                             | passw${1}rd  |
+      | KIE_ADMIN_USER                            | userA        |
+    Then container log should contain org.kie.server.controller.user = userA
+    And container log should contain org.kie.server.controller.pwd = passw${1}rd
+
