@@ -75,15 +75,6 @@ teardown() {
     [[ $JBOSS_KIE_ARGS == *"-Dorg.appformer.m2repo.url=${expected}"* ]]
 }
 
-@test "Check Index files is set to shared PV" {
-    JBOSS_KIE_ARGS=""
-    local expected="-Dorg.uberfire.metadata.index.dir=/tmp/opt/kie/data"
-    echo "Expected is ${expected}" >&2
-    configure_guvnor_settings >&2
-    echo "Result is ${JBOSS_KIE_ARGS}"
-    [[ $JBOSS_KIE_ARGS == *"${expected}"* ]]
-}
-
 @test "verify if the GC_MAX_METASPACE_SIZE is set to 1024 if WORKBENCH_MAX_METASPACE_SIZE is not set" {
     configure_metaspace
     echo "GC_MAX_METASPACE_SIZE=${GC_MAX_METASPACE_SIZE}"

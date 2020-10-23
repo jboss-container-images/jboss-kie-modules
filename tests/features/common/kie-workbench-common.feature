@@ -100,7 +100,3 @@ Feature: Decision/Business Central common features
       | WORKBENCH_MAX_METASPACE_SIZE   | 4096    |
       | GC_MAX_METASPACE_SIZE          | 2048    |
     Then container log should contain -XX:MaxMetaspaceSize=4096m
-
-  Scenario: Check if index files are in shared PV
-    When container is ready
-    Then container log should contain -Dorg.uberfire.metadata.index.dir=/opt/kie/data
