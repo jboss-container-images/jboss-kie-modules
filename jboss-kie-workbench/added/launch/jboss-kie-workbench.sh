@@ -203,7 +203,6 @@ function configure_guvnor_settings() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.ssh.cert.dir=${kieDataDir}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.daemon.enabled=false"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.nio.git.ssh.enabled=false"
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.metadata.index.dir=${kieDataDir}"
     if [[ $JBOSS_PRODUCT != *monitoring && "${GIT_HOOKS_DIR}" != "" ]]; then
         if [ ! -e "${GIT_HOOKS_DIR}" ]; then
             echo "GIT_HOOKS_DIR directory \"${GIT_HOOKS_DIR}\" does not exist; creating..."
