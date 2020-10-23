@@ -46,7 +46,6 @@ setup() {
     KIE_ADMIN_PWD=passw${0}rd
     run get_kie_admin_pwd
     [[ ${lines[0]} == "passw${0}rd" ]]
-    [ "${KIE_ADMIN_PWD}" == "passw${0}rd" ]
     unset KIE_ADMIN_PWD
 }
 
@@ -54,7 +53,6 @@ setup() {
     KIE_ADMIN_PWD=$0passwrd
     run get_kie_admin_pwd
     [[ ${lines[0]} == "$0passwrd" ]]
-    [ "${KIE_ADMIN_PWD}" == "$0passwrd" ]
     unset KIE_ADMIN_PWD
 }
 
@@ -62,7 +60,6 @@ setup() {
     KIE_ADMIN_PWD=${0}passwrd
     run get_kie_admin_pwd
     [[ ${lines[0]} == "${0}passwrd" ]]
-    [ "${KIE_ADMIN_PWD}" == "${0}passwrd" ]
     unset KIE_ADMIN_PWD
 }
 
@@ -70,7 +67,6 @@ setup() {
     KIE_ADMIN_PWD=passw${0}rd
     run get_kie_admin_pwd
     [[ ${lines[0]} == "passw${0}rd" ]]
-    [ "${KIE_ADMIN_PWD}" == "passw${0}rd" ]
     unset KIE_ADMIN_PWD
 }
 
@@ -78,7 +74,6 @@ setup() {
     KIE_ADMIN_PWD=\'$0\'passwrd
     run get_kie_admin_pwd
     [[ ${lines[0]} == "'$0'passwrd" ]]
-    [ "${KIE_ADMIN_PWD}" == "'$0'passwrd" ]
     unset KIE_ADMIN_PWD
 }
 
@@ -86,6 +81,5 @@ setup() {
     KIE_ADMIN_PWD=\'${0}\'passwrd
     run get_kie_admin_pwd
     [[ ${lines[0]} == "'${0}'passwrd" ]]
-    [ "${KIE_ADMIN_PWD}" == "'${0}'passwrd" ]
     unset KIE_ADMIN_PWD
 }
