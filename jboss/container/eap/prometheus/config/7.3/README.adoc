@@ -6,12 +6,12 @@
 
 
 
-= link:./module.yaml[jboss.container.eap.prometheus.agent]
+= link:./module.yaml[jboss.container.eap.prometheus.config]
 :toc:
 :toc-placement!:
 :toclevels: 5
 
-Provides support for configuring the Prometheus JMX Exporter Java agent within EAP
+Provides Prometheus JMX Exporter configuration for use with EAP 7.3
 
 toc::[]
 
@@ -49,7 +49,7 @@ No additional RPM package repositories are required to install listed RPMs.
 
 The following modules will be installed with this module:
 
-link:../../../../../jboss/container/prometheus/bash/README.adoc[jboss.container.prometheus.bash]
+link:../../../../../jboss/container/eap/prometheus/agent/README.adoc[jboss.container.eap.prometheus.agent]
 
 === Module Repositories
 No module repositories defined.
