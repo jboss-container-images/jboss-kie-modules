@@ -154,7 +154,7 @@ function declare_timer_common_variables {
         if [[ -n ${value} ]]; then
             value=$(echo ${value} | sed -e 's/\;/\\;/g')
             ## https://issues.redhat.com/browse/RHPAM-3211 avoid expansion if $n is in the username/password
-            eval "EJB_TIMER_${var}=\$value"
+            eval "EJB_TIMER_${var}=\\$value"
         fi
     done
 }
