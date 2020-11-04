@@ -152,9 +152,13 @@ function declare_timer_common_variables {
     for var in ${common_vars[@]}; do
         local value=$(find_env "${prefix}_${var}")
         if [[ -n ${value} ]]; then
-            value=$(echo ${value} | sed -e 's/\;/\\;/g')
+          if [ "${var}" = "PASSWORD" ] || [ "${var}" = "USERNAME" ]; then
             ## https://issues.redhat.com/browse/RHPAM-3211 avoid expansion if $n is in the username/password
-            eval "EJB_TIMER_${var}=\\$value"
+            eval "EJB_TIMER_${var}=\$value"
+          else
+            value=$(echo ${value} | sed -e 's/\;/\\;/g')
+            eval EJB_TIMER_${var}="${value}"
+          fi
         fi
     done
 }
