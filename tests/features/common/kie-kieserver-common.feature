@@ -19,14 +19,14 @@ Feature: Kie Server common features
     When container is started with env
       | variable         | value       |
       | KIE_ADMIN_ROLES  | kie-server  |
-      | KIE_ADMIN_PWD    | kieserver1! |
+      | KIE_ADMIN_PWD    | kieserver$0 |
     Then check that page is served
       | property        | value                 |
       | port            | 8080                  |
       | path            | /services/rest/server |
       | wait            | 80                    |
       | username        | adminUser             |
-      | password        | kieserver1!           |
+      | password        | kieserver$0          |
       | expected_phrase | SUCCESS               |
 
   Scenario: Configure kie server to be immutable, disable management and set startup strategy
@@ -482,4 +482,14 @@ Feature: Kie Server common features
       | variable                                      | value |
       | OPTAPLANNER_SERVER_EXT_THREAD_POOL_QUEUE_SIZE | 4     |
     Then container log should contain -Dorg.optaplanner.server.ext.thread.pool.queue.size=4
+
+  Scenario: RHPAM-3211 Openshift properties related to passwords in EJB_TIMER cannot use literal $n
+    When container is started with env
+      | variable         | value       |
+      | RHPAM_USERNAME   | rhpam       |
+      | RHPAM_PASSWORD   | kieserver$0 |
+      | DATASOURCES      | RHPAM       |
+      | RHPAM_DATABASE   | rhpam7      |
+      | RHPAM_DRIVER     | postgresql  |
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <password>kieserver$0</password>
 
