@@ -1141,7 +1141,6 @@ Feature: RHPAM KIE Server configuration tests
     Then container log should match regex -Xms205m
      And container log should match regex -Xmx819m
 
-  @wip
   Scenario: RHPAM-3211 Openshift properties related to passwords in EJB_TIMER cannot use literal $n
     When container is started with env
       | variable         | value       |

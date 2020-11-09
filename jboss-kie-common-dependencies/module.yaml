@@ -1,0 +1,8 @@
+schema_version: 1
+name: jboss.kie.common.dependencies
+version: '1.0'
+description:  Installs common dependencies on RHPAM and RHDM images.
+packages:
+  install:
+    - findutils
+    - hostname

@@ -29,6 +29,12 @@ Feature: Kie Server common features
       | password        | kieserver1!           |
       | expected_phrase | SUCCESS               |
 
+  Scenario: test KIE_MBEANS configuration
+    When container is started with env
+      | variable   | value |
+      | KIE_MBEANS | false |
+    Then container log should contain -Dkie.mbeans=disabled -Dkie.scanner.mbeans=disabled
+
   Scenario: Configure kie server to be immutable, disable management and set startup strategy
     When container is started with env
       | variable                    | value                          |
@@ -98,16 +104,6 @@ Feature: Kie Server common features
     When container is ready
     Then container log should contain :8080/services/rest/server
 
-  # https://issues.jboss.org/browse/RHPAM-891
-  # https://issues.jboss.org/browse/RHPAM-1135
-  Scenario: Check custom users are properly configured
-    When container is started with env
-      | variable                   | value         |
-      | KIE_ADMIN_USER             | customAdm     |
-      | KIE_ADMIN_PWD              | custom" Adm!0 |
-    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=a4d41e50a4ae17a50c1ceabe21e41a80
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=kie-server,rest-all,admin,kiemgmt,Administrators,user
-
   Scenario: Check if eap users are not being created if SSO is configured
     When container is started with env
       | variable                   | value         |
@@ -130,15 +126,6 @@ Feature: Kie Server common features
      And container log should contain External authentication/authorization enabled, skipping the embedded users creation.
      And container log should contain KIE_ADMIN_USER is set to customAdm, make sure to configure this user with the provided password on the external auth provider with the roles kie-server,rest-all,admin,kiemgmt,Administrators
 
-  Scenario: Check if eap users are not being created if SSO is configured with no users env
-    When container is started with env
-      | variable                   | value         |
-      | SSO_URL                    | http://url    |
-    Then file /opt/eap/standalone/configuration/application-users.properties should not contain adminUser
-     And file /opt/eap/standalone/configuration/application-roles.properties should not contain adminUser
-     And container log should contain External authentication/authorization enabled, skipping the embedded users creation.
-     And container log should contain Make sure to configure KIE_ADMIN_USER user to access the application with the roles kie-server,rest-all,admin,kiemgmt,Administrators,user
-
   Scenario: Check if eap users are not being created if LDAP is configured with no users env
     When container is started with env
       | variable                   | value         |
@@ -147,21 +134,6 @@ Feature: Kie Server common features
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain adminUser
      And container log should contain External authentication/authorization enabled, skipping the embedded users creation.
      And container log should contain Make sure to configure KIE_ADMIN_USER user to access the application with the roles kie-server,rest-all,admin,kiemgmt,Administrators,user
-
-  Scenario: Check custom users are properly configured
-    When container is started with env
-      | variable                   | value         |
-      | KIE_ADMIN_USER             | customAdm     |
-      | KIE_ADMIN_PWD              | custom" Adm!0 |
-      | KIE_ADMIN_ROLES            | role1,admin2  |
-    Then file /opt/eap/standalone/configuration/application-users.properties should contain customAdm=a4d41e50a4ae17a50c1ceabe21e41a80
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain customAdm=role1,admin2
-
-  # https://issues.jboss.org/browse/RHPAM-891
-  Scenario: Check default users are properly configured
-    When container is ready
-    Then file /opt/eap/standalone/configuration/application-users.properties should contain adminUser=de3155e1927c6976555925dec24a53ac
-     And file /opt/eap/standalone/configuration/application-roles.properties should contain adminUser=kie-server,rest-all,admin,kiemgmt,Administrators,user
 
   Scenario: Configure kie server to use LDAP authentication
     When container is started with env
@@ -482,3 +454,12 @@ Feature: Kie Server common features
       | variable                                      | value |
       | OPTAPLANNER_SERVER_EXT_THREAD_POOL_QUEUE_SIZE | 4     |
     Then container log should contain -Dorg.optaplanner.server.ext.thread.pool.queue.size=4
+
+  Scenario: test MAVEN_MIRROR_URL configuration
+    When container is started with env
+      | variable         | value                                     |
+      | MAVEN_MIRROR_URL | http://nexus-test.127.0.0.1.nip.ip/nexus/ |
+    Then file /home/jboss/.m2/settings.xml should contain <id>mirror.default</id>
+    And file /home/jboss/.m2/settings.xml should contain <url>http://nexus-test.127.0.0.1.nip.ip/nexus/</url>
+    And file /home/jboss/.m2/settings.xml should contain <mirrorOf>external:*</mirrorOf>
+

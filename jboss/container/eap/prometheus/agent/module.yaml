@@ -1,6 +1,6 @@
 schema_version: 1
 name: jboss.container.eap.prometheus.agent
-version: '1.0'
+version: '1.0-legacy'
 description: Provides support for configuring the Prometheus JMX Exporter Java agent within EAP
 
 modules:
