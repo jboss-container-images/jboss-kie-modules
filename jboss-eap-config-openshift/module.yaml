@@ -1,0 +1,7 @@
+schema_version: 1
+name: jboss.eap.config.openshift
+version: '16.0'
+description: The jboss.eap.cd16.openshift script package. Installs a standalone-openshift.xml compatible with EAP CD 16.
+execute:
+- script: configure.sh
+  user: '185'
