@@ -1,6 +1,6 @@
 schema_version: 1
 name: os-eap7-openshift
-version: '1.0'
+version: '1.0-kie'
 description: Legacy os-eap7-openshift script package.
 modules:
   install:
