@@ -33,29 +33,33 @@ function get_default_kie_pwd() {
 
 function esc_kie_pwd() {
     local kie_pwd="${1}"
-    echo ${kie_pwd//\"/\\\"}
+    echo "${kie_pwd//\"/\\\"}"
 }
 
 ########## KIE Admin ##########
 
 function get_kie_admin_user() {
-    local default_kie_user=$(get_default_kie_user "admin")
-    echo $(find_env "KIE_ADMIN_USER" "${default_kie_user}")
+    default_kie_user=$(get_default_kie_user "admin")
+    # shellcheck disable=SC2005
+    echo "$(find_env "KIE_ADMIN_USER" "${default_kie_user}")"
 }
 
 function get_kie_admin_pwd() {
-    local default_kie_pwd=$(get_default_kie_pwd "admin")
-    echo $(find_env "KIE_ADMIN_PWD" "${default_kie_pwd}")
+    default_kie_pwd=$(get_default_kie_pwd "admin")
+    # shellcheck disable=SC2005
+    echo "$(find_env "KIE_ADMIN_PWD" "${default_kie_pwd}")"
 }
 
 function esc_kie_admin_pwd() {
-    local orig_kie_pwd=$(get_kie_admin_pwd)
-    echo $(esc_kie_pwd "${orig_kie_pwd}")
+    orig_kie_pwd=$(get_kie_admin_pwd)
+    # shellcheck disable=SC2005
+    echo "$(esc_kie_pwd "${orig_kie_pwd}")"
 }
 
 function get_kie_admin_roles() {
     local default_kie_roles="kie-server,rest-all,admin,kiemgmt,Administrators,user"
-    echo $(find_env "KIE_ADMIN_ROLES" "${default_kie_roles}")
+    # shellcheck disable=SC2005
+    echo "$(find_env "KIE_ADMIN_ROLES" "${default_kie_roles}")"
 }
 
 function add_kie_admin_user() {
@@ -66,16 +70,18 @@ function add_kie_admin_user() {
 
 function get_kie_server_token() {
     local default_kie_token=""
-    echo $(find_env "KIE_SERVER_TOKEN" "${default_kie_token}")
+    # shellcheck disable=SC2005
+    echo "$(find_env "KIE_SERVER_TOKEN" "${default_kie_token}")"
 }
 
 function get_kie_server_domain() {
     local default_kie_domain="other"
-    echo $(find_env "KIE_SERVER_DOMAIN" "${default_kie_domain}")
+    # shellcheck disable=SC2005
+    echo "$(find_env "KIE_SERVER_DOMAIN" "${default_kie_domain}")"
 }
 
 function get_kie_server_bypass_auth_user() {
-    local bypass_auth_user=$(echo "${KIE_SERVER_BYPASS_AUTH_USER}" | tr "[:upper:]" "[:lower:]")
+    bypass_auth_user=$(echo "${KIE_SERVER_BYPASS_AUTH_USER}" | tr "[:upper:]" "[:lower:]")
     if [ "x${bypass_auth_user}" != "x" ] && [ "${bypass_auth_user}" != "true" ]; then
         bypass_auth_user="false"
     fi
@@ -86,7 +92,8 @@ function get_kie_server_bypass_auth_user() {
 
 function get_kie_server_controller_token() {
     local default_kie_token=""
-    echo $(find_env "KIE_SERVER_CONTROLLER_TOKEN" "${default_kie_token}")
+    # shellcheck disable=SC2005
+    echo "$(find_env "KIE_SERVER_CONTROLLER_TOKEN" "${default_kie_token}")"
 }
 
 ########## EAP ##########
@@ -98,7 +105,7 @@ function get_application_config() {
     if [ "x${props_file}" = "x" ]; then
         props_file="${JBOSS_HOME}/standalone/configuration/${default_file}"
     fi
-    local props_dir=$(dirname "${props_file}")
+    props_dir=$(dirname "${props_file}")
     if [ ! -e "${props_dir}" ]; then
         mkdir -p "${props_dir}"
     fi
@@ -113,17 +120,20 @@ function get_application_config() {
 }
 
 function get_application_users_properties() {
-    local application_users_properties=$(get_application_config "${APPLICATION_USERS_PROPERTIES}" "application-users.properties" '#$REALM_NAME=ApplicationRealm$')
+    # shellcheck disable=SC2153
+    application_users_properties=$(get_application_config "${APPLICATION_USERS_PROPERTIES}" "application-users.properties" "#$REALM_NAME=ApplicationRealm$")
     echo "${application_users_properties}"
 }
 
 function get_application_roles_properties() {
-    echo $(get_application_config "${APPLICATION_ROLES_PROPERTIES}" "application-roles.properties")
+    # shellcheck disable=SC2005
+    # shellcheck disable=SC2153
+    echo "$(get_application_config "${APPLICATION_ROLES_PROPERTIES}" "application-roles.properties")"
 }
 
 function set_application_users_config() {
     if [ -n "${APPLICATION_USERS_PROPERTIES}" ]; then
-        local application_users_properties="$(get_application_users_properties)"
+       application_users_properties="$(get_application_users_properties)"
         local config_file="${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml"
         sed -i "s,path=\"application-users.properties\" relative-to=\"jboss.server.config.dir\",path=\"${application_users_properties}\",g" "${config_file}"
     fi
@@ -131,7 +141,7 @@ function set_application_users_config() {
 
 function set_application_roles_config() {
     if [ -n "${APPLICATION_ROLES_PROPERTIES}" ]; then
-        local application_roles_properties="$(get_application_roles_properties)"
+        application_roles_properties="$(get_application_roles_properties)"
         local config_file="${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml"
         sed -i "s,path=\"application-roles.properties\" relative-to=\"jboss.server.config.dir\",path=\"${application_roles_properties}\",g" "${config_file}"
     fi
@@ -144,14 +154,14 @@ function add_eap_user() {
         local eap_user="${2}"
         local eap_pwd="${3}"
         local eap_roles="${4}"
-        local application_users_properties="$(get_application_users_properties)"
-        local application_roles_properties="$(get_application_roles_properties)"
-        local current_admin_user_file=$(dirname "${application_users_properties}")/current-admin-user
+        application_users_properties="$(get_application_users_properties)"
+        application_roles_properties="$(get_application_roles_properties)"
+        current_admin_user_file=$(dirname "${application_users_properties}")/current-admin-user
         if (grep "^${eap_user}=" "${application_users_properties}" > /dev/null 2>&1); then
             log_warning "KIE ${kie_type} user \"${eap_user}\" already exists in EAP, user will be updated if changes were made."
         else
             # if there are any user persisted saved previously, let's remove it from user properties
-            local old_user=$(cat ${current_admin_user_file} 2> /dev/null)
+            old_user=$(cat "${current_admin_user_file}" 2> /dev/null)
             if [[ -f "${current_admin_user_file}" ]] && [[ "${old_user}" != "${eap_user}" ]]; then
                 log_info "User \"${old_user}\" will be removed, new user \"${eap_user}\"."
                 sed -i "/^$old_user/ d" "${application_users_properties}"
@@ -169,15 +179,15 @@ function add_eap_user() {
         if [ "x${eap_roles}" != "x" ]; then
             add_user_args+=( "--role" "${eap_roles}" )
         fi
-        eval "${JBOSS_HOME}/bin/add-user.sh ${add_user_args[@]}"
-        if [ "$?" -ne "0" ]; then
+
+        if ! eval "${JBOSS_HOME}/bin/add-user.sh ${add_user_args[*]}" ; then
            log_error "Failed to add KIE ${kie_type} user \"${eap_user}\" in EAP"
            log_error "Exiting..."
            exit
         fi
 
         # save current admin user
-        echo $KIE_ADMIN_USER > ${current_admin_user_file}
+        echo "$KIE_ADMIN_USER" > "${current_admin_user_file}"
     else
         print_external_user_information
     fi

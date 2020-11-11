@@ -1,18 +1,18 @@
-#!/bin/sh
+#!/bin/bash
 # if using vim, do ':set ft=zsh' for easier reading
 
-source $JBOSS_HOME/bin/launch/logging.sh
+source "$JBOSS_HOME/bin/launch/logging.sh"
 
 function getKieJavaArgs() {
     local kieJarDir="${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/lib"
     local kieClassPath="."
-    for kieJar in ${kieJarDir}/*.jar; do
+    for kieJar in "${kieJarDir}"/*.jar; do
         kieClassPath="${kieClassPath}:${kieJar}"
     done
-    for launchJar in ${JBOSS_HOME}/bin/launch/*.jar; do
+    for launchJar in "${JBOSS_HOME}"/bin/launch/*.jar; do
         kieClassPath="${kieClassPath}:${launchJar}"
     done
-    for javaxJar in ${JBOSS_HOME}/modules/system/layers/base/javax/validation/api/main/*.jar; do
+    for javaxJar in "${JBOSS_HOME}"/modules/system/layers/base/javax/validation/api/main/*.jar; do
         kieClassPath="${kieClassPath}:${javaxJar}"
     done
     echo "--add-modules java.se -Dorg.slf4j.simpleLogger.defaultLogLevel=WARN -jar ${JBOSS_HOME}/jboss-modules.jar -mp ${JBOSS_HOME}/modules -dep javax.enterprise.api,javax.inject.api,sun.jdk -cp ${kieClassPath}"
@@ -33,14 +33,14 @@ function setKieEnv() {
         log_info "Using overridden EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: ${KIE_SERVER_CONTAINER_DEPLOYMENT}"
     elif [ "x${KIE_SERVER_CONTAINER_DEPLOYMENT}" != "x" ]; then
         log_info "Using standard EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: ${KIE_SERVER_CONTAINER_DEPLOYMENT}"
-    elif [ -e ${kieServerContainerDeploymentsFile} ]; then
+    elif [ -e "${kieServerContainerDeploymentsFile}" ]; then
         local kieServerContainerDeployments=""
-        while read kieServerContainerDeployment ; do
+        while read -r kieServerContainerDeployment ; do
             # add pipe at end of each
             kieServerContainerDeployments="${kieServerContainerDeployments}${kieServerContainerDeployment}|"
-        done <${kieServerContainerDeploymentsFile}
+        done <"${kieServerContainerDeploymentsFile}"
         # remove last unecessary pipe
-        kieServerContainerDeployments=$(echo ${kieServerContainerDeployments} | sed "s/\(.*\)|/\1/")
+        kieServerContainerDeployments=${kieServerContainerDeployments//\(.*\)|/\1}
         KIE_SERVER_CONTAINER_DEPLOYMENT="${kieServerContainerDeployments}"
         export KIE_SERVER_CONTAINER_DEPLOYMENT
         log_info "Read ${kieServerContainerDeploymentsFile} into EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: ${KIE_SERVER_CONTAINER_DEPLOYMENT}"
@@ -49,18 +49,18 @@ function setKieEnv() {
     # process kie server container deployments
     if [ "x${KIE_SERVER_CONTAINER_DEPLOYMENT}" != "x" ]; then
         # kieServerContainerDeployment|kieServerContainerDeployment
-        IFS='|' read -a kieServerContainerDeploymentArray <<< "${KIE_SERVER_CONTAINER_DEPLOYMENT}"
+        IFS='|' read -ar kieServerContainerDeploymentArray <<< "${KIE_SERVER_CONTAINER_DEPLOYMENT}"
         local kieServerContainerDeploymentCount=${#kieServerContainerDeploymentArray[@]}
         KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT="${kieServerContainerDeploymentCount}"
-        for (( i=0; i<${kieServerContainerDeploymentCount}; i++ )); do
+        for (( i=0; i< kieServerContainerDeploymentCount ; i++ )); do
             # containerId(containerAlias)=releaseId
             local kieServerContainerDeployment=${kieServerContainerDeploymentArray[i]}
-            IFS='=' read -a kieServerContainerDefinitionArray <<< "${kieServerContainerDeployment}"
+            IFS='=' read -ar kieServerContainerDefinitionArray <<< "${kieServerContainerDeployment}"
             local kieIdentification=${kieServerContainerDefinitionArray[0]}
             local kieServerContainerId
             local kieServerContainerAlias
             if [[ $kieIdentification =~ \(.*\) ]]; then
-                kieServerContainerId=$(echo "${kieIdentification}" | sed 's/(.*)//g')
+                kieServerContainerId="${kieIdentification//(.*)//}"
                 kieServerContainerAlias=$(echo "${kieIdentification}" | sed 's/.*(//g' | sed 's/).*//g')
             else
                 kieServerContainerId=${kieIdentification}
@@ -70,7 +70,7 @@ function setKieEnv() {
             eval "KIE_SERVER_CONTAINER_ID_${i}=\"${kieServerContainerId}\""
             eval "KIE_SERVER_CONTAINER_ALIAS_${i}=\"${kieServerContainerAlias}\""
             # groupId:artifactId:version
-            IFS=':' read -a kjarReleaseIdArray <<< "${kjarReleaseId}"
+            IFS=':' read -ar kjarReleaseIdArray <<< "${kjarReleaseId}"
             local kjarGroupId=${kjarReleaseIdArray[0]}
             local kjarArtifactId=${kjarReleaseIdArray[1]}
             local kjarVersion=${kjarReleaseIdArray[2]}
@@ -95,7 +95,7 @@ function dumpKieEnv() {
     echo "KIE_SERVER_CONTAINER_DEPLOYMENT_ORIGINAL: ${KIE_SERVER_CONTAINER_DEPLOYMENT_ORIGINAL}"
     echo "KIE_SERVER_CONTAINER_DEPLOYMENT_OVERRIDE: ${KIE_SERVER_CONTAINER_DEPLOYMENT_OVERRIDE}"
     echo "KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT: ${KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT}"
-    for (( i=0; i<${KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT}; i++ )); do
+    for (( i=0; i< KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT ; i++ )); do
         echo "KIE_SERVER_CONTAINER_ID_${i}: $(getKieServerContainerVal ID ${i})"
         echo "KIE_SERVER_CONTAINER_ALIAS_${i}: $(getKieServerContainerVal ALIAS ${i})"
         echo "KIE_SERVER_CONTAINER_KJAR_GROUP_ID_${i}: $(getKieServerContainerVal KJAR_GROUP_ID ${i})"

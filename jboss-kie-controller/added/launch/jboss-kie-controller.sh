@@ -28,7 +28,7 @@ function configure_server_access() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.user=\"$(get_kie_admin_user)\""
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.pwd=\"$(esc_kie_admin_pwd)\""
     # token
-    local kieServerToken="$(get_kie_server_token)"
+    kieServerToken="$(get_kie_server_token)"
     if [ "${kieServerToken}" != "" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.token=\"${kieServerToken}\""
     fi

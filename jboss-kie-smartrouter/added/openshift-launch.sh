@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 # Openshift JBoss KIE - Smart Router launch script
 
-source ${LAUNCH_DIR}/logging.sh
+source "${LAUNCH_DIR}/logging.sh"
 
 if [ "${SCRIPT_DEBUG}" = "true" ] ; then
     set -x
@@ -11,15 +11,15 @@ if [ "${SCRIPT_DEBUG}" = "true" ] ; then
 fi
 
 CONFIGURE_SCRIPTS=(
-  ${LAUNCH_DIR}/jboss-kie-smartrouter.sh
+ " ${LAUNCH_DIR}/jboss-kie-smartrouter.sh"
   /opt/run-java/proxy-options
 )
 
-source ${LAUNCH_DIR}/configure.sh
+source "${LAUNCH_DIR}/configure.sh"
 
 # for JVM property settings please refer to this link https://github.com/jboss-openshift/cct_module/blob/master/jboss/container/java/jvm/api/module.yaml
 source /usr/local/dynamic-resources/dynamic_resources.sh
-JAVA_OPTS="$(adjust_java_options ${JAVA_OPTS})"
+JAVA_OPTS="$(adjust_java_options "${JAVA_OPTS}")"
 
 log_info "Running $JBOSS_IMAGE_NAME image, version $PRODUCT_VERSION"
 
@@ -43,4 +43,5 @@ while [[ $D_STR ]]; do
 done
 
 # handle JAVA_OPTS_APPEND at startup
+# shellcheck disable=SC2086
 exec ${JAVA_HOME}/bin/java ${SHOW_JVM_SETTINGS} ${JAVA_OPTS} ${JAVA_OPTS_APPEND} ${JAVA_PROXY_OPTIONS} "${D_ARR[@]}" -jar /opt/${JBOSS_PRODUCT}/${KIE_ROUTER_DISTRIBUTION_JAR}

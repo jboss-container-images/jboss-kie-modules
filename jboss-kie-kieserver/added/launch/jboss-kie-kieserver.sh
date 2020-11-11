@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# shellcheck disable=SC1090
 source "${JBOSS_HOME}/bin/launch/launch-common.sh"
 source "${JBOSS_HOME}/bin/launch/jboss-kie-common.sh"
 source "${JBOSS_HOME}/bin/launch/jboss-kie-wildfly-common.sh"
@@ -74,7 +75,7 @@ function configure() {
 
 function configure_EJB_Timer_datasource {
 
-    source $JBOSS_HOME/bin/launch/datasource-common.sh
+    source "$JBOSS_HOME"/bin/launch/datasource-common.sh
 
     local autoConfigure=${AUTO_CONFIGURE_EJB_TIMER:-true}
     if [ "${autoConfigure^^}" = "TRUE" ]; then
@@ -92,8 +93,8 @@ function configure_EJB_Timer_datasource {
             TIMER_SERVICE_DATA_STORE="EJB_TIMER"
             EJB_TIMER_DRIVER=${serviceMappingName##*-}
 
-            set_url $prefix
-            set_timer_env $prefix $service
+            set_url "$prefix"
+            set_timer_env "$prefix" "$service"
         elif [ -n "${DATASOURCES}" ]; then
             log_info "configuring EJB Timer Datasource based on DATASOURCES env"
             # Make sure that the EJB datasource is configured first, in this way the timer's default-data-store wil be the
@@ -102,18 +103,18 @@ function configure_EJB_Timer_datasource {
             DATASOURCES="EJB_TIMER,${DATASOURCES}"
 
             # default value for ${prefix)_NONXA should be true
-            if [ -z "$(eval echo \$${dsPrefix}_NONXA)" ]; then
-                eval ${dsPrefix}_NONXA="true"
+            if [ -z "$(eval echo \$"${dsPrefix}"_NONXA)" ]; then
+                eval "${dsPrefix}_NONXA=true"
             fi
 
-            set_url $dsPrefix
-            set_timer_env $dsPrefix
+            set_url "$dsPrefix"
+            set_timer_env "$dsPrefix"
             TIMER_SERVICE_DATA_STORE="EJB_TIMER"
 
             # set 4 as default value for ${prefix)_XA_CONNECTION_PROPERTY_DRIVER_TYPE
-            if [[ "$(eval echo \$${dsPrefix}_DRIVER)" = *"db2"* ]]; then
-                local driverType=$(find_env "${dsPrefix}_DRIVER_TYPE" "4")
-                eval ${dsPrefix}_XA_CONNECTION_PROPERTY_DriverType="${driverType}"
+            if [[ "$(eval echo \$"${dsPrefix}"_DRIVER)" = *"db2"* ]]; then
+                driverType=$(find_env "${dsPrefix}_DRIVER_TYPE" "4")
+                eval "${dsPrefix}"_XA_CONNECTION_PROPERTY_DriverType="${driverType}"
                 EJB_TIMER_XA_CONNECTION_PROPERTY_DriverType="${driverType}"
             fi
         fi
@@ -123,14 +124,14 @@ function configure_EJB_Timer_datasource {
 # Sets the NONXA url if only the PREFIX_XA_CONNECTION_PROPERTY_URL is provided and vice-versa.
 # $1 - datasource prefix
 function set_url {
-    local prefixedUrl=$(find_env "${1}_URL")
+    prefixedUrl=$(find_env "${1}_URL")
     url=$(find_env "${1}_XA_CONNECTION_PROPERTY_URL" "${prefixedUrl}")
-    url=$(echo ${url} | sed -e 's/\;/\\;/g')
+    url=${url//\;/\\;}
     if [ "${prefixedUrl}x" = "x" ]; then
-        eval ${1}_URL="${url}"
+        eval "${1}"_URL="${url}"
     fi
-    if [ -z "$(eval echo \$${1}_XA_CONNECTION_PROPERTY_URL)" ]; then
-        eval ${1}_XA_CONNECTION_PROPERTY_URL="${url}"
+    if [ -z "$(eval echo \$"${1}"_XA_CONNECTION_PROPERTY_URL)" ]; then
+        eval "${1}"_XA_CONNECTION_PROPERTY_URL="${url}"
     fi
 }
 
@@ -138,9 +139,9 @@ function set_timer_env {
     local prefix=$1
     local service=$2
 
-    declare_timer_common_variables $prefix
-    set_timer_defaults $prefix
-    declare_xa_variables $prefix $service
+    declare_timer_common_variables "$prefix"
+    set_timer_defaults "$prefix"
+    declare_xa_variables "$prefix" "$service"
 }
 
 function declare_timer_common_variables {
@@ -149,11 +150,11 @@ function declare_timer_common_variables {
                             MIN_POOL_SIZE CONNECTION_CHECKER EXCEPTION_SORTER \
                             BACKGROUND_VALIDATION BACKGROUND_VALIDATION_MILLIS)
 
-    for var in ${common_vars[@]}; do
-        local value=$(find_env "${prefix}_${var}")
+    for var in "${common_vars[@]}"; do
+        value=$(find_env "${prefix}_${var}")
         if [[ -n ${value} ]]; then
-            value=$(echo ${value} | sed -e 's/\;/\\;/g')
-            eval EJB_TIMER_${var}="${value}"
+            value=${value//\;/\\;}
+            eval "EJB_TIMER_${var}=${value}"
         fi
     done
 }
@@ -176,7 +177,7 @@ function set_timer_defaults {
     EJB_TIMER_MIN_POOL_SIZE=${EJB_TIMER_MIN_POOL_SIZE:-"10"}
     EJB_TIMER_TX_ISOLATION="${EJB_TIMER_TX_ISOLATION:-TRANSACTION_READ_COMMITTED}"
 
-    local url=$(find_env "${prefix}_URL")
+    url=$(find_env "${prefix}_URL")
     url=$(find_env "${prefix}_XA_CONNECTION_PROPERTY_URL" "${url}")
     # Default to the Mariadb property
     enabledTLSParameterName="enabledSslProtocolSuites"
@@ -201,16 +202,16 @@ function set_timer_defaults {
                 xaUrl=${url//\&/$xaParamDelimiterCharacter}
             fi
             EJB_TIMER_XA_CONNECTION_PROPERTY_URL="${xaUrl}${xaParamDelimiterCharacter}pinGlobalTxToPhysicalConnection=true\&amp;${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
-            eval ${prefix}_URL='${cdataBegin}${url}${paramDelimiterCharacter}${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}${cdataEnd}'
+            eval "${prefix}"_URL='${cdataBegin}${url}${paramDelimiterCharacter}${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}${cdataEnd}'
 
         fi
         # the first character must be upper case
         local paramName=${enabledTLSParameterName^}
         # KIECLOUD-243 if this variable is set in the xa-datasource, an exception may occur during server bootstrap
         eval unset EJB_TIMER_XA_CONNECTION_PROPERTY_${paramName}
-        eval unset ${prefix}_XA_CONNECTION_PROPERTY_${paramName}
+        eval unset "${prefix}"_XA_CONNECTION_PROPERTY_${paramName}
         unset EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection
-        eval unset ${prefix}_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection
+        eval unset "${prefix}"_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection
     fi
 
     if [[ $EJB_TIMER_DRIVER =~ postgresql|mariadb && "x${url}" != "x" ]]; then
@@ -233,7 +234,7 @@ function get_svc_var {
     local svc=$4
 
     local var_name=${prefix}_XA_CONNECTION_PROPERTY_${prop}
-    local value=$(find_env ${var_name})
+    value=$(find_env "${var_name}")
     if [[ -z ${value} ]]; then
         value=$(find_env "${prefix}_SERVICE_${var}")
         if [[ -n ${svc} && -z ${value} ]]; then
@@ -241,29 +242,29 @@ function get_svc_var {
         fi
     fi
     if [[ -n ${value} ]]; then
-        eval export EJB_TIMER_XA_CONNECTION_PROPERTY_${prop}="${value}"
+        eval export EJB_TIMER_XA_CONNECTION_PROPERTY_"${prop}"="${value}"
     fi
 }
 
 function declare_xa_variables {
     local prefix=$1
     local service=$2
-    local url=$(find_env "${prefix}_URL")
+    url=$(find_env "${prefix}_URL")
     url=$(find_env "${prefix}_XA_CONNECTION_PROPERTY_URL" "${url}")
     if [ "x${url}" == "x" ]; then
-        local serviceHost=$(find_env "${service}_SERVICE_HOST")
-        local host=$(find_env "${prefix}_SERVICE_HOST" "${serviceHost}")
-        local servicePort=$(find_env "${service}_SERVICE_PORT")
-        local port=$(find_env "${prefix}_SERVICE_PORT" "${servicePort}")
-        local database=$(find_env "${prefix}_DATABASE")
+        serviceHost=$(find_env "${service}_SERVICE_HOST")
+        host=$(find_env "${prefix}_SERVICE_HOST" "${serviceHost}")
+        servicePort=$(find_env "${service}_SERVICE_PORT")
+        port=$(find_env "${prefix}_SERVICE_PORT" "${servicePort}")
+        database=$(find_env "${prefix}_DATABASE")
         database=$(find_env "${prefix}_DATABASE")
         xa_database=$(find_env "${prefix}_XA_CONNECTION_PROPERTY_DatabaseName")
         EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName=${xa_database:-${database}}
-        get_svc_var "HOST" "ServerName" $prefix $service
+        get_svc_var "HOST" "ServerName" "$prefix" "$service"
         if [[ $EJB_TIMER_DRIVER = *"mysql"* ]] || [[ $EJB_TIMER_DRIVER = *"mariadb"* ]]; then
-            get_svc_var "PORT" "Port" $prefix $service
+            get_svc_var "PORT" "Port" "$prefix" "$service"
         else
-            get_svc_var "PORT" "PortNumber" $prefix $service
+            get_svc_var "PORT" "PortNumber" "$prefix" "$service"
         fi
 
         # keep compatibility with *SERVICE_* envs, set connection-url for non ejb timer ds
@@ -276,17 +277,17 @@ function declare_xa_variables {
                 ;;
         esac
 
-        local nonxa=$(find_env ${prefix}_NONXA)
+        nonxa=$(find_env "${prefix}"_NONXA)
         if [ "${nonxa^^}" = "TRUE" ]; then
-            eval export ${prefix}_URL="${jdbcUrl}"
+            eval export "${prefix}"_URL="${jdbcUrl}"
         else
-            if [[ "$(eval echo \$${prefix}_DRIVER)" = *"db2"* ]]; then
-                eval ${prefix}_XA_CONNECTION_PROPERTY_DatabaseName="${xa_database:-${database}}"
-                eval ${prefix}_XA_CONNECTION_PROPERTY_ServerName=${host}
-                eval ${prefix}_XA_CONNECTION_PROPERTY_PortNumber=${port}
+            if [[ "$(eval echo \$"${prefix}"_DRIVER)" = *"db2"* ]]; then
+                eval "${prefix}"_XA_CONNECTION_PROPERTY_DatabaseName="${xa_database:-${database}}"
+                eval "${prefix}"_XA_CONNECTION_PROPERTY_ServerName="${host}"
+                eval "${prefix}"_XA_CONNECTION_PROPERTY_PortNumber="${port}"
 
             else
-                eval ${prefix}_XA_CONNECTION_PROPERTY_URL="${jdbcUrl}"
+                eval "${prefix}"_XA_CONNECTION_PROPERTY_URL="${jdbcUrl}"
             fi
         fi
 
@@ -315,11 +316,11 @@ function declare_xa_variables {
 
             local jdbcUrl="jdbc:${dbType}://${host}:${port}/${database}"
             if [[ $EJB_TIMER_DRIVER =~ mysql|mariadb ]]; then
-                eval ${prefix}_URL="${jdbcUrl}?${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
+                eval "${prefix}_URL=${jdbcUrl}?${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
                 # we also need to set URL property for mysql|mariadb databases, since pinGlobalTxToPhysicalConnection can only be passed this way
                 EJB_TIMER_XA_CONNECTION_PROPERTY_URL="${jdbcUrl}?pinGlobalTxToPhysicalConnection=true\&amp;${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
             else
-                eval ${prefix}_URL="${jdbcUrl}"
+                eval "${prefix}"_URL="${jdbcUrl}"
             fi
 
             fix_ejbtimer_xa_url
@@ -331,7 +332,7 @@ function declare_xa_variables {
             local unprefixedUrl=${url#jdbc:db2://}
             local serverName=${unprefixedUrl%:*}
             local dataBaseName=${unprefixedUrl#*/}
-            local portNumber=$(echo ${unprefixedUrl%/*} | awk -F: '{print $2}')
+            portNumber=$(echo "${unprefixedUrl%/*}" | awk -F: '{print $2}')
 
             EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName=${dataBaseName}
             EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName=${serverName}
@@ -345,13 +346,13 @@ function declare_xa_variables {
 
 function configure_server_env {
     # source the KIE config
-    source $JBOSS_HOME/bin/launch/kieserver-env.sh
+    source "$JBOSS_HOME"/bin/launch/kieserver-env.sh
     # set the KIE environment
     setKieEnv
     # dump the KIE environment
-    dumpKieEnv | tee ${JBOSS_HOME}/kieEnv
+    dumpKieEnv | tee "${JBOSS_HOME}"/kieEnv
     # save the environment for use by the probes
-    sed -ri "s/^([^:]+): *(.*)$/\1=\"\2\"/" ${JBOSS_HOME}/kieEnv
+    sed -ri "s/^([^:]+): *(.*)$/\1=\"\2\"/" "${JBOSS_HOME}"/kieEnv
 }
 
 function configure_controller_access {
@@ -360,7 +361,7 @@ function configure_controller_access {
     kieServerControllerService=${kieServerControllerService^^}
     kieServerControllerService=${kieServerControllerService//-/_}
     # token
-    local kieServerControllerToken="$(get_kie_server_controller_token)"
+    kieServerControllerToken="$(get_kie_server_controller_token)"
     # host
     local kieServerControllerHost="${KIE_SERVER_CONTROLLER_HOST}"
     if [ "${kieServerControllerHost}" = "" ]; then
@@ -368,7 +369,7 @@ function configure_controller_access {
     fi
     if [ "${kieServerControllerHost}" != "" ]; then
         # protocol
-        local kieServerControllerProtocol=$(find_env "KIE_SERVER_CONTROLLER_PROTOCOL" "http")
+        kieServerControllerProtocol=$(find_env "KIE_SERVER_CONTROLLER_PROTOCOL" "http")
         # path
         local kieServerControllerPath="/rest/controller"
         if [[ "${kieServerControllerProtocol}" =~ ws?(s) ]]; then
@@ -384,9 +385,10 @@ function configure_controller_access {
             fi
         fi
         # url
-        local kieServerControllerUrl=$(build_simple_url "${kieServerControllerProtocol}" "${kieServerControllerHost}" "${kieServerControllerPort}" "${kieServerControllerPath}")
+        kieServerControllerUrl=$(build_simple_url "${kieServerControllerProtocol}" "${kieServerControllerHost}" "${kieServerControllerPort}" "${kieServerControllerPath}")
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller=${kieServerControllerUrl}"
         # user/pwd
+        # shellcheck disable=SC2089
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.user=\"$(get_kie_admin_user)\""
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.pwd=\"$(esc_kie_admin_pwd)\""
         # token
@@ -407,14 +409,14 @@ function configure_router_access {
     fi
     if [ "${kieServerRouterHost}" != "" ]; then
         # protocol
-        local kieServerRouterProtocol=$(find_env "KIE_SERVER_ROUTER_PROTOCOL" "http")
+        kieServerRouterProtocol=$(find_env "KIE_SERVER_ROUTER_PROTOCOL" "http")
         # port
         local kieServerRouterPort="${KIE_SERVER_ROUTER_PORT}"
         if [ "${kieServerRouterPort}" = "" ]; then
             kieServerRouterPort=$(find_env "${kieServerRouterService}_SERVICE_PORT" "9000")
         fi
         # url
-        local kieServerRouterUrl=$(build_simple_url "${kieServerRouterProtocol}" "${kieServerRouterHost}" "${kieServerRouterPort}" "")
+        kieServerRouterUrl=$(build_simple_url "${kieServerRouterProtocol}" "${kieServerRouterHost}" "${kieServerRouterPort}" "")
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router=${kieServerRouterUrl}"
     fi
 }
@@ -423,7 +425,7 @@ function configure_drools() {
     # should the server filter classes?
     if [ "x${DROOLS_SERVER_FILTER_CLASSES}" != "x" ]; then
         # if specified, respect value
-        local droolsServerFilterClasses=$(echo "${DROOLS_SERVER_FILTER_CLASSES}" | tr "[:upper:]" "[:lower:]")
+        droolsServerFilterClasses=$(echo "${DROOLS_SERVER_FILTER_CLASSES}" | tr "[:upper:]" "[:lower:]")
         if [ "${droolsServerFilterClasses}" = "true" ]; then
             DROOLS_SERVER_FILTER_CLASSES="true"
         else
@@ -535,14 +537,14 @@ function configure_server_security() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.user=\"$(get_kie_admin_user)\""
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.pwd=\"$(esc_kie_admin_pwd)\""
     # token
-    local kieServerToken="$(get_kie_server_token)"
+   kieServerToken="$(get_kie_server_token)"
     if [ "${kieServerToken}" != "" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.token=\"${kieServerToken}\""
     fi
     # domain
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.domain=\"$(get_kie_server_domain)\""
     # bypass auth user
-    local kieServerBypassAuthUser="$(get_kie_server_bypass_auth_user)"
+    kieServerBypassAuthUser="$(get_kie_server_bypass_auth_user)"
     if [ "${kieServerBypassAuthUser}" != "" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.bypass.auth.user=\"${kieServerBypassAuthUser}\""
     fi
@@ -597,7 +599,7 @@ function configure_kie_server_mgmt() {
     fi
 
     if [ "x${KIE_SERVER_STARTUP_STRATEGY}" != "x" ]; then
-        for strategy in ${ALLOWED_STARTUP_STRATEGY[@]}; do
+        for strategy in "${ALLOWED_STARTUP_STRATEGY[@]}"; do
             if [ "$strategy" = "${KIE_SERVER_STARTUP_STRATEGY}" ]; then
                 invalidStrategy=false
                 JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.startup.strategy=${KIE_SERVER_STARTUP_STRATEGY}"
@@ -639,19 +641,19 @@ function configure_server_state() {
     local kieServerId="${KIE_SERVER_ID//[^[:alnum:].-]/-}"
     if [ "x${kieServerId}" != "x" ]; then
         # can't start with a dash
-        local firstChar="$(echo -n $kieServerId | head -c 1)"
+        firstChar="$(echo -n "$kieServerId" | head -c 1)"
         if [ "${firstChar}" = "-" ]; then
             kieServerId="0${kieServerId}"
         fi
         # can't end with a dash
-        local lastChar="$(echo -n $kieServerId | tail -c 1)"
+        lastChar="$(echo -n "$kieServerId" | tail -c 1)"
         if [ "${lastChar}" = "-" ]; then
             kieServerId="${kieServerId}0"
         fi
     else
         if [ "x${HOSTNAME}" != "x" ]; then
             # chop off trailing unique "dash number" so all servers use the same template
-            kieServerId=$(echo "${HOSTNAME}" | sed -e 's/\(.*\)-[[:digit:]]\+-.*/\1/')
+            kieServerId="${HOSTNAME//\(.*\)-[[:digit:]]\+-.*/\1}"
         else
             kieServerId="$(generate_random_id)"
         fi
@@ -665,7 +667,7 @@ function configure_server_state() {
     # see above: configure_server_env / kieserver-env.sh / setKieEnv
     if [ "${KIE_SERVER_CONTAINER_DEPLOYMENT}" != "" ]; then
         # ensure all KIE dependencies are pulled for offline use (this duplicates s2i process; TODO: short-circuit if possible?)
-        $JBOSS_HOME/bin/launch/kieserver-pull.sh
+        "$JBOSS_HOME"/bin/launch/kieserver-pull.sh
         ERR=$?
         if [ $ERR -ne 0 ]; then
             log_error "Aborting due to error code $ERR from maven kjar dependency pull"
@@ -673,7 +675,7 @@ function configure_server_state() {
         fi
 
         # verify all KIE containers (this duplicates s2i process; TODO: short-circuit if possible?)
-        $JBOSS_HOME/bin/launch/kieserver-verify.sh
+        "$JBOSS_HOME"/bin/launch/kieserver-verify.sh
         ERR=$?
         if [ $ERR -ne 0 ]; then
             log_error "Aborting due to error code $ERR from maven kjar verification"
@@ -683,6 +685,9 @@ function configure_server_state() {
         # create a KIE server state file with all configured containers and properties
         local stateFileInit="org.kie.server.services.impl.storage.file.KieServerStateFileInit"
         log_info "Attempting to generate kie server state file with 'java ${JBOSS_KIE_ARGS} ${stateFileInit}'"
+        # shellcheck disable=SC2086
+        # shellcheck disable=SC2090
+        # shellcheck disable=SC2046
         java ${JBOSS_KIE_ARGS} $(getKieJavaArgs) ${stateFileInit}
         ERR=$?
         if [ $ERR -ne 0 ]; then
@@ -693,5 +698,5 @@ function configure_server_state() {
 }
 
 function generate_random_id() {
-    cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1
+    env LC_CTYPE=C < /dev/urandom tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1
 }

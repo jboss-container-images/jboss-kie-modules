@@ -37,9 +37,9 @@ function build_login_module() {
 
     local login_module=''
     if [[ -n ${module} ]]; then
-        login_module="<login-module code=\""${code}"\" flag=\""${flag}"\" module=\""${module}"\">"
+        login_module="<login-module code=\"${code}\" flag=\"${flag}\" module=\"${module}\">"
     else
-        login_module="<login-module code=\""${code}"\" flag=\""${flag}"\">"
+        login_module="<login-module code=\"${code}\" flag=\"${flag}\">"
     fi
     echo "${login_module}"'<!-- ##LOGIN_MODULE_OPTIONS## --></login-module>'
 }
@@ -48,10 +48,10 @@ function add_option() {
     local login_module=$1
     local name=$2
     local value=$3
-    if [[ ! -z ${value} ]]; then
-        echo ${login_module/<!-- ##LOGIN_MODULE_OPTIONS## -->/<module-option name=\"${name}\" value=\"${value}\"/><!-- ##LOGIN_MODULE_OPTIONS## -->}
+    if [[ -n ${value} ]]; then
+        echo "${login_module/<!-- ##LOGIN_MODULE_OPTIONS## -->/<module-option name=\"${name}\" value=\"${value}\"/><!-- ##LOGIN_MODULE_OPTIONS## -->}"
     else
-        echo ${login_module}
+        echo "${login_module}"
     fi
 }
 
@@ -71,7 +71,7 @@ function configure_ldap_login_module() {
     # RHPAM-1422, if the RealmDirect is set as Required, ldap auth will fail.
     # TODO remove it out as part of the CLOUD-2750
     sed -i 's|<login-module code="RealmDirect" flag="required">|<login-module code="RealmDirect" flag="optional">|' "${CONFIG_FILE}"
-    local login_module=$(build_login_module "LdapExtended" "required")
+    login_module=$(build_login_module "LdapExtended" "required")
     login_module=$(add_option "$login_module" "java.naming.provider.url" "${AUTH_LDAP_URL}")
     login_module=$(add_option "$login_module" "jaasSecurityDomain" "${AUTH_LDAP_JAAS_SECURITY_DOMAIN}")
     login_module=$(add_option "$login_module" "bindDN" "${AUTH_LDAP_BIND_DN}")
@@ -103,9 +103,9 @@ function configure_role_mapper_login_module() {
         return
     fi
     log_info "AUTH_ROLE_MAPPER_ROLES_PROPERTIES is set to ${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}"
-    local login_module=$(build_login_module "org.jboss.security.auth.spi.RoleMappingLoginModule" "optional")
-    login_module=$(add_option "$login_module" "rolesProperties" ${AUTH_ROLE_MAPPER_ROLES_PROPERTIES})
-    login_module=$(add_option "$login_module" "replaceRole" ${AUTH_ROLE_MAPPER_REPLACE_ROLE})
+    login_module=$(build_login_module "org.jboss.security.auth.spi.RoleMappingLoginModule" "optional")
+    login_module=$(add_option "$login_module" "rolesProperties" "${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}")
+    login_module=$(add_option "$login_module" "replaceRole" "${AUTH_ROLE_MAPPER_REPLACE_ROLE}")
     add_login_module "${login_module}"
 }
 

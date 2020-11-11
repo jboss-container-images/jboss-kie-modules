@@ -1,17 +1,17 @@
-#!/bin/sh
+#!/bin/bash
 # if using vim, do ':set ft=zsh' for easier reading
 
-source $JBOSS_HOME/bin/launch/logging.sh
+source "$JBOSS_HOME/bin/launch/logging.sh"
 
 # source the KIE config
-source $JBOSS_HOME/bin/launch/kieserver-env.sh
+source "$JBOSS_HOME/bin/launch/kieserver-env.sh"
 # set the KIE environment
 setKieEnv
 # dump the KIE environment
 dumpKieEnv
 
 function generateRandom() {
-    cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1
+    env LC_CTYPE=C < /dev/urandom tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1
 }
 
 function generatePullPomXml() {
@@ -23,18 +23,18 @@ function generatePullPomXml() {
   <name>Pull Dependencies</name>
   <dependencies>
         <dependency>
-            <groupId>$(getKieServerContainerVal KJAR_GROUP_ID ${1})</groupId>
-            <artifactId>$(getKieServerContainerVal KJAR_ARTIFACT_ID ${1})</artifactId>
-            <version>$(getKieServerContainerVal KJAR_VERSION ${1})</version>
+            <groupId>$(getKieServerContainerVal KJAR_GROUP_ID "${1}")</groupId>
+            <artifactId>$(getKieServerContainerVal KJAR_ARTIFACT_ID "${1}")</artifactId>
+            <version>$(getKieServerContainerVal KJAR_VERSION "${1}")</version>
         </dependency>
   </dependencies>
 </project>"
 }
 
 if [ "${KIE_SERVER_CONTAINER_DEPLOYMENT}" != "" ]; then
-    for (( i=0; i<${KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT}; i++ )); do
+    for (( i=0; i< KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT ; i++ )); do
         pullPomFile="pull-pom-${i}-$(generateRandom).xml"
-        generatePullPomXml ${i} > ${pullPomFile}
+        generatePullPomXml ${i} > "${pullPomFile}"
         # Add JVM default options
         export MAVEN_OPTS="${MAVEN_OPTS:-$(/opt/run-java/java-default-options)}"
         # Use maven batch mode (CLOUD-579)
@@ -45,10 +45,10 @@ if [ "${KIE_SERVER_CONTAINER_DEPLOYMENT}" != "" ]; then
         log_info "Using $(mvn --version)"
 
         # Execute the maven pull of dependencies
-        mvn ${mavenArgsPull}
+        mvn "${mavenArgsPull}"
         ERR=$?
 
-        rm -f ${pullPomFile}
+        rm -f "${pullPomFile}"
 
         if [ $ERR -ne 0 ]; then
             log_error "Aborting due to error code $ERR from Maven build"
@@ -58,10 +58,10 @@ if [ "${KIE_SERVER_CONTAINER_DEPLOYMENT}" != "" ]; then
 fi
 
 # Remove _remote.repositories files so we can run offline: CLOUD-1839
-find ~/.m2/repository -name _remote.repositories | xargs rm -rf
+find ~/.m2/repository -name _remote.repositories -exec rm -rf {} \;
 
 # Necessary to permit running with a randomised UID
-chown -R --quiet jboss:root ${HOME}/.m2/repository
-chmod -R --quiet g+rwX ${HOME}/.m2/repository
+chown -R --quiet jboss:root "${HOME}"/.m2/repository
+chmod -R --quiet g+rwX "${HOME}"/.m2/repository
 
 exit 0

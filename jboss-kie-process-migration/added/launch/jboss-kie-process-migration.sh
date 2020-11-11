@@ -38,9 +38,9 @@ function configure_extra_classpath() {
         for entry in "${entries[@]}"
         do
             if [[ -z ${classpath} ]]; then
-                classpath="-Dthorntail.classpath=`trim ${entry}`"
+                classpath="-Dthorntail.classpath=$(trim "${entry}")"
             else
-                classpath="${classpath} -Dthorntail.classpath=`trim ${entry}`"
+                classpath="${classpath} -Dthorntail.classpath=$(trim "${entry}")"
             fi
         done
     fi
@@ -57,7 +57,7 @@ function configure_extra_config() {
 
 function configure_users() {
     local user=${JBOSS_KIE_ADMIN_USER:-admin}
-    local pwd=${JBOSS_KIE_ADMIN_PWD:-`< /dev/urandom tr -dc A-Za-z0-9\!_ | head -c8`}
-    sed -i -e "s;%USER%;$user;g" -e "s;%PASSWORD%;$pwd;g" ${CONFIG_DIR}/application-users.properties
-    sed -i -e "s;%USER%;$user;g" ${CONFIG_DIR}/application-roles.properties
+    local pwd=${JBOSS_KIE_ADMIN_PWD:-$(< /dev/urandom tr -dc A-Za-z0-9\!_ | head -c8)}
+    sed -i -e "s;%USER%;$user;g" -e "s;%PASSWORD%;$pwd;g" "${CONFIG_DIR}"/application-users.properties
+    sed -i -e "s;%USER%;$user;g" "${CONFIG_DIR}"/application-roles.properties
 }

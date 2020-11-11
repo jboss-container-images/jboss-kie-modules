@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # common subroutines used in various places of the launch scripts
 
 # Finds the environment variable  and returns its value if found.

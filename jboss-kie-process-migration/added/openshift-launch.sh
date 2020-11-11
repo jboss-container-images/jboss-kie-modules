@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 # Openshift JBoss KIE - Process migration launch script
 
-source ${LAUNCH_DIR}/logging.sh
+source "${LAUNCH_DIR}/logging.sh"
 
 if [ "${SCRIPT_DEBUG}" = "true" ] ; then
     set -x
@@ -11,10 +11,10 @@ if [ "${SCRIPT_DEBUG}" = "true" ] ; then
 fi
 
 CONFIGURE_SCRIPTS=(
-  ${LAUNCH_DIR}/jboss-kie-process-migration.sh
+  "${LAUNCH_DIR}/jboss-kie-process-migration.sh"
 )
 
-source ${LAUNCH_DIR}/configure.sh
+source "${LAUNCH_DIR}/configure.sh"
 source /usr/local/dynamic-resources/dynamic_resources.sh
 
 log_info "Running $JBOSS_IMAGE_NAME image, version $PRODUCT_VERSION"
@@ -39,4 +39,5 @@ while [[ $D_STR ]]; do
     D_STR=${D_STR#*"$D_DLM"}
 done
 
+# shellcheck disable=SC2086
 exec ${JAVA_HOME}/bin/java ${SHOW_JVM_SETTINGS} "${D_ARR[@]}" ${JBOSS_KIE_EXTRA_CLASSPATH} -jar /opt/${JBOSS_PRODUCT}/${KIE_PROCESS_MIGRATION_DISTRIBUTION_JAR} -s${CONFIG_DIR}/project-cloud.yml ${JBOSS_KIE_EXTRA_CONFIG}

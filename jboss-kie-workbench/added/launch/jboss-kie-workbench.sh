@@ -87,16 +87,18 @@ function configure_kie_kiestore() {
     local storetype="JCEKS"
     local keypass="kieKeyPassword"
     local serveralias="kieServerAlias"
-    echo $(get_kie_admin_pwd) | keytool -importpassword \
-        -keystore ${keystore} \
+    # shellcheck disable=SC2005
+    echo "$(get_kie_admin_pwd)" | keytool -importpassword \
+        -keystore "${keystore}" \
         -storepass ${storepass} \
         -storetype ${storetype} \
         -keypass ${keypass} \
         -alias ${serveralias} \
         > /dev/null 2>&1
     local ctrlalias="kieCtrlAlias"
-    echo $(get_kie_admin_pwd) | keytool -importpassword \
-        -keystore ${keystore} \
+    # shellcheck disable=SC2005
+    echo "$(get_kie_admin_pwd)" | keytool -importpassword \
+        -keystore "${keystore}" \
         -storepass ${storepass} \
         -storetype ${storetype} \
         -keypass ${keypass} \
@@ -123,25 +125,25 @@ function configure_controller_access() {
     fi
     if [ "${kieServerControllerHost}" != "" ]; then
         # protocol
-        local kieSererControllerProtocol=$(find_env "KIE_SERVER_CONTROLLER_PROTOCOL" "http")
+        kieSererControllerProtocol=$(find_env "KIE_SERVER_CONTROLLER_PROTOCOL" "http")
         # port
-        local kieServerControllerPort="${KIE_SERVER_CONTROLLER_PORT}"
+        kieServerControllerPort="${KIE_SERVER_CONTROLLER_PORT}"
         if [ "${kieServerControllerPort}" = "" ]; then
             kieServerControllerPort=$(find_env "${kieServerControllerService}_SERVICE_PORT" "8080")
         fi
         # path
-        local kieServerControllerPath="/rest/controller"
+        kieServerControllerPath="/rest/controller"
         if [ "${kieSererControllerProtocol}" = "ws" ]; then
             kieServerControllerPath="/websocket/controller"
         fi
         # url
-        local kieServerControllerUrl=$(build_simple_url "${kieSererControllerProtocol}" "${kieServerControllerHost}" "${kieServerControllerPort}" "${kieServerControllerPath}")
+       kieServerControllerUrl=$(build_simple_url "${kieSererControllerProtocol}" "${kieServerControllerHost}" "${kieServerControllerPort}" "${kieServerControllerPath}")
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller=${kieServerControllerUrl}"
         # user/pwd
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.user=\"$(get_kie_admin_user)\""
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.pwd=\"$(esc_kie_admin_pwd)\""
         # token
-        local kieServerControllerToken="$(get_kie_server_controller_token)"
+        kieServerControllerToken="$(get_kie_server_controller_token)"
         if [ "${kieServerControllerToken}" != "" ]; then
             JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.token=\"${kieServerControllerToken}\""
         fi
@@ -153,17 +155,17 @@ function configure_server_access() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.user=\"$(get_kie_admin_user)\""
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.pwd=\"$(esc_kie_admin_pwd)\""
     # token
-    local kieServerToken="$(get_kie_server_token)"
+    kieServerToken="$(get_kie_server_token)"
     if [ "${kieServerToken}" != "" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.token=\"${kieServerToken}\""
     fi
 }
 
 function configure_openshift_enhancement() {
-    local kscOpenShiftEnabled=$(find_env "KIE_SERVER_CONTROLLER_OPENSHIFT_ENABLED" "false")
-    local kscGlobalDiscoveryEnabled=$(find_env "KIE_SERVER_CONTROLLER_OPENSHIFT_GLOBAL_DISCOVERY_ENABLED" "false")
-    local kscPreferKieService=$(find_env "KIE_SERVER_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE" "true")
-    local kscTemplateCacheTTL=$(find_env "KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL" "5000")
+    kscOpenShiftEnabled=$(find_env "KIE_SERVER_CONTROLLER_OPENSHIFT_ENABLED" "false")
+    kscGlobalDiscoveryEnabled=$(find_env "KIE_SERVER_CONTROLLER_OPENSHIFT_GLOBAL_DISCOVERY_ENABLED" "false")
+    kscPreferKieService=$(find_env "KIE_SERVER_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE" "true")
+    kscTemplateCacheTTL=$(find_env "KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL" "5000")
 
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.controller.ping.alive.disable=${kscOpenShiftEnabled}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.openshift.enabled=${kscOpenShiftEnabled}"
@@ -173,7 +175,7 @@ function configure_openshift_enhancement() {
 }
 
 function configure_workbench_profile() {
-    local simplifiedMon=$(find_env "ORG_APPFORMER_SERVER_SIMPLIFIED_MONITORING_ENABLED" "false")
+    simplifiedMon=$(find_env "ORG_APPFORMER_SERVER_SIMPLIFIED_MONITORING_ENABLED" "false")
     # Business Central is unified for RHDM and RHPAM; For rhpam-decisioncentral needs to be set org.kie.workbench.profile
     # to FORCE_PLANNER_AND_RULES and for rhpam-businesscentral and rhpam-businesscentral-monitoring needst to be set to
     # FORCE_FULL
@@ -226,13 +228,13 @@ function configure_guvnor_settings() {
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dappformer.ssh.keys.storage.folder=${pkeys_dir}"
     fi
     # maven url
-    local maven_url=$(build_route_url "${WORKBENCH_ROUTE_NAME}" "http" "${HOSTNAME}" "80" "/maven2")
+    maven_url=$(build_route_url "${WORKBENCH_ROUTE_NAME}" "http" "${HOSTNAME}" "80" "/maven2")
     log_info "Setting workbench org.appformer.m2repo.url to: ${maven_url}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.m2repo.url=${maven_url}"
     # workbench host
     local defaultInsecureHost="${HOSTNAME_HTTP:-${HOSTNAME:-localhost}}"
-    local workbench_host=$(query_route_host "${WORKBENCH_ROUTE_NAME}" "${defaultInsecureHost}")
-    local workbench_host_protocol=$(query_route_protocol "${WORKBENCH_ROUTE_NAME}" "http")
+    workbench_host=$(query_route_host "${WORKBENCH_ROUTE_NAME}" "${defaultInsecureHost}")
+    workbench_host_protocol=$(query_route_protocol "${WORKBENCH_ROUTE_NAME}" "http")
     if [ -n "${workbench_host}" ]; then
         if [ "${workbench_host_protocol}" = "https" ]; then
             log_info "Setting workbench org.uberfire.nio.git.https.hostname to: ${workbench_host}"
@@ -278,11 +280,11 @@ function configure_metaspace() {
 function configure_ha() {
     # for now lets just use DNS_PING, if KUBE ping is also needed we can add it later
     if [ "${JGROUPS_PING_PROTOCOL}" = "openshift.DNS_PING" ]; then
-        if [ -n "${OPENSHIFT_DNS_PING_SERVICE_NAME}" -a -n "${OPENSHIFT_DNS_PING_SERVICE_PORT}" ]; then
+        if [ -n "${OPENSHIFT_DNS_PING_SERVICE_NAME}" ] && [ -n "${OPENSHIFT_DNS_PING_SERVICE_PORT}" ]; then
             log_info "OpenShift DNS_PING protocol envs set, verifying other needed envs for HA setup. Using ${JGROUPS_PING_PROTOCOL}"
             local jmsBrokerUsername="${APPFORMER_JMS_BROKER_USERNAME:-$APPFORMER_JMS_BROKER_USER}"
-            if [ -n "$jmsBrokerUsername" -a -n "$APPFORMER_JMS_BROKER_PASSWORD" -a -n "$APPFORMER_JMS_BROKER_ADDRESS" ] ; then
-                if [ -n "$APPFORMER_INFINISPAN_SERVICE_NAME" -o -n "$APPFORMER_INFINISPAN_HOST" ] ; then
+            if [ -n "$jmsBrokerUsername" ] && [ -n "$APPFORMER_JMS_BROKER_PASSWORD" ] && [ -n "$APPFORMER_JMS_BROKER_ADDRESS" ] ; then
+                if [ -n "$APPFORMER_INFINISPAN_SERVICE_NAME" ] || [ "$APPFORMER_INFINISPAN_HOST" ] ; then
                     # set the workbench properties for HA using Infinispan
                     configure_ha_common
                     configure_ha_infinispan
@@ -350,7 +352,7 @@ function configure_ha_infinispan() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.index=infinispan"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.host=${APPFORMER_INFINISPAN_HOST}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.port=${APPFORMER_INFINISPAN_PORT:-11222}"
-    if [ -n "${APPFORMER_INFINISPAN_USERNAME}" -o -n "${APPFORMER_INFINISPAN_USER}" ] ; then
+    if [ -n "${APPFORMER_INFINISPAN_USERNAME}" ] || [ -n "${APPFORMER_INFINISPAN_USER}" ] ; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.username=${APPFORMER_INFINISPAN_USERNAME:-$APPFORMER_INFINISPAN_USER}"
     fi
     if [ -n "${APPFORMER_INFINISPAN_PASSWORD}" ] ; then

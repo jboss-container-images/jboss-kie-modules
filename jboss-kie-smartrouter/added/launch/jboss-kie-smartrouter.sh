@@ -52,13 +52,14 @@ function configure_logger_config_file() {
     # JUL implementation: https://docs.oracle.com/javase/7/docs/api/java/util/logging/Level.html
     local allowed_log_levels=("ALL" "CONFIG" "FINE" "FINER" "FINEST" "INFO" "OFF" "SEVERE" "WARNING")
     local config_dir=${CONFIG_DIR:-"/opt/rhpam-smartrouter"}
-    if [[ ! "${allowed_log_levels[@]}" =~ "${LOG_LEVEL}" ]]; then
+    # shellcheck disable=SC2153
+    if [[ ! "${allowed_log_levels[*]}" =~ ${LOG_LEVEL} ]]; then
         log_warning "Log Level ${LOG_LEVEL} is not allowed, the allowed levels are ${allowed_log_levels[*]}"
     else
         local log_level=${LOG_LEVEL:-INFO}
-        sed -i "s/{LOG_LEVEL}/${log_level}/" ${config_dir}/logging.properties
-        local logger_categories=$(echo $LOGGER_CATEGORIES | awk '{gsub(",", "\\n")}1')
-        sed -i "s/{PACKAGES_LOG_LEVEL}/${logger_categories}/" ${config_dir}/logging.properties
+        sed -i "s/{LOG_LEVEL}/${log_level}/" "${config_dir}"/logging.properties
+        local logger_categories=${LOGGER_CATEGORIES//,/\\n}
+        sed -i "s/{PACKAGES_LOG_LEVEL}/${logger_categories}/" "${config_dir}"/logging.properties
         log_info "Configuring logger categories ${logger_categories} with level ${log_level}"
         JAVA_OPTS_APPEND="${JAVA_OPTS_APPEND} -Djava.util.logging.config.file=${config_dir}/logging.properties"
     fi
@@ -69,19 +70,19 @@ function configure_router_state() {
     local kieServerRouterId="${KIE_SERVER_ROUTER_ID//[^[:alnum:].-]/-}"
     if [ "x${kieServerRouterId}" != "x" ]; then
         # can't start with a dash
-        local firstChar="$(echo -n $kieServerRouterId | head -c 1)"
+        firstChar="$(echo -n "$kieServerRouterId" | head -c 1)"
         if [ "${firstChar}" = "-" ]; then
             kieServerRouterId="0${kieServerRouterId}"
         fi
         # can't end with a dash
-        local lastChar="$(echo -n $kieServerRouterId | tail -c 1)"
+        lastChar="$(echo -n "$kieServerRouterId" | tail -c 1)"
         if [ "${lastChar}" = "-" ]; then
             kieServerRouterId="${kieServerRouterId}0"
         fi
     else
         if [ "x${HOSTNAME}" != "x" ]; then
             # chop off trailing unique "dash number" so all servers use the same template
-            kieServerRouterId=$(echo "${HOSTNAME}" | sed -e 's/\(.*\)-[[:digit:]]\+-.*/\1/')
+            kieServerRouterId="${HOSTNAME//\(.*\)-[[:digit:]]\+-.*/\1}"
         else
             kieServerRouterId="$(generate_random_id)"
         fi
@@ -143,7 +144,7 @@ function configure_router_location {
                 port="${port:-80}"
             fi
 
-	        local routeHost=$(query_route_host "${routeName}" "${host}:${port}")
+	        routeHost=$(query_route_host "${routeName}" "${host}:${port}")
 	        routerUrlExternal="${protocol}://${routeHost}"
 
        else
@@ -174,7 +175,7 @@ function configure_controller_access {
     fi
     if [ "${kieServerControllerHost}" != "" ]; then
         # protocol
-        local kieServerControllerProtocol=$(find_env "KIE_SERVER_CONTROLLER_PROTOCOL" "http")
+        kieServerControllerProtocol=$(find_env "KIE_SERVER_CONTROLLER_PROTOCOL" "http")
         # port
         local kieServerControllerPort="${KIE_SERVER_CONTROLLER_PORT}"
         if [ "${kieServerControllerPort}" = "" ]; then
@@ -191,13 +192,13 @@ function configure_controller_access {
     fi
     # NOTE: the below must match what is in jboss-kie-modules/jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-security.sh
     # user/pwd
-    local kieServerControllerUser=$(find_env "KIE_ADMIN_USER" "adminUser")
-    local kieServerControllerPwd=$(find_env "KIE_ADMIN_PWD" "adminPwd1!")
+    kieServerControllerUser=$(find_env "KIE_ADMIN_USER" "adminUser")
+    kieServerControllerPwd=$(find_env "KIE_ADMIN_PWD" "adminPwd1!")
     kieServerControllerPwd=${kieServerControllerPwd//\"/\\\"}
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.user=\"${kieServerControllerUser}\""
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.pwd=\"${kieServerControllerPwd}\""
     # token
-    local kieServerControllerToken=$(find_env "KIE_SERVER_CONTROLLER_TOKEN")
+    kieServerControllerToken=$(find_env "KIE_SERVER_CONTROLLER_TOKEN")
     if [ "${kieServerControllerToken}" != "" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.token=\"${kieServerControllerToken}\""
     fi
@@ -228,12 +229,12 @@ function configure_router_tls() {
 
     # If the keystore is not readable, smartrouter startup will throw an exception
     # resulting in the http port being unavailable as well. So make sure ...
-    keytool -list -alias ${KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS} \
-	          -storepass ${KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD} \
-	          -keystore ${KIE_SERVER_ROUTER_TLS_KEYSTORE} &> /dev/null
-    if [ "$?" -ne 0 ]; then
-	log_warning "Unable to read TLS keystore, skipping https setup"
-	return
+    if keytool -list -alias "${KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS}" \
+	          -storepass "${KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD}" \
+	          -keystore ${KIE_SERVER_ROUTER_TLS_KEYSTORE} &> /dev/null;
+	  then
+	    log_warning "Unable to read TLS keystore, skipping https setup"
+	    return
     fi
 
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router.tls.keystore=${KIE_SERVER_ROUTER_TLS_KEYSTORE}"
@@ -248,5 +249,5 @@ function configure_router_tls() {
 }
 
 function generate_random_id() {
-    cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1
+     env LC_CTYPE=C < /dev/urandom tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1
 }

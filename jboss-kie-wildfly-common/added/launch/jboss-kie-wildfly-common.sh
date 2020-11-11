@@ -27,16 +27,17 @@ function configure_mem_ratio() {
 
 function configure_maven_settings() {
     # env var used by KIE to first find and load global settings.xml
-    local m2Home=$(mvn -v | grep -i 'maven home: ' | sed -E 's/^.{12}//')
+    m2Home=$(mvn -v | grep -i 'maven home: ' | sed -E 's/^.{12}//')
     export M2_HOME="${m2Home}"
 
     # KIECLOUD-304
     local mavenSettings="${HOME}/.m2/settings.xml"
     # maven module already takes care if the provided file exist, if a non existent file or directory is set
     # it will automatically fallback to the default settings.xml
-    if [ ! -z "${MAVEN_SETTINGS_XML}" -a "${MAVEN_SETTINGS_XML}" != "${mavenSettings}" ]; then
+    if [ -n "${MAVEN_SETTINGS_XML}" ] && [ "${MAVEN_SETTINGS_XML}" != "${mavenSettings}" ]; then
         log_info "Custom maven settings provided, validating ${MAVEN_SETTINGS_XML}."
         validationResult=$(mvn help:effective-settings -s "${MAVEN_SETTINGS_XML}")
+        # shellcheck disable=SC2181
         if [ $? -eq 0 ]; then
             mavenSettings="${MAVEN_SETTINGS_XML}"
         else
@@ -54,7 +55,7 @@ function configure_mbeans() {
     local kieMbeans="enabled"
     if [ "x${KIE_MBEANS}" != "x" ]; then
         # if specified, respect value
-        local km=$(echo "${KIE_MBEANS}" | tr "[:upper:]" "[:lower:]")
+        km=$(echo "${KIE_MBEANS}" | tr "[:upper:]" "[:lower:]")
         if [ "${km}" != "true" ] && [ "${km}" != "enabled" ]; then
             kieMbeans="disabled"
         fi
