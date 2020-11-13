@@ -492,7 +492,3 @@ Feature: Kie Server common features
       | RHPAM_DATABASE   | rhpam7      |
       | RHPAM_DRIVER     | postgresql  |
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <password>kieserver$0</password>
-
-  @wip
-  gm
-
