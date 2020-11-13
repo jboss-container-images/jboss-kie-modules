@@ -19,14 +19,14 @@ Feature: Kie Server common features
     When container is started with env
       | variable         | value       |
       | KIE_ADMIN_ROLES  | kie-server  |
-      | KIE_ADMIN_PWD    | kieserver$0 |
+      | KIE_ADMIN_PWD    | kieserver1! |
     Then check that page is served
       | property        | value                 |
       | port            | 8080                  |
       | path            | /services/rest/server |
       | wait            | 80                    |
       | username        | adminUser             |
-      | password        | kieserver$0          |
+      | password        | kieserver1!           |
       | expected_phrase | SUCCESS               |
 
   Scenario: Configure kie server to be immutable, disable management and set startup strategy
@@ -492,4 +492,7 @@ Feature: Kie Server common features
       | RHPAM_DATABASE   | rhpam7      |
       | RHPAM_DRIVER     | postgresql  |
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <password>kieserver$0</password>
+
+  @wip
+  gm
 
