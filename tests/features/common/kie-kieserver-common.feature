@@ -482,13 +482,3 @@ Feature: Kie Server common features
       | variable                                      | value |
       | OPTAPLANNER_SERVER_EXT_THREAD_POOL_QUEUE_SIZE | 4     |
     Then container log should contain -Dorg.optaplanner.server.ext.thread.pool.queue.size=4
-
-  Scenario: RHPAM-3211 Openshift properties related to passwords in EJB_TIMER cannot use literal $n
-    When container is started with env
-      | variable         | value       |
-      | RHPAM_USERNAME   | rhpam       |
-      | RHPAM_PASSWORD   | kieserver$0 |
-      | DATASOURCES      | RHPAM       |
-      | RHPAM_DATABASE   | rhpam7      |
-      | RHPAM_DRIVER     | postgresql  |
-    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <password>kieserver$0</password>
