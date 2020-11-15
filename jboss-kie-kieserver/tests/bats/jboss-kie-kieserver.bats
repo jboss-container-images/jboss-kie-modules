@@ -56,6 +56,8 @@ teardown() {
   [ "${TIMER_SERVICE_DATA_STORE^^}" = "${expected_timer_service}" ]
   [ "${DATASOURCES}" = "${expected_datasources}" ]
   [ "${EJB_TIMER_DRIVER}" = "${RHPAM_DRIVER}" ]
+  [ "${EJB_TIMER_PASSWORD}" = "rhpam-pwd$0" ]
+  [ "${EJB_TIMER_USERNAME}" = "rhpam-user$0" ]
   [ "${RHPAM_URL}" = "jdbc:mariadb://myapp-host:3306/rhpam-mariadb?enabledSslProtocolSuites=TLSv1.2" ]
   # we do not expect that this var is set anymore, since we're using URL property directly
   [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection}" = "" ]
