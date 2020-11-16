@@ -1145,7 +1145,7 @@ Feature: RHPAM KIE Server configuration tests
   Scenario: RHPAM-3211 Openshift properties related to passwords in EJB_TIMER cannot use literal $n
     When container is started with env
       | variable         | value       |
-      | RHPAM_USERNAME   | rhpam$0       |
+      | RHPAM_USERNAME   | rhpam$0     |
       | RHPAM_PASSWORD   | kieserver$0 |
       | DATASOURCES      | RHPAM       |
       | RHPAM_DATABASE   | rhpam7      |
