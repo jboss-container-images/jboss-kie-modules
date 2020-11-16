@@ -1141,12 +1141,14 @@ Feature: RHPAM KIE Server configuration tests
     Then container log should match regex -Xms205m
      And container log should match regex -Xmx819m
 
+  @wip
   Scenario: RHPAM-3211 Openshift properties related to passwords in EJB_TIMER cannot use literal $n
     When container is started with env
       | variable         | value       |
-      | RHPAM_USERNAME   | rhpam       |
+      | RHPAM_USERNAME   | rhpam$0       |
       | RHPAM_PASSWORD   | kieserver$0 |
       | DATASOURCES      | RHPAM       |
       | RHPAM_DATABASE   | rhpam7      |
       | RHPAM_DRIVER     | postgresql  |
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <password>kieserver$0</password>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <user-name>rhpam$0</user-name>
