@@ -112,3 +112,27 @@ teardown() {
     [[ "${GC_MAX_METASPACE_SIZE}" == "${WORKBENCH_MAX_METASPACE_SIZE}" ]]
 }
 
+@test "test if the localRepository is correctly set if enabled" {
+    export KIE_PERSIST_MAVEN_REPO=true
+    expected="/tmp/opt/kie/data/m2"
+    configure_guvnor_settings
+    echo "Result: ${MAVEN_LOCAL_REPO}"
+    echo "Expected: ${expected}"
+    [ "${MAVEN_LOCAL_REPO}" = "${expected}" ]
+}
+
+@test "test if the localRepository is correctly to a custom directory set if enabled" {
+    export KIE_PERSIST_MAVEN_REPO=true
+    export KIE_M2_REPO_DIR="/tmp/test"
+    configure_guvnor_settings
+    echo "Result: ${MAVEN_LOCAL_REPO}"
+    [ "${MAVEN_LOCAL_REPO}" = "${KIE_M2_REPO_DIR}" ]
+}
+
+@test "test if the localRepository is ignored if MAVEN_LOCAL_REPO is set." {
+    export KIE_PERSIST_MAVEN_REPO=true
+    export MAVEN_LOCAL_REPO="/tmp/test/123"
+    configure_guvnor_settings
+    echo "Result: ${MAVEN_LOCAL_REPO}"
+    [ "${MAVEN_LOCAL_REPO}" = "/tmp/test/123" ]
+}
