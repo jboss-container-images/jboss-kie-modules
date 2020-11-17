@@ -35,7 +35,6 @@ import argparse
 import json
 import yaml
 import os
-import re
 import sys
 import shutil
 import re
@@ -69,7 +68,9 @@ LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-
          "rhdm-kieserver-rhel8:7.6.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm-kieserver-rhel8`]",
          "rhdm-kieserver-rhel8:7.7.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm-kieserver-rhel8`]",
          "rhdm-kieserver-rhel8:7.8.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm-kieserver-rhel8`]",
+         "rhdm-kieserver-rhel8:7.8.1": "../../../kieserver/image.yaml[`rhdm-7/rhdm-kieserver-rhel8`]",
          "rhdm-kieserver-rhel8:7.9.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm-kieserver-rhel8`]",
+         "rhdm-kieserver-rhel8:7.10.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm-kieserver-rhel8`]",
          "rhpam71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]",
          "rhpam71-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]",
          "rhpam72-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam72-kieserver-openshift`]",
@@ -82,7 +83,9 @@ LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-
          "rhpam-kieserver-rhel8:7.6.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
          "rhpam-kieserver-rhel8:7.7.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
          "rhpam-kieserver-rhel8:7.8.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
+         "rhpam-kieserver-rhel8:7.8.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
          "rhpam-kieserver-rhel8:7.9.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
+         "rhpam-kieserver-rhel8:7.10.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
          "jboss-processserver64-openshift:1.4": "../../image.yaml[`jboss-processserver64-openshift`]",
          "jboss-processserver64-openshift:1.5": "../../image.yaml[`jboss-processserver64-openshift`]",
          "jboss-processserver64-openshift:1.6": "../../image.yaml[`jboss-processserver64-openshift`]",
@@ -140,10 +143,10 @@ def generate_template(path):
     with open(outfile, "w") as text_file:
         print ("Generating %s..." % outfile)
         text_file.write(autogen_warning)
-        text_file.write(createTemplate(data, path))
+        text_file.write(create_template(data, path))
 
 
-def createTemplate(data, path):
+def create_template(data, path):
     templater = Template()
     templater.template = open('./template.adoc.in').read()
 
@@ -155,24 +158,24 @@ def createTemplate(data, path):
 
     # Fill in template parameters table, if there are any
     if ("parameters" in data and "objects" in data) and len(data["parameters"]) > 0:
-        tdata['parameters'] = [{'parametertable': createParameterTable(data)}]
+        tdata['parameters'] = [{'parametertable': create_parameter_table(data)}]
 
     if "objects" in data:
         tdata['objects'] = [{}]
 
-        # Fill in sections if they are present in the JSON (createObjectTable version)
+        # Fill in sections if they are present in the JSON (create_object_table version)
         for kind in ['Service', 'Route', 'BuildConfig', 'PersistentVolumeClaim']:
             if 0 >= len([x for x in data["objects"] if kind == x["kind"]]):
                 continue
-            tdata['objects'][0][kind] = [{"table": createObjectTable(data, kind)}]
+            tdata['objects'][0][kind] = [{"table": create_object_table(data, kind)}]
 
-        # Fill in sections if they are present in the JSON (createContainerTable version)
+        # Fill in sections if they are present in the JSON (create_container_table version)
         for kind in ['image', 'readinessProbe', 'livenessProbe', 'ports', 'env']:
             if 0 >= len([obj for obj in data["objects"] if obj["kind"] == "DeploymentConfig"]):
                 continue
-            tdata['objects'][0][kind] = [{"table": createContainerTable(data, kind)}]
+            tdata['objects'][0][kind] = [{"table": create_container_table(data, kind)}]
 
-        # Fill in sections if they are present in the JSON (createDeployConfigTable version)
+        # Fill in sections if they are present in the JSON (create_deploy_config_table version)
         for kind in ['triggers', 'replicas', 'volumes', 'serviceAccountName']:
             if 0 >= len([obj for obj in data["objects"] if obj["kind"] == "DeploymentConfig"]):
                 continue
@@ -182,26 +185,26 @@ def createTemplate(data, path):
                 matches = [spec[kind] for spec in specs if spec.get(kind) is not None]
                 if len(matches) <= 0:
                     continue
-            tdata['objects'][0][kind] = [{"table": createDeployConfigTable(data, kind)}]
+            tdata['objects'][0][kind] = [{"table": create_deploy_config_table(data, kind)}]
 
         # the 'secrets' section is not relevant to the secrets templates
         if not re.match('^secrets', path):
             specs = [d["spec"]["template"]["spec"] for d in data["objects"] if d["kind"] == "DeploymentConfig"]
-            serviceAccountName = [spec["serviceAccountName"] for spec in specs if
+            service_account_name = [spec["serviceAccountName"] for spec in specs if
                                   spec.get("serviceAccountName") is not None]
             # only include the secrets section if we have defined serviceAccount(s)
-            secretName = ""
-            if len(serviceAccountName) > 0:
+            secret_name = ""
+            if len(service_account_name) > 0:
                 for param in data["parameters"]:
                     if "example" in param:
                         if not isinstance(param["example"], int) and param["example"].endswith("app-secret"):
-                            secretName += param["example"] + '\n'
+                            secret_name += param["example"] + '\n'
                     elif "value" in param and param["value"].endswith("app-secret"):
-                        secretName += param["value"] + '\n'
-                tdata['objects'][0]['secrets'] = [{"secretNames": secretName}]
+                        secret_name += param["value"] + '\n'
+                tdata['objects'][0]['secrets'] = [{"secretNames": secret_name}]
 
         # Any template that supports clustering needs to be added in the clusteringTemplates var.
-        clusteringTemplates = [
+        clustering_templates = [
             'rhpam70-authoring-ha.yaml',
             'rhpam71-authoring-ha.yaml', 'rhdm71-authoring-ha.yaml',
             'rhpam72-authoring-ha.yaml', 'rhdm72-authoring-ha.yaml',
@@ -211,9 +214,10 @@ def createTemplate(data, path):
             'rhpam76-authoring-ha.yaml', 'rhdm76-authoring-ha.yaml',
             'rhpam77-authoring-ha.yaml', 'rhdm77-authoring-ha.yaml',
             'rhpam78-authoring-ha.yaml', 'rhdm78-authoring-ha.yaml',
-            'rhpam79-authoring-ha.yaml', 'rhdm79-authoring-ha.yaml'
+            'rhpam79-authoring-ha.yaml', 'rhdm79-authoring-ha.yaml',
+            'rhpam710-authoring-ha.yaml', 'rhdm710-authoring-ha.yaml'
         ]
-        for template in clusteringTemplates:
+        for template in clustering_templates:
             if str(path).rsplit('/', 1)[-1] == template:
                 tdata['objects'][0]['clustering'] = [{}]
     return templater.render(tdata)
@@ -236,11 +240,11 @@ def possibly_fix_width(text):
     return text
 
 
-def buildRow(columns):
+def build_row(columns):
     return "\n|" + " | ".join(map(possibly_fix_width, columns))
 
 
-def getVolumePurpose(name):
+def get_volume_purpose(name):
     name = name.split("-")
     if ("certificate" in name or "keystore" in name or "secret" in name):
         return "ssl certs"
@@ -254,14 +258,14 @@ def getVolumePurpose(name):
 
 # Used for getting image environment variables into parameters table and parameter
 # descriptions into image environment table
-def getVariableInfo(parameters, name, env, field):
+def get_variable_info(parameters, name, env, field):
 
     for d in parameters:
         try:
             if len(env) > 0 and field == 'description':
-                envValue = replacer(env["value"])
+                env_value = replacer(env["value"])
 
-                if d['name'] == envValue or d["name"] == env['name']:
+                if d['name'] == env_value or d["name"] == env['name']:
                     return str(d[field]).replace("|", "\\|")
 
             elif d["name"] == name and name != "":
@@ -273,55 +277,53 @@ def getVariableInfo(parameters, name, env, field):
                 return str(d[field]).replace("|", "\\|")
 
             else:
-                parameterValue = replacer(d["value"])
-                if parameterValue == name and field == 'value':
+                parameter_value = replacer(d["value"])
+                if parameter_value == name and field == 'value':
                     return d[field]
 
-                elif parameterValue == name:
+                elif parameter_value == name:
                     return d["name"]
 
         except KeyError:
             pass
 
-
-    if (field == "value" and name in PARAMETER_VALUES.keys()):
+    if field == "value" and name in PARAMETER_VALUES.keys():
         return PARAMETER_VALUES[name]
     else:
         return "--"
 
 
-def createParameterTable(data):
+def create_parameter_table(data):
     text = ""
-    containerEnvs = ""
     for param in data["parameters"]:
         if u"\u2019" in param["description"]:
             param["description"] = param["description"].replace(u"\u2019", "'")
 
-        containerEnvs = [d["spec"]["template"]["spec"]["containers"][0]["env"] for d in data["objects"] if ( d["kind"] == "DeploymentConfig" and "env" in d["spec"]["template"]["spec"]["containers"][0])]
-        parameters = [item for sublist in containerEnvs for item in sublist]
-        envVar = getVariableInfo(parameters, param["name"], [], "name")
-        value = param["value"] if param.get("value") else getVariableInfo(data['parameters'], param["name"], [], "value")
+        container_envs = [d["spec"]["template"]["spec"]["containers"][0]["env"] for d in data["objects"] if ( d["kind"] == "DeploymentConfig" and "env" in d["spec"]["template"]["spec"]["containers"][0])]
+        parameters = [item for sublist in container_envs for item in sublist]
+        env_var = get_variable_info(parameters, param["name"], [], "name")
+        value = param["value"] if param.get("value") else get_variable_info(data['parameters'], param["name"], [], "value")
         req = param["required"] if "required" in param else "?"
-        columns = [param["name"], envVar, str(param["description"]).replace("|", "\\|"), value, req]
-        text += buildRow(columns)
+        columns = [param["name"], env_var, str(param["description"]).replace("|", "\\|"), value, req]
+        text += build_row(columns)
     return text
 
 
-def createObjectTable(data, tableKind):
+def create_object_table(data, tableKind):
     text = ""
     columns = []
     for obj in data["objects"]:
         if obj["kind"] == 'Service' and tableKind == 'Service':
-            addDescription = True
+            add_description = True
             ports = obj["spec"]["ports"]
             text += "\n." + str(len(ports)) + "+| `" + obj["metadata"]["name"] + "`"
             for p in ports:
                 columns = ["port", "name"]
                 columns = [str(p[col]) if p.get(col) else "--" for col in columns]
-                text += buildRow(columns)
-                if addDescription:
+                text += build_row(columns)
+                if add_description:
                     text += "\n." + str(len(ports)) + "+| " + obj["metadata"]["annotations"]["description"]
-                    addDescription = False
+                    add_description = False
             continue
         elif obj["kind"] == 'Route' and tableKind == 'Route':
             hostname = "<default>"
@@ -337,11 +339,11 @@ def createObjectTable(data, tableKind):
                 tempS2i = s2i.split(":")
                 if "${" in tempS2i[0]:
                     varName = tempS2i[0][tempS2i[0].find("{") + 1:tempS2i[0].find("}")]
-                    varValue = getVariableInfo(data['parameters'], varName, [], "value")
+                    varValue = get_variable_info(data['parameters'], varName, [], "value")
                     s2i = s2i.replace('${' + varName + '}', varValue)
                 if "${" in tempS2i[1]:
                     varName = tempS2i[1][tempS2i[1].find("{") + 1:tempS2i[1].find("}")]
-                    varValue = getVariableInfo(data['parameters'], varName, [], "value")
+                    varValue = get_variable_info(data['parameters'], varName, [], "value")
                     s2i = s2i.replace('${' + varName + '}', varValue)
                 link = " link:" + LINKS[s2i]
             elif obj["spec"]["strategy"]["type"] == 'Docker':
@@ -352,51 +354,51 @@ def createObjectTable(data, tableKind):
         elif obj["kind"] == 'PersistentVolumeClaim' and tableKind == 'PersistentVolumeClaim':
             columns = [obj["metadata"]["name"], obj["spec"]["accessModes"][0]]
         if (obj["kind"] == tableKind):
-            text += buildRow(columns)
+            text += build_row(columns)
     return text
 
 
-def createDeployConfigTable(data, table):
+def create_deploy_config_table(data, table):
     text = ""
-    deploymentConfig = (obj for obj in data["objects"] if obj["kind"] == "DeploymentConfig")
-    for obj in deploymentConfig:
+    deployment_config = (obj for obj in data["objects"] if obj["kind"] == "DeploymentConfig")
+    for obj in deployment_config:
         columns = []
         deployment = obj["metadata"]["name"]
         spec = obj["spec"]
         template = spec["template"]["spec"]
-        if (template.get(table) or spec.get(table)):
+        if template.get(table) or spec.get(table):
             if table == "triggers":
                 columns = [deployment, spec["triggers"][0]["type"]]
             elif table == "replicas":
                 # correctly identify integer values from parameter value
                 if "${" in str(spec["replicas"]):
-                    replicaEnv = replacer(str(spec["replicas"]))
+                    replica_env = replacer(str(spec["replicas"]))
                     for p in data['parameters']:
-                        if p['name'] == replicaEnv:
+                        if p['name'] == replica_env:
                             columns = [ deployment, p['value'] ]
                 else:
                     columns = [ deployment, str(spec["replicas"]) ]
             elif table == "serviceAccountName":
                 columns = [deployment, template["serviceAccountName"]]
             elif table == "volumes":
-                volumeMount = obj["spec"]["template"]["spec"]["containers"][0]["volumeMounts"][0]
+                volume_mount = obj["spec"]["template"]["spec"]["containers"][0]["volumeMounts"][0]
                 name = template["volumes"][0]["name"]
-                readOnly = str(volumeMount["readOnly"]) if "readOnly" in volumeMount else "false"
-                columns = [deployment, name, volumeMount["mountPath"], getVolumePurpose(name), readOnly]
-            text += buildRow(columns)
+                read_only = str(volume_mount["readOnly"]) if "readOnly" in volume_mount else "false"
+                columns = [deployment, name, volume_mount["mountPath"], get_volume_purpose(name), read_only]
+            text += build_row(columns)
     return text
 
 
-def createContainerTable(data, table):
+def create_container_table(data, table):
     text = ""
-    deploymentConfig = (obj for obj in data["objects"] if obj["kind"] == "DeploymentConfig")
-    for obj in deploymentConfig:
+    deployment_config = (obj for obj in data["objects"] if obj["kind"] == "DeploymentConfig")
+    for obj in deployment_config:
         columns = []
         deployment = obj["metadata"]["name"]
         container = obj["spec"]["template"]["spec"]["containers"][0]
         if table == "image":
             columns = [deployment, container["image"]]
-            text += buildRow(columns)
+            text += build_row(columns)
         elif table == "readinessProbe":
             if container.get("readinessProbe"):
                 if 'httpGet' in container["readinessProbe"]:
@@ -437,23 +439,25 @@ def createContainerTable(data, table):
             for p in ports:
                 columns = ["name", "containerPort", "protocol"]
                 columns = [str(p[col]) if p.get(col) else "--" for col in columns]
-                text += buildRow(columns)
+                text += build_row(columns)
         elif table == "env" and "env" in container:
             environment = container["env"]
             text += "\n." + str(len(environment)) + "+| `" + deployment + "`"
             for env in environment:
-                columns = [env["name"], getVariableInfo(data["parameters"], "", env, "description")]
+                columns = [env["name"], get_variable_info(data["parameters"], "", env, "description")]
 
                 # TODO: handle valueFrom instead of value
                 if "value" in env:
                     columns.append(env["value"])
                 else:
                     columns.append("--")
-                text += buildRow(columns)
+                text += build_row(columns)
     return text
+
 
 def replacer(string):
     return re.sub("['$','{','}']","", string)
+
 
 def generate_readme(generate_rhdm, generate_rhpam, generate_ips, generate_ds):
     black_list = ['contrib', 'docs', 'optaweb']
@@ -470,9 +474,9 @@ def generate_readme(generate_rhdm, generate_rhpam, generate_ips, generate_ds):
                         continue
                     elif "rhdm" in directory:
                         # section header
-                        prefix=''
+                        prefix = ''
                         if "optaweb" in directory:
-                            prefix='optaweb-'
+                            prefix = 'optaweb-'
                         fh.write('\n== %s%s\n\n' % (prefix, "rhdm-7-openshift-image/templates"))
                         # links
                         for template in [os.path.splitext(x)[0] for x in sorted(os.listdir(directory))]:
@@ -557,8 +561,9 @@ def generate_readme(generate_rhdm, generate_rhpam, generate_ips, generate_ds):
             print("Error while writing README_DS.adoc: " + str(err))
             pass
 
+
 def pull_templates(rhdm_git_branch, rhpam_git_branch, ips_git_branch, ds_git_branch):
-    print ('Pulling templates from {0}'.format(GIT_REPO_LIST))
+    print('Pulling templates from {0}'.format(GIT_REPO_LIST))
     try:
         for dir in APPLICATION_DIRECTORIES:
             shutil.rmtree(dir, ignore_errors=True)
@@ -580,6 +585,21 @@ def pull_templates(rhdm_git_branch, rhpam_git_branch, ips_git_branch, ds_git_bra
         elif 'decisionserver' in git_dir:
             print('Using DS branch {0}'.format(ds_git_branch))
             clone_repository(repo, git_dir, bare=False, checkout_branch=ds_git_branch)
+
+
+def copy_templates_from_local_fs(local_fs):
+    base_target_dir = 'target'
+    try:
+        print('Copying templates from {0}'.format(local_fs))
+        for dir in APPLICATION_DIRECTORIES:
+            shutil.rmtree(dir, ignore_errors=True)
+
+        shutil.rmtree(base_target_dir, ignore_errors=True)
+        shutil.copytree(local_fs, os.path.join(base_target_dir, str(os.path.basename(local_fs))),
+                        symlinks=False, ignore=None)
+    except OSError as err:
+        print("Error while copying templates from %s: %s." % (local_fs, err))
+
 
 def copy_templates_adoc(generate_rhdm, generate_rhpam, generate_ips, generate_ds,
                         rhdm_docs_final_location, rhpam_docs_final_location,
@@ -604,7 +624,8 @@ def copy_templates_adoc(generate_rhdm, generate_rhpam, generate_ips, generate_ds
                     for template in files:
                         if template[-5:] != '.adoc':
                             continue
-                        print('Copying file {0} to {1}'.format(os.path.join(dirpath, template), rhpam_docs_final_location))
+                        print('Copying file {0} to {1}'.format(os.path.join(dirpath, template),
+                                                               rhpam_docs_final_location))
                         copy(os.path.join(dirpath, template), rhpam_docs_final_location)
             except IOError as err:
                 print("Error while copying RHPAM adocs: " + str(e))
@@ -616,7 +637,8 @@ def copy_templates_adoc(generate_rhdm, generate_rhpam, generate_ips, generate_ds
                     for template in files:
                         if template[-5:] != '.adoc':
                             continue
-                        print('Copying file {0} to {1}'.format(os.path.join(dirpath, template), ips_docs_final_location))
+                        print('Copying file {0} to {1}'.format(os.path.join(dirpath, template),
+                                                               ips_docs_final_location))
                         copy(os.path.join(dirpath, template), ips_docs_final_location)
             except IOError as err:
                 print("Error while copying RHPAM adocs: " + str(err))
@@ -634,10 +656,14 @@ def copy_templates_adoc(generate_rhdm, generate_rhpam, generate_ips, generate_ds
                 print("Error while copying RHPAM adocs: " + str(err))
                 pass
 
+
 # expects to be run from the root of the repository
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='OpenShift Application Templates docs generator')
+    parser.add_argument('--local-fs', dest='local_fs', default=None, help='Specify a local directory to get the '
+                                                                          'Application templates from. Use the root '
+                                                                          'directory.')
     parser.add_argument('--rhdm-git-branch', dest='rhdm_git_branch', default='master', help='Branch to checkout')
     parser.add_argument('--rhpam-git-branch', dest='rhpam_git_branch', default='master', help='Branch to checkout')
     parser.add_argument('--ips-git-branch', dest='ips_git_branch', default='6.4.x', help='Branch to checkout')
@@ -655,14 +681,22 @@ if __name__ == "__main__":
                         help='If set, the generated docs will be copied to the defined final directory '
                              'defined by the --rhdm-docs-final-location, --rhpam-docs-final-location,'
                              '--ips-docs-final-location and --ds-docs-final-location')
-    parser.add_argument('--rhdm-docs-final-location', dest='rhdm_docs_final_location', default='../../../rhdm-7-openshift-image/templates/docs/',
-                        help='RHDM final docs location, this directory will be used to copy the generated docs. The default location is defined based on this script root\'s directory.')
-    parser.add_argument('--rhpam-docs-final-location', dest='rhpam_docs_final_location', default='../../../rhpam-7-openshift-image/templates/docs/',
-                        help='RHPAM final docs location, this directory will be used to copy the generated docs. The default location is defined based on this script root\'s directory.')
-    parser.add_argument('--ips-docs-final-location', dest='ips_docs_final_location', default='../../../jboss-processserver-6-openshift-image/templates/docs/',
-                        help='IPS final docs location, this directory will be used to copy the generated docs. The default location is defined based on this script root\'s directory.')
-    parser.add_argument('--ds-docs-final-location', dest='ds_docs_final_location', default='../../../jboss-decisionserver-6-openshift-image/templates/docs/',
-                        help='DS final docs location, this directory will be used to copy the generated docs. The default location is defined based on this script root\'s directory.')
+    parser.add_argument('--rhdm-docs-final-location', dest='rhdm_docs_final_location',
+                        default='../../../rhdm-7-openshift-image/templates/docs/',
+                        help='RHDM final docs location, this directory will be used to copy the generated docs.'
+                             'The default location is defined based on this script root\'s directory.')
+    parser.add_argument('--rhpam-docs-final-location', dest='rhpam_docs_final_location',
+                        default='../../../rhpam-7-openshift-image/templates/docs/',
+                        help='RHPAM final docs location, this directory will be used to copy the generated docs.'
+                             'The default location is defined based on this script root\'s directory.')
+    parser.add_argument('--ips-docs-final-location', dest='ips_docs_final_location',
+                        default='../../../jboss-processserver-6-openshift-image/templates/docs/',
+                        help='IPS final docs location, this directory will be used to copy the generated docs.'
+                             'The default location is defined based on this script root\'s directory.')
+    parser.add_argument('--ds-docs-final-location', dest='ds_docs_final_location',
+                        default='../../../jboss-decisionserver-6-openshift-image/templates/docs/',
+                        help='DS final docs location, this directory will be used to copy the generated docs.'
+                             'The default location is defined based on this script root\'s directory.')
 
     parser.add_argument('--template', dest='template', help='Generate the docs for only one template')
     args = parser.parse_args()
@@ -695,10 +729,17 @@ if __name__ == "__main__":
             shutil.rmtree('docs', ignore_errors=True)
         except OSError as e:
             print("Error: %s - %s." % ('docs', e.strerror))
-        # pull all the templates from upstream
-        pull_templates(args.rhdm_git_branch, args.rhpam_git_branch, args.ips_git_branch, args.ds_git_branch)
+
+        if args.local_fs:
+            # copy templates from local fs
+            copy_templates_from_local_fs(args.local_fs)
+        else:
+            # pull all the templates from upstream
+            pull_templates(args.rhdm_git_branch, args.rhpam_git_branch, args.ips_git_branch, args.ds_git_branch)
+
         generate_templates()
         generate_readme(args.generate_rhdm, args.generate_rhpam, args.generate_ips, args.generate_ds)
+
         if args.copy_docs:
             copy_templates_adoc(args.generate_rhdm, args.generate_rhpam, args.generate_ips, args.generate_ds,
                                 args.rhdm_docs_final_location, args.rhpam_docs_final_location,

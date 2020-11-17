@@ -369,15 +369,19 @@ function configure_controller_access {
     if [ "${kieServerControllerHost}" != "" ]; then
         # protocol
         local kieServerControllerProtocol=$(find_env "KIE_SERVER_CONTROLLER_PROTOCOL" "http")
+        # path
+        local kieServerControllerPath="/rest/controller"
+        if [[ "${kieServerControllerProtocol}" =~ ws?(s) ]]; then
+            kieServerControllerPath="/websocket/controller"
+        fi
         # port
         local kieServerControllerPort="${KIE_SERVER_CONTROLLER_PORT}"
         if [ "${kieServerControllerPort}" = "" ]; then
-            kieServerControllerPort=$(find_env "${kieServerControllerService}_SERVICE_PORT" "8080")
-        fi
-        # path
-        local kieServerControllerPath="/rest/controller"
-        if [ "${kieServerControllerProtocol}" = "ws" ]; then
-            kieServerControllerPath="/websocket/controller"
+            if [[ "${kieServerControllerProtocol}" =~ https|wss ]]; then
+                 kieServerControllerPort="8443"
+            else
+                kieServerControllerPort=$(find_env "${kieServerControllerService}_SERVICE_PORT" "8080")
+            fi
         fi
         # url
         local kieServerControllerUrl=$(build_simple_url "${kieServerControllerProtocol}" "${kieServerControllerHost}" "${kieServerControllerPort}" "${kieServerControllerPath}")

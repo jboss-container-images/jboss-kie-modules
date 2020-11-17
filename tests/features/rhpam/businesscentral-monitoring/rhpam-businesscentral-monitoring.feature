@@ -1,6 +1,15 @@
 @rhpam-7/rhpam-businesscentral-monitoring-rhel8
 Feature: RHPAM Business Central Monitoring configuration tests
 
+  Scenario: Web console is available
+    When container is ready
+    Then check that page is served
+      | property             | value       |
+      | port                 | 8080        |
+      | path                 | /kie-wb.jsp |
+      | expected_status_code | 200         |
+      | wait                 | 120         |
+
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
     When container is ready
@@ -9,7 +18,7 @@ Feature: RHPAM Business Central Monitoring configuration tests
   Scenario: Check for product and version environment variables
     When container is ready
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-businesscentral-monitoring
-     And run sh -c 'echo $RHPAM_BUSINESS_CENTRAL_MONITORING_VERSION' in container and check its output for 7.9
+     And run sh -c 'echo $RHPAM_BUSINESS_CENTRAL_MONITORING_VERSION' in container and check its output for 7.10
 
   # https://issues.jboss.org/browse/RHPAM-891
   Scenario: Check default users are properly configured

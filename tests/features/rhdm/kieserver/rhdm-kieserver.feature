@@ -9,16 +9,16 @@ Feature: RHDM KIE Server configuration tests
   Scenario: Check for product and version environment variables
     When container is ready
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhdm-kieserver
-     And run sh -c 'echo $RHDM_KIESERVER_VERSION' in container and check its output for 7.9
+     And run sh -c 'echo $RHDM_KIESERVER_VERSION' in container and check its output for 7.10
 
-
-  # KIECLOUD-11: temporarily ignore since Jenkins CI builds currently fail with this test, even though it passes when run at the command line
-  @ignore
-  Scenario: deploys the hellorules example, then checks if it's deployed.
-    Given s2i build https://github.com/jboss-container-images/rhdm-7-openshift-image from quickstarts/hello-rules/hellorules using rhdm71-dev
+  Scenario: deploys the hellorules example, then checks if it's deployed. Additionally test if the JAVA_OPTS_APPEND is used in the container verifier step
+    Given s2i build https://github.com/jboss-container-images/rhdm-7-openshift-image from quickstarts/hello-rules/hellorules using master
       | variable                        | value                                                                                        |
-      | KIE_SERVER_CONTAINER_DEPLOYMENT | rhdm-kieserver-hellorules=org.openshift.quickstarts:rhdm-kieserver-hellorules:1.4.0-SNAPSHOT |
-    Then container log should contain Container rhdm-kieserver-hellorules
+      | KIE_SERVER_CONTAINER_DEPLOYMENT | rhdm-kieserver-hellorules=org.openshift.quickstarts:rhdm-kieserver-hellorules:1.6.0-SNAPSHOT |
+      | JAVA_OPTS_APPEND                | -Djavax.net.ssl.trustStore=truststore.ts -Djavax.net.ssl.trustStorePassword=123456           |
+      | SCRIPT_DEBUG                    | true                                                                                         |
+    Then s2i build log should contain Attempting to verify kie server containers with 'java org.kie.server.services.impl.KieServerContainerVerifier  org.openshift.quickstarts:rhdm-kieserver-hellorules:1.6.0-SNAPSHOT'
+    And s2i build log should contain java -Djavax.net.ssl.trustStore=truststore.ts -Djavax.net.ssl.trustStorePassword=123456 --add-modules
 
   # https://issues.jboss.org/browse/RHPAM-846
   Scenario: Check jbpm is _not_ enabled in RHDM 7

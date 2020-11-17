@@ -1,6 +1,14 @@
 @rhdm-7/rhdm-kieserver-rhel8  @rhpam-7/rhpam-kieserver-rhel8
 Feature: Kie Server common features
 
+  Scenario: Test REST API is secure
+    When container is ready
+    Then check that page is served
+      | property             | value                 |
+      | port                 | 8080                  |
+      | path                 | /services/rest/server |
+      | expected_status_code | 401                   |
+
   Scenario: Check if kieserver mgmt is correctly set.
     When container is started with env
       | variable                   | value  |
@@ -263,21 +271,69 @@ Feature: Kie Server common features
      And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rhdm-kieserver-hellorules/1.6.0-SNAPSHOT/rhdm-kieserver-hellorules-1.6.0-SNAPSHOT.jar && echo all good' in container and check its output for all good
      And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rhdm-kieserver-hellorules-model/1.6.0-SNAPSHOT/rhdm-kieserver-hellorules-model-1.6.0-SNAPSHOT.jar && echo all good' in container and check its output for all good
 
-  Scenario: test Kie Server controller configuration
+  Scenario: test Kie Server controller access with default values
     When container is started with env
-      | variable                        | value     |
-      | KIE_SERVER_CONTROLLER_HOST      | localhost |
-      | KIE_SERVER_CONTROLLER_PORT      | 8080      |
-      | KIE_SERVER_CONTROLLER_PROTOCOL  | ws        |
-    Then container log should contain -Dorg.kie.server.controller=ws://localhost:8080/websocket/controller
+      | variable                        | value           |
+      | KIE_SERVER_CONTROLLER_SERVICE   | MY_COOL_SERVICE |
+      | MY_COOL_SERVICE_SERVICE_HOST    | 10.10.10.10     |
+    Then container log should contain -Dorg.kie.server.controller=http://10.10.10.10:8080/rest/controller
 
-  Scenario: test Kie Server controller service configuration
+  Scenario: test Kie Server controller service configuration with default protocol and with port 9191
     When container is started with env
       | variable                        | value       |
       | KIE_SERVER_CONTROLLER_SERVICE   | SERVICE_ONE |
       | SERVICE_ONE_SERVICE_HOST        | localhost   |
-      | SERVICE_ONE_SERVICE_PORT        | 8080        |
-    Then container log should contain -Dorg.kie.server.controller=http://localhost:8080/rest/controller
+      | SERVICE_ONE_SERVICE_PORT        | 9191        |
+    Then container log should contain -Dorg.kie.server.controller=http://localhost:9191/rest/controller
+
+  Scenario: test Kie Server controller service configuration with custom host, port and protocol
+    When container is started with env
+      | variable                       | value        |
+      | KIE_SERVER_CONTROLLER_HOST     | my-cool-host |
+      | KIE_SERVER_CONTROLLER_PORT     | 443          |
+      | KIE_SERVER_CONTROLLER_PROTOCOL | https        |
+    Then container log should contain -Dorg.kie.server.controller=https://my-cool-host:443/rest/controller
+
+  Scenario: test Kie Server controller service configuration with https protocol and default port
+    When container is started with env
+      | variable                       | value        |
+      | KIE_SERVER_CONTROLLER_SERVICE  | SERVICE_ONE  |
+      | SERVICE_ONE_SERVICE_HOST       | localhost    |
+      | KIE_SERVER_CONTROLLER_PROTOCOL | https        |
+    Then container log should contain -Dorg.kie.server.controller=https://localhost:8443/rest/controller
+
+  Scenario: test Kie Server controller service configuration with with ws protocol
+    When container is started with env
+      | variable                       | value        |
+      | KIE_SERVER_CONTROLLER_SERVICE  | SERVICE_ONE  |
+      | SERVICE_ONE_SERVICE_HOST       | localhost    |
+      | KIE_SERVER_CONTROLLER_PROTOCOL | ws           |
+    Then container log should contain -Dorg.kie.server.controller=ws://localhost:8080/websocket/controller
+
+  Scenario: test Kie Server controller service configuration with wss protocol and default port
+    When container is started with env
+      | variable                       | value        |
+      | KIE_SERVER_CONTROLLER_SERVICE  | SERVICE_ONE  |
+      | SERVICE_ONE_SERVICE_HOST       | 10.10.10.10  |
+      | KIE_SERVER_CONTROLLER_PROTOCOL | wss          |
+    Then container log should contain -Dorg.kie.server.controller=wss://10.10.10.10:8443/websocket/controller
+
+  Scenario: test Kie Server controller service configuration with wss protocol and custom port
+    When container is started with env
+      | variable                       | value        |
+      | KIE_SERVER_CONTROLLER_SERVICE  | SERVICE_ONE  |
+      | SERVICE_ONE_SERVICE_HOST       | localhost    |
+      | KIE_SERVER_CONTROLLER_PORT     | 443          |
+      | KIE_SERVER_CONTROLLER_PROTOCOL | wss          |
+    Then container log should contain -Dorg.kie.server.controller=wss://localhost:443/websocket/controller
+
+  Scenario: test Kie Server controller service configuration wss protocol, custom host and port
+    When container is started with env
+      | variable                       | value        |
+      | KIE_SERVER_CONTROLLER_HOST     | localhost    |
+      | KIE_SERVER_CONTROLLER_PORT     | 9443         |
+      | KIE_SERVER_CONTROLLER_PROTOCOL | wss          |
+    Then container log should contain -Dorg.kie.server.controller=wss://localhost:9443/websocket/controller
 
   Scenario: test Kie Server router configuration
     When container is started with env
@@ -423,6 +479,7 @@ Feature: Kie Server common features
 
   Scenario: RHDM-1096 - Check that optaplanner thread pool queue size property is set
     When container is started with env
-      | variable        | value      |
-      | OPTAPLANNER_SERVER_EXT_THREAD_POOL_QUEUE_SIZE | 4 |
+      | variable                                      | value |
+      | OPTAPLANNER_SERVER_EXT_THREAD_POOL_QUEUE_SIZE | 4     |
     Then container log should contain -Dorg.optaplanner.server.ext.thread.pool.queue.size=4
+

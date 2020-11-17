@@ -9,7 +9,7 @@ Feature: RHPAM Controller configuration tests
   Scenario: Check for product and version environment variables
     When container is ready
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-controller
-     And run sh -c 'echo $RHPAM_CONTROLLER_VERSION' in container and check its output for 7.9
+     And run sh -c 'echo $RHPAM_CONTROLLER_VERSION' in container and check its output for 7.10
 
   # https://issues.jboss.org/browse/RHPAM-891
   Scenario: Check default users are properly configured
