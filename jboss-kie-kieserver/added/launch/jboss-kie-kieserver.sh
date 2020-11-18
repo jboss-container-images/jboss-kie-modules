@@ -58,7 +58,7 @@ function configure() {
     configure_server_env
     configure_controller_access
     configure_router_access
-    assign_server_location
+    configure_server_location
     configure_server_persistence
     configure_server_security
     configure_server_sync_deploy
@@ -434,14 +434,6 @@ function configure_drools() {
         DROOLS_SERVER_FILTER_CLASSES="true"
     fi
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.drools.server.filter.classes=${DROOLS_SERVER_FILTER_CLASSES}"
-}
-
-function assign_server_location(){
-    local location=$( callSecureKieServer "https://kubernetes.default.svc" "/var/run/secrets/kubernetes.io/serviceaccount" )
-    if [ -z "$location" ]; then
-      location=$( configure_server_location )
-    fi
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${location}"
 }
 
 # ---------- KIE SERVER LOCATION URL VIA ROUTE ----------
