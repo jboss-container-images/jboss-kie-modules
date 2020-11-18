@@ -1,0 +1,71 @@
+{
+  "kind": "Route",
+  "apiVersion": "route.openshift.io/v1",
+  "metadata": {
+    "name": "test-kieserver",
+    "namespace": "max",
+    "selfLink": "/apis/route.openshift.io/v1/namespaces/max/routes/test-kieserver",
+    "uid": "b5fc61ef-5507-40b0-813d-1e66d4d70b6a",
+    "resourceVersion": "8947227",
+    "creationTimestamp": "2020-09-01T09:38:47Z",
+    "labels": {
+      "app": "test",
+      "application": "test",
+      "service": "test-kieserver"
+    },
+    "annotations": {
+      "description": "Route for KIE server's https service.",
+      "haproxy.router.openshift.io/timeout": "60s",
+      "openshift.io/host.generated": "true"
+    }, "ownerReferences": [
+      { "apiVersion": "app.kiegroup.org/v2",
+        "kind": "KieApp",
+        "name": "test",
+        "uid": "62094bd6-6fda-43eb-8d28-e5acf57f2ecc",
+        "controller": true,
+        "blockOwnerDeletion": true
+      } ],
+    "managedFields": [
+      { "manager": "kie-cloud-operator",
+        "operation": "Update",
+        "apiVersion": "route.openshift.io/v1",
+        "time": "2020-09-01T09:38:47Z",
+        "fieldsType": "FieldsV1",
+        "fieldsV1": {
+          "f:metadata":{
+            "f:annotations":{".":{}, "f:description":{}, "f:haproxy.router.openshift.io/timeout":{}},
+            "f:labels":{".":{}, "f:app":{}, "f:application":{}, "f:service":{}},
+            "f:ownerReferences":{".":{},"k:{\"uid\":\"62094bd6-6fda-43eb-8d28-e5acf57f2ecc\"}":{".":{},
+              "f:apiVersion":{}, "f:blockOwnerDeletion":{}, "f:controller":{}, "f:kind":{}, "f:name":{}, "f:uid":{}}}
+          },
+          "f:spec":{"f:port":{".":{}, "f:targetPort":{}},
+            "f:tls":{".":{}, "f:insecureEdgeTerminationPolicy":{}, "f:termination":{}},
+            "f:to":{"f:kind":{}, "f:name":{}, "f:weight":{}}, "f:wildcardPolicy":{}}} },
+      {
+        "manager": "openshift-router",
+        "operation": "Update", "apiVersion": "route.openshift.io/v1", "time": "2020-09-01T09:38:47Z",
+        "fieldsType": "FieldsV1", "fieldsV1": {"f:status":{"f:ingress":{}}} }
+    ] },
+  "spec": {
+    "host": "test-kieserver-max.apps.playground.dev.com",
+    "to": {
+      "kind": "Service",
+      "name": "test-kieserver",
+      "weight": 100 },
+    "port": {
+      "targetPort": "https"
+    },
+    "tls": {
+      "termination": "passthrough",
+      "insecureEdgeTerminationPolicy": "Redirect" },
+    "wildcardPolicy": "None" },
+  "status": { "ingress": [ {
+    "host": "test-kieserver-max.apps.playground.dev.com",
+    "routerName": "default",
+    "conditions": [ {
+      "type": "Admitted",
+      "status": "True",
+      "lastTransitionTime": "2020-09-01T09:38:47Z" } ],
+    "wildcardPolicy": "None",
+    "routerCanonicalHostname": "apps.playground.dev.com" }
+  ] } }
