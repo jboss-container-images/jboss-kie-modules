@@ -40,7 +40,7 @@ class MyHandler(BaseHTTPRequestHandler):
             self.end_headers()
             sys.exit()
 
-        if self.path == '/kubernetes.default.svc/apis/route.openshift.io/v1/namespaces/max/routes/my-safe-route-name':
+        if self.path == '/kubernetes.default.svc:8080/apis/route.openshift.io/v1/namespaces/max/routes/my-safe-route-name':
             print("Https.Kubernetes.default.svc")
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
@@ -49,7 +49,7 @@ class MyHandler(BaseHTTPRequestHandler):
             response = open(test, "r").read()
             self.wfile.write(response.encode(encoding='utf_8'))
 
-        if self.path == '/kubernetes.default.svc/apis/route.openshift.io/v1/namespaces/max/routes/my-unsafe-route-name':
+        if self.path == '/kubernetes.default.svc:8080/apis/route.openshift.io/v1/namespaces/max/routes/my-unsafe-route-name':
             print("Http.Kubernetes.default.svc")
             self.send_response(200)
             self.send_header('Content-type', 'application/json')

@@ -53,11 +53,8 @@
       "name": "test-kieserver",
       "weight": 100 },
     "port": {
-      "targetPort": "https"
+      "targetPort": "http"
     },
-    "tls": {
-      "termination": "passthrough",
-      "insecureEdgeTerminationPolicy": "Redirect" },
     "wildcardPolicy": "None" },
   "status": { "ingress": [ {
     "host": "test-kieserver-max.apps.playground.dev.com",

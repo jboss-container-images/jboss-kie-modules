@@ -442,25 +442,8 @@ function configure_drools() {
 #
 # - name: KIE_SERVER_ROUTE_NAME
 #   value: "${APPLICATION_NAME}-kieserver"
-# - name: KIE_SERVER_USE_SECURE_ROUTE_NAME
-#   value: "${KIE_SERVER_USE_SECURE_ROUTE_NAME}"
-# - name: HOSTNAME_HTTP
-#   value: "${KIE_SERVER_HOSTNAME_HTTP}"
-# - name: HOSTNAME_HTTPS
-#   value: "${KIE_SERVER_HOSTNAME_HTTPS}"
-#
-# ---------- EXPLICIT KIE SERVER LOCATION ----------
-# Internal location of each KIE Server per each Pod's IP (retrieved via the Downward API).
-# Example template parameters:
-#
 # - name: KIE_SERVER_PROTOCOL
-#   value: "${KIE_SERVER_PROTOCOL}"
-# - name: KIE_SERVER_HOST
-#   valueFrom:
-#     fieldRef:
-#       fieldPath: status.podIP
-# - name: KIE_SERVER_PORT
-#   value: "${KIE_SERVER_PORT}"
+#   value: "https"
 #
 function configure_server_location() {
     local route=$(query_route ${KIE_SERVER_ROUTE_NAME})
