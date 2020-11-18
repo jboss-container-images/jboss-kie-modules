@@ -41,3 +41,20 @@ jobs:
           name: Run jboss-kie-process-migration bats tests
           command: |
             $HOME/bin/bats jboss-kie-process-migration/tests/bats/
+
+      - run:
+          name: Run os-eap-legacy/os-eap-launch tests
+          command: |
+            $HOME/bin/bats os-eap-legacy/os-eap-launch/tests/datasource.bats
+      - run:
+          name: Run os-eap-legacy/os-eap7-launch logging tests
+          command: |
+            $HOME/bin/bats os-eap-legacy/os-eap7-launch/tests/bats/logging/configure-logging-category.bats
+      - run:
+          name: Run os-eap-legacy/os-eap7-launch launch-common tests
+          command: |
+            $HOME/bin/bats os-eap-legacy/os-eap7-launch/tests/bats/launch-common/launch-common.bats
+      - run:
+          name: Run os-eap-legacy/os-eap7-launch datasources tests
+          command: |
+            $HOME/bin/bats os-eap-legacy/os-eap7-launch/tests/bats/datasource/configure.bats

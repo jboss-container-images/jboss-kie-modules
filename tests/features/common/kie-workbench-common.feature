@@ -1,6 +1,15 @@
 @rhdm-7/rhdm-decisioncentral-rhel8 @rhpam-7/rhpam-businesscentral-rhel8
 Feature: Decision/Business Central common features
 
+  Scenario: Web console is available
+    When container is ready
+    Then check that page is served
+      | property             | value        |
+      | port                 | 8080         |
+      | path                 | /kie-wb.jsp  |
+      | expected_status_code | 200          |
+      | wait                 | 120          |
+
   Scenario: Check custom users are properly configured
     When container is started with env
       | variable                    | value         |
@@ -100,3 +109,7 @@ Feature: Decision/Business Central common features
       | WORKBENCH_MAX_METASPACE_SIZE   | 4096    |
       | GC_MAX_METASPACE_SIZE          | 2048    |
     Then container log should contain -XX:MaxMetaspaceSize=4096m
+
+  Scenario: Check if index files are in shared PV
+    When container is ready
+    Then container log should contain -Dorg.uberfire.metadata.index.dir=/opt/kie/data

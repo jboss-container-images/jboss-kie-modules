@@ -1,7 +1,15 @@
 @rhdm-7/rhdm-controller-rhel8 @rhpam-7/rhpam-controller-rhel8
 Feature: KIE Controller configuration common tests
 
-    # https://issues.jboss.org/browse/RHPAM-891
+  Scenario: Test REST API is secure
+    When container is ready
+    Then check that page is served
+      | property             | value               |
+      | port                 | 8080                |
+      | path                 | /management/servers |
+      | expected_status_code | 403                 |
+
+  # https://issues.jboss.org/browse/RHPAM-891
   Scenario: Check default users are properly configured
     When container is ready
     Then file /opt/eap/standalone/configuration/application-users.properties should contain adminUser=de3155e1927c6976555925dec24a53ac

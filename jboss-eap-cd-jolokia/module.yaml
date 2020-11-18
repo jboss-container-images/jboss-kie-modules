@@ -1,0 +1,7 @@
+schema_version: 1
+name: jboss.eap.cd.jolokia
+version: '1.0-kie'
+description: Legacy jolokia script package.
+execute:
+- script: configure.sh
+  user: '185'
