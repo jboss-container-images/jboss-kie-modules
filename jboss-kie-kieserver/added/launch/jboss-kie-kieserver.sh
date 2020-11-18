@@ -477,25 +477,6 @@ function configure_server_location() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${location}"
 }
 
-
-function callSecureKieServer(){
-    local APISERVER="${1}"
-    local SERVICEACCOUNT="${2}"
-    local NAMESPACE=$(cat ${SERVICEACCOUNT}/namespace)
-    local TOKEN=$(cat ${SERVICEACCOUNT}/token)
-    local CACERT=${SERVICEACCOUNT}/ca.crt
-    local raw=$(curl --cacert ${CACERT} --header "Authorization: Bearer ${TOKEN}" -X GET ${APISERVER}/apis/route.openshift.io/v1/namespaces/${NAMESPACE}/routes/${KIE_SERVER_ROUTE_NAME})
-    local host=$(echo ${raw} | grep -Po '"host": *\K"[^"]*"' | sort -u |  tr '"' ' ' | xargs)
-    local targetPort=$(echo ${raw} | grep -Po '"targetPort": *\K"[^"]*"' | sort -u |  tr '"' ' ' | xargs)
-
-    if [ ${targetPort} = "https" ]; then
-        location=https://${host##*( )}/services/rest/server
-    fi
-    if [ ${targetPort} = "http" ]; then
-        location=http://${host##*( )}/services/rest/server
-    fi
-}
-
 function configure_server_persistence() {
     # dialect
     if [ "${KIE_SERVER_PERSISTENCE_DIALECT}" = "" ]; then
