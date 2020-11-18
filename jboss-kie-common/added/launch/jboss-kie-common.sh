@@ -6,16 +6,20 @@
 query_ocp_api() {
     local ocpApi="${1}"
     local resourcePath="${2}"
+    local namespaceEnv=$(cat ${NAMESPACE}/namespace)
+    local namespace="${namespaceEnv:-/var/run/secrets/kubernetes.io/serviceaccount/namespace}"
+    local tokenEnv=$(cat ${TOKEN}/token)
+    local token="${tokenEnv:-/var/run/secrets/kubernetes.io/serviceaccount/token}"
+    local caCertEnv=${CACERT}/ca.crt
+    local cacert="${caCertEnv:-/var/run/secrets/kubernetes.io/serviceaccount/ca.crt}"
     # only execute the following lines if this container is running on OpenShift
-    if [ -e /var/run/secrets/kubernetes.io/serviceaccount/token ]; then
-        local namespace=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
-        local token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-        local response=$(curl -s -w "%{http_code}" --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
-            -H "Authorization: Bearer $token" \
+    #if [ -e token ]; then
+        local response=$(curl -s -w "%{http_code}" --cacert ${cacert} \
+            -H "Authorization: Bearer ${token}" \
             -H 'Accept: application/json' \
             ${KUBERNETES_SERVICE_PROTOCOL:-https}://${KUBERNETES_SERVICE_HOST:-kubernetes.default.svc}:${KUBERNETES_SERVICE_PORT:-443}/${ocpApi}/v1/namespaces/${namespace}/${resourcePath})
         echo ${response}
-    fi
+    #fi
 }
 
 # Queries the Route from the Kubernetes API

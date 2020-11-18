@@ -436,8 +436,14 @@ teardown() {
 }
 
 @test "check if kie server location is set according to the route" {
-  local expected="http://${HOSTNAME}:80/services/rest/server"
-  KIE_SERVER_ROUTE_NAME="my-route-name"
+  export KIE_SERVER_PROTOCOL="https"
+  export KIE_SERVER_ROUTE_NAME="my-unsafe-route-name"
+  export KUBERNETES_SERVICE_HOST="localhost:8080/kubernetes.default.svc"
+  export NAMESPACE=$BATS_TEST_DIRNAME/../../tests/bats/resources
+  export TOKEN=$BATS_TEST_DIRNAME/../../tests/bats/resources
+  export CACERT=$BATS_TEST_DIRNAME/../../tests/bats/resources
+
+  local expected="http://test-kieserver-max.apps.playground.dev.com/services/rest/server"
   configure_server_location >&2
   echo "JBOSS_KIE_ARGS is ${JBOSS_KIE_ARGS}" >&2
   echo "Expected is ${expected}" >&2
@@ -445,7 +451,14 @@ teardown() {
 }
 
 @test "check if kie server location is set to default" {
-  local expected="http://${HOSTNAME}:8080/services/rest/server"
+  export KIE_SERVER_PROTOCOL="https"
+  export KIE_SERVER_ROUTE_NAME="my-unsafe-route-name"
+  export KUBERNETES_SERVICE_HOST="localhost:8080/kubernetes.default.svc"
+  export NAMESPACE=$BATS_TEST_DIRNAME/../../tests/bats/resources
+  export TOKEN=$BATS_TEST_DIRNAME/../../tests/bats/resources
+  export CACERT=$BATS_TEST_DIRNAME/../../tests/bats/resources
+
+  local expected="http://test-kieserver-max.apps.playground.dev.com/services/rest/server"
   configure_server_location >&2
   echo "JBOSS_KIE_ARGS is ${JBOSS_KIE_ARGS}" >&2
   echo "Expected is ${expected}" >&2
@@ -574,8 +587,14 @@ teardown() {
 }
 
 @test "Check is exists a secure KieRouter" {
-  export KIE_SERVER_ROUTE_NAME="my-route-name"
+  export KIE_SERVER_PROTOCOL="https"
+  export KIE_SERVER_ROUTE_NAME="my-safe-route-name"
+  export KUBERNETES_SERVICE_HOST="localhost:8080/kubernetes.default.svc"
+  export NAMESPACE=$BATS_TEST_DIRNAME/../../tests/bats/resources
+  export TOKEN=$BATS_TEST_DIRNAME/../../tests/bats/resources
+  export CACERT=$BATS_TEST_DIRNAME/../../tests/bats/resources
+
   local expected="https://${HOSTNAME}:8080/kubernetes.default.svc"
-  callSecureKieServer "localhost:8080/kubernetes.default.svc"  $BATS_TEST_DIRNAME/../../tests/bats/resources >&2
+  configure_server_location >&2
   [[ $location == *"https://test-kieserver-max.apps.playground.dev.com/services/rest/server"* ]]
 }

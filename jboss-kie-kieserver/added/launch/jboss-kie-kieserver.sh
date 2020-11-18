@@ -471,43 +471,20 @@ function assign_server_location(){
 #   value: "${KIE_SERVER_PORT}"
 #
 function configure_server_location() {
-    # KIE_SERVER_LOCATION matches our env-to-property naming convention,
-    # but KIE_SERVER_URL kept here for backwards compatibility
-    local location="${KIE_SERVER_LOCATION:-$KIE_SERVER_URL}"
-    if [ -z "${location}" ]; then
-        local protocol="${KIE_SERVER_PROTOCOL,,}"
-        local host="${KIE_SERVER_HOST}"
-        local defaultInsecureHost="${HOSTNAME_HTTP:-${HOSTNAME:-localhost}}"
-        local defaultSecureHost="${HOSTNAME_HTTPS:-${defaultInsecureHost}}"
-        local port="${KIE_SERVER_PORT}"
-        local path="/services/rest/server"
-        local routeName="${KIE_SERVER_ROUTE_NAME}"
-        if [ -n "${routeName}" ]; then
-            if [ "${KIE_SERVER_USE_SECURE_ROUTE_NAME^^}" = "TRUE" ]; then
-                routeName="secure-${routeName}"
-                protocol="${protocol:-https}"
-                host="${host:-${defaultSecureHost}}"
-                port="${port:-443}"
-            else
-                protocol="${protocol:-http}"
-                host="${host:-${defaultInsecureHost}}"
-                port="${port:-80}"
-            fi
-            location=$(build_route_url "${routeName}" "${protocol}" "${host}" "${port}" "${path}")
-        else
-            if [ "${protocol}" = "https" ]; then
-                host="${host:-${defaultSecureHost}}"
-                port="${port:-8443}"
-            else
-                protocol="${protocol:-http}"
-                host="${host:-${defaultInsecureHost}}"
-                port="${port:-8080}"
-            fi
-            location=$(build_simple_url "${protocol}" "${host}" "${port}" "${path}")
-        fi
+    local route=$(query_route ${KIE_SERVER_ROUTE_NAME})
+    local host=$(echo ${route} | grep -Po '"host": *\K"[^"]*"' | sort -u |  tr '"' ' ' | xargs)
+    local protocolSuggested="${KIE_SERVER_PROTOCOL,,}"
+    local protocolAvailable=$(query_route_protocol ${KIE_SERVER_ROUTE_NAME} protocolSuggested)
+
+    if [ ${protocolAvailable} = "https" ]; then
+        location=https://${host##*( )}/services/rest/server
+    fi
+    if [ ${protocolAvailable} = "http" ]; then
+        location=http://${host##*( )}/services/rest/server
     fi
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.location=${location}"
 }
+
 
 function callSecureKieServer(){
     local APISERVER="${1}"
