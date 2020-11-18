@@ -482,4 +482,3 @@ Feature: Kie Server common features
       | variable                                      | value |
       | OPTAPLANNER_SERVER_EXT_THREAD_POOL_QUEUE_SIZE | 4     |
     Then container log should contain -Dorg.optaplanner.server.ext.thread.pool.queue.size=4
-
