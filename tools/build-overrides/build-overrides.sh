@@ -358,7 +358,7 @@ envs:
 - name: "CONTROLLER_DISTRIBUTION_ZIP"
   value: "${controller_distribution_zip}"
 artifacts:
-- name: "rhpam_add_ons_distribution.zip"
+- name: "rhdm_add_ons_distribution.zip"
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
   url: "${add_ons_distribution_url}"
