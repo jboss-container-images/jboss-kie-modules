@@ -378,7 +378,7 @@ cat <<EOF > "${controller_overrides_json}"
   ],
   "artifacts": [
     {
-      "name": "rhpam_add_ons_distribution.zip",
+      "name": "rhdm_add_ons_distribution.zip",
       "md5": "${add_ons_distribution_md5}",
       "url": "${add_ons_distribution_url}"
     }
