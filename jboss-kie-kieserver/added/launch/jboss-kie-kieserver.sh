@@ -20,6 +20,8 @@ function prepareEnv() {
     unset KIE_SERVER_CONTROLLER_PORT
     unset KIE_SERVER_CONTROLLER_PROTOCOL
     unset KIE_SERVER_CONTROLLER_SERVICE
+    unset KIE_EJB_TIMER_LOCAL_CACHE
+    unset KIE_EJB_TIMER_TX
     unset KIE_SERVER_HOST
     unset KIE_SERVER_ID
     unset KIE_SERVER_LOCATION
@@ -117,6 +119,11 @@ function configure_EJB_Timer_datasource {
                 EJB_TIMER_XA_CONNECTION_PROPERTY_DriverType="${driverType}"
             fi
         fi
+    fi
+
+    if [ -n "${TIMER_SERVICE_DATA_STORE}" ]; then
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ejb.timer.tx=${KIE_EJB_TIMER_TX:-true}"
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ejb.timer.local.cache=${KIE_EJB_TIMER_LOCAL_CACHE:-false}"
     fi
 }
 
@@ -564,7 +571,7 @@ function configure_server_sync_deploy() {
 # Enable/disable the jbpm capabilities according with the product
 function configure_jbpm() {
     if [ "${JBOSS_PRODUCT}" = "rhpam-kieserver" ]; then
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ejb.timer.tx=true -Dorg.kie.executor.retry.count=${KIE_EXECUTOR_RETRIES:-3}"
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.executor.retry.count=${KIE_EXECUTOR_RETRIES:-3}"
         if [ "${JBPM_HT_CALLBACK_METHOD}" != "" ]; then
             JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ht.callback=${JBPM_HT_CALLBACK_METHOD}"
         fi
