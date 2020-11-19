@@ -418,7 +418,7 @@ cat <<EOF > "${decisioncentral_overrides_json}"
 {
   "artifacts": [
     {
-      "name": "rhpam_decision_central_distribution.zip",
+      "name": "rhdm_decision_central_distribution.zip",
       "md5": "${decision_central_distribution_md5}",
       "url": "${decision_central_distribution_url}"
     }
