@@ -37,6 +37,8 @@ function prepareEnv() {
     unset KIE_SERVER_CONTROLLER_PROTOCOL
     unset KIE_SERVER_CONTROLLER_SERVICE
     unset KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL
+    unset KIE_M2_REPO_DIR
+    unset KIE_PERSIST_MAVEN_REPO
 }
 
 function preConfigure() {
@@ -196,6 +198,20 @@ function configure_guvnor_settings() {
     if [ -n "${BATS_TMPDIR}" ]; then
         kieDataDir="${BATS_TMPDIR}${kieDataDir}"
     fi
+
+    if [ "${KIE_PERSIST_MAVEN_REPO^^}" = "TRUE" ]; then
+        local kieM2RepoDir="${KIE_M2_REPO_DIR:-${kieDataDir}/m2}"
+        # will be handled by maven-settings.sh provided by maven module. This script must be executed before
+        # than maven-settings.sh on openshift-launch.sh.
+        # if M2 is already set, skip it.
+        if [ ! -n "${MAVEN_LOCAL_REPO}" ]; then
+            export MAVEN_LOCAL_REPO="${kieM2RepoDir}"
+            log_info "M2 repository is set to ${kieM2RepoDir}"
+        else
+            log_warning "MAVEN_LOCAL_REPO is set to ${MAVEN_LOCAL_REPO}, if it needs to be persisted, make sure a Persistent Volume is mounted."
+        fi
+    fi
+
     # only set the system property if we have a valid value, as it is an override and we should not default
     if [ "${buildEnableIncremental}" = "true" ] || [ "${buildEnableIncremental}" = "false" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dbuild.enable-incremental=${buildEnableIncremental}"
