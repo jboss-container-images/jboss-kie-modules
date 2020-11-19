@@ -1112,6 +1112,8 @@ Feature: RHPAM KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value h2 on XPath //*[local-name()='database-data-store']/@database
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_part on XPath //*[local-name()='database-data-store']/@partition
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value -1 on XPath //*[local-name()='database-data-store']/@refresh-interval
+     And container log should contain -Dorg.jbpm.ejb.timer.tx=true
+     And container log should contain -Dorg.jbpm.ejb.timer.local.cache=false
 
   Scenario: Checks if the launch directory has the right permissions set
     When container is ready
@@ -1151,3 +1153,19 @@ Feature: RHPAM KIE Server configuration tests
       | RHPAM_DRIVER     | postgresql  |
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <password>kieserver$0</password>
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <user-name>rhpam$0</user-name>
+
+  Scenario: Verify if the EJB timer related setting are not set when AUTO_CONFIGURE_EJB_TIMER is false and no TIMER_SERVICE_DATA_STORE is given
+    When container is started with env
+      | variable                         | value |
+      | AUTO_CONFIGURE_EJB_TIMER         | false |
+    Then container log should not contain -Dorg.jbpm.ejb.timer.tx=true
+     And container log should not contain -Dorg.jbpm.ejb.timer.local.cache=false
+
+  Scenario: Verify if EJB timer related setting are set when  AUTO_CONFIGURE_EJB_TIMER is false and a TIMER_SERVICE_DATA_STORE is given
+    When container is started with env
+      | variable                         | value             |
+      | AUTO_CONFIGURE_EJB_TIMER         | false             |
+      | TIMER_SERVICE_DATA_STORE         | custom-data-store |
+    Then container log should contain -Dorg.jbpm.ejb.timer.tx=true
+    And container log should contain -Dorg.jbpm.ejb.timer.local.cache=false
+

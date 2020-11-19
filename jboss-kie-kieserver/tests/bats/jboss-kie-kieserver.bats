@@ -68,6 +68,28 @@ teardown() {
   [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Url}" = "jdbc:mariadb://myapp-host:3306/rhpam-mariadb?pinGlobalTxToPhysicalConnection=true\&amp;enabledSslProtocolSuites=TLSv1.2" ]
 }
 
+@test "verify if EJB_TIMER related default settings are set" {
+  local TIMER_SERVICE_DATA_STORE="EJB_TIMER"
+  local expected_ejb_timer_tx="-Dorg.jbpm.ejb.timer.tx=true"
+  local expected_ejb_timer_local_cache="-Dorg.jbpm.ejb.timer.local.cache=false"
+  configure_EJB_Timer_datasource >&2
+  echo "Result is ${JBOSS_KIE_ARGS}"
+  [[ $JBOSS_KIE_ARGS == *"${expected_ejb_timer_tx}"* ]]
+  [[ $JBOSS_KIE_ARGS == *"${expected_ejb_timer_local_cache}"* ]]
+}
+
+@test "verify if EJB_TIMER related settings are changed" {
+  local TIMER_SERVICE_DATA_STORE="EJB_TIMER"
+  local KIE_EJB_TIMER_TX="false"
+  local KIE_EJB_TIMER_LOCAL_CACHE="true"
+  local expected_ejb_timer_tx="-Dorg.jbpm.ejb.timer.tx=false"
+  local expected_ejb_timer_local_cache="-Dorg.jbpm.ejb.timer.local.cache=true"
+  configure_EJB_Timer_datasource >&2
+  echo "Result is ${JBOSS_KIE_ARGS}"
+  [[ $JBOSS_KIE_ARGS == *"${expected_ejb_timer_tx}"* ]]
+  [[ $JBOSS_KIE_ARGS == *"${expected_ejb_timer_local_cache}"* ]]
+}
+
 @test "verify if EJB_TIMER is correctly configured with data-sources using URL param when driver is mariadb" {
   local expected_timer_service="EJB_TIMER"
   local expected_datasources="EJB_TIMER,RHPAM"
