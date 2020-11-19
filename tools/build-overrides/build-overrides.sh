@@ -464,7 +464,7 @@ cat <<EOF > "${kieserver_overrides_json}"
 {
   "artifacts": [
     {
-      "name": "rhpam_kie_server_distribution.zip",
+      "name": "rhdm_kie_server_distribution.zip",
       "md5": "${kie_server_distribution_md5}",
       "url": "${kie_server_distribution_url}"
     }
