@@ -39,6 +39,10 @@ function prepareEnv() {
     unset KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL
 }
 
+function preConfigure() {
+    configure_maven_settings
+}
+
 function configureEnv() {
     configure
 }
@@ -48,7 +52,7 @@ function configure() {
     # before any direct or indirect calls to add_eap_user
     configure_local_security
     configure_admin_security
-    configure_kie_kiestore
+    configure_kie_keystore
     configure_controller_access
     configure_server_access
     configure_openshift_enhancement
@@ -69,7 +73,7 @@ function configure_admin_security() {
 
     # (see management-common.sh and login-modules-common.sh)
     add_management_interface_realm
-    # KieLoginModule breaks Busineses Central; it needs to be added only for Business Central & Business Central Monitoring
+    # KieLoginModule breaks Business Central; it needs to be added only for Business Central & Business Central Monitoring
     # rhpam-businesscentral, rhpam-businesscentral-monitoring
     if [[ $JBOSS_PRODUCT =~ rhpam\-businesscentral(\-monitoring)? ]]; then
         configure_login_modules "org.kie.security.jaas.KieLoginModule" "optional" "deployment.ROOT.war"
@@ -78,7 +82,7 @@ function configure_admin_security() {
 
 # https://issues.jboss.org/browse/JBPM-8400
 # https://issues.jboss.org/browse/KIECLOUD-218
-function configure_kie_kiestore() {
+function configure_kie_keystore() {
     local keystore="${JBOSS_HOME}/standalone/configuration/kie-keystore.jceks"
     if [ -f "${keystore}" ]; then
         rm "${keystore}"

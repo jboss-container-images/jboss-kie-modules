@@ -10,7 +10,7 @@ Feature: Decision/Business Central common features
       | expected_status_code | 200          |
       | wait                 | 120          |
 
-  Scenario: Check custom users are properly configured
+  Scenario: Check custom workbench users are properly configured
     When container is started with env
       | variable                    | value         |
       | KIE_ADMIN_USER              | customAdm     |

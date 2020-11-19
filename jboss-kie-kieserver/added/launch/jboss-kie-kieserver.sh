@@ -46,6 +46,7 @@ function prepareEnv() {
 }
 
 function preConfigure() {
+    configure_maven_settings
     configure_EJB_Timer_datasource
 }
 

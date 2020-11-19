@@ -41,6 +41,10 @@ jobs:
           name: Run jboss-kie-process-migration bats tests
           command: |
             $HOME/bin/bats jboss-kie-process-migration/tests/bats/
+      - run:
+          name: Run jboss-kie-dashbuilder bats tests
+          command: |
+            $HOME/bin/bats jboss-kie-dashbuilder/tests/bats/
 
       - run:
           name: Run os-eap-legacy/os-eap-launch tests
