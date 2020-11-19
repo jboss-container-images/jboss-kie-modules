@@ -450,7 +450,7 @@ EOF
                     log_info "Generating ${kieserver_overrides_yaml} ..."
 cat <<EOF > "${kieserver_overrides_yaml}"
 artifacts:
-- name: "rhpam_kie_server_distribution.zip"
+- name: "rhdm_kie_server_distribution.zip"
   # ${kie_server_distribution_zip}
   md5: "${kie_server_distribution_md5}"
   url: "${kie_server_distribution_url}"
