@@ -265,10 +265,6 @@ handle_cache_list() {
     fi
 }
 
-# http://download.eng.bos.redhat.com/rcm-guest/staging/rhdm/
-# http://download.eng.bos.redhat.com/rcm-guest/staging/rhpam/
-# http://download.devel.redhat.com/devel/candidates/RHDM/
-# http://download.devel.redhat.com/devel/candidates/RHPAM/
 get_build_url() {
     local full_version=${1}
     local build_type=${2}
@@ -362,8 +358,7 @@ envs:
 - name: "CONTROLLER_DISTRIBUTION_ZIP"
   value: "${controller_distribution_zip}"
 artifacts:
-- name: "ADD_ONS_DISTRIBUTION_ZIP"
-  target: "add_ons_distribution.zip"
+- name: "rhdm_add_ons_distribution.zip"
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
   url: "${add_ons_distribution_url}"
@@ -383,8 +378,7 @@ cat <<EOF > "${controller_overrides_json}"
   ],
   "artifacts": [
     {
-      "name": "ADD_ONS_DISTRIBUTION_ZIP",
-      "target": "add_ons_distribution.zip",
+      "name": "rhdm_add_ons_distribution.zip",
       "md5": "${add_ons_distribution_md5}",
       "url": "${add_ons_distribution_url}"
     }
@@ -410,8 +404,7 @@ EOF
                     log_info "Generating ${decisioncentral_overrides_yaml} ..."
 cat <<EOF > "${decisioncentral_overrides_yaml}"
 artifacts:
-- name: "DECISION_CENTRAL_DISTRIBUTION_ZIP"
-  target: "decision_central_distribution.zip"
+- name: "rhdm_decision_central_distribution.zip"
   # ${decision_central_distribution_zip}
   md5: "${decision_central_distribution_md5}"
   url: "${decision_central_distribution_url}"
@@ -425,8 +418,7 @@ cat <<EOF > "${decisioncentral_overrides_json}"
 {
   "artifacts": [
     {
-      "name": "DECISION_CENTRAL_DISTRIBUTION_ZIP",
-      "target": "decision_central_distribution.zip",
+      "name": "rhdm_decision_central_distribution.zip",
       "md5": "${decision_central_distribution_md5}",
       "url": "${decision_central_distribution_url}"
     }
@@ -458,8 +450,7 @@ EOF
                     log_info "Generating ${kieserver_overrides_yaml} ..."
 cat <<EOF > "${kieserver_overrides_yaml}"
 artifacts:
-- name: "KIE_SERVER_DISTRIBUTION_ZIP"
-  target: "kie_server_distribution.zip"
+- name: "rhdm_kie_server_distribution.zip"
   # ${kie_server_distribution_zip}
   md5: "${kie_server_distribution_md5}"
   url: "${kie_server_distribution_url}"
@@ -473,8 +464,7 @@ cat <<EOF > "${kieserver_overrides_json}"
 {
   "artifacts": [
     {
-      "name": "KIE_SERVER_DISTRIBUTION_ZIP",
-      "target": "kie_server_distribution.zip",
+      "name": "rhdm_kie_server_distribution.zip",
       "md5": "${kie_server_distribution_md5}",
       "url": "${kie_server_distribution_url}"
     }
@@ -545,8 +535,7 @@ handle_rhpam_artifacts() {
                         log_info "Generating ${businesscentral_overrides_yaml} ..."
 cat <<EOF > "${businesscentral_overrides_yaml}"
 artifacts:
-- name: "BUSINESS_CENTRAL_DISTRIBUTION_ZIP"
-  target: "business_central_distribution.zip"
+- name: "rhpam_business_central_distribution.zip"
   # ${business_central_distribution_zip}
   md5: "${business_central_distribution_md5}"
   url: "${business_central_distribution_url}"
@@ -560,8 +549,7 @@ cat <<EOF > "${businesscentral_overrides_json}"
 {
   "artifacts": [
     {
-      "name": "BUSINESS_CENTRAL_DISTRIBUTION_ZIP",
-      "target": "business_central_distribution.zip",
+      "name": "rhpam_business_central_distribution.zip",
       "md5": "${business_central_distribution_md5}",
       "url": "${business_central_distribution_url}"
     }
@@ -601,8 +589,7 @@ EOF
                     log_info "Generating ${businesscentral_monitoring_overrides_yaml} ..."
 cat <<EOF > "${businesscentral_monitoring_overrides_yaml}"
 artifacts:
-- name: "BUSINESS_CENTRAL_MONITORING_DISTRIBUTION_ZIP"
-  target: "business_central_monitoring_distribution.zip"
+- name: "rhpam_business_central_monitoring_distribution.zip"
   # ${business_central_monitoring_distribution_zip}
   md5: "${business_central_monitoring_distribution_md5}"
   url: "${business_central_monitoring_distribution_url}"
@@ -616,8 +603,7 @@ cat <<EOF > "${businesscentral_monitoring_overrides_json}"
 {
   "artifacts": [
     {
-      "name": "BUSINESS_CENTRAL_MONITORING_DISTRIBUTION_ZIP",
-      "target": "business_central_monitoring_distribution.zip",
+      "name": "rhpam_business_central_monitoring_distribution.zip",
       "md5": "${business_central_monitoring_distribution_md5}",
       "url": "${business_central_monitoring_distribution_url}"
     }
@@ -647,8 +633,7 @@ envs:
 - name: "CONTROLLER_DISTRIBUTION_ZIP"
   value: "${controller_distribution_zip}"
 artifacts:
-- name: "ADD_ONS_DISTRIBUTION_ZIP"
-  target: "add_ons_distribution.zip"
+- name: "rhpam_add_ons_distribution.zip"
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
   url: "${add_ons_distribution_url}"
@@ -668,8 +653,7 @@ cat <<EOF > "${controller_overrides_json}"
   ],
   "artifacts": [
     {
-      "name": "ADD_ONS_DISTRIBUTION_ZIP",
-      "target": "add_ons_distribution.zip",
+      "name": "rhpam_add_ons_distribution.zip",
       "md5": "${add_ons_distribution_md5}",
       "url": "${add_ons_distribution_url}"
     }
@@ -700,13 +684,11 @@ envs:
 - name: "JBPM_WB_KIE_SERVER_BACKEND_JAR"
   value: "${jbpm_wb_kie_server_backend_jar}"
 artifacts:
-- name: "KIE_SERVER_DISTRIBUTION_ZIP"
-  target: "kie_server_distribution.zip"
+- name: "rhpam_kie_server_distribution.zip"
   # ${kie_server_distribution_zip}
   md5: "${kie_server_distribution_md5}"
   url: "${kie_server_distribution_url}"
-- name: "BUSINESS_CENTRAL_DISTRIBUTION_ZIP"
-  target: "business_central_distribution.zip"
+- name: "rhpam_business_central_distribution.zip"
   # ${business_central_distribution_zip}
   md5: "${business_central_distribution_md5}"
   url: "${business_central_distribution_url}"
@@ -726,14 +708,12 @@ cat <<EOF > "${kieserver_overrides_json}"
   ],
   "artifacts": [
     {
-      "name": "KIE_SERVER_DISTRIBUTION_ZIP",
-      "target": "kie_server_distribution.zip",
+      "name": "rhpam_kie_server_distribution.zip",
       "md5": "${kie_server_distribution_md5}",
       "url": "${kie_server_distribution_url}"
     },
     {
-      "name": "BUSINESS_CENTRAL_DISTRIBUTION_ZIP",
-      "target": "business_central_distribution.zip",
+      "name": "rhpam_business_central_distribution.zip",
       "md5": "${business_central_distribution_md5}",
       "url": "${business_central_distribution_url}"
     }
@@ -763,8 +743,7 @@ envs:
 - name: "KIE_PROCESS_MIGRATION_DISTRIBUTION_JAR"
   value: "${process_migration_distribution_jar}"
 artifacts:
-- name: "ADD_ONS_DISTRIBUTION_ZIP"
-  target: "add_ons_distribution.zip"
+- name: "rhpam_add_ons_distribution.zip"
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
   url: "${add_ons_distribution_url}"
@@ -784,8 +763,7 @@ cat <<EOF > "${process_migration_overrides_json}"
   ],
   "artifacts": [
     {
-      "name": "ADD_ONS_DISTRIBUTION_ZIP",
-      "target": "add_ons_distribution.zip",
+      "name": "rhpam_add_ons_distribution.zip",
       "md5": "${add_ons_distribution_md5}",
       "url": "${add_ons_distribution_url}"
     }
@@ -809,8 +787,7 @@ envs:
 - name: "KIE_ROUTER_DISTRIBUTION_JAR"
   value: "${kie_router_distribution_jar}"
 artifacts:
-- name: "ADD_ONS_DISTRIBUTION_ZIP"
-  target: "add_ons_distribution.zip"
+- name: "rhpam_add_ons_distribution.zip"
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
   url: "${add_ons_distribution_url}"
@@ -830,8 +807,7 @@ cat <<EOF > "${smartrouter_overrides_json}"
   ],
   "artifacts": [
     {
-      "name": "ADD_ONS_DISTRIBUTION_ZIP",
-      "target": "add_ons_distribution.zip",
+      "name": "rhpam_add_ons_distribution.zip",
       "md5": "${add_ons_distribution_md5}",
       "url": "${add_ons_distribution_url}"
     }
