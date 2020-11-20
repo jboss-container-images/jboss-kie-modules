@@ -23,23 +23,23 @@ Feature: RHPAM Smart Router configuration tests
 
   Scenario: Verify the smart router TLS configuration, test cert not generated and KIE_SERVER_ROUTER_TLS_KEYSTORE not found
     When container is started with env
-      | variable                                 | value                            |
-      | KIE_SERVER_ROUTER_TLS_TEST               | false                            |
-      | KIE_SERVER_ROUTER_TLS_KEYSTORE           | /etc/cert/certificate            |
-      | KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS  | jboss                            |
-      | KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD  | mykeystorepass                   |
+      | variable                                 | value                  |
+      | KIE_SERVER_ROUTER_TLS_TEST               | false                  |
+      | KIE_SERVER_ROUTER_TLS_KEYSTORE           | /etc/cert/certificate  |
+      | KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS  | jboss                  |
+      | KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD  | mykeystorepass         |
     Then container log should contain Keystore file /etc/cert/certificate not found or not a regular file, skipping https setup
     And container log should match regex KieServerRouter started on.*9000 at
     And container log should not contain Container is in test mode and not in OpenShift, generating test certificate
 
   Scenario: Verify the smart router TLS configuration, test cert not generated because KUBERNETES_SERVICE_HOST defined
     When container is started with env
-      | variable                                 | value                            |
-      | KIE_SERVER_ROUTER_TLS_TEST               | true                             |
-      | KUBERNETES_SERVICE_HOST                  | somevalue                        |
-      | KIE_SERVER_ROUTER_TLS_KEYSTORE           | /etc/cert/certificate            |
-      | KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS  | jboss                            |
-      | KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD  | mykeystorepass                   |
+      | variable                                 | value                 |
+      | KIE_SERVER_ROUTER_TLS_TEST               | true                  |
+      | KUBERNETES_SERVICE_HOST                  | somevalue             |
+      | KIE_SERVER_ROUTER_TLS_KEYSTORE           | /etc/cert/certificate |
+      | KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS  | jboss                 |
+      | KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD  | mykeystorepass        |
     Then container log should contain Keystore file /etc/cert/certificate not found or not a regular file, skipping https setup
     And container log should match regex KieServerRouter started on.*9000 at
     And container log should not contain Container is in test mode and not in OpenShift, generating test certificate
@@ -57,33 +57,33 @@ Feature: RHPAM Smart Router configuration tests
 
   Scenario: Verify the smart router TLS configuration, incorrect user
     When container is started with env
-      | variable                                 | value                            |
-      | KIE_SERVER_ROUTER_TLS_TEST               | true                             |
-      | KIE_SERVER_ROUTER_TLS_KEYSTORE           | /etc/cert/certificate            |
-      | KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS  | thisiswrong                      |
-      | KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD  | mykeystorepass                   |
+      | variable                                 | value                  |
+      | KIE_SERVER_ROUTER_TLS_TEST               | true                   |
+      | KIE_SERVER_ROUTER_TLS_KEYSTORE           | /etc/cert/certificate  |
+      | KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS  | thisiswrong            |
+      | KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD  | mykeystorepass         |
     Then container log should contain Unable to read TLS keystore, skipping https setup
     And container log should match regex KieServerRouter started on.*9000 at
     And container log should contain Container is in test mode and not in OpenShift, generating test certificate
 
   Scenario: Verify the smart router TLS configuration, incorrect password
     When container is started with env
-      | variable                                 | value                            |
-      | KIE_SERVER_ROUTER_TLS_TEST               | true                             |
-      | KIE_SERVER_ROUTER_TLS_KEYSTORE           | /etc/cert/certificate            |
-      | KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS  | jboss                            |
-      | KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD  | thisiswrong                      |
+      | variable                                 | value                 |
+      | KIE_SERVER_ROUTER_TLS_TEST               | true                  |
+      | KIE_SERVER_ROUTER_TLS_KEYSTORE           | /etc/cert/certificate |
+      | KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS  | jboss                 |
+      | KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD  | thisiswrong           |
     Then container log should contain Unable to read TLS keystore, skipping https setup
     And container log should match regex KieServerRouter started on.*9000 at
     And container log should contain Container is in test mode and not in OpenShift, generating test certificate
 
   Scenario: Verify the smart router TLS configuration, everything correct
     When container is started with env
-      | variable                                 | value                            |
-      | KIE_SERVER_ROUTER_TLS_TEST               | true                             |
-      | KIE_SERVER_ROUTER_TLS_KEYSTORE           | /etc/cert/certificate            |
-      | KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS  | jboss                            |
-      | KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD  | mykeystorepass                   |
+      | variable                                 | value                  |
+      | KIE_SERVER_ROUTER_TLS_TEST               | true                   |
+      | KIE_SERVER_ROUTER_TLS_KEYSTORE           | /etc/cert/certificate  |
+      | KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS  | jboss                  |
+      | KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD  | mykeystorepass         |
     Then container log should match regex KieServerRouter started on.*9000 and .*9443 \(TLS\) at
     And container log should contain Container is in test mode and not in OpenShift, generating test certificate
 
@@ -145,20 +145,18 @@ Feature: RHPAM Smart Router configuration tests
 
   Scenario: Verify if the properties were correctly set when aren't passed
     When container is started with args
-      | arg       | value                                                    |
-      | mem_limit | 1073741824                                               |
+      | arg       | value       |
+      | mem_limit | 1073741824  |
     Then container log should match regex -Xms205m
      And container log should match regex -Xmx819m
-    
+
   Scenario: Verify if the logging properties is set correctly
     When container is started with env
-      | variable                | value                   |
-      | SCRIPT_DEBUG            | true                    |
-      | LOG_LEVEL               | SEVERE                  |
-      | LOGGER_CATEGORIES       | org.xyz=INFO            |
-    Then container log should match regex JAVA_OPTS_APPEND=' -Djava.util.logging.config.file=/opt/rhpam-smartrouter/logging.properties'
-     And container log should match regex LOGGER_CATEGORIES=org.xyz=INFO
-     And container log should match regex LOG_LEVEL=SEVERE
-     And file /opt/rhpam-smartrouter/logging.properties should contain org.xyz=INFO
-     And file /opt/rhpam-smartrouter/logging.properties should contain SEVERE
-
+      | variable           | value         |
+      | SCRIPT_DEBUG       | true          |
+      | LOG_LEVEL          | SEVERE        |
+      | LOGGER_CATEGORIES  | org.xyz=INFO  |
+      Then container log should contain -Djava.util.logging.config.file=/opt/rhpam-smartrouter/logging.properties
+       And container log should contain Configuring logger categories org.xyz=INFO with level SEVERE
+       And file /opt/rhpam-smartrouter/logging.properties should contain org.xyz=INFO
+       And file /opt/rhpam-smartrouter/logging.properties should contain SEVERE
