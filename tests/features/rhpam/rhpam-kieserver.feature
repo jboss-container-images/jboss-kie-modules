@@ -45,7 +45,6 @@ Feature: RHPAM KIE Server configuration tests
       | variable                 | value |
       | JBPM_LOOP_LEVEL_DISABLED | true  |
     Then container log should not contain -Dorg.jbpm.server.ext.disabled=true
-     And container log should contain -Dorg.jbpm.ejb.timer.tx=true
      And container log should contain -Djbpm.loop.level.disabled=true
 
   Scenario: Check for the default ejb timer's setup behavior
