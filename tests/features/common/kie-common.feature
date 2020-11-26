@@ -99,3 +99,19 @@ Feature: RHPAM and RHDM common tests
     When container is ready
     Then file /opt/eap/standalone/configuration/application-users.properties should contain adminUser=de3155e1927c6976555925dec24a53ac
     And file /opt/eap/standalone/configuration/application-roles.properties should contain adminUser=kie-server,rest-all,admin,kiemgmt,Administrators
+
+  Scenario: Configure the LDAP authentication with the flag value as optional
+    When container is started with env
+      | variable               | value     |
+      | AUTH_LDAP_LOGIN_MODULE | optional  |
+    Then container log should contain AUTH_LDAP_LOGIN_MODULE is set to optional.
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="optional">
+
+  Scenario: Configure the LDAP authentication with the flag value as required
+    When container is started with env
+      | variable               | value     |
+      | AUTH_LDAP_LOGIN_MODULE | required  |
+    Then container log should contain AUTH_LDAP_LOGIN_MODULE is set to required.
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
+
+
