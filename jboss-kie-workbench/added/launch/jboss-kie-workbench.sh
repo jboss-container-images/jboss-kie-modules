@@ -277,9 +277,9 @@ function configure_metaspace() {
 # required envs for HA
 function configure_ha() {
     # for now lets just use DNS_PING, if KUBE ping is also needed we can add it later
-    if [ "${JGROUPS_PING_PROTOCOL}" = "openshift.DNS_PING" ]; then
+    if [ "${JGROUPS_PING_PROTOCOL}" = "openshift.KUBE_PING" ] || [ "${JGROUPS_PING_PROTOCOL}" = "openshift.DNS_PING" ]; then
         if [ -n "${OPENSHIFT_DNS_PING_SERVICE_NAME}" -a -n "${OPENSHIFT_DNS_PING_SERVICE_PORT}" ]; then
-            log_info "OpenShift DNS_PING protocol envs set, verifying other needed envs for HA setup. Using ${JGROUPS_PING_PROTOCOL}"
+            log_info "OpenShift PING protocol envs set, verifying other needed envs for HA setup. Using protocol ${JGROUPS_PING_PROTOCOL}"
             local jmsBrokerUsername="${APPFORMER_JMS_BROKER_USERNAME:-$APPFORMER_JMS_BROKER_USER}"
             if [ -n "$jmsBrokerUsername" -a -n "$APPFORMER_JMS_BROKER_PASSWORD" -a -n "$APPFORMER_JMS_BROKER_ADDRESS" ] ; then
                 if [ -n "$APPFORMER_INFINISPAN_SERVICE_NAME" -o -n "$APPFORMER_INFINISPAN_HOST" ] ; then
