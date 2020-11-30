@@ -1,0 +1,17 @@
+schema_version: 1
+name: jboss.eap.config.tracing
+version: '1.0'
+description: EAP OpenTracing configuration scripts
+execute:
+- script: configure.sh
+  user: '185'
+envs:
+    - name: "WILDFLY_TRACING_ENABLED"
+      example: "true"
+      description: "Use the microprofile-tracing-smallrye subsystem to add OpenTracing support."
+    - name: "JAEGER_AGENT_HOST"
+      example: "jaeger-agent.myproject.svc"
+      description: "The hostname to use for communicating with a Jaeger agent via UDP. Default is 'localhost', appropriate if the Jaeger agent is a running in a sidecar container in the same pod."
+    - name: "JAEGER_AGENT_PORT"
+      example: "6831"
+      description: "The port to use for communicating with a Jaeger agent via UDP. Default is '6831'."

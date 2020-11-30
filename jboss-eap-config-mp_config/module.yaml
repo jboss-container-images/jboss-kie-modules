@@ -1,0 +1,16 @@
+schema_version: 1
+name: jboss.eap.config.mp-config
+version: '1.0'
+description: EAP jboss.eap.config.mp-config script package. Adds configuration related to the Microprofile Config implemenation.
+execute:
+- script: configure.sh
+  user: '185'
+envs:
+    - name: "MICROPROFILE_CONFIG_DIR"
+      example: "/etc/config"
+      description: Absolute path to a directory whose contents should be converted to a Microprofile Config ConfigSource. File names within the directory are converted to configuration keys and the file contents are the associated values. An expected use of this setting would be to mount a ConfigMap to a volume and then use the mount point of that volume as the value for MICROPROFILE_CONFIG_DIR, thus converting the ConfigMap into a ConfigSource.
+    - name: "MICROPROFILE_CONFIG_DIR_ORDINAL"
+      example: "500"
+      description: Ordinal of the Microprofile Config ConfigSource that will be created if MICROPROFILE_CONFIG_DIR is set. The higher the value the higher the precedence of the ConfigSource. The default precedence for the required Microprofile Config system property and environment variable ConfigSources are 400 and 300, respectively.
+      value: "500"
+

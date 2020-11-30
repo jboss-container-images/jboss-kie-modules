@@ -1,0 +1,15 @@
+schema_version: 1
+name: jboss.eap.cd.openshift.modules
+version: '1.0'
+description: jboss.eap.cd.openshift.modules script package.
+execute:
+- script: configure.sh
+  user: '185'
+
+artifacts:
+- name: txn-recovery-marker-jdbc-common
+  target: txn-recovery-marker-jdbc-common-1.1.2.Final-redhat-00001.jar
+  md5: 874d791e82393006b0d2e621d08fbe00
+- name: txn-recovery-marker-jdbc-hibernate5
+  target: txn-recovery-marker-jdbc-hibernate5-1.1.2.Final-redhat-00001.jar
+  md5: 7f8f5a79f47a354fd1a548428ced7b5b
