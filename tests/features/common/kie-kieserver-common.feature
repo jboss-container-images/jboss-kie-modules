@@ -470,7 +470,7 @@ Feature: Kie Server common features
   Scenario: Check if the KIE_SERVER_MAX_METASPACE_SIZE is correctly set
     When container is started with env
       | variable                       | value   |
-      | KIE_SERVER_MAX_METASPACE_SIZE   | 2048    |
+      | KIE_SERVER_MAX_METASPACE_SIZE  | 2048    |
     Then container log should contain -XX:MaxMetaspaceSize=2048m
 
   Scenario: Check if the GC_MAX_METASPACE_SIZE is correctly set and bypass KIE_SERVER_MAX_METASPACE_SIZE env
@@ -482,6 +482,6 @@ Feature: Kie Server common features
   Scenario: Check if the WORKBENCH_MAX_METASPACE_SIZE takes precedence when KIE_SERVER_MAX_METASPACE_SIZE and GC_MAX_METASPACE_SIZE are set
     When container is started with env
       | variable                       | value   |
-      | KIE_SERVER_MAX_METASPACE_SIZE   | 4096    |
+      | KIE_SERVER_MAX_METASPACE_SIZE  | 4096    |
       | GC_MAX_METASPACE_SIZE          | 2048    |
     Then container log should contain -XX:MaxMetaspaceSize=4096m
