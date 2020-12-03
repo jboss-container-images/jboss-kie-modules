@@ -589,3 +589,30 @@ teardown() {
     [[ "${JBOSS_KIE_ARGS}" == "${expected}" ]]
 }
 
+@test "verify if the GC_MAX_METASPACE_SIZE is set to 512 if KIE_SERVER_MAX_METASPACE_SIZE is not set" {
+    configure_metaspace
+    echo "GC_MAX_METASPACE_SIZE=${GC_MAX_METASPACE_SIZE}"
+    [[ "${GC_MAX_METASPACE_SIZE}" == "512" ]]
+}
+
+@test "verify if the KIE_SERVER_MAX_METASPACE_SIZE is correctly set" {
+    export KIE_SERVER_MAX_METASPACE_SIZE="2048"
+    configure_metaspace
+    echo "GC_MAX_METASPACE_SIZE=${GC_MAX_METASPACE_SIZE}"
+    [[ "${GC_MAX_METASPACE_SIZE}" == "2048" ]]
+}
+
+@test "verify if the GC_MAX_METASPACE_SIZE is correctly set and bypass KIE_SERVER_MAX_METASPACE_SIZE env" {
+    export GC_MAX_METASPACE_SIZE="4096"
+    configure_metaspace
+    echo "GC_MAX_METASPACE_SIZE=${GC_MAX_METASPACE_SIZE}"
+    [[ "${GC_MAX_METASPACE_SIZE}" == "4096" ]]
+}
+
+@test "verify if the KIE_SERVER_MAX_METASPACE_SIZE takes precedence when KIESERVER_MAX_METASPACE_SIZE and GC_MAX_METASPACE_SIZE are set" {
+    export KIE_SERVER_MAX_METASPACE_SIZE="4096"
+    export GC_MAX_METASPACE_SIZE="2048"
+    configure_metaspace
+    echo "GC_MAX_METASPACE_SIZE=${GC_MAX_METASPACE_SIZE}"
+    [[ "${GC_MAX_METASPACE_SIZE}" == "${KIE_SERVER_MAX_METASPACE_SIZE}" ]]
+}

@@ -69,6 +69,7 @@ function configure() {
     configure_jbpm
     configure_kie_server_mgmt
     configure_mode
+    configure_metaspace
     configure_prometheus
     configure_optaplanner
     # configure_server_state always has to be last
@@ -430,6 +431,13 @@ function configure_router_access {
         local kieServerRouterUrl=$(build_simple_url "${kieServerRouterProtocol}" "${kieServerRouterHost}" "${kieServerRouterPort}" "")
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router=${kieServerRouterUrl}"
     fi
+}
+
+# Set the max metaspace size for the kieserver
+# It avoid to set the max metaspace size if there is a multiple container instantiation.
+function configure_metaspace() {
+    local gcMaxMetaspace=${GC_MAX_METASPACE_SIZE:-512}
+    export GC_MAX_METASPACE_SIZE=${KIE_SERVER_MAX_METASPACE_SIZE:-${gcMaxMetaspace}}
 }
 
 function configure_drools() {
