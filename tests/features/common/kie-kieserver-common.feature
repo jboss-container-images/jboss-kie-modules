@@ -463,3 +463,25 @@ Feature: Kie Server common features
     And file /home/jboss/.m2/settings.xml should contain <url>http://nexus-test.127.0.0.1.nip.ip/nexus/</url>
     And file /home/jboss/.m2/settings.xml should contain <mirrorOf>external:*</mirrorOf>
 
+  Scenario: Check if the GC_MAX_METASPACE_SIZE is set to 512 if KIE_SERVER_MAX_METASPACE_SIZE is not set
+    When container is ready
+    Then container log should contain -XX:MaxMetaspaceSize=512m
+
+  Scenario: Check if the KIE_SERVER_MAX_METASPACE_SIZE is correctly set
+    When container is started with env
+      | variable                       | value   |
+      | KIE_SERVER_MAX_METASPACE_SIZE  | 2048    |
+    Then container log should contain -XX:MaxMetaspaceSize=2048m
+
+  Scenario: Check if the GC_MAX_METASPACE_SIZE is correctly set and bypass KIE_SERVER_MAX_METASPACE_SIZE env
+    When container is started with env
+      | variable                | value   |
+      | GC_MAX_METASPACE_SIZE   | 4096    |
+    Then container log should contain -XX:MaxMetaspaceSize=4096m
+
+  Scenario: Check if the WORKBENCH_MAX_METASPACE_SIZE takes precedence when KIE_SERVER_MAX_METASPACE_SIZE and GC_MAX_METASPACE_SIZE are set
+    When container is started with env
+      | variable                       | value   |
+      | KIE_SERVER_MAX_METASPACE_SIZE  | 4096    |
+      | GC_MAX_METASPACE_SIZE          | 2048    |
+    Then container log should contain -XX:MaxMetaspaceSize=4096m
