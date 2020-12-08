@@ -80,8 +80,8 @@ teardown() {
 
 @test "verify if EJB_TIMER related settings are changed" {
   local TIMER_SERVICE_DATA_STORE="EJB_TIMER"
-  local KIE_EJB_TIMER_TX="false"
-  local KIE_EJB_TIMER_LOCAL_CACHE="true"
+  local JBPM_EJB_TIMER_TX="false"
+  local JBPM_EJB_TIMER_LOCAL_CACHE="true"
   local expected_ejb_timer_tx="-Dorg.jbpm.ejb.timer.tx=false"
   local expected_ejb_timer_local_cache="-Dorg.jbpm.ejb.timer.local.cache=true"
   configure_EJB_Timer_datasource >&2
