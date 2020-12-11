@@ -16,10 +16,10 @@ function configure() {
 }
 
 function check_view_pods_permission() {
-    if [ -n "${KUBERNETES_NAMESPACE+_}" ]; then
+    if [ -n "${OPENSHIFT_KUBE_PING_NAMESPACE+_}" ]; then
         local CA_CERT="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
         local CURL_CERT_OPTION
-        pods_url="https://${KUBERNETES_SERVICE_HOST:-kubernetes.default.svc}:${KUBERNETES_SERVICE_PORT:-443}/api/${OPENSHIFT_KUBE_PING_API_VERSION:-v1}/namespaces/${KUBERNETES_NAMESPACE}/pods"
+        pods_url="https://${KUBERNETES_SERVICE_HOST:-kubernetes.default.svc}:${KUBERNETES_SERVICE_PORT:-443}/api/${OPENSHIFT_KUBE_PING_API_VERSION:-v1}/namespaces/${OPENSHIFT_KUBE_PING_NAMESPACE}/pods"
         if [ -n "${OPENSHIFT_KUBE_PING_LABELS}" ]; then
             pods_labels="labels=${OPENSHIFT_KUBE_PING_LABELS}"
         else
@@ -42,7 +42,7 @@ function check_view_pods_permission() {
             log_warning "Service account unable to test permissions to view pods in kubernetes (HTTP ${pods_code}). Clustering might be unavailable. Please refer to the documentation for configuration."
         fi
     else
-        log_warning "Environment variable KUBERNETES_NAMESPACE undefined. Clustering will be unavailable. Please refer to the documentation for configuration."
+        log_warning "Environment variable OPENSHIFT_KUBE_PING_NAMESPACE undefined. Clustering will be unavailable. Please refer to the documentation for configuration."
     fi
 }
 
@@ -53,10 +53,12 @@ function validate_dns_ping_settings() {
 }
 
 function validate_ping_protocol() {
-  if [ "$1" = "kubernetes.KUBE_PING" ]; then
+  if [ "$1" = "openshift.KUBE_PING" ]; then
     check_view_pods_permission
+  elif [ "$1" = "openshift.DNS_PING" ]; then
+    validate_dns_ping_settings
   else
-    log_warning "Unknown protocol specified for JGroups discovery protocol: $1.  Expecting one of: kubernetes.KUBE_PING."
+    log_warning "Unknown protocol specified for JGroups discovery protocol: $1.  Expecting one of: openshift.KUBE_PING or openshift.DNS_PING."
   fi
 }
 
@@ -78,7 +80,7 @@ function configure_ha() {
                 </protocol>\n"
   fi
 
-  local ping_protocol=${JGROUPS_PING_PROTOCOL:-kubernetes.KUBE_PING}
+  local ping_protocol=${JGROUPS_PING_PROTOCOL:-openshift.KUBE_PING}
   local ping_protocol_element="<protocol type=\"${ping_protocol}\" socket-binding=\"jgroups-mping\"/>"
   validate_ping_protocol "${ping_protocol}" 
 
