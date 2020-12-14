@@ -80,8 +80,8 @@ teardown() {
 
 @test "verify if EJB_TIMER related settings are changed" {
   local TIMER_SERVICE_DATA_STORE="EJB_TIMER"
-  local KIE_EJB_TIMER_TX="false"
-  local KIE_EJB_TIMER_LOCAL_CACHE="true"
+  local JBPM_EJB_TIMER_TX="false"
+  local JBPM_EJB_TIMER_LOCAL_CACHE="true"
   local expected_ejb_timer_tx="-Dorg.jbpm.ejb.timer.tx=false"
   local expected_ejb_timer_local_cache="-Dorg.jbpm.ejb.timer.local.cache=true"
   configure_EJB_Timer_datasource >&2
@@ -589,3 +589,30 @@ teardown() {
     [[ "${JBOSS_KIE_ARGS}" == "${expected}" ]]
 }
 
+@test "verify if the GC_MAX_METASPACE_SIZE is set to 512 if KIE_SERVER_MAX_METASPACE_SIZE is not set" {
+    configure_metaspace
+    echo "GC_MAX_METASPACE_SIZE=${GC_MAX_METASPACE_SIZE}"
+    [[ "${GC_MAX_METASPACE_SIZE}" == "512" ]]
+}
+
+@test "verify if the KIE_SERVER_MAX_METASPACE_SIZE is correctly set" {
+    export KIE_SERVER_MAX_METASPACE_SIZE="2048"
+    configure_metaspace
+    echo "GC_MAX_METASPACE_SIZE=${GC_MAX_METASPACE_SIZE}"
+    [[ "${GC_MAX_METASPACE_SIZE}" == "2048" ]]
+}
+
+@test "verify if the GC_MAX_METASPACE_SIZE is correctly set and bypass KIE_SERVER_MAX_METASPACE_SIZE env" {
+    export GC_MAX_METASPACE_SIZE="4096"
+    configure_metaspace
+    echo "GC_MAX_METASPACE_SIZE=${GC_MAX_METASPACE_SIZE}"
+    [[ "${GC_MAX_METASPACE_SIZE}" == "4096" ]]
+}
+
+@test "verify if the KIE_SERVER_MAX_METASPACE_SIZE takes precedence when KIESERVER_MAX_METASPACE_SIZE and GC_MAX_METASPACE_SIZE are set" {
+    export KIE_SERVER_MAX_METASPACE_SIZE="4096"
+    export GC_MAX_METASPACE_SIZE="2048"
+    configure_metaspace
+    echo "GC_MAX_METASPACE_SIZE=${GC_MAX_METASPACE_SIZE}"
+    [[ "${GC_MAX_METASPACE_SIZE}" == "${KIE_SERVER_MAX_METASPACE_SIZE}" ]]
+}

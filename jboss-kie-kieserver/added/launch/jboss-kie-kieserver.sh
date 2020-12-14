@@ -14,14 +14,14 @@ function prepareEnv() {
     unset JBPM_HT_CALLBACK_METHOD
     unset JBPM_LOOP_LEVEL_DISABLED
     unset KIE_EXECUTOR_RETRIES
+    unset JBPM_EJB_TIMER_LOCAL_CACHE
+    unset JBPM_EJB_TIMER_TX
     unset_kie_security_env
     unset KIE_SERVER_CONTAINER_DEPLOYMENT
     unset KIE_SERVER_CONTROLLER_HOST
     unset KIE_SERVER_CONTROLLER_PORT
     unset KIE_SERVER_CONTROLLER_PROTOCOL
     unset KIE_SERVER_CONTROLLER_SERVICE
-    unset KIE_EJB_TIMER_LOCAL_CACHE
-    unset KIE_EJB_TIMER_TX
     unset KIE_SERVER_HOST
     unset KIE_SERVER_ID
     unset KIE_SERVER_LOCATION
@@ -69,6 +69,7 @@ function configure() {
     configure_jbpm
     configure_kie_server_mgmt
     configure_mode
+    configure_metaspace
     configure_prometheus
     configure_optaplanner
     # configure_server_state always has to be last
@@ -123,8 +124,8 @@ function configure_EJB_Timer_datasource {
     fi
 
     if [ -n "${TIMER_SERVICE_DATA_STORE}" ]; then
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ejb.timer.tx=${KIE_EJB_TIMER_TX:-true}"
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ejb.timer.local.cache=${KIE_EJB_TIMER_LOCAL_CACHE:-false}"
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ejb.timer.tx=${JBPM_EJB_TIMER_TX:-true}"
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ejb.timer.local.cache=${JBPM_EJB_TIMER_LOCAL_CACHE:-false}"
     fi
 }
 
@@ -430,6 +431,13 @@ function configure_router_access {
         local kieServerRouterUrl=$(build_simple_url "${kieServerRouterProtocol}" "${kieServerRouterHost}" "${kieServerRouterPort}" "")
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.router=${kieServerRouterUrl}"
     fi
+}
+
+# Set the max metaspace size for the kieserver
+# It avoid to set the max metaspace size if there is a multiple container instantiation.
+function configure_metaspace() {
+    local gcMaxMetaspace=${GC_MAX_METASPACE_SIZE:-512}
+    export GC_MAX_METASPACE_SIZE=${KIE_SERVER_MAX_METASPACE_SIZE:-${gcMaxMetaspace}}
 }
 
 function configure_drools() {
