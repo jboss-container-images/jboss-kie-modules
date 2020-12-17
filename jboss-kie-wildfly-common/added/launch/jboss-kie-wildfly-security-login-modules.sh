@@ -12,6 +12,7 @@ function unset_kie_security_auth_env() {
     unset AUTH_LDAP_DEFAULT_ROLE
     unset AUTH_LDAP_DISTINGUISHED_NAME_ATTRIBUTE
     unset AUTH_LDAP_JAAS_SECURITY_DOMAIN
+    unset AUTH_LDAP_LOGIN_MODULE
     unset AUTH_LDAP_PARSE_ROLE_NAME_FROM_DN
     unset AUTH_LDAP_PARSE_USERNAME
     unset AUTH_LDAP_REFERRAL_USER_ATTRIBUTE_ID_TO_CHECK
@@ -71,7 +72,11 @@ function configure_ldap_login_module() {
     # RHPAM-1422, if the RealmDirect is set as Required, ldap auth will fail.
     # TODO remove it out as part of the CLOUD-2750
     sed -i 's|<login-module code="RealmDirect" flag="required">|<login-module code="RealmDirect" flag="optional">|' "${CONFIG_FILE}"
-    local login_module=$(build_login_module "LdapExtended" "required")
+    local ldap_login_module_flag="${AUTH_LDAP_LOGIN_MODULE:-required}"
+    if [ "${ldap_login_module_flag}" = "optional" ]; then
+        ldap_login_module_flag="optional"
+    fi
+    local login_module=$(build_login_module "LdapExtended" "${ldap_login_module_flag}")
     login_module=$(add_option "$login_module" "java.naming.provider.url" "${AUTH_LDAP_URL}")
     login_module=$(add_option "$login_module" "jaasSecurityDomain" "${AUTH_LDAP_JAAS_SECURITY_DOMAIN}")
     login_module=$(add_option "$login_module" "bindDN" "${AUTH_LDAP_BIND_DN}")
