@@ -198,9 +198,9 @@ def create_template(data, path):
                 for param in data["parameters"]:
                     if "example" in param:
                         if not isinstance(param["example"], int) and param["example"].endswith("app-secret"):
-                            secret_name += param["example"] + '\n'
+                            secret_name += ' * ' + param["example"] + '\n'
                     elif "value" in param and param["value"].endswith("app-secret"):
-                        secret_name += param["value"] + '\n'
+                        secret_name += ' * ' + param["value"] + '\n'
                 tdata['objects'][0]['secrets'] = [{"secretNames": secret_name}]
 
         # Any template that supports clustering needs to be added in the clusteringTemplates var.
