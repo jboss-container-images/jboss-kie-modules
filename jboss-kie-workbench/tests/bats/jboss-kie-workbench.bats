@@ -136,3 +136,15 @@ teardown() {
     echo "Result: ${MAVEN_LOCAL_REPO}"
     [ "${MAVEN_LOCAL_REPO}" = "/tmp/test/123" ]
 }
+
+@test "test if the dashbuilder properties will be correctly set." {
+    export KIE_DASHBUILDER_RUNTIME_LOCATION="http://dashbuilder:8080"
+    expected=" -Ddashbuilder.runtime.location=http://dashbuilder:8080 -Ddashbuilder.export.dir=/opt/kie/data/dash"
+
+    configure_dashbuilder
+
+    echo "Expected: ${expected}"
+    echo "Result  : ${JBOSS_KIE_ARGS}"
+
+    [ "${JBOSS_KIE_ARGS}" = "${expected}" ]
+}

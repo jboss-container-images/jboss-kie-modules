@@ -39,7 +39,7 @@ Feature: RHPAM Dashbuilder Runtime configuration tests
     Then container log should contain -Ddashbuilder.runtime.allowExternal=false
      And container log should contain -Ddashbuilder.components.partition=true
      And container log should contain -Ddashbuilder.dataset.partition=true
-     And container log should contain -Ddashbuilder.import.base.dir=/opt/kie/data/imports
+     And container log should contain -Ddashbuilder.import.base.dir=/opt/kie/dashbuilder/imports
      And container log should contain -Ddashbuilder.removeModelFile=false
      And container log should contain -Ddashbuilder.runtime.multi=false
 
@@ -63,12 +63,12 @@ Feature: RHPAM Dashbuilder Runtime configuration tests
       | DASHBUILDER_IMPORT_FILE_LOCATION | /tmp/test.zip |
     Then container log should contain -Ddashbuilder.runtime.import=/tmp/test.zip
      And container log should not contain -Ddashbuilder.import.base.dir
-     And container log should not contain set using DASHBUILDER_IMPORTS_BASE_DIR env does not exist, using the default /opt/kie/data/imports
+     And container log should not contain set using DASHBUILDER_IMPORTS_BASE_DIR env does not exist, using the default /opt/kie/dashbuilder/imports
 
   Scenario: Verify if the default value for dashbuilder.import.base.dir is correctly set
     When container is ready
-    Then container log should contain -Ddashbuilder.import.base.dir=/opt/kie/data/imports
-     And container log should not contain set using DASHBUILDER_IMPORTS_BASE_DIR env does not exist, using the default /opt/ki0/datae/imports
+    Then container log should contain -Ddashbuilder.import.base.dir=/opt/kie/dashbuilder/imports
+     And container log should not contain set using DASHBUILDER_IMPORTS_BASE_DIR env does not exist, using the default /opt/kie/dashbuilder/imports
      And container log should not contain -Ddashbuilder.runtime.import
 
   Scenario: Verify if DASHBUILDER_IMPORTS_BASE_DIR is correctly set
@@ -82,9 +82,9 @@ Feature: RHPAM Dashbuilder Runtime configuration tests
     When container is started with env
       | variable                      | value     |
       | DASHBUILDER_IMPORTS_BASE_DIR  | /nonsense |
-    Then container log should contain The directory [/nonsense] set using DASHBUILDER_IMPORTS_BASE_DIR env does not exist, using the default [/opt/kie/data/imports]
-     And container log should contain Dashbuilder file location import dir is /opt/kie/data/imports
-     And container log should contain -Ddashbuilder.import.base.dir=/opt/kie/data/imports
+    Then container log should contain The directory [/nonsense] set using DASHBUILDER_IMPORTS_BASE_DIR env does not exist, using the default [/opt/kie/dashbuilder/imports]
+     And container log should contain Dashbuilder file location import dir is /opt/kie/dashbuilder/imports
+     And container log should contain -Ddashbuilder.import.base.dir=/opt/kie/dashbuilder/imports
 
   Scenario: Verify if DASHBUILDER_MODEL_UPDATE and DASHBUILDER_MODEL_FILE_REMOVAL and DASHBUILDER_RUNTIME_MULTIPLE_IMPORT are correctly set
     When container is started with env
@@ -93,7 +93,7 @@ Feature: RHPAM Dashbuilder Runtime configuration tests
       | DASHBUILDER_MODEL_FILE_REMOVAL      | true   |
       | DASHBUILDER_RUNTIME_MULTIPLE_IMPORT | true   |
     Then container log should not contain dashbuilder.runtime.import
-     And container log should contain -Ddashbuilder.import.base.dir=/opt/kie/data/imports
+     And container log should contain -Ddashbuilder.import.base.dir=/opt/kie/dashbuilder/imports
      And container log should contain -Ddashbuilder.model.update=false
      And container log should contain -Ddashbuilder.removeModelFile=true
      And container log should contain -Ddashbuilder.runtime.multi=true
@@ -107,31 +107,38 @@ Feature: RHPAM Dashbuilder Runtime configuration tests
   Scenario: Verify if external component configuration is correctly set with default values
     When container is started with env
       | variable                | value  |
-      | DASHBUILDER_COMP_ENABLE | true   |
     Then container log should contain -Ddashbuilder.components.enable=true
-     And container log should contain -Ddashbuilder.components.dir=/opt/kie/data/components
-     And container log should not contain set using DASHBUILDER_EXTERNAL_COMP_DIR env does not exist, the default /opt/kie/data/components
+     And container log should contain -Ddashbuilder.components.dir=/opt/kie/dashbuilder/components
+     And container log should not contain set using DASHBUILDER_EXTERNAL_COMP_DIR env does not exist, the default /opt/kie/dashbuilder/components
 
   Scenario: Verify if external component configuration is correctly set with custom directory
     When container is started with env
       | variable                      | value  |
-      | DASHBUILDER_COMP_ENABLE       | true   |
       | DASHBUILDER_EXTERNAL_COMP_DIR | /tmp   |
     Then container log should contain -Ddashbuilder.components.enable=true
      And container log should contain -Ddashbuilder.components.dir=/tmp
      And container log should contain Dashbuilder external component enabled, component dir is /tmp
-     And container log should not contain set using DASHBUILDER_EXTERNAL_COMP_DIR env does not exist, the default /opt/kie/data/components
+     And container log should not contain set using DASHBUILDER_EXTERNAL_COMP_DIR env does not exist, the default /opt/kie/dashbuilder/components
 
   Scenario: Verify if external component configuration is correctly set with invalid custom directory
     When container is started with env
       | variable                      | value     |
-      | DASHBUILDER_COMP_ENABLE       | true      |
       | DASHBUILDER_EXTERNAL_COMP_DIR | /nonsense |
     Then container log should contain -Ddashbuilder.components.enable=true
-     And container log should contain -Ddashbuilder.components.dir=/opt/kie/data/components
-     And container log should contain Dashbuilder external component enabled, component dir is /opt/kie/data/components
-     And container log should contain The directory [/nonsense] set using DASHBUILDER_EXTERNAL_COMP_DIR env does not exist, the default [/opt/kie/data/components]
+     And container log should contain -Ddashbuilder.components.dir=/opt/kie/dashbuilder/components
+     And container log should contain Dashbuilder external component enabled, component dir is /opt/kie/dashbuilder/components
+     And container log should contain The directory [/nonsense] set using DASHBUILDER_EXTERNAL_COMP_DIR env does not exist, the default [/opt/kie/dashbuilder/components]
 
+
+  Scenario: Verify if external component configuration is correctly set with invalid custom directory
+    When container is started with env
+      | variable                      | value     |
+      | DASHBUILDER_COMP_ENABLE       | false     |
+      | DASHBUILDER_EXTERNAL_COMP_DIR | /nonsense |
+    Then container log should contain -Ddashbuilder.components.enable=false
+     And container log should not contain -Ddashbuilder.components.dir=/opt/kie/dashbuilder/components
+     And container log should not contain Dashbuilder external component enabled, component dir is /opt/kie/dashbuilder/components
+     And container log should not contain The directory [/nonsense] set using DASHBUILDER_EXTERNAL_COMP_DIR env does not exist, the default [/opt/kie/dashbuilder/components]
 
   Scenario: Verify if the KIE Server DataSet is correctly configured using credentials
     When container is started with env
@@ -225,3 +232,15 @@ Feature: RHPAM Dashbuilder Runtime configuration tests
      And container log should not contain -Ddashbuilder.kieserver.serverTemplate.ServerTemplateTest.user
      And container log should not contain -Ddashbuilder.kieserver.serverTemplate.ServerTemplateTest.password
 
+  Scenario: Verify if the KIE Server serverTemplate with dash is correctly configured using credentials
+    When container is started with env
+      | variable                      | value                 |
+      | SCRIPT_DEBUG                  | true                  |
+      | KIESERVER_SERVER_TEMPLATES    | server-template-test  |
+      | server_template_test_LOCATION | http://localmoon.com  |
+      | server_template_test_USER     | moon                  |
+      | server_template_test_PASSWORD | sun                   |
+    Then container log should contain -Ddashbuilder.kieserver.serverTemplate.server-template-test.location=http://localmoon.com
+     And container log should contain -Ddashbuilder.kieserver.serverTemplate.server-template-test.replace_query=false
+     And container log should contain -Ddashbuilder.kieserver.serverTemplate.server-template-test.user=moon
+     And container log should contain -Ddashbuilder.kieserver.serverTemplate.server-template-test.password=sun

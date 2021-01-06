@@ -92,7 +92,7 @@ configure_dashbuilder_auth() {
 
     echo "Result: ${JBOSS_KIE_DASHBUILDER_ARGS}"
     [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" != "dashbuilder.runtime.import"* ]]
-    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.import.base.dir=/opt/kie/data/imports"* ]]
+    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.import.base.dir=/opt/kie/dashbuilder/imports"* ]]
 }
 
 @test "test configure_dashbuilder_file_imports function with valid DASHBUILDER_IMPORTS_BASE_DIR env" {
@@ -112,7 +112,7 @@ configure_dashbuilder_auth() {
 
     echo "Result: ${JBOSS_KIE_DASHBUILDER_ARGS}"
     [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" != "dashbuilder.runtime.import"* ]]
-    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.import.base.dir=/opt/kie/data/imports"* ]]
+    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.import.base.dir=/opt/kie/dashbuilder/imports"* ]]
 }
 
 @test "test configure_dashbuilder_file_imports function with DASHBUILDER_MODEL_UPDATE env" {
@@ -122,7 +122,7 @@ configure_dashbuilder_auth() {
 
     echo "Result: ${JBOSS_KIE_DASHBUILDER_ARGS}"
     [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" != "dashbuilder.runtime.import"* ]]
-    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.import.base.dir=/opt/kie/data/imports"* ]]
+    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.import.base.dir=/opt/kie/dashbuilder/imports"* ]]
     [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.model.update=false"* ]]
 }
 
@@ -131,7 +131,7 @@ configure_dashbuilder_auth() {
 
     echo "Result: ${JBOSS_KIE_DASHBUILDER_ARGS}"
     [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" != "dashbuilder.runtime.import"* ]]
-    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.import.base.dir=/opt/kie/data/imports"* ]]
+    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.import.base.dir=/opt/kie/dashbuilder/imports"* ]]
     [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.removeModelFile=false"* ]]
 }
 
@@ -142,7 +142,7 @@ configure_dashbuilder_auth() {
 
     echo "Result: ${JBOSS_KIE_DASHBUILDER_ARGS}"
     [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" != "dashbuilder.runtime.import"* ]]
-    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.import.base.dir=/opt/kie/data/imports"* ]]
+    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.import.base.dir=/opt/kie/dashbuilder/imports"* ]]
     [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.removeModelFile=true"* ]]
 }
 
@@ -153,7 +153,7 @@ configure_dashbuilder_auth() {
 
     echo "Result: ${JBOSS_KIE_DASHBUILDER_ARGS}"
     [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" != "dashbuilder.runtime.import"* ]]
-    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.import.base.dir=/opt/kie/data/imports"* ]]
+    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.import.base.dir=/opt/kie/dashbuilder/imports"* ]]
     [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.removeModelFile=false"* ]]
 }
 
@@ -194,17 +194,15 @@ configure_dashbuilder_auth() {
 
 
 @test "test configure_dashbuilder_external_component with default component dir" {
-    export DASHBUILDER_COMP_ENABLE="true"
 
     configure_dashbuilder_external_component
 
     echo "Result: ${JBOSS_KIE_DASHBUILDER_ARGS}"
     [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.components.enable=true"* ]]
-    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.components.dir=/opt/kie/data/components"* ]]
+    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.components.dir=/opt/kie/dashbuilder/components"* ]]
 }
 
 @test "test configure_dashbuilder_external_component with custom component dir" {
-    export DASHBUILDER_COMP_ENABLE="true"
     export DASHBUILDER_EXTERNAL_COMP_DIR="/tmp"
 
     configure_dashbuilder_external_component
@@ -215,19 +213,27 @@ configure_dashbuilder_auth() {
 }
 
 @test "test configure_dashbuilder_external_component with nonsense component dir" {
-    export DASHBUILDER_COMP_ENABLE="true"
     export DASHBUILDER_EXTERNAL_COMP_DIR="nonsense"
 
     configure_dashbuilder_external_component
 
     echo "Result: ${JBOSS_KIE_DASHBUILDER_ARGS}"
     [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.components.enable=true"* ]]
-    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.components.dir=/opt/kie/data/components"* ]]
+    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.components.dir=/opt/kie/dashbuilder/components"* ]]
+}
+
+@test "test configure_dashbuilder_external_component with component set to false" {
+    export DASHBUILDER_COMP_ENABLE="false"
+    configure_dashbuilder_external_component
+
+    echo "Result: ${JBOSS_KIE_DASHBUILDER_ARGS}"
+    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" = *" -Ddashbuilder.components.enable=false"* ]]
+    [[ "${JBOSS_KIE_DASHBUILDER_ARGS}" != *" -Ddashbuilder.components.dir=/opt/kie/dashbuilder/components"* ]]
 }
 
 @test "test configuration with config_map" {
     export DASHBUILDER_CONFIG_MAP_PROPS="$BATS_TEST_DIRNAME/props/dashbuilder.properties"
-    expected="-Ddashbuilder.runtime.allowExternal=true -Ddashbuilder.components.partition=true -Ddashbuilder.dataset.partition=true -Ddashbuilder.import.base.dir=/opt/kie/data/imports -Ddashbuilder.removeModelFile=false -Ddashbuilder.runtime.multi=true -Ddashbuilder.runtime.import=/tmp -Ddashbuilder.runtime.upload.size=1000"
+    expected="-Ddashbuilder.runtime.allowExternal=true -Ddashbuilder.components.partition=true -Ddashbuilder.dataset.partition=true -Ddashbuilder.import.base.dir=/opt/kie/dashbuilder/imports -Ddashbuilder.removeModelFile=false -Ddashbuilder.runtime.multi=true -Ddashbuilder.components.enable=true -Ddashbuilder.components.dir=/opt/kie/dashbuilder/components -Ddashbuilder.runtime.import=/tmp -Ddashbuilder.runtime.upload.size=1000"
 
     configure
 
@@ -293,7 +299,7 @@ configure_dashbuilder_auth() {
     export dataset_test_USER="moon"
     export dataset_test_PASSWORD="sun"
 
-    expected="-Ddashbuilder.runtime.allowExternal=false -Ddashbuilder.components.partition=true -Ddashbuilder.dataset.partition=true -Ddashbuilder.import.base.dir=/opt/kie/data/imports -Ddashbuilder.removeModelFile=false -Ddashbuilder.runtime.multi=false -Ddashbuilder.kieserver.dataset.dataset_test.location=http://localmoon.com -Ddashbuilder.kieserver.dataset.dataset_test.replace_query=false -Ddashbuilder.kieserver.dataset.dataset_test.user=moon -Ddashbuilder.kieserver.dataset.dataset_test.password=sun -Ddashbuilder.kieserver.dataset.DataSetTest.location=http://localmoon.com -Ddashbuilder.kieserver.dataset.DataSetTest.user=test -Ddashbuilder.kieserver.dataset.DataSetTest.password=test_pwd"
+    expected="-Ddashbuilder.runtime.allowExternal=false -Ddashbuilder.components.partition=true -Ddashbuilder.dataset.partition=true -Ddashbuilder.import.base.dir=/opt/kie/dashbuilder/imports -Ddashbuilder.removeModelFile=false -Ddashbuilder.runtime.multi=false -Ddashbuilder.components.enable=true -Ddashbuilder.components.dir=/opt/kie/dashbuilder/components -Ddashbuilder.kieserver.dataset.dataset_test.location=http://localmoon.com -Ddashbuilder.kieserver.dataset.dataset_test.replace_query=false -Ddashbuilder.kieserver.dataset.dataset_test.user=moon -Ddashbuilder.kieserver.dataset.dataset_test.password=sun -Ddashbuilder.kieserver.dataset.DataSetTest.location=http://localmoon.com -Ddashbuilder.kieserver.dataset.DataSetTest.user=test -Ddashbuilder.kieserver.dataset.DataSetTest.password=test_pwd"
 
     configure
 
@@ -331,6 +337,26 @@ configure_dashbuilder_auth() {
     [ "${JBOSS_KIE_DASHBUILDER_ARGS}" = "${expected}" ]
 }
 
+@test "test Kie Server server template and dataset with dash" {
+    export KIESERVER_SERVER_TEMPLATES="Server-Template-Test"
+    export Server_Template_Test_LOCATION="http://localmoon.com"
+    export Server_Template_Test_TOKEN="my_cool_token"
+
+    export KIESERVER_DATASETS="dataset-test"
+    export dataset_test_LOCATION="http://localmoon.com"
+    export dataset_test_USER="moon"
+    export dataset_test_PASSWORD="sun"
+
+    expected=" -Ddashbuilder.kieserver.serverTemplate.Server-Template-Test.location=http://localmoon.com -Ddashbuilder.kieserver.serverTemplate.Server-Template-Test.replace_query=false -Ddashbuilder.kieserver.serverTemplate.Server-Template-Test.token=my_cool_token -Ddashbuilder.kieserver.dataset.dataset-test.location=http://localmoon.com -Ddashbuilder.kieserver.dataset.dataset-test.replace_query=false -Ddashbuilder.kieserver.dataset.dataset-test.user=moon -Ddashbuilder.kieserver.dataset.dataset-test.password=sun"
+
+    configure_dashbuilder_kieserver_server_template
+    configure_dashbuilder_kieserver_dataset
+
+    echo "Result  : ${JBOSS_KIE_DASHBUILDER_ARGS}"
+    echo "Expected: ${expected}"
+    [ "${JBOSS_KIE_DASHBUILDER_ARGS}" = "${expected}" ]
+}
+
 @test "test multiple Kie Server server template with credentials and token" {
     export KIESERVER_SERVER_TEMPLATES="server_template_test,ServerTemplateTest"
     export server_template_test_LOCATION="http://localmoon.com"
@@ -355,7 +381,7 @@ configure_dashbuilder_auth() {
     export server_template_test_USER="moon"
     export server_template_test_PASSWORD="sun"
 
-    expected="-Ddashbuilder.runtime.allowExternal=false -Ddashbuilder.components.partition=true -Ddashbuilder.dataset.partition=true -Ddashbuilder.import.base.dir=/opt/kie/data/imports -Ddashbuilder.removeModelFile=false -Ddashbuilder.runtime.multi=false -Ddashbuilder.kieserver.serverTemplate.server_template_test.location=http://localmoon.com -Ddashbuilder.kieserver.serverTemplate.server_template_test.replace_query=false -Ddashbuilder.kieserver.serverTemplate.server_template_test.user=moon -Ddashbuilder.kieserver.serverTemplate.server_template_test.password=sun -Ddashbuilder.kieserver.serverTemplate.ServerTemplateTest.location=http://localmoon.com -Ddashbuilder.kieserver.serverTemplate.ServerTemplateTest.user=test -Ddashbuilder.kieserver.serverTemplate.ServerTemplateTest.password=test_pwd"
+    expected="-Ddashbuilder.runtime.allowExternal=false -Ddashbuilder.components.partition=true -Ddashbuilder.dataset.partition=true -Ddashbuilder.import.base.dir=/opt/kie/dashbuilder/imports -Ddashbuilder.removeModelFile=false -Ddashbuilder.runtime.multi=false -Ddashbuilder.components.enable=true -Ddashbuilder.components.dir=/opt/kie/dashbuilder/components -Ddashbuilder.kieserver.serverTemplate.server_template_test.location=http://localmoon.com -Ddashbuilder.kieserver.serverTemplate.server_template_test.replace_query=false -Ddashbuilder.kieserver.serverTemplate.server_template_test.user=moon -Ddashbuilder.kieserver.serverTemplate.server_template_test.password=sun -Ddashbuilder.kieserver.serverTemplate.ServerTemplateTest.location=http://localmoon.com -Ddashbuilder.kieserver.serverTemplate.ServerTemplateTest.user=test -Ddashbuilder.kieserver.serverTemplate.ServerTemplateTest.password=test_pwd"
 
     configure
 

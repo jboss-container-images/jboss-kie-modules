@@ -11,7 +11,7 @@ mkdir -p ${JBOSS_HOME}/bin/launch
 cp -r ${ADDED_DIR}/launch/* ${JBOSS_HOME}/bin/launch
 chmod ug+x ${JBOSS_HOME}/bin/openshift-launch.sh
 
-mkdir -p /opt/kie/data/{imports,components}
+mkdir -p /opt/kie/dashbuilder/{imports,components}
 chown -R jboss:root /opt/kie
 
 # Set bin permissions

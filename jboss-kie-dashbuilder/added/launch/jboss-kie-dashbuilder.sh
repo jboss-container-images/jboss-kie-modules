@@ -23,6 +23,12 @@ function prepareEnv() {
     unset_kie_security_env
 }
 
+function preConfigure() {
+    # safety check, make sure the /opt/kie/dashbuilder/{imports,components} directories
+    # are created when using Persistent Volumes
+    mkdir -p  /opt/kie/dashbuilder/{imports,components} 2&> /dev/null
+}
+
 function configureEnv() {
     configure
 }
@@ -69,7 +75,7 @@ function configure_dashbuilder_partitions() {
 }
 
 function configure_dashbuilder_file_imports() {
-    local kie_data_import_dir="/opt/kie/data/imports"
+    local kie_data_import_dir="/opt/kie/dashbuilder/imports"
 
     if [ -n "${DASHBUILDER_IMPORT_FILE_LOCATION}" ]; then
         # error handling is done by dashbuilder application
@@ -115,8 +121,9 @@ function configure_dasbuilder_file_import_properties() {
 }
 
 function configure_dashbuilder_external_component() {
-    local kie_data_external_comp_dir="/opt/kie/data/components"
-    if [ "${DASHBUILDER_COMP_ENABLE^^}" = "TRUE" ]; then
+    local kie_data_external_comp_dir="/opt/kie/dashbuilder/components"
+    local compEnable="${DASHBUILDER_COMP_ENABLE:-TRUE}"
+    if [ "${compEnable^^}" = "TRUE" ]; then
 
         if [ ! -d "${DASHBUILDER_EXTERNAL_COMP_DIR}" ]; then
             if [ "${DASHBUILDER_EXTERNAL_COMP_DIR}x" != "x" ]; then
@@ -129,6 +136,9 @@ function configure_dashbuilder_external_component() {
 
         JBOSS_KIE_DASHBUILDER_ARGS="${JBOSS_KIE_DASHBUILDER_ARGS} -Ddashbuilder.components.enable=true"
         JBOSS_KIE_DASHBUILDER_ARGS="${JBOSS_KIE_DASHBUILDER_ARGS} -Ddashbuilder.components.dir=${kie_data_external_comp_dir}"
+
+    else
+        JBOSS_KIE_DASHBUILDER_ARGS="${JBOSS_KIE_DASHBUILDER_ARGS} -Ddashbuilder.components.enable=false"
     fi
 }
 
@@ -137,11 +147,13 @@ function configure_dashbuilder_kieserver_dataset() {
     IFS=',' read -a ks_datasets <<< $KIESERVER_DATASETS
 
     for ks_dataset in ${ks_datasets[@]}; do
-        location=$(find_env "${ks_dataset}_LOCATION")
-        replace_query=$(find_env "${ks_dataset}_REPLACE_QUERY" "false")
-        user=$(find_env "${ks_dataset}_USER")
-        password=$(find_env "${ks_dataset}_PASSWORD")
-        token=$(find_env "${ks_dataset}_TOKEN")
+        # envs does not support dash -'
+        dataset_env="${ks_dataset//-/_}"
+        location=$(find_env "${dataset_env}_LOCATION")
+        replace_query=$(find_env "${dataset_env}_REPLACE_QUERY" "false")
+        user=$(find_env "${dataset_env}_USER")
+        password=$(find_env "${dataset_env}_PASSWORD")
+        token=$(find_env "${dataset_env}_TOKEN")
 
         if [ "${token}x" != "x" ]; then
             log_info "Using token for dataset ${ks_dataset}."
@@ -168,11 +180,13 @@ function configure_dashbuilder_kieserver_server_template() {
     IFS=',' read -a ks_server_templates <<< $KIESERVER_SERVER_TEMPLATES
 
     for ks_server_template in ${ks_server_templates[@]}; do
-        location=$(find_env "${ks_server_template}_LOCATION")
-        replace_query=$(find_env "${ks_server_template}_REPLACE_QUERY" "false")
-        user=$(find_env "${ks_server_template}_USER")
-        password=$(find_env "${ks_server_template}_PASSWORD")
-        token=$(find_env "${ks_server_template}_TOKEN")
+        # envs does not support dash -'
+        server_template_env="${ks_server_template//-/_}"
+        location=$(find_env "${server_template_env}_LOCATION")
+        replace_query=$(find_env "${server_template_env}_REPLACE_QUERY" "false")
+        user=$(find_env "${server_template_env}_USER")
+        password=$(find_env "${server_template_env}_PASSWORD")
+        token=$(find_env "${server_template_env}_TOKEN")
 
         if [ "${token}x" != "x" ]; then
             log_info "Using token for server template ${ks_server_template}."

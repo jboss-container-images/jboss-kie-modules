@@ -29,6 +29,8 @@ function prepareEnv() {
     unset BUILD_ENABLE_INCREMENTAL
     unset GIT_HOOKS_DIR
     unset_kie_security_env
+    unset KIE_DASHBUILDER_RUNTIME_LOCATION
+    unset KIE_DASHBUILDER_EXPORT_DIR
     unset KIE_SERVER_CONTROLLER_HOST
     unset KIE_SERVER_CONTROLLER_OPENSHIFT_ENABLED
     unset KIE_SERVER_CONTROLLER_OPENSHIFT_GLOBAL_DISCOVERY_ENABLED
@@ -39,6 +41,8 @@ function prepareEnv() {
     unset KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL
     unset KIE_M2_REPO_DIR
     unset KIE_PERSIST_MAVEN_REPO
+
+
 }
 
 function preConfigure() {
@@ -54,6 +58,7 @@ function configure() {
     # before any direct or indirect calls to add_eap_user
     configure_local_security
     configure_admin_security
+    configure_dashbuilder
     configure_kie_keystore
     configure_controller_access
     configure_server_access
@@ -79,6 +84,13 @@ function configure_admin_security() {
     # rhpam-businesscentral, rhpam-businesscentral-monitoring
     if [[ $JBOSS_PRODUCT =~ rhpam\-businesscentral(\-monitoring)? ]]; then
         configure_login_modules "org.kie.security.jaas.KieLoginModule" "optional" "deployment.ROOT.war"
+    fi
+}
+
+function configure_dashbuilder() {
+    local kieDataDir="/opt/kie/data"
+    if [ "${KIE_DASHBUILDER_RUNTIME_LOCATION}x" != "x" ]; then
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Ddashbuilder.runtime.location=${KIE_DASHBUILDER_RUNTIME_LOCATION} -Ddashbuilder.export.dir=${kieDataDir}/dash"
     fi
 }
 
