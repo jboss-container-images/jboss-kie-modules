@@ -346,8 +346,8 @@ function configure_ha_common() {
         <replicated-cache name='repl'>\
             <file-store/>\
         </replicated-cache>\
-        <replicated-cache name="sso" mode="SYNC" batching="true"/>\
-        <replicated-cache name="routing"/>\
+        <replicated-cache name='sso'/>\
+        <replicated-cache name='routing'/>\
         <distributed-cache name='dist'>\
             <file-store/>\
         </distributed-cache>"
