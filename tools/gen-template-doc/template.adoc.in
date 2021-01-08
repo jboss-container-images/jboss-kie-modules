@@ -205,7 +205,7 @@ For `kubernetes.KUBE_PING` to work, the following steps must be taken:
 . The `KUBERNETES_LABELS` environment variables should be set (see table above).
   If not set, pods outside of your application (albeit in your namespace) will try to join.
 . The value used as a `KUBERNETES_LABELS` must be added as a label in the respective deployment config.
-  By convention the value is `cluster=kubernetes.ping.cluster-<name>` ,name used are console, consolemon, kieserver.
+  By convention the value is `cluster=kubernetes.ping.<name>-cluster` ,name used are console-cluster, consolemon-cluster, kieserver-cluster.
 . Authorization must be granted to the service account the pod is running under to be
   allowed to access Kubernetes' REST api. This is done on the command line.
 
