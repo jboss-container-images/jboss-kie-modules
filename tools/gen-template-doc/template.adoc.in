@@ -190,7 +190,7 @@ This template requires the following secrets to be installed for the application
 Clustering in OpenShift EAP is achieved through Kubernetes discovery mechanism.
 This is done by configuring the JGroups protocol stack in
 standalone-openshift.xml with the `<kubernetes.KUBE_PING/>` element.
-The templates are configured to use `KUBE_PING`.
+The templates are configured to use `kubernetes.KUBE_PING`.
 
 The discovery mechanism used is specified by the `JGROUPS_PING_PROTOCOL` environment
 variable which can be set to `kubernetes.KUBE_PING`.
@@ -198,12 +198,14 @@ variable which can be set to `kubernetes.KUBE_PING`.
 for `JGROUPS_PING_PROTOCOL`.
 
 
-For `KUBE_PING` to work, the following steps must be taken:
+For `kubernetes.KUBE_PING` to work, the following steps must be taken:
 
-. The `KUBERNETES_NAMESPACE` environment variable must be set (see table above).
+. The `KUBERNETES_NAMESPACE` environment variable must be set using the kubernetes metadata.namespace assigned to the pod.
   If not set, the server will act as if it is a single-node cluster (a "cluster of one").
 . The `KUBERNETES_LABELS` environment variables should be set (see table above).
   If not set, pods outside of your application (albeit in your namespace) will try to join.
+. The value used as a `KUBERNETES_LABELS` must be added as a label in the respective deployment config.
+  By convention the value is `cluster=kubernetes.ping.cluster-<name>` ,name used are console, consolemon, kieserver.
 . Authorization must be granted to the service account the pod is running under to be
   allowed to access Kubernetes' REST api. This is done on the command line.
 
