@@ -351,11 +351,15 @@ function configure_ha_common() {
     # step 2) modify the web cache container per https://access.redhat.com/solutions/2776221
     #         note: the below differs from the EAP 7.1 solution above, since EAP 7.2
     #               doesn't have "mode", "l1", and "owners" attributes in the original config
+    # step 3) The lines replicated-cache name="sso" and replicated-cache name="routing"
+    #          are needed to start with eap 7.3.X
     local web_cache="\
         <transport lock-timeout='60000'/>\
         <replicated-cache name='repl'>\
             <file-store/>\
         </replicated-cache>\
+        <replicated-cache name='sso'/>\
+        <replicated-cache name='routing'/>\
         <distributed-cache name='dist'>\
             <file-store/>\
         </distributed-cache>"
