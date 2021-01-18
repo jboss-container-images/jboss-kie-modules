@@ -55,6 +55,7 @@ APPLICATION_DIRECTORIES = ("target/rhpam-7-openshift-image", "target/rhdm-7-open
 template_dirs = ['target/rhpam-7-openshift-image/templates', 'target/rhdm-7-openshift-image/templates', 'target/rhdm-7-openshift-image/templates/optaweb',
                  'target/jboss-processserver-6-openshift-image/templates', 'target/jboss-decisionserver-6-openshift-image/templates']
 
+# TODO: improve it to not use full image name
 # used to link the image to the image.yaml when the given image is used by a s2i build
 LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm71-kieserver-openshift`]",
          "rhdm71-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhdm-7/rhdm71-kieserver-openshift`]",
@@ -71,6 +72,7 @@ LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-
          "rhdm-kieserver-rhel8:7.8.1": "../../../kieserver/image.yaml[`rhdm-7/rhdm-kieserver-rhel8`]",
          "rhdm-kieserver-rhel8:7.9.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm-kieserver-rhel8`]",
          "rhdm-kieserver-rhel8:7.10.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm-kieserver-rhel8`]",
+         "rhdm-kieserver-rhel8:7.11.0": "../../../kieserver/image.yaml[`rhdm-7/rhdm-kieserver-rhel8`]",
          "rhpam71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]",
          "rhpam71-kieserver-openshift:1.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam71-kieserver-openshift`]",
          "rhpam72-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam72-kieserver-openshift`]",
@@ -86,6 +88,7 @@ LINKS = {"rhdm71-kieserver-openshift:1.0": "../../../kieserver/image.yaml[`rhdm-
          "rhpam-kieserver-rhel8:7.8.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
          "rhpam-kieserver-rhel8:7.9.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
          "rhpam-kieserver-rhel8:7.10.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
+         "rhpam-kieserver-rhel8:7.11.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
          "jboss-processserver64-openshift:1.4": "../../image.yaml[`jboss-processserver64-openshift`]",
          "jboss-processserver64-openshift:1.5": "../../image.yaml[`jboss-processserver64-openshift`]",
          "jboss-processserver64-openshift:1.6": "../../image.yaml[`jboss-processserver64-openshift`]",
@@ -204,6 +207,7 @@ def create_template(data, path):
                 tdata['objects'][0]['secrets'] = [{"secretNames": secret_name}]
 
         # Any template that supports clustering needs to be added in the clusteringTemplates var.
+        # TODO: improve it to not use full template name
         clustering_templates = [
             'rhpam70-authoring-ha.yaml',
             'rhpam71-authoring-ha.yaml', 'rhdm71-authoring-ha.yaml',
@@ -215,7 +219,8 @@ def create_template(data, path):
             'rhpam77-authoring-ha.yaml', 'rhdm77-authoring-ha.yaml',
             'rhpam78-authoring-ha.yaml', 'rhdm78-authoring-ha.yaml',
             'rhpam79-authoring-ha.yaml', 'rhdm79-authoring-ha.yaml',
-            'rhpam710-authoring-ha.yaml', 'rhdm710-authoring-ha.yaml'
+            'rhpam710-authoring-ha.yaml', 'rhdm710-authoring-ha.yaml',
+            'rhpam711-authoring-ha.yaml', 'rhdm711-authoring-ha.yaml'
         ]
         for template in clustering_templates:
             if str(path).rsplit('/', 1)[-1] == template:
