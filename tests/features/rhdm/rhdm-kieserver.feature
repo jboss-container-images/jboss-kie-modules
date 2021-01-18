@@ -9,7 +9,7 @@ Feature: RHDM KIE Server configuration tests
   Scenario: Check for product and version environment variables
     When container is ready
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhdm-kieserver
-     And run sh -c 'echo $RHDM_KIESERVER_VERSION' in container and check its output for 7.10
+     And run sh -c 'echo $RHDM_KIESERVER_VERSION' in container and check its output for 7.11
 
   Scenario: deploys the hellorules example, then checks if it's deployed. Additionally test if the JAVA_OPTS_APPEND is used in the container verifier step
     Given s2i build https://github.com/jboss-container-images/rhdm-7-openshift-image from quickstarts/hello-rules/hellorules using master
