@@ -76,3 +76,11 @@ setup() {
     [ "$status" -eq 0 ]
     assert_xml $CONFIG_FILE $BATS_TEST_DIRNAME/expectations/standalone-openshift-ldap-all.xml
 }
+
+@test "ldap baseFilter is correctly configured when & and | is present" {
+    AUTH_LDAP_URL="test_url"
+    AUTH_LDAP_BASE_FILTER="(&(mail={0}))(|(objectclass=dbperson)(objectclass=inetOrgPerson)))"
+
+    run configure_ldap_login_module
+    assert_xml $CONFIG_FILE $BATS_TEST_DIRNAME/expectations/standalone-openshift-ldap-baseFilter.xml
+}
