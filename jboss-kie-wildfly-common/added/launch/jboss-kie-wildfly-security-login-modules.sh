@@ -49,6 +49,8 @@ function add_option() {
     local login_module=$1
     local name=$2
     local value=$3
+    value=${value//\|/\\|}
+    value=${value//\&/\\&amp;}
     if [[ ! -z ${value} ]]; then
         echo ${login_module/<!-- ##LOGIN_MODULE_OPTIONS## -->/<module-option name=\"${name}\" value=\"${value}\"/><!-- ##LOGIN_MODULE_OPTIONS## -->}
     else

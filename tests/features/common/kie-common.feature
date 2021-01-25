@@ -58,6 +58,16 @@ Feature: RHPAM and RHDM common tests
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="usernameBeginString" value="USER"/>
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="usernameEndString" value="ENDUSER"/>
 
+  Scenario: Check LDAP Base Filter is correctly configured if AUTH_LDAP_BASE_FILTER contains special char '&' and '|'
+    When container is started with env
+      | variable                                      | value                                                                |
+      | AUTH_LDAP_URL                                 | test_url                                                             |
+      | AUTH_LDAP_BASE_FILTER                         | (&(mail={0}))(\|(objectclass=dbperson)(objectclass=inetOrgPerson)))  |
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="RealmDirect" flag="optional">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="java.naming.provider.url" value="test_url"/>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="baseFilter" value="(&amp;(mail={0}))(|(objectclass=dbperson)(objectclass=inetOrgPerson)))"/>
+
   Scenario: Check if eap users are not being created if SSO is configured with no users env
     When container is started with env
       | variable                   | value         |
