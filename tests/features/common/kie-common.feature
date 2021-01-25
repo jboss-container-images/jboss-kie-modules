@@ -103,15 +103,15 @@ Feature: RHPAM and RHDM common tests
   Scenario: Configure the LDAP authentication with the flag value as optional
     When container is started with env
       | variable               | value     |
+      | AUTH_LDAP_URL          | test_url  |
       | AUTH_LDAP_LOGIN_MODULE | optional  |
-    Then container log should contain AUTH_LDAP_LOGIN_MODULE is set to optional.
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="optional">
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="optional">
 
   Scenario: Configure the LDAP authentication with the flag value as required
     When container is started with env
       | variable               | value     |
+      | AUTH_LDAP_URL          | test_url  |
       | AUTH_LDAP_LOGIN_MODULE | required  |
-    Then container log should contain AUTH_LDAP_LOGIN_MODULE is set to required.
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
 
 
