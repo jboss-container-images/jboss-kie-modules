@@ -59,6 +59,7 @@ function configureEnv() {
 function configure() {
     # configure_server_env always has to be first
     configure_server_env
+    configure_local_security
     configure_controller_access
     configure_router_access
     configure_server_location
@@ -74,6 +75,11 @@ function configure() {
     configure_optaplanner
     # configure_server_state always has to be last
     configure_server_state
+}
+
+function configure_local_security() {
+    set_application_users_config
+    set_application_roles_config
 }
 
 function configure_EJB_Timer_datasource {
