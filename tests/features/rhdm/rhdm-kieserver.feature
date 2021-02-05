@@ -31,3 +31,30 @@ Feature: RHDM KIE Server configuration tests
   Scenario: Check rhdm-kieserver extensions
     When container is ready
     Then container log should contain -Dorg.jbpm.server.ext.disabled=true -Dorg.jbpm.ui.server.ext.disabled=true -Dorg.jbpm.case.server.ext.disabled=true
+
+  @wip
+  Scenario: Check KIE_JBPM_CLUSTER flag enabled
+    When container is started with env
+      | variable                        | value                |
+      | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
+      | KIE_JBPM_CLUSTER                | true                 |
+    Then container log should contain KIE_JBPM_CLUSTER enabled
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <cache-container name='jbpm'>
+
+  @wip
+  Scenario: Check KIE_JBPM_CLUSTER flag enabled
+    When container is started with env
+      | variable                        | value                |
+      | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
+      | KIE_JBPM_CLUSTER                | false                |
+    Then container log should contain KIE_JBPM_CLUSTER disabled
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <cache-container name='jbpm'>
+
+  @wip
+  Scenario: Check jbpm cache if KIE_JBPM_CLUSTER isn't present
+    When container is started with env
+      | variable                        | value                |
+      | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
+    Then container log should contain KIE_JBPM_CLUSTER disabled
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <cache-container name='jbpm'>
+

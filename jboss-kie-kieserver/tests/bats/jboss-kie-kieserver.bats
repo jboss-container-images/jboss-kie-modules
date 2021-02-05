@@ -2,6 +2,7 @@
 
 export JBOSS_HOME=$BATS_TMPDIR/jboss_home
 mkdir -p $JBOSS_HOME/bin/launch
+mkdir -p $JBOSS_HOME/standalone/configuration
 
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/launch-common.sh $JBOSS_HOME/bin/launch
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/logging.bash $JBOSS_HOME/bin/launch/logging.sh
@@ -9,6 +10,7 @@ cp $BATS_TEST_DIRNAME/../../../jboss-kie-common/added/launch/jboss-kie-common.sh
 cp $BATS_TEST_DIRNAME/../../../jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-security-login-modules.sh $JBOSS_HOME/bin/launch
 cp $BATS_TEST_DIRNAME/../../../jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-common.sh $JBOSS_HOME/bin/launch
 cp $BATS_TEST_DIRNAME/../../../jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-security.sh $JBOSS_HOME/bin/launch
+cp $BATS_TEST_DIRNAME/resources/standalone/configuration/standalone-openshift.xml $JBOSS_HOME/standalone/configuration/standalone-openshift.xml
 
 # mocking
 touch $JBOSS_HOME/bin/launch/datasource-common.sh
@@ -616,4 +618,27 @@ teardown() {
     configure_metaspace
     echo "GC_MAX_METASPACE_SIZE=${GC_MAX_METASPACE_SIZE}"
     [[ "${GC_MAX_METASPACE_SIZE}" == "${KIE_SERVER_MAX_METASPACE_SIZE}" ]]
+}
+
+
+@test "Verify if the jbpm cache isn't contained in the standalone-openshift.xml" {
+  if grep -q "<cache-container name='jbpm'>" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ;then
+    false
+  else
+    true
+  fi
+}
+
+@test "Verify if the configure_jbpm_cluster is contained in the standalone-openshift.xml when jbpm cache is enabled" {
+  if grep -q "<cache-container name='jbpm'>" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ; then
+    false
+  else
+    true
+  fi
+  configure_jbpm_cache
+  if grep -q "<cache-container name='jbpm'>" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ; then
+    true
+  else
+   false
+  fi
 }

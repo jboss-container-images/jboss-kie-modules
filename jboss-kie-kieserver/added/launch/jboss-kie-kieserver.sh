@@ -76,6 +76,7 @@ function configure() {
     configure_optaplanner
     # configure_server_state always has to be last
     configure_server_state
+    configure_jbpm_cluster
 }
 
 function configure_EJB_Timer_datasource {
@@ -718,4 +719,27 @@ function configure_server_state() {
 
 function generate_random_id() {
     cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1
+}
+
+function configure_jbpm_cluster(){
+    if [ ${KIE_JBPM_CLUSTER} = 'true' ]; then
+      configure_jbpm_cache
+      log_info "KIE_JBPM_CLUSTER enabled"
+    else
+      log_info "KIE_JBPM_CLUSTER disabled"
+    fi
+}
+
+function configure_jbpm_cache() {
+  local startTag='<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">'
+  local jbpmTag="<cache-container name='jbpm'>\
+        <transport lock-timeout='60000'/>\
+        <replicated-cache name='nodes'>\
+        <transaction mode='BATCH'/>\
+        </replicated-cache>\
+        <replicated-cache name='jobs'>\
+        <transaction mode='BATCH'/>\
+        </replicated-cache>\
+        </cache-container>"
+    sed -i "s#${startTag}#${jbpmTag}\n${startTag}#g" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml
 }
