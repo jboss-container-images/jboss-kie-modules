@@ -69,6 +69,7 @@ function configure() {
     configure_server_sync_deploy
     configure_drools
     configure_jbpm
+    configure_jbpm_cluster
     configure_kie_server_mgmt
     configure_mode
     configure_metaspace
@@ -718,4 +719,27 @@ function configure_server_state() {
 
 function generate_random_id() {
     cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1
+}
+
+function configure_jbpm_cluster(){
+    if [ "${KIE_SERVER_JBPM_CLUSTER^^}" = "TRUE" ]; then
+      configure_jbpm_cache
+      log_info "KIE_SERVER_JBPM_CLUSTER enabled"
+    else
+      log_info "KIE_SERVER_JBPM_CLUSTER disabled"
+    fi
+}
+
+function configure_jbpm_cache() {
+  local startTag="<cache-container name=\"server\" aliases=\"singleton cluster\" default-cache=\"default\" module=\"org.wildfly.clustering.server\">"
+  local jbpmTag="<cache-container name='jbpm'>\
+        <transport lock-timeout='60000'/>\
+        <replicated-cache name='nodes'>\
+        <transaction mode='BATCH'/>\
+        </replicated-cache>\
+        <replicated-cache name='jobs'>\
+        <transaction mode='BATCH'/>\
+        </replicated-cache>\
+        </cache-container>"
+    sed -i "s#${startTag}#${jbpmTag}\n${startTag}#g" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml
 }
