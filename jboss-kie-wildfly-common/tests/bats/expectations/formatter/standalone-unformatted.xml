@@ -431,7 +431,7 @@
             <stacks>
                 <stack name="udp">
                     <transport type="UDP" socket-binding="jgroups-udp"/>
-                    <protocol type="openshift.DNS_PING" ></protocol>
+                    <!-- ##JGROUPS_PING_PROTOCOL## -->
                     <protocol type="MERGE3"/>
                     <protocol type="FD_SOCK"/>
                     <protocol type="FD_ALL"/>
@@ -453,7 +453,7 @@
                         <property name="use_ip_addrs">false</property>
                         <property name="sock_conn_timeout">300</property>
                     </transport>
-                    <protocol type="openshift.DNS_PING" ></protocol>
+                    <!-- ##JGROUPS_PING_PROTOCOL## -->
                     <protocol type="MERGE3"/>
                     <protocol type="FD_SOCK"/>
                     <protocol type="FD_ALL"/>
