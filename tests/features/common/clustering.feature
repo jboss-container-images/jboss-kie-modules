@@ -9,7 +9,7 @@ Feature: RHPAM RHDM Workbench clustering configuration
     When container is started with env
       | variable                        | value                 |
       | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING  |
-    Then container log should contain OpenShift DNS_PING protocol envs set, verifying other needed envs for HA setup. Using kubernetes.KUBE_PING
+    Then container log should contain Kubernetes KUBE_PING protocol envs set, verifying other needed envs for HA setup. Using kubernetes.KUBE_PING
      And container log should contain APPFORMER_JMS_BROKER_USER(NAME), APPFORMER_JMS_BROKER_PASSWORD, and APPFORMER_JMS_BROKER_ADDRESS not set; HA will not be available.
 
   Scenario: Infinispan HA default configuration
