@@ -25,12 +25,16 @@ function verifyServerContainers() {
 }
 
 # Execute the server container verification
-verifyServerContainers
-ERR=$?
+if [ "${KIE_SERVER_DISABLE_KC_VERIFICATION^^}" != "TRUE" ]; then
+    verifyServerContainers
+    ERR=$?
 
-if [ $ERR -ne 0 ]; then
-  log_error "Aborting due to error code $ERR from kie server container verification"
-  exit $ERR
+    if [ $ERR -ne 0 ]; then
+      log_error "Aborting due to error code $ERR from kie server container verification"
+      exit $ERR
+    fi
+else
+    log_warning "KIE Jar verification disabled, skipping. Please make sure that the provided KJar was properly tested before deploying it."
 fi
 
 # Necessary to permit running with a randomised UID

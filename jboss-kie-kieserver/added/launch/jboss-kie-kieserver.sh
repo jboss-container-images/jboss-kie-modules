@@ -22,6 +22,8 @@ function prepareEnv() {
     unset KIE_SERVER_CONTROLLER_PORT
     unset KIE_SERVER_CONTROLLER_PROTOCOL
     unset KIE_SERVER_CONTROLLER_SERVICE
+    unset KIE_SERVER_DISABLE_KC_PULL_DEPS
+    unset KIE_SERVER_DISABLE_KC_VERIFICATION
     unset KIE_SERVER_HOST
     unset KIE_SERVER_ID
     unset KIE_SERVER_LOCATION
@@ -684,7 +686,8 @@ function configure_server_state() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.repo=${kieServerRepo}"
 
     # see above: configure_server_env / kieserver-env.sh / setKieEnv
-    if [ "${KIE_SERVER_CONTAINER_DEPLOYMENT}" != "" ]; then
+    if [ "x${KIE_SERVER_CONTAINER_DEPLOYMENT}" != "x" ]; then
+
         # ensure all KIE dependencies are pulled for offline use (this duplicates s2i process; TODO: short-circuit if possible?)
         $JBOSS_HOME/bin/launch/kieserver-pull.sh
         ERR=$?

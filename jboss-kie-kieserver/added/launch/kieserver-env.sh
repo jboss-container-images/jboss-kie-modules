@@ -39,7 +39,7 @@ function setKieEnv() {
             # add pipe at end of each
             kieServerContainerDeployments="${kieServerContainerDeployments}${kieServerContainerDeployment}|"
         done <${kieServerContainerDeploymentsFile}
-        # remove last unecessary pipe
+        # remove last unnecessary pipe
         kieServerContainerDeployments=$(echo ${kieServerContainerDeployments} | sed "s/\(.*\)|/\1/")
         KIE_SERVER_CONTAINER_DEPLOYMENT="${kieServerContainerDeployments}"
         export KIE_SERVER_CONTAINER_DEPLOYMENT

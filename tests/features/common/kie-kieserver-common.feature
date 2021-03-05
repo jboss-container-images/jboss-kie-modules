@@ -485,3 +485,36 @@ Feature: Kie Server common features
       | KIE_SERVER_MAX_METASPACE_SIZE  | 4096    |
       | GC_MAX_METASPACE_SIZE          | 2048    |
     Then container log should contain -XX:MaxMetaspaceSize=4096m
+
+  Scenario: Verify if the warning message is correctly printed if there is no KIE_SERVER_CONTAINER_DEPLOYMENT set
+    When container is started with env
+      | variable                       | value   |
+      | GC_MAX_METASPACE_SIZE          | 2048    |
+    Then container log should contain Warning: EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT is missing.
+     And container log should contain Example: export KIE_SERVER_CONTAINER_DEPLOYMENT='containerId(containerAlias)=groupId:artifactId:version|c2(n2)=g2:a2:v2'
+
+  Scenario: Verify if the KJar verification is is correctly disabled
+    When container is started with env
+      | variable                            | value                          |
+      | KIE_SERVER_CONTAINER_DEPLOYMENT     | test=org.package:mypackage:1.0 |
+      # PULLS are disabled intentionally here otherwise container will fail before reach the container verification to start because the provided package is not valid.
+      | KIE_SERVER_DISABLE_KC_PULL_DEPS     | true                           |
+      | KIE_SERVER_DISABLE_KC_VERIFICATION  | true                           |
+    Then container log should contain Using standard EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: test=org.package:mypackage:1.0
+     And container log should contain WARN KIE Jar verification disabled, skipping. Please make sure that the provided KJar was properly tested before deploying it.
+
+  Scenario: Scenario: Verify if the pull dependencies is correctly disabled and KJar verification is correctly triggered
+    When container is started with env
+      | variable                            | value                          |
+      | KIE_SERVER_CONTAINER_DEPLOYMENT     | test=org.package:mypackage:1.0 |
+      | KIE_SERVER_DISABLE_KC_PULL_DEPS     | true                           |
+    Then container log should contain Using standard EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: test=org.package:mypackage:1.0
+     And container log should contain WARN Pull dependencies is disabled, skipping. Please make sure to provide all dependencies needed by the specified kjar.
+     And container log should contain INFO Attempting to verify kie server containers with 'java org.kie.server.services.impl.KieServerContainerVerifier  org.package:mypackage:1.0'
+
+  Scenario: Verify if the pull dependencies is correctly triggered
+    When container is started with env
+      | variable                            | value                          |
+      | KIE_SERVER_CONTAINER_DEPLOYMENT     | test=org.package:mypackage:1.0 |
+    Then container log should contain Using standard EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: test=org.package:mypackage:1.0
+     And container log should contain INFO Attempting to pull dependencies for kjar 0 with
