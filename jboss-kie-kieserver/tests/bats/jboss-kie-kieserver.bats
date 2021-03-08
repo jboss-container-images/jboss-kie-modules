@@ -605,6 +605,7 @@ teardown() {
 @test "verify if the GC_MAX_METASPACE_SIZE is correctly set and bypass KIE_SERVER_MAX_METASPACE_SIZE env" {
     export GC_MAX_METASPACE_SIZE="4096"
     configure_metaspace
+
     echo "GC_MAX_METASPACE_SIZE=${GC_MAX_METASPACE_SIZE}"
     [[ "${GC_MAX_METASPACE_SIZE}" == "4096" ]]
 }
