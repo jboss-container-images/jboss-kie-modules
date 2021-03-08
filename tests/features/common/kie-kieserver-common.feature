@@ -35,7 +35,7 @@ Feature: Kie Server common features
       | KIE_SERVER_MGMT_DISABLED    | true     |
       | KIE_SERVER_STARTUP_STRATEGY | invalid  |
     Then container log should contain -Dorg.kie.server.mgmt.api.disabled=true
-    And container log should contain The startup strategy invalid is not valid, the valid strategies are LocalContainersStartupStrategy and ControllerBasedStartupStrategy
+     And container log should contain The startup strategy invalid is not valid, the valid strategies are LocalContainersStartupStrategy and ControllerBasedStartupStrategy
 
   Scenario: Test the KIE_SERVER_HOST configuration with custom host
     When container is started with env
@@ -167,27 +167,27 @@ Feature: Kie Server common features
       | AUTH_LDAP_ROLES_CTX_DN      | ou=Roles,dc=example,dc=com    |
       | AUTH_LDAP_ROLE_FILTER       | (member={1})                  |
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="RealmDirect" flag="optional">
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="java.naming.provider.url" value="test_url"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="bindDN" value="cn=Manager,dc=example,dc=com"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="bindCredential" value="admin"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="baseCtxDN" value="ou=Users,dc=example,dc=com"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="baseFilter" value="(uid={0})"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="rolesCtxDN" value="ou=Roles,dc=example,dc=com"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleFilter" value="(member={1})"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleAttributeID" value="cn"/>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="java.naming.provider.url" value="test_url"/>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="bindDN" value="cn=Manager,dc=example,dc=com"/>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="bindCredential" value="admin"/>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="baseCtxDN" value="ou=Users,dc=example,dc=com"/>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="baseFilter" value="(uid={0})"/>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="rolesCtxDN" value="ou=Roles,dc=example,dc=com"/>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleFilter" value="(member={1})"/>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleAttributeID" value="cn"/>
 
   Scenario: Don't configure kie server to use LDAP authentication
     When container is ready
     Then container log should contain AUTH_LDAP_URL not set. Skipping LDAP integration...
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <login-module code="LdapExtended"
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <login-module code="LdapExtended"
 
   Scenario: Configure kie server to use LDAP authentication
     When container is started with env
       | variable      | value     |
       | AUTH_LDAP_URL | test_url  |
     Then container log should contain AUTH_LDAP_URL is set to test_url. Added LdapExtended login-module
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended"
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended"
 
   Scenario: Test custom login module configuration
     When container is started with env
@@ -195,8 +195,8 @@ Feature: Kie Server common features
       | AUTH_ROLE_MAPPER_ROLES_PROPERTIES | roles_mapper_test  |
       | AUTH_ROLE_MAPPER_REPLACE_ROLE     | role_test          |
     Then container log should contain AUTH_ROLE_MAPPER_ROLES_PROPERTIES is set to roles_mapper_test
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="rolesProperties" value="roles_mapper_test"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="replaceRole" value="role_test"/>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="rolesProperties" value="roles_mapper_test"/>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="replaceRole" value="role_test"/>
 
   # https://issues.jboss.org/browse/CLOUD-1145 - base test
   Scenario: Check custom war file was successfully deployed via CUSTOM_INSTALL_DIRECTORIES
@@ -208,12 +208,12 @@ Feature: Kie Server common features
   # RHPAM-2274: S2I build failure when assembly plugin is used
   Scenario: Deploy a jar and its pom files using assembly script.
     Given s2i build https://github.com/jboss-container-images/jboss-kie-modules.git from jboss-kie-kieserver/tests/bats/resources/assembly-build using master
-     Then file /home/jboss/.m2/repository/org/kie/kieserver/assembly-build-rhpam-2274/1.0.0/assembly-build-rhpam-2274-1.0.0.jar should exist
-      And file /home/jboss/.m2/repository/org/kie/kieserver/assembly-build-rhpam-2274/1.0.0/assembly-build-rhpam-2274-1.0.0.pom should exist
-      And file /home/jboss/.m2/repository/org/kie/kie-internal/7.14.0.Final-redhat-00004/kie-internal-7.14.0.Final-redhat-00004.pom should exist
-      And file /home/jboss/.m2/repository/org/kie/kie-api/7.14.0.Final-redhat-00004/kie-api-7.14.0.Final-redhat-00004.pom should exist
-      And file /home/jboss/.m2/repository/org/kie/soup/kie-soup-maven-support/7.14.0.Final-redhat-00004/kie-soup-maven-support-7.14.0.Final-redhat-00004.pom should exist
-      And file /home/jboss/.m2/repository/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.pom should exist
+    Then file /home/jboss/.m2/repository/org/kie/kieserver/assembly-build-rhpam-2274/1.0.0/assembly-build-rhpam-2274-1.0.0.jar should exist
+     And file /home/jboss/.m2/repository/org/kie/kieserver/assembly-build-rhpam-2274/1.0.0/assembly-build-rhpam-2274-1.0.0.pom should exist
+     And file /home/jboss/.m2/repository/org/kie/kie-internal/7.14.0.Final-redhat-00004/kie-internal-7.14.0.Final-redhat-00004.pom should exist
+     And file /home/jboss/.m2/repository/org/kie/kie-api/7.14.0.Final-redhat-00004/kie-api-7.14.0.Final-redhat-00004.pom should exist
+     And file /home/jboss/.m2/repository/org/kie/soup/kie-soup-maven-support/7.14.0.Final-redhat-00004/kie-soup-maven-support-7.14.0.Final-redhat-00004.pom should exist
+     And file /home/jboss/.m2/repository/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.pom should exist
 
   Scenario: Verify the KIE_SERVER_BYPASS_AUTH_USER configuration
     When container is started with env
@@ -355,15 +355,15 @@ Feature: Kie Server common features
       | KIE_SERVER_CONTAINER_DEPLOYMENT           | deployment=a.b.c:1.0-SNAPSHOT           |
       | KIE_SERVER_CONTAINER_DEPLOYMENT_OVERRIDE  | deploymentOverride=a.b.c:1.0-SNAPSHOT   |
     Then container log should contain Encountered EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT_OVERRIDE: deploymentOverride=a.b.c:1.0-SNAPSHOT
-    And container log should contain Setting EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT_ORIGINAL: deployment=a.b.c:1.0-SNAPSHOT
-    And container log should contain Using overridden EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: deploymentOverride=a.b.c:1.0-SNAPSHOT
-    And container log should contain KIE_SERVER_CONTAINER_DEPLOYMENT: deploymentOverride=a.b.c:1.0-SNAPSHOT
-    And container log should contain KIE_SERVER_CONTAINER_DEPLOYMENT_ORIGINAL: deployment=a.b.c:1.0-SNAPSHOT
-    And container log should contain KIE_SERVER_CONTAINER_DEPLOYMENT_OVERRIDE: deploymentOverride=a.b.c:1.0-SNAPSHOT
-    And container log should contain KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT: 1
-    And container log should contain KIE_SERVER_CONTAINER_ID_0: deploymentOverride
-    And container log should contain KIE_SERVER_CONTAINER_KJAR_GROUP_ID_0: a.b.c
-    And container log should contain KIE_SERVER_CONTAINER_KJAR_ARTIFACT_ID_0: 1.0-SNAPSHOT
+     And container log should contain Setting EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT_ORIGINAL: deployment=a.b.c:1.0-SNAPSHOT
+     And container log should contain Using overridden EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: deploymentOverride=a.b.c:1.0-SNAPSHOT
+     And container log should contain KIE_SERVER_CONTAINER_DEPLOYMENT: deploymentOverride=a.b.c:1.0-SNAPSHOT
+     And container log should contain KIE_SERVER_CONTAINER_DEPLOYMENT_ORIGINAL: deployment=a.b.c:1.0-SNAPSHOT
+     And container log should contain KIE_SERVER_CONTAINER_DEPLOYMENT_OVERRIDE: deploymentOverride=a.b.c:1.0-SNAPSHOT
+     And container log should contain KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT: 1
+     And container log should contain KIE_SERVER_CONTAINER_ID_0: deploymentOverride
+     And container log should contain KIE_SERVER_CONTAINER_KJAR_GROUP_ID_0: a.b.c
+     And container log should contain KIE_SERVER_CONTAINER_KJAR_ARTIFACT_ID_0: 1.0-SNAPSHOT
 
   Scenario: Check that mode property gets set for development.
     When container is started with env
@@ -474,4 +474,30 @@ Feature: Kie Server common features
       | variable                                      | value |
       | OPTAPLANNER_SERVER_EXT_THREAD_POOL_QUEUE_SIZE | 4     |
     Then container log should contain -Dorg.optaplanner.server.ext.thread.pool.queue.size=4
+
+  Scenario: Verify if the KJar verification is is correctly disabled
+    When container is started with env
+      | variable                            | value                          |
+      | KIE_SERVER_CONTAINER_DEPLOYMENT     | test=org.package:mypackage:1.0 |
+      # PULLS are disabled intentionally here otherwise container will fail before reach the container verification to start because the provided package is not valid.
+      | KIE_SERVER_DISABLE_KC_PULL_DEPS     | true                           |
+      | KIE_SERVER_DISABLE_KC_VERIFICATION  | true                           |
+    Then container log should contain Using standard EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: test=org.package:mypackage:1.0
+     And container log should contain WARN KIE Jar verification disabled, skipping. Please make sure that the provided KJar was properly tested before deploying it.
+
+  Scenario: Scenario: Verify if the pull dependencies is correctly disabled and KJar verification is correctly triggered
+    When container is started with env
+      | variable                            | value                          |
+      | KIE_SERVER_CONTAINER_DEPLOYMENT     | test=org.package:mypackage:1.0 |
+      | KIE_SERVER_DISABLE_KC_PULL_DEPS     | true                           |
+    Then container log should contain Using standard EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: test=org.package:mypackage:1.0
+     And container log should contain WARN Pull dependencies is disabled, skipping. Please make sure to provide all dependencies needed by the specified kjar.
+     And container log should contain INFO Attempting to verify kie server containers with 'java org.kie.server.services.impl.KieServerContainerVerifier  org.package:mypackage:1.0'
+
+  Scenario: Verify if the pull dependencies is correctly triggered
+    When container is started with env
+      | variable                            | value                          |
+      | KIE_SERVER_CONTAINER_DEPLOYMENT     | test=org.package:mypackage:1.0 |
+    Then container log should contain Using standard EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: test=org.package:mypackage:1.0
+     And container log should contain INFO Attempting to pull dependencies for kjar 0 with
 
