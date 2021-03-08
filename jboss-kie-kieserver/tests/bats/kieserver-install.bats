@@ -4,10 +4,7 @@ export JBOSS_HOME=$BATS_TMPDIR/jboss_home
 mkdir -p $JBOSS_HOME/bin/launch
 mkdir -p ${JBOSS_HOME}/standalone/deployments
 
-
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/logging.bash $JBOSS_HOME/bin/launch/logging.sh
-
-
 
 teardown() {
     rm -rf $JBOSS_HOME
