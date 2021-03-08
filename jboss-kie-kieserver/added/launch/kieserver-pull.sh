@@ -31,7 +31,7 @@ function generatePullPomXml() {
 </project>"
 }
 
-if [ "${KIE_SERVER_CONTAINER_DEPLOYMENT}" != "" ]; then
+if [[ "x${KIE_SERVER_CONTAINER_DEPLOYMENT}" != "x" && "${KIE_SERVER_DISABLE_KC_PULL_DEPS^^}" != "TRUE" ]]; then
     for (( i=0; i<${KIE_SERVER_CONTAINER_DEPLOYMENT_COUNT}; i++ )); do
         pullPomFile="pull-pom-${i}-$(generateRandom).xml"
         generatePullPomXml ${i} > ${pullPomFile}
@@ -55,6 +55,8 @@ if [ "${KIE_SERVER_CONTAINER_DEPLOYMENT}" != "" ]; then
             exit $ERR
         fi
     done
+else
+    log_warning "Pull dependencies is disabled, skipping. Please make sure to provide all dependencies needed by the specified kjar."
 fi
 
 # Remove _remote.repositories files so we can run offline: CLOUD-1839
