@@ -11,3 +11,13 @@ function configure_json_logging() {
     sed -i 's|##CONSOLE-FORMATTER##|COLOR-PATTERN|' $CONFIG_FILE
   fi
 }
+
+function configure_pattern_formatter(){
+   
+    local enablePatternFormatter="${ENABLE_PATTERN_FORMATTER}"
+    local pattern="${PATTERN_FORMATTER}"
+    
+    if [ "${enablePatternFormatter^^}" == "TRUE" ]; then
+        PATTERN_FORMATTER="${pattern}"
+    fi
+}
