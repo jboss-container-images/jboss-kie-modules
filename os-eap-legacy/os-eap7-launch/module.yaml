@@ -30,3 +30,6 @@ envs:
     - name: "ENABLE_JSON_LOGGING"
       example: "true"
       description: Enable JSON-formatted logging
+    - name: "LOGGER_PATTERN"
+      example: "%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"
+      description: can be used to customize the pattern

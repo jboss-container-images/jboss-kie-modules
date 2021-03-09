@@ -15,14 +15,9 @@ function configure_json_logging() {
 
 function configure_pattern_formatter(){
    
-    local enablePatternFormatter="${ENABLE_PATTERN_FORMATTER}"
-    local pattern="${PATTERN_FORMATTER}"
-    
-    if [ "${enablePatternFormatter^^}" == "TRUE" ]; then
-        PATTERN_FORMATTER="${pattern}"
-    else
-        PATTERN_FORMATTER="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"
+    pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"
+    if [ "x${LOGGER_PATTERN}" != "x" ]; then
+        pattern=${LOGGER_PATTERN}
     fi
-
     sed -i 's|##PATTERN_FORMATTER##|${PATTERN_FORMATTER}|' $CONFIG_FILE
 }
