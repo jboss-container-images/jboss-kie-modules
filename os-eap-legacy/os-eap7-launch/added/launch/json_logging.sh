@@ -9,6 +9,7 @@ function configure_json_logging() {
     sed -i 's|##CONSOLE-FORMATTER##|OPENSHIFT|' $CONFIG_FILE
   else
     sed -i 's|##CONSOLE-FORMATTER##|COLOR-PATTERN|' $CONFIG_FILE
+    configure_pattern_formatter
   fi
 }
 
@@ -19,5 +20,9 @@ function configure_pattern_formatter(){
     
     if [ "${enablePatternFormatter^^}" == "TRUE" ]; then
         PATTERN_FORMATTER="${pattern}"
+    else
+        PATTERN_FORMATTER="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"
     fi
+
+    sed -i 's|##PATTERN_FORMATTER##|${PATTERN_FORMATTER}|' $CONFIG_FILE
 }
