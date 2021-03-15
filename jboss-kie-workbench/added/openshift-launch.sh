@@ -2,6 +2,10 @@
 # Openshift JBoss KIE - Workbench launch script
 
 source $JBOSS_HOME/bin/launch/logging.sh
+# Script from jboss.container.wildfly.launch-config,
+# Add needed functions to execute CLI Scripts and provide the needed env to fix
+# https://issues.redhat.com/browse/RHPAM-3506
+source $JBOSS_HOME/bin/launch/openshift-common.sh
 
 if [ "${SCRIPT_DEBUG}" = "true" ] ; then
     set -x
@@ -9,7 +13,12 @@ if [ "${SCRIPT_DEBUG}" = "true" ] ; then
 fi
 
 CONFIG_FILE=$JBOSS_HOME/standalone/configuration/standalone-openshift.xml
+# needed by openshift-common.sh script
+WILDFLY_SERVER_CONFIGURATION=${CONFIG_FILE}
 LOGGING_FILE=$JBOSS_HOME/standalone/configuration/logging.properties
+
+# launch createConfigExecutionContext
+createConfigExecutionContext
 
 CONFIGURE_SCRIPTS=(
   $JBOSS_HOME/bin/launch/backward-compatibility.sh
