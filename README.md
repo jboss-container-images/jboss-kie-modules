@@ -6,19 +6,32 @@ cct_modules, etc.; all **external** modules can be found on the modules section 
 
 Below, all CeKit modules contained in this repository:
 
-jboss-kie-modules \
-├── [jboss-kie-controller](jboss-kie-controller): RHDM/PAM controller specific modules. \
-├── [jboss-kie-kieserver](jboss-kie-kieserver): RHDM/PAM Execution Server specific modules. \
-├── [jboss-kie-smartrouter](jboss-kie-smartrouter): RHPAM Smart Router specific modules. \
-├── [jboss-kie-wildfly-common](jboss-kie-wildfly-common): Common modules, basically used by all images. \
-├── [jboss-kie-workbench](jboss-kie-workbench):  RHDM/PAM Decision/Business Central specific modules. \
-├── [tests](tests): \
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── [bats](tests/bats): Common files for Bats tests. \
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── [features](tests/features): Image tests (behave) \
-└── [tools](tools) \
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── [build-overrides](tools/build-overrides): Tool used to help to perform image builds using nightly, staging, or candidate artifact builds. \
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── [gen-template-doc](tools/gen-template-doc): Tool that generates the reference documentation from  Application Templates. \
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── [openshift-template-validator](tools/openshift-template-validator): Tool used to validate the application templates, if you’re going to develop templates, this tool helps to prevent syntax or accidental issues.
+- **jboss-kie-modules**:
+  - [jboss](jboss): Contains the Prometheus agent and config modules and S2I bash module as well.
+  - [jboss-eap-cd-jolokia](jboss-eap-cd-jolokia): Module responsible to add the needed JVM configurations on the standalone.conf file.
+  - [jboss-eap-config-openshift](jboss-eap-config-openshift): Holds the JBoss EAP standalone-openshift.xml file used by the RHDM and RHPAM images.
+  - [jboss-kie-common](jboss-kie-common): This module holds common functions reused between RHDM and RHPAM images.
+  - [jboss-kie-common-dependencies](jboss-kie-common-dependencies): Installs common rpm packages on RHDM and RHPAM images.
+  - [jboss-kie-controller](jboss-kie-controller): RHDM/PAM Controller Image specific module.
+  - [jboss-kie-dashbuilder](jboss-kie-dashbuilder): RHPAM Dashbuilder Image specific module.
+  - [jboss-kie-db-drivers](jboss-kie-db-drivers): Provides the MariaDB and PostgreSQL jdbc drivers through rpm package manager.
+  - [jboss-kie-jdk-clean](jboss-kie-jdk-clean): Clean possible JDK packages not needed on the runtime image.
+  - [jboss-kie-kieserver](jboss-kie-kieserver): RHDM/PAM Execution Server Image specific module.
+  - [jboss-kie-process-migration](jboss-kie-process-migration): RHPAM Process Instance Migration Image specific module.
+  - [jboss-kie-smartrouter](jboss-kie-smartrouter): RHPAM Smart Router specific module.
+  - [jboss-kie-wildfly-common](jboss-kie-wildfly-common): Common modules shared between all images.
+  - [jboss-kie-workbench](jboss-kie-workbench):  RHDM/PAM Decision/Business Central specific module.
+  - [os-eap-kegacy](os-eap-legacy): Provides legacy modules used by RHPAM/DM images that aren't available anymore on the cct and jboss-eap-modules on the stable branch.
+  - [tests](tests):
+     - [bats](tests/bats): Common files for Bats tests.
+     - [features](tests/features): Image tests (behave)
+  - [tools](tools)
+     _ [build-osbs](tools/build-osbs): Auxiliary script to perform local OSBS builds.
+     - [build-overrides](tools/build-overrides): Tool used to help to perform image builds using nightly, staging, or candidate artifact builds.
+     - [gen-template-doc](tools/gen-template-doc): Tool that generates the reference documentation from  Application Templates.
+     - [openshift-template-validator](tools/openshift-template-validator): Tool used to validate the application templates, if you’re going to develop templates, this tool helps to prevent syntax or accidental issues.
+     - [python-mock-server](tools/python-mock-server): Small server to mock k8s requests used in the Bats tests
+     - [update-version](tools/update-version): Auxiliary script to help maintainers to bump the product version when performing a new release. 
 
 
 ### What can be done in this repository?
@@ -31,9 +44,14 @@ jboss-kie-module repo is used and in this [line](https://github.com/jboss-contai
 the [jboss-kie-kieserver](jboss-kie-kieserver) is imported and installed in the target image.
 
 
--## Tests
--
--There are two different kind of tests: bats and behave, which are described in details in the next topics.
+## Tests
+
+There are two different kind of tests: 
+
+- bats 
+- behave
+  
+Which are described in details in the next topics.
 
 
 ### Running Bats tests
@@ -204,5 +222,5 @@ https://github.com/cekit/behave-test-steps/tree/v1/steps
 
 
 
-##### Found a issue?
-Please submit a issue [here](https://issues.jboss.org/projects/KIECLOUD) with the tag or send us a email: bsig-cloud@redhat.com.
+##### Found an issue?
+Please submit an issue [here](https://issues.jboss.org/projects/KIECLOUD) with the tag or send us a email: bsig-cloud@redhat.com.
