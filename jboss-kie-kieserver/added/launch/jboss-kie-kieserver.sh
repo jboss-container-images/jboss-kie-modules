@@ -731,7 +731,7 @@ function configure_jbpm_cluster(){
 }
 
 function configure_jbpm_cache() {
-  local startTag="<cache-container name=\"server\" aliases=\"singleton cluster\" default-cache=\"default\" module=\"org.wildfly.clustering.server\">"
+  local startTag="<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">"
   local jbpmTag="<cache-container name='jbpm'>\
         <transport lock-timeout='60000'/>\
         <replicated-cache name='nodes'>\
