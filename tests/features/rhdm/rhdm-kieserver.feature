@@ -52,7 +52,6 @@ Feature: RHDM KIE Server configuration tests
     When container is started with env
       | variable                        | value                |
       | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
-      | SCRIPT_DEBUG                    | true                 |
     Then container log should contain KIE_SERVER_JBPM_CLUSTER disabled
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <cache-container name='jbpm'>
 
