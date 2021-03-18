@@ -38,7 +38,7 @@ Feature: RHDM KIE Server configuration tests
       | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
       | KIE_SERVER_JBPM_CLUSTER         | true                 |
     Then container log should contain KIE_SERVER_JBPM_CLUSTER enabled
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <cache-container name='jbpm'>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <cache-container name="jbpm">
 
   Scenario: Check KIE_SERVER_JBPM_CLUSTER flag disabled
     When container is started with env
@@ -46,12 +46,12 @@ Feature: RHDM KIE Server configuration tests
       | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
       | KIE_SERVER_JBPM_CLUSTER         | false                |
     Then container log should contain KIE_SERVER_JBPM_CLUSTER disabled
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <cache-container name='jbpm'>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <cache-container name="jbpm">
 
   Scenario: Check jbpm cache if KIE_SERVER_JBPM_CLUSTER isn't present
     When container is started with env
       | variable                        | value                |
       | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
     Then container log should contain KIE_SERVER_JBPM_CLUSTER disabled
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <cache-container name='jbpm'>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <cache-container name="jbpm">
 

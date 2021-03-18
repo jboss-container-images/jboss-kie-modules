@@ -731,15 +731,13 @@ function configure_jbpm_cluster(){
 }
 
 function configure_jbpm_cache() {
-  local startTag="<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">"
-  local jbpmTag="<cache-container name='jbpm'>\
-        <transport lock-timeout='60000'/>\
-        <replicated-cache name='nodes'>\
-        <transaction mode='BATCH'/>\
+    sed -i 's#<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">#<cache-container name="jbpm">\
+        <transport lock-timeout="60000"/>\
+        <replicated-cache name="nodes">\
+        <transaction mode="BATCH"/>\
         </replicated-cache>\
-        <replicated-cache name='jobs'>\
-        <transaction mode='BATCH'/>\
+        <replicated-cache name="jobs">\
+        <transaction mode="BATCH"/>\
         </replicated-cache>\
-        </cache-container>"
-    sed -i "s#${startTag}#${jbpmTag}\n${startTag}#g" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml
+        </cache-container>\n<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">#g' ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml
 }
