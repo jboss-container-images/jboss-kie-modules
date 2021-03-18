@@ -10,7 +10,7 @@ cp $BATS_TEST_DIRNAME/../../../jboss-kie-common/added/launch/jboss-kie-common.sh
 cp $BATS_TEST_DIRNAME/../../../jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-security-login-modules.sh $JBOSS_HOME/bin/launch
 cp $BATS_TEST_DIRNAME/../../../jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-common.sh $JBOSS_HOME/bin/launch
 cp $BATS_TEST_DIRNAME/../../../jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-security.sh $JBOSS_HOME/bin/launch
-cp $BATS_TEST_DIRNAME/resources/standalone/configuration/standalone-openshift.xml $JBOSS_HOME/standalone/configuration/standalone-openshift.xml
+cp $BATS_TEST_DIRNAME/../../../jboss-eap-config-openshift/EAP7.3.0/added/standalone-openshift.xml $JBOSS_HOME/standalone/configuration/standalone-openshift.xml
 
 # mocking
 touch $JBOSS_HOME/bin/launch/datasource-common.sh
@@ -620,22 +620,29 @@ teardown() {
     [[ "${GC_MAX_METASPACE_SIZE}" == "${KIE_SERVER_MAX_METASPACE_SIZE}" ]]
 }
 
-
-@test "Verify if the jbpm cache isn't contained in the standalone-openshift.xml" {
-  if grep -q "<cache-container name='jbpm'>" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ;then
-    false
-  else
-    true
-  fi
-}
-
 @test "Verify if the configure_jbpm_cluster is contained in the standalone-openshift.xml when jbpm cache is enabled" {
+  export KIE_SERVER_JBPM_CLUSTER="true"
   if grep -q "<cache-container name='jbpm'>" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ; then
     false
   else
     true
   fi
   configure_jbpm_cache
+  if grep -q "<cache-container name='jbpm'>" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ; then
+    true
+  else
+   false
+  fi
+}
+
+@test "Verify if the configure_jbpm_cluster is contained in the standalone-openshift.xml when KIE_SERVER_JBPM_CLUSTER is enabled" {
+  export KIE_SERVER_JBPM_CLUSTER="true"
+  if grep -q "<cache-container name='jbpm'>" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ; then
+    false
+  else
+    true
+  fi
+  configure_jbpm_cluster
   if grep -q "<cache-container name='jbpm'>" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ; then
     true
   else
