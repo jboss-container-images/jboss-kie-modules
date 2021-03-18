@@ -622,13 +622,13 @@ teardown() {
 
 @test "Verify if the configure_jbpm_cluster is contained in the standalone-openshift.xml when jbpm cache is enabled" {
   export KIE_SERVER_JBPM_CLUSTER="true"
-  if grep -q "<cache-container name='jbpm'>" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ; then
+  if grep -q "<cache-container name="jbpm">" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ; then
     false
   else
     true
   fi
   configure_jbpm_cache
-  if grep -q "<cache-container name='jbpm'>" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ; then
+  if grep -q '<cache-container name="jbpm">' ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ; then
     true
   else
    false
@@ -637,13 +637,13 @@ teardown() {
 
 @test "Verify if the configure_jbpm_cluster is contained in the standalone-openshift.xml when KIE_SERVER_JBPM_CLUSTER is enabled" {
   export KIE_SERVER_JBPM_CLUSTER="true"
-  if grep -q "<cache-container name='jbpm'>" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ; then
+  if grep -q '<cache-container name="jbpm">' ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ; then
     false
   else
     true
   fi
   configure_jbpm_cluster
-  if grep -q "<cache-container name='jbpm'>" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ; then
+  if grep -q '<cache-container name="jbpm">' ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ; then
     true
   else
    false
