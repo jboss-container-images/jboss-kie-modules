@@ -620,20 +620,6 @@ teardown() {
     [[ "${GC_MAX_METASPACE_SIZE}" == "${KIE_SERVER_MAX_METASPACE_SIZE}" ]]
 }
 
-@test "Verify if the jbpm cache is contained in the standalone-openshift.xml when KIE_SERVER_JBPM_CLUSTER is true" {
-  export KIE_SERVER_JBPM_CLUSTER="true"
-  if grep -q "<cache-container name="jbpm">" ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ; then
-    false
-  else
-    true
-  fi
-  configure_jbpm_cache
-  if grep -q '<cache-container name="jbpm">' ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml  ; then
-    true
-  else
-   false
-  fi
-}
 
 @test "Verify if the jbpm cache is contained in the standalone-openshift.xml when KIE_SERVER_JBPM_CLUSTER is true" {
   export KIE_SERVER_JBPM_CLUSTER="true"
