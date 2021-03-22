@@ -26,6 +26,7 @@ function prepareEnv() {
     unset KIE_SERVER_DISABLE_KC_VERIFICATION
     unset KIE_SERVER_HOST
     unset KIE_SERVER_ID
+    unset KIE_SERVER_JBPM_CLUSTER
     unset KIE_SERVER_LOCATION
     unset KIE_SERVER_MGMT_DISABLED
     unset KIE_SERVER_MODE
@@ -724,9 +725,9 @@ function generate_random_id() {
 function configure_jbpm_cluster(){
     if [ "${KIE_SERVER_JBPM_CLUSTER^^}" = "TRUE" ]; then
       configure_jbpm_cache
-      log_info "KIE_SERVER_JBPM_CLUSTER enabled"
+      log_info "Kie Server's cluster for JBPM fail over enabled"
     else
-      log_info "KIE_SERVER_JBPM_CLUSTER disabled"
+      log_info "Kie Server's cluster for JBPM fail over disabled"
     fi
 }
 
@@ -739,5 +740,5 @@ function configure_jbpm_cache() {
         <replicated-cache name="jobs">\
         <transaction mode="BATCH"/>\
         </replicated-cache>\
-        </cache-container>\n<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">#g' ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml
+        </cache-container>\n<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">#g' ${CONFIG_FILE}
 }
