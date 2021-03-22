@@ -1168,3 +1168,34 @@ Feature: RHPAM KIE Server configuration tests
     Then container log should contain -Dorg.jbpm.ejb.timer.tx=true
     And container log should contain -Dorg.jbpm.ejb.timer.local.cache=false
 
+  Scenario: Check KIE_SERVER_JBPM_CLUSTER flag enabled
+    When container is started with env
+      | variable                        | value                |
+      | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
+      | KIE_SERVER_JBPM_CLUSTER         | true                 |
+    Then container log should contain Kie Server's cluster for JBPM fail over enabled
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <cache-container name="jbpm">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <transport lock-timeout="60000"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <replicated-cache name="nodes">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <transaction mode="BATCH"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain </replicated-cache>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <replicated-cache name="jobs">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <transaction mode="BATCH"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain </replicated-cache>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain </cache-container>
+
+  Scenario: Check KIE_SERVER_JBPM_CLUSTER flag disabled
+    When container is started with env
+      | variable                        | value                |
+      | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
+      | KIE_SERVER_JBPM_CLUSTER         | false                |
+    Then container log should contain Kie Server's cluster for JBPM fail over disabled
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <cache-container name="jbpm">
+    
+  Scenario: Check jbpm cache if KIE_SERVER_JBPM_CLUSTER isn't present
+    When container is started with env
+      | variable                        | value                |
+      | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
+    Then container log should contain Kie Server's cluster for JBPM fail over disabled
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <cache-container name="jbpm">
+
