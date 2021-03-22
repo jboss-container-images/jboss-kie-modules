@@ -32,7 +32,6 @@ Feature: RHDM KIE Server configuration tests
     When container is ready
     Then container log should contain -Dorg.jbpm.server.ext.disabled=true -Dorg.jbpm.ui.server.ext.disabled=true -Dorg.jbpm.case.server.ext.disabled=true
 
-  @wip
   Scenario: Check KIE_SERVER_JBPM_CLUSTER flag enabled
     When container is started with env
       | variable                        | value                |
@@ -49,8 +48,6 @@ Feature: RHDM KIE Server configuration tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain </replicated-cache>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain </cache-container>
 
-
-  @wip
   Scenario: Check KIE_SERVER_JBPM_CLUSTER flag disabled
     When container is started with env
       | variable                        | value                |
@@ -58,8 +55,7 @@ Feature: RHDM KIE Server configuration tests
       | KIE_SERVER_JBPM_CLUSTER         | false                |
     Then container log should contain Kie Server's cluster for JBPM fail over disabled
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <cache-container name="jbpm">
-
-  @wip
+    
   Scenario: Check jbpm cache if KIE_SERVER_JBPM_CLUSTER isn't present
     When container is started with env
       | variable                        | value                |
