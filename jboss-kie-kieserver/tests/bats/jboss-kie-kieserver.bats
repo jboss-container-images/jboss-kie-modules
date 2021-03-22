@@ -644,3 +644,52 @@ EOF
   echo "Result: ${result}"
   [ "${result}" = "${expected}" ]
 }
+
+@test "Verify the Kafka extension" {
+    export KIE_SERVER_KAFKA_EXT_ENABLED="true"
+    export KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS="localhost:9092"
+    export KIE_SERVER_KAFKA_EXT_CLIENT_ID="app"
+    export KIE_SERVER_KAFKA_EXT_GROUP_ID="jbpm-consumer"
+    export KIE_SERVER_KAFKA_EXT_ACKS="2"
+    export KIE_SERVER_KAFKA_EXT_MAX_BLOCK_MS="2000"
+    export KIE_SERVER_KAFKA_EXT_AUTOCREATE_TOPICS="true"
+    export KIE_SERVER_KAFKA_EXT_TOPICS="person=human,dog=animal,ant="
+
+    configure_kafka
+
+    local expected=" -Dorg.kie.server.jbpm-kafka.ext.disabled=false -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=localhost:9092 -Dorg.kie.server.jbpm-kafka.ext.client.id=app -Dorg.kie.server.jbpm-kafka.ext.group.id=jbpm-consumer -Dorg.kie.server.jbpm-kafka.ext.acks=2 -Dorg.kie.server.jbpm-kafka.ext.max.block.ms=2000 -Dorg.kie.server.jbpm-kafka.ext.allow.auto.create.topics=true -Dorg.kie.server.jbpm-kafka.ext.topics.person=human -Dorg.kie.server.jbpm-kafka.ext.topics.dog=animal"
+    echo "  Result: ${JBOSS_KIE_ARGS}"
+
+    echo "Expected: ${expected}"
+    [[ "${JBOSS_KIE_ARGS}" == "${expected}" ]]
+}
+
+@test "Verify the Kafka extension disabled" {
+    export KIE_SERVER_KAFKA_EXT_ENABLED="false"
+
+    configure_kafka
+
+    local expected=" -Dorg.kie.server.jbpm-kafka.ext.disabled=true"
+    echo "  Result: ${JBOSS_KIE_ARGS}"
+
+    echo "Expected: ${expected}"
+    [[ "${JBOSS_KIE_ARGS}" == "${expected}" ]]
+}
+
+@test "Verify the Kafka extension without boootstrapservers" {
+    export KIE_SERVER_KAFKA_EXT_ENABLED="true"
+    export KIE_SERVER_KAFKA_EXT_CLIENT_ID="app"
+    export KIE_SERVER_KAFKA_EXT_GROUP_ID="jbpm-consumer"
+    export KIE_SERVER_KAFKA_EXT_ACKS="2"
+    export KIE_SERVER_KAFKA_EXT_MAX_BLOCK_MS="2000"
+    export KIE_SERVER_KAFKA_EXT_AUTOCREATE_TOPICS="true"
+    export KIE_SERVER_KAFKA_EXT_TOPICS="person=human,dog=animal,ant="
+
+    configure_kafka
+
+    local expected=" -Dorg.kie.server.jbpm-kafka.ext.disabled=true"
+    echo "  Result: ${JBOSS_KIE_ARGS}"
+
+    echo "Expected: ${expected}"
+    [[ "${JBOSS_KIE_ARGS}" == "${expected}" ]]
+}
