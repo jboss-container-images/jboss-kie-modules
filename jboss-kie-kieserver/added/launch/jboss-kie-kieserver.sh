@@ -740,5 +740,5 @@ function configure_jbpm_cache() {
         <replicated-cache name="jobs">\
         <transaction mode="BATCH"/>\
         </replicated-cache>\
-        </cache-container>\n<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">#g' ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml
+        </cache-container>\n<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">#g' ${CONFIG_FILE} 
 }
