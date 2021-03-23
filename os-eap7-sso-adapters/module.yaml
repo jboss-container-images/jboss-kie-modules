@@ -1,0 +1,13 @@
+schema_version: 1
+name: os-eap7-sso-adapters
+version: '7.4.5-kie'
+description: RHSS adapters for JBoss EAP 7.
+execute:
+  - script: configure.sh
+    user: '185'
+
+artifacts:
+  - name: rh-sso-7.4.5-eap7-adapter.zip
+    md5: e2b7aa64f9ecfb393727bf9b68ffa065
+  - name: rh-sso-7.4.5-saml-eap7-adapter.zip
+    md5: 4a005a62913b384975878183332c3761
