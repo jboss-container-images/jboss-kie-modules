@@ -727,7 +727,7 @@ function configure_jbpm_cluster(){
       configure_jbpm_cache
       log_info "KIE Server's cluster for Jbpm failover is enabled."
     else
-      log_info "Kie Server's cluster for JBPM fail over disabled"
+      log_info "KIE Server's cluster for Jbpm failover is disabled."
     fi
 }
 
