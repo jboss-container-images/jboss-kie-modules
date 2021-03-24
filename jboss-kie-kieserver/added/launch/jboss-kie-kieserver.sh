@@ -27,6 +27,7 @@ function prepareEnv() {
     unset KIE_SERVER_HOST
     unset KIE_SERVER_ID
     unset KIE_SERVER_JBPM_CLUSTER
+    unset KIE_SERVER_JBPM_CLUSTER_TRANSPORT_LOCK_TIMEOUT
     unset KIE_SERVER_LOCATION
     unset KIE_SERVER_MGMT_DISABLED
     unset KIE_SERVER_MODE
@@ -733,7 +734,7 @@ function configure_jbpm_cluster(){
 
 function configure_jbpm_cache() {
     sed -i 's#<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">#<cache-container name="jbpm">\
-        <transport lock-timeout="60000"/>\
+        <transport lock-timeout="'${KIE_SERVER_JBPM_CLUSTER_TRANSPORT_LOCK_TIMEOUT}'"/>\
         <replicated-cache name="nodes">\
         <transaction mode="BATCH"/>\
         </replicated-cache>\

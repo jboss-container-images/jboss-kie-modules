@@ -623,6 +623,7 @@ teardown() {
 @test "Verify if the jbpm cache is contained in the standalone-openshift.xml when KIE_SERVER_JBPM_CLUSTER is true" {
   export CONFIG_FILE=${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml
   export KIE_SERVER_JBPM_CLUSTER="true"
+  export KIE_SERVER_JBPM_CLUSTER_TRANSPORT_LOCK_TIMEOUT="60000"
   configure_jbpm_cluster
   #this is the return of xmllint --xpath "//*[local-name()='cache-container'][@name='jbpm']" $CONFIG_FILE
   expected=$(cat <<EOF
