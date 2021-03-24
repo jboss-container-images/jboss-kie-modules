@@ -1168,4 +1168,3 @@ Feature: RHPAM KIE Server configuration tests
     Then container log should contain -Dorg.jbpm.ejb.timer.tx=true
     And container log should contain -Dorg.jbpm.ejb.timer.local.cache=false
 
-
