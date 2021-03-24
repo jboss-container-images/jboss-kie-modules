@@ -725,7 +725,7 @@ function generate_random_id() {
 function configure_jbpm_cluster(){
     if [ "${KIE_SERVER_JBPM_CLUSTER^^}" = "TRUE" ]; then
       configure_jbpm_cache
-      log_info "Kie Server's cluster for JBPM fail over enabled"
+      log_info "KIE Server's cluster for Jbpm failover is enabled."
     else
       log_info "Kie Server's cluster for JBPM fail over disabled"
     fi
