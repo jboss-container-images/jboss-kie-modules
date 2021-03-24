@@ -129,7 +129,7 @@ Feature: RHPAM and RHDM common tests
       | variable                        | value                |
       | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
       | KIE_SERVER_JBPM_CLUSTER         | true                 |
-    Then container log should contain Kie Server's cluster for JBPM fail over enabled
+    Then container log should contain KIE Server's cluster for Jbpm failover is enabled.
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <cache-container name="jbpm">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <transport lock-timeout="60000"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <replicated-cache name="nodes">
