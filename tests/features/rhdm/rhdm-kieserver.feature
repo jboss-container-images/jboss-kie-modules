@@ -31,4 +31,3 @@ Feature: RHDM KIE Server configuration tests
   Scenario: Check rhdm-kieserver extensions
     When container is ready
     Then container log should contain -Dorg.jbpm.server.ext.disabled=true -Dorg.jbpm.ui.server.ext.disabled=true -Dorg.jbpm.case.server.ext.disabled=true
-
