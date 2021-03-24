@@ -123,24 +123,17 @@ Feature: RHPAM and RHDM common tests
       | AUTH_LDAP_URL          | test_url  |
       | AUTH_LDAP_LOGIN_MODULE | required  |
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
-
+    
   Scenario: Check KIE_SERVER_JBPM_CLUSTER flag enabled
     When container is started with env
       | variable                        | value                |
       | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
       | KIE_SERVER_JBPM_CLUSTER         | true                 |
-    Then container log should contain Kie Server's cluster for JBPM fail over enabled
+    Then container log should contain KIE Server's cluster for Jbpm failover is enabled.
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <cache-container name="jbpm">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <transport lock-timeout="60000"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <replicated-cache name="nodes">
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <transaction mode="BATCH"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain </replicated-cache>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <replicated-cache name="jobs">
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <transaction mode="BATCH"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain </replicated-cache>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain </cache-container>
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 60000 on XPath //*[local-name()='cache-container']/*[local-name()='jbpm']/*[local-name()='transport lock-timeout']
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value nodes on XPath //*[local-name()='cache-container']/*[local-name()='jbpm']/*[local-name()='replicated-cache']
 
   Scenario: Check KIE_SERVER_JBPM_CLUSTER flag disabled
     When container is started with env
