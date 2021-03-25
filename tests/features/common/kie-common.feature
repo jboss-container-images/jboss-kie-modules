@@ -123,31 +123,3 @@ Feature: RHPAM and RHDM common tests
       | AUTH_LDAP_URL          | test_url  |
       | AUTH_LDAP_LOGIN_MODULE | required  |
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
-
-  Scenario: Check KIE_SERVER_JBPM_CLUSTER flag enabled
-    When container is started with env
-      | variable                        | value                |
-      | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
-      | KIE_SERVER_JBPM_CLUSTER         | true                 |
-    Then container log should contain KIE Server's cluster for Jbpm failover is enabled.
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 60000 on XPath //*[local-name()='cache-container'][@name='jbpm']/*[local-name()='transport']/@lock-timeout
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value BATCH on XPath //*[local-name()='cache-container'][@name='jbpm']/*[local-name()='replicated-cache'][@name='nodes']/*[local-name()='transaction']/@mode
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value BATCH on XPath //*[local-name()='cache-container'][@name='jbpm']/*[local-name()='replicated-cache'][@name='jobs']/*[local-name()='transaction']/@mode
-
-
-  Scenario: Check KIE_SERVER_JBPM_CLUSTER flag disabled
-    When container is started with env
-      | variable                        | value                |
-      | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
-      | KIE_SERVER_JBPM_CLUSTER         | false                |
-    Then container log should contain Kie Server's cluster for JBPM fail over disabled
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <cache-container name="jbpm">
-
-  Scenario: Check jbpm cache if KIE_SERVER_JBPM_CLUSTER isn't present
-    When container is started with env
-      | variable                        | value                |
-      | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
-    Then container log should contain Kie Server's cluster for JBPM fail over disabled
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <cache-container name="jbpm">
-
-
