@@ -734,7 +734,7 @@ function configure_jbpm_cluster(){
 
 function configure_jbpm_cache() {
     sed -i 's#<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">#<cache-container name="jbpm">\
-        <transport lock-timeout="'${KIE_SERVER_JBPM_CLUSTER_TRANSPORT_LOCK_TIMEOUT:60000}'"/>\
+        <transport lock-timeout="'${KIE_SERVER_JBPM_CLUSTER_TRANSPORT_LOCK_TIMEOUT:-60000}'"/>\
         <replicated-cache name="nodes">\
         <transaction mode="BATCH"/>\
         </replicated-cache>\
