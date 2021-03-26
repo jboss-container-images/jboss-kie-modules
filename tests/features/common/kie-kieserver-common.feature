@@ -518,8 +518,7 @@ Feature: Kie Server common features
       | KIE_SERVER_CONTAINER_DEPLOYMENT     | test=org.package:mypackage:1.0 |
     Then container log should contain Using standard EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: test=org.package:mypackage:1.0
      And container log should contain INFO Attempting to pull dependencies for kjar 0 with
-
-  @wip
+    
   Scenario: Check KIE_SERVER_JBPM_CLUSTER flag enabled
     When container is started with env
       | variable                        | value                |
