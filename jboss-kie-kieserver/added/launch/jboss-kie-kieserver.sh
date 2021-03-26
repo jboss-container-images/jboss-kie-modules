@@ -26,6 +26,8 @@ function prepareEnv() {
     unset KIE_SERVER_DISABLE_KC_VERIFICATION
     unset KIE_SERVER_HOST
     unset KIE_SERVER_ID
+    unset KIE_SERVER_JBPM_CLUSTER
+    unset KIE_SERVER_JBPM_CLUSTER_TRANSPORT_LOCK_TIMEOUT
     unset KIE_SERVER_LOCATION
     unset KIE_SERVER_MGMT_DISABLED
     unset KIE_SERVER_MODE
@@ -69,6 +71,7 @@ function configure() {
     configure_server_sync_deploy
     configure_drools
     configure_jbpm
+    configure_jbpm_cluster
     configure_kie_server_mgmt
     configure_mode
     configure_metaspace
@@ -718,4 +721,25 @@ function configure_server_state() {
 
 function generate_random_id() {
     cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1
+}
+
+function configure_jbpm_cluster(){
+    if [ "${KIE_SERVER_JBPM_CLUSTER^^}" = "TRUE" ]; then
+      configure_jbpm_cache
+      log_info "KIE Server's cluster for Jbpm failover is enabled."
+    else
+      log_info "KIE Server's cluster for Jbpm failover is disabled."
+    fi
+}
+
+function configure_jbpm_cache() {
+    sed -i 's#<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">#<cache-container name="jbpm">\
+        <transport lock-timeout="'${KIE_SERVER_JBPM_CLUSTER_TRANSPORT_LOCK_TIMEOUT:-60000}'"/>\
+        <replicated-cache name="nodes">\
+        <transaction mode="BATCH"/>\
+        </replicated-cache>\
+        <replicated-cache name="jobs">\
+        <transaction mode="BATCH"/>\
+        </replicated-cache>\
+        </cache-container>\n<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">#g' ${CONFIG_FILE}
 }

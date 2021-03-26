@@ -1,7 +1,9 @@
 #!/usr/bin/env bats
 
 export JBOSS_HOME=$BATS_TMPDIR/jboss_home
+export CONFIG_FILE=${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml
 mkdir -p $JBOSS_HOME/bin/launch
+mkdir -p $JBOSS_HOME/standalone/configuration
 
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/launch-common.sh $JBOSS_HOME/bin/launch
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/logging.bash $JBOSS_HOME/bin/launch/logging.sh
@@ -9,6 +11,7 @@ cp $BATS_TEST_DIRNAME/../../../jboss-kie-common/added/launch/jboss-kie-common.sh
 cp $BATS_TEST_DIRNAME/../../../jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-security-login-modules.sh $JBOSS_HOME/bin/launch
 cp $BATS_TEST_DIRNAME/../../../jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-common.sh $JBOSS_HOME/bin/launch
 cp $BATS_TEST_DIRNAME/../../../jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-security.sh $JBOSS_HOME/bin/launch
+cp $BATS_TEST_DIRNAME/../../../jboss-eap-config-openshift/EAP7.3.0/added/standalone-openshift.xml $JBOSS_HOME/standalone/configuration/standalone-openshift.xml
 
 # mocking
 touch $JBOSS_HOME/bin/launch/datasource-common.sh
@@ -616,4 +619,28 @@ teardown() {
     configure_metaspace
     echo "GC_MAX_METASPACE_SIZE=${GC_MAX_METASPACE_SIZE}"
     [[ "${GC_MAX_METASPACE_SIZE}" == "${KIE_SERVER_MAX_METASPACE_SIZE}" ]]
+}
+
+@test "Verify if the jbpm cache is contained in the standalone-openshift.xml when KIE_SERVER_JBPM_CLUSTER is true" {
+  export KIE_SERVER_JBPM_CLUSTER="true"
+  export KIE_SERVER_JBPM_CLUSTER_TRANSPORT_LOCK_TIMEOUT="74000"
+  configure_jbpm_cluster
+  #this is the return of xmllint --xpath "//*[local-name()='cache-container'][@name='jbpm']" $CONFIG_FILE
+  expected=$(cat <<EOF
+<cache-container name="jbpm">
+        <transport lock-timeout="74000"/>
+        <replicated-cache name="nodes">
+        <transaction mode="BATCH"/>
+        </replicated-cache>
+        <replicated-cache name="jobs">
+        <transaction mode="BATCH"/>
+        </replicated-cache>
+        </cache-container>
+EOF
+)
+
+ result=$(xmllint --xpath "//*[local-name()='cache-container'][@name='jbpm']" ${CONFIG_FILE})
+  echo "Expected: ${expected}"
+  echo "Result: ${result}"
+  [ "${result}" = "${expected}" ]
 }
