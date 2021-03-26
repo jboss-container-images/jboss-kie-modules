@@ -28,6 +28,14 @@ function prepareEnv() {
     unset KIE_SERVER_ID
     unset KIE_SERVER_JBPM_CLUSTER
     unset KIE_SERVER_JBPM_CLUSTER_TRANSPORT_LOCK_TIMEOUT
+    unset KIE_SERVER_KAFKA_EXT_ACKS
+    unset KIE_SERVER_KAFKA_EXT_AUTOCREATE_TOPICS
+    unset KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS
+    unset KIE_SERVER_KAFKA_EXT_CLIENT_ID
+    unset KIE_SERVER_KAFKA_EXT_ENABLED
+    unset KIE_SERVER_KAFKA_EXT_GROUP_ID
+    unset KIE_SERVER_KAFKA_EXT_MAX_BLOCK_MS
+    unset KIE_SERVER_KAFKA_EXT_TOPICS
     unset KIE_SERVER_LOCATION
     unset KIE_SERVER_MGMT_DISABLED
     unset KIE_SERVER_MODE
@@ -72,6 +80,7 @@ function configure() {
     configure_drools
     configure_jbpm
     configure_jbpm_cluster
+    configure_kafka
     configure_kie_server_mgmt
     configure_mode
     configure_metaspace
@@ -742,4 +751,37 @@ function configure_jbpm_cache() {
         <transaction mode="BATCH"/>\
         </replicated-cache>\
         </cache-container>\n<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">#g' ${CONFIG_FILE}
+}
+
+function configure_kafka(){
+  if [ "${KIE_SERVER_KAFKA_EXT_ENABLED^^}" = "TRUE" ]; then
+    if [ -n "${KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS}" ];then
+      log_info "Kafka Extension enabled"
+      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.disabled=false"
+      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=${KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS}"
+      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.client.id=${KIE_SERVER_KAFKA_EXT_CLIENT_ID}"
+      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.group.id=${KIE_SERVER_KAFKA_EXT_GROUP_ID}"
+      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.acks=${KIE_SERVER_KAFKA_EXT_ACKS}"
+      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.max.block.ms=${KIE_SERVER_KAFKA_EXT_MAX_BLOCK_MS}"
+      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.allow.auto.create.topics=${KIE_SERVER_KAFKA_EXT_AUTOCREATE_TOPICS}"
+
+      IFS=',' read -a ks_topics <<< $KIE_SERVER_KAFKA_EXT_TOPICS
+      for topic in "${ks_topics[@]}"; do
+        IFS='=' read -a mapping <<< $topic
+        signal=${mapping[0]}
+        topic_name=${mapping[1]}
+          if [[ -n "$signal" && -n "$topic_name" ]]; then
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.topics.${topic}"
+          else
+              log_warning "mapping not configured, msg or topic name is empty. Value set [${signal}=${topic_name}]"
+          fi
+      done
+    else
+      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.disabled=true"
+      log_warning "Bootstrap servers not configured, kafka extension disabled"
+    fi
+  else
+    log_info "Kafka Extension disabled"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.disabled=true"
+  fi
 }

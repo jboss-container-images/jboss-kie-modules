@@ -518,7 +518,7 @@ Feature: Kie Server common features
       | KIE_SERVER_CONTAINER_DEPLOYMENT     | test=org.package:mypackage:1.0 |
     Then container log should contain Using standard EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: test=org.package:mypackage:1.0
      And container log should contain INFO Attempting to pull dependencies for kjar 0 with
-    
+
   Scenario: Check KIE_SERVER_JBPM_CLUSTER flag enabled
     When container is started with env
       | variable                        | value                |
@@ -555,3 +555,46 @@ Feature: Kie Server common features
       | KIE_SERVER_JBPM_CLUSTER_TRANSPORT_LOCK_TIMEOUT | 120000               |
     Then container log should contain KIE Server's cluster for Jbpm failover is enabled.
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 120000 on XPath //*[local-name()='cache-container'][@name='jbpm']/*[local-name()='transport']/@lock-timeout
+
+  Scenario: Check if the Kafka integration is disabled
+    When container is started with env
+      | variable                       | value    |
+      | KIE_SERVER_KAFKA_EXT_ENABLED   | false    |
+    Then container log should contain -Dorg.kie.server.jbpm-kafka.ext.disabled=true
+
+  Scenario: Check if the Kafka integration is enabled
+    When container is started with env
+      | variable                               | value                         |
+      | KIE_SERVER_KAFKA_EXT_ENABLED           | true                          |
+      | KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS | localhost:9092                |
+      | KIE_SERVER_KAFKA_EXT_CLIENT_ID         | app                           |
+      | KIE_SERVER_KAFKA_EXT_GROUP_ID          | jbpm-consumer                 |
+      | KIE_SERVER_KAFKA_EXT_ACKS              | 2                             |
+      | KIE_SERVER_KAFKA_EXT_MAX_BLOCK_MS      | 2000                          |
+      | KIE_SERVER_KAFKA_EXT_AUTOCREATE_TOPICS | true                          |
+      | KIE_SERVER_KAFKA_EXT_TOPICS            | person=human,dog=animal,ant=  |
+      | SCRIPT_DEBUG                           | true                          |
+    Then container log should contain -Dorg.kie.server.jbpm-kafka.ext.disabled=false
+    And container log should contain -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=localhost:9092
+    And container log should contain -Dorg.kie.server.jbpm-kafka.ext.client.id=app
+    And container log should contain -Dorg.kie.server.jbpm-kafka.ext.group.id=jbpm-consumer
+    And container log should contain -Dorg.kie.server.jbpm-kafka.ext.acks=2
+    And container log should contain -Dorg.kie.server.jbpm-kafka.ext.max.block.ms=2000
+    And container log should contain -Dorg.kie.server.jbpm-kafka.ext.allow.auto.create.topics=true
+    And container log should contain -Dorg.kie.server.jbpm-kafka.ext.topics.person=human
+    And container log should contain -Dorg.kie.server.jbpm-kafka.ext.topics.dog=animal
+    And container log should contain mapping not configured, msg or topic name is empty. Value set [ant=]
+
+  Scenario: Check if the Kafka integration is enabled without bootstrapservers
+    When container is started with env
+      | variable                               | value                         |
+      | KIE_SERVER_KAFKA_EXT_ENABLED           | true                          |
+      | KIE_SERVER_KAFKA_EXT_CLIENT_ID         | app                           |
+      | KIE_SERVER_KAFKA_EXT_GROUP_ID          | jbpm-consumer                 |
+      | KIE_SERVER_KAFKA_EXT_ACKS              | 2                             |
+      | KIE_SERVER_KAFKA_EXT_MAX_BLOCK_MS      | 2000                          |
+      | KIE_SERVER_KAFKA_EXT_AUTOCREATE_TOPICS | true                          |
+      | KIE_SERVER_KAFKA_EXT_TOPICS            | person=human,dog=animal,ant=  |
+      | SCRIPT_DEBUG                           | true                          |
+    Then container log should contain -Dorg.kie.server.jbpm-kafka.ext.disabled=true
+    And container log should contain Bootstrap servers not configured, kafka extension disabled
