@@ -519,6 +519,7 @@ Feature: Kie Server common features
     Then container log should contain Using standard EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: test=org.package:mypackage:1.0
      And container log should contain INFO Attempting to pull dependencies for kjar 0 with
 
+  @wip
   Scenario: Check KIE_SERVER_JBPM_CLUSTER flag enabled
     When container is started with env
       | variable                        | value                |
@@ -528,6 +529,9 @@ Feature: Kie Server common features
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 60000 on XPath //*[local-name()='cache-container'][@name='jbpm']/*[local-name()='transport']/@lock-timeout
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value BATCH on XPath //*[local-name()='cache-container'][@name='jbpm']/*[local-name()='replicated-cache'][@name='nodes']/*[local-name()='transaction']/@mode
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value BATCH on XPath //*[local-name()='cache-container'][@name='jbpm']/*[local-name()='replicated-cache'][@name='jobs']/*[local-name()='transaction']/@mode
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jbpm on XPath //*[local-name()='cache-container']/@name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value nodes on XPath //*[local-name()='cache-container']/*[local-name()='replicated-cache'][@name='nodes']/@name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jobs on XPath //*[local-name()='cache-container']/*[local-name()='replicated-cache'][@name='jobs']/@name
 
   Scenario: Check KIE_SERVER_JBPM_CLUSTER flag disabled
     When container is started with env
