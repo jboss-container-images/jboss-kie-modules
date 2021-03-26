@@ -123,3 +123,5 @@ Feature: RHPAM and RHDM common tests
       | AUTH_LDAP_URL          | test_url  |
       | AUTH_LDAP_LOGIN_MODULE | required  |
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
+
+
