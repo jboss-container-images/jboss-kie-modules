@@ -124,4 +124,7 @@ Feature: RHPAM and RHDM common tests
       | AUTH_LDAP_LOGIN_MODULE | required  |
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
 
-
+  Scenario: [KIECLOUD-520] - Make sure the jmx_prometheus_agent is on the desired version
+    When container is ready
+    Then run sh -c 'test -f /opt/jboss/container/prometheus/jmx_prometheus_javaagent-0.3.2.redhat-00003.jar && echo all good' in container and check its output for all good
+    And run sh -c 'md5sum /opt/jboss/container/prometheus/jmx_prometheus_javaagent-0.3.2.redhat-00003.jar' in container and check its output for 8b3af39995b113baf35e53468bad7aae  /opt/jboss/container/prometheus/jmx_prometheus_javaagent-0.3.2.redhat-00003.jar
