@@ -463,6 +463,10 @@ Feature: Kie Server common features
     And file /home/jboss/.m2/settings.xml should contain <url>http://nexus-test.127.0.0.1.nip.ip/nexus/</url>
     And file /home/jboss/.m2/settings.xml should contain <mirrorOf>external:*</mirrorOf>
 
+  Scenario: RHPAM-3517: Update maven to 3.6
+    When container is started with command bash
+    Then run sh -c "mvn --version | sed -n -e 's/^.*Apache //p' | grep 3.6 && echo  all good" in container and check its output for all good
+
   Scenario: Check if the GC_MAX_METASPACE_SIZE is set to 512 if KIE_SERVER_MAX_METASPACE_SIZE is not set
     When container is ready
     Then container log should contain -XX:MaxMetaspaceSize=512m

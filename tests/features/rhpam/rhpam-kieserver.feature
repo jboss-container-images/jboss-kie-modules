@@ -25,6 +25,7 @@ Feature: RHPAM KIE Server configuration tests
       | SCRIPT_DEBUG                    | true                                                                                     |
     Then s2i build log should contain Attempting to verify kie server containers with 'java org.kie.server.services.impl.KieServerContainerVerifier  org.openshift.quickstarts:rhpam-kieserver-library:1.6.0-SNAPSHOT'
     And s2i build log should contain java -Djavax.net.ssl.trustStore=truststore.ts -Djavax.net.ssl.trustStorePassword=123456 --add-modules
+    And s2i build log should not contain And s2i build log should not contain java.lang.ClassNotFoundException: org.apache.maven.model.io.xpp3.MavenXpp3WriterEx
 
   # https://issues.jboss.org/browse/JBPM-7834
   Scenario: Check OpenShiftStartupStrategy is enabled in RHPAM 7

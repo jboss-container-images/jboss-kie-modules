@@ -48,3 +48,7 @@ Feature: KIE Controller configuration common tests
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain adminUser
      And container log should contain External authentication/authorization enabled, skipping the embedded users creation.
      And container log should contain Make sure to configure KIE_ADMIN_USER user to access the application with the roles kie-server,rest-all,admin,kiemgmt,Administrators,user
+
+  Scenario: RHPAM-3517: Update maven to 3.6
+    When container is started with command bash
+    Then run sh -c "mvn --version | sed -n -e 's/^.*Apache //p' | grep 3.6 && echo  all good" in container and check its output for all good

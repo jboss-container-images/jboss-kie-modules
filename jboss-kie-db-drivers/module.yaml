@@ -2,10 +2,11 @@ schema_version: 1
 name: jboss-kie-db-drivers
 version: '1.0'
 description: Replacement of os-eap-db-drivers script package.
+
 execute:
-- script: configure.sh
-  user: '185'
+  - script: configure.sh
+
 packages:
-      install:
-          - mariadb-java-client
-          - postgresql-jdbc
+  install:
+    - mariadb-java-client
+    - postgresql-jdbc
