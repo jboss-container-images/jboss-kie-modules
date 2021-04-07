@@ -113,3 +113,7 @@ Feature: Decision/Business Central common features
   Scenario: Check if index files are in shared PV
     When container is ready
     Then container log should contain -Dorg.uberfire.metadata.index.dir=/opt/kie/data
+
+  Scenario: RHPAM-3517: Update maven to 3.6
+    When container is started with command bash
+    Then run sh -c "mvn --version | sed -n -e 's/^.*Apache //p' | grep 3.6 && echo  all good" in container and check its output for all good

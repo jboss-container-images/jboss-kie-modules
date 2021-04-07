@@ -1,12 +1,18 @@
-@rhdm-7/rhdm-kieserver-rhel8  @rhpam-7/rhpam-kieserver-rhel8 @rhdm-7/rhdm-decisioncentral-rhel8 @rhpam-7/rhpam-businesscentral-rhel8 @rhpam-7/rhpam-businesscentral-monitoring-rhel8 @rhpam-7/rhpam-dashbuilder-rhel8 @rhpam-7/rhpam-controller-rhel8 @rhdm-7/rhdm-controller-rhel8
+@rhdm-7/rhdm-kieserver-rhel8 @rhpam-7/rhpam-kieserver-rhel8 @rhdm-7/rhdm-decisioncentral-rhel8 @rhpam-7/rhpam-businesscentral-rhel8 @rhpam-7/rhpam-businesscentral-monitoring-rhel8 @rhpam-7/rhpam-dashbuilder-rhel8 @rhpam-7/rhpam-controller-rhel8 @rhdm-7/rhdm-controller-rhel8
 Feature: RHPAM and RHDM common tests
 
-  Scenario: Configure kie-workbench to use LDAP authentication
+  Scenario: Ensure the openjdk8 packages are not installed on container.
+    When container is started with command bash
+    Then run sh -c '/usr/bin/rpm -q java-1.8.0-openjdk-devel || true' in container and check its output contains package java-1.8.0-openjdk-devel is not installed
+     And run sh -c '/usr/bin/rpm -q java-1.8.0-openjdk-headless || true' in container and check its output for package java-1.8.0-openjdk-headless is not installed
+     And run sh -c '/usr/bin/rpm -q java-1.8.0-openjdk || true' in container and check its output for package java-1.8.0-openjdk is not installed
+
+  Scenario: Configure container to use LDAP authentication
     When container is started with env
       | variable      | value    |
       | AUTH_LDAP_URL | test_url |
     Then container log should contain AUTH_LDAP_URL is set to test_url. Added LdapExtended login-module
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended"
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended"
 
   Scenario: Configure images to use LDAP authentication
     When container is started with env
