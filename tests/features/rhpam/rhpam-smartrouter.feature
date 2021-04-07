@@ -31,7 +31,7 @@ Feature: RHPAM Smart Router configuration tests
      And container log should not contain Container is in test mode and not in OpenShift, generating test certificate
 
   Scenario: Verify the smart router TLS configuration, test cert not generated and KIE_SERVER_ROUTER_TLS_KEYSTORE not found
-    When container is started with envVerify the smart router TLS configuration, everything correct
+    When container is started with env
       | variable                                 | value                  |
       | KIE_SERVER_ROUTER_TLS_TEST               | false                  |
       | KIE_SERVER_ROUTER_TLS_KEYSTORE           | /etc/cert/certificate  |
