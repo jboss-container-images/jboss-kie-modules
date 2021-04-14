@@ -1,6 +1,11 @@
 @rhdm-7/rhdm-kieserver-rhel8  @rhpam-7/rhpam-kieserver-rhel8
 Feature: Kie Server common features
 
+  Scenario: RHPAM-2855: /opt/jboss/container/maven/default/ should not contain '*' and symlink /usr/local/s2i/scl-enable-maven should not exist
+    When container is started with command bash
+    Then run sh -c "test ! -L /opt/jboss/container/maven/default/'*' && echo all good" in container and check its output for all good
+     And run sh -c 'test ! -L /usr/local/s2i/scl-enable-maven && echo all good' in container and check its output for all good
+
   Scenario: Test REST API is secure
     When container is ready
     Then check that page is served
