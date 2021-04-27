@@ -564,7 +564,7 @@ Feature: Kie Server common features
     When container is started with env
       | variable                       | value    |
       | KIE_SERVER_KAFKA_EXT_ENABLED   | false    |
-    Then container log should contain -Dorg.kie.server.jbpm-kafka.ext.disabled=true
+    Then container log should contain -Dorg.kie.kafka.server.ext.disabled=true
 
   Scenario: Check if the Kafka integration is enabled
     When container is started with env
@@ -578,7 +578,7 @@ Feature: Kie Server common features
       | KIE_SERVER_KAFKA_EXT_AUTOCREATE_TOPICS | true                          |
       | KIE_SERVER_KAFKA_EXT_TOPICS            | person=human,dog=animal,ant=  |
       | SCRIPT_DEBUG                           | true                          |
-    Then container log should contain -Dorg.kie.server.jbpm-kafka.ext.disabled=false
+    Then container log should contain -Dorg.kie.kafka.server.ext.disabled=false
     And container log should contain -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=localhost:9092
     And container log should contain -Dorg.kie.server.jbpm-kafka.ext.client.id=app
     And container log should contain -Dorg.kie.server.jbpm-kafka.ext.group.id=jbpm-consumer
@@ -600,5 +600,5 @@ Feature: Kie Server common features
       | KIE_SERVER_KAFKA_EXT_AUTOCREATE_TOPICS | true                          |
       | KIE_SERVER_KAFKA_EXT_TOPICS            | person=human,dog=animal,ant=  |
       | SCRIPT_DEBUG                           | true                          |
-    Then container log should contain -Dorg.kie.server.jbpm-kafka.ext.disabled=true
+    Then container log should contain -Dorg.kie.kafka.server.ext.disabled=true
     And container log should contain Bootstrap servers not configured, kafka extension disabled
