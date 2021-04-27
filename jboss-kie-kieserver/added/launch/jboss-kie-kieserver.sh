@@ -757,7 +757,7 @@ function configure_kafka(){
   if [ "${KIE_SERVER_KAFKA_EXT_ENABLED^^}" = "TRUE" ]; then
     if [ -n "${KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS}" ];then
       log_info "Kafka Extension enabled"
-      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.disabled=false"
+      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.kafka.server.ext.disabled=false"
       JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=${KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS}"
       JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.client.id=${KIE_SERVER_KAFKA_EXT_CLIENT_ID}"
       JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.group.id=${KIE_SERVER_KAFKA_EXT_GROUP_ID}"
@@ -777,11 +777,11 @@ function configure_kafka(){
           fi
       done
     else
-      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.disabled=true"
+      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.kafka.server.ext.disabled=true"
       log_warning "Bootstrap servers not configured, kafka extension disabled"
     fi
   else
     log_info "Kafka Extension disabled"
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.disabled=true"
+    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.kafka.server.ext.disabled=true"
   fi
 }
