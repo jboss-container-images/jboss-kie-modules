@@ -559,7 +559,7 @@ Feature: Kie Server common features
       | KIE_SERVER_JBPM_CLUSTER_TRANSPORT_LOCK_TIMEOUT | 120000               |
     Then container log should contain KIE Server's cluster for Jbpm failover is enabled.
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 120000 on XPath //*[local-name()='cache-container'][@name='jbpm']/*[local-name()='transport']/@lock-timeout
-
+    
   Scenario: Check if the Kafka integration is disabled
     When container is started with env
       | variable                       | value    |
@@ -602,3 +602,32 @@ Feature: Kie Server common features
       | SCRIPT_DEBUG                           | true                          |
     Then container log should contain -Dorg.kie.kafka.server.ext.disabled=true
     And container log should contain Bootstrap servers not configured, kafka extension disabled
+
+  Scenario: Check if the Kafka JBPM Emitter is enabled
+    When container is started with env
+      | variable                                | value                         |
+      | KIE_SERVER_KAFKA_EXT_ENABLED            | true                          |
+      | KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS  | localhost:9092                 |
+      | KIE_SERVER_KAFKA_JBPM_BOOTSTRAP_SERVERS | localhost:9093                |
+      | KIE_SERVER_KAFKA_JBPM_CLIENT_ID         | jbpmapp                       |
+      | KIE_SERVER_KAFKA_JBPM_ACKS              | 3                             |
+      | KIE_SERVER_KAFKA_JBPM_MAX_BLOCK_MS      | 2100                          |
+      | SCRIPT_DEBUG                            | true                          |
+    Then container log should contain -Dorg.kie.kafka.server.ext.disabled=false
+    # Replace with the follow when this https://issues.redhat.com/browse/JBPM-9716 will be merged and the jar will be realigned
+    # And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.bootstrap.servers=localhost:9093
+    And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.boopstrap.servers=localhost:9093
+    And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.client.id=jbpmapp
+    And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.acks=3
+    And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.max.block.ms=2100
+
+  Scenario: Check if the Kafka JBPM Emitter is  without bootstrap
+    When container is started with env
+      | variable                                | value                         |
+      | KIE_SERVER_KAFKA_EXT_ENABLED            | true                          |
+      | KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS | localhost:9092                 |
+      | KIE_SERVER_KAFKA_JBPM_CLIENT_ID         | jbpmapp                       |
+      | KIE_SERVER_KAFKA_JBPM_ACKS              | 3                             |
+      | KIE_SERVER_KAFKA_JBPM_MAX_BLOCK_MS      | 2100                          |
+      | SCRIPT_DEBUG                            | true                          |
+    Then container log should contain -Dorg.kie.kafka.server.ext.disabled=false
