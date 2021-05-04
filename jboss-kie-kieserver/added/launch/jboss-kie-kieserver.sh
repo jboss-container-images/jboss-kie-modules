@@ -36,10 +36,11 @@ function prepareEnv() {
     unset KIE_SERVER_KAFKA_EXT_GROUP_ID
     unset KIE_SERVER_KAFKA_EXT_MAX_BLOCK_MS
     unset KIE_SERVER_KAFKA_EXT_TOPICS
-    unset KIE_SERVER_KAFKA_JBPM_ACKS
-    unset KIE_SERVER_KAFKA_JBPM_BOOTSTRAP_SERVERS
-    unset KIE_SERVER_KAFKA_JBPM_CLIENT_ID
-    unset KIE_SERVER_KAFKA_JBPM_MAX_BLOCK_MS
+    unset KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS
+    unset KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS
+    unset KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID
+    unset KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED
+    unset KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_MAX_BLOCK_MS
     unset KIE_SERVER_LOCATION
     unset KIE_SERVER_MGMT_DISABLED
     unset KIE_SERVER_MODE
@@ -85,6 +86,7 @@ function configure() {
     configure_jbpm
     configure_jbpm_cluster
     configure_kafka
+    configure_kafka_jbpm_emitter
     configure_kie_server_mgmt
     configure_mode
     configure_metaspace
@@ -780,30 +782,6 @@ function configure_kafka(){
               log_warning "mapping not configured, msg or topic name is empty. Value set [${signal}=${topic_name}]"
           fi
       done
-
-      if [ -n "${KIE_SERVER_KAFKA_JBPM_BOOTSTRAP_SERVERS}" ];then
-        log_info "Kafka JBPM Emitter enabled"
-       # Replace with the follow when this https://issues.redhat.com/browse/JBPM-9716 will be merged and the jar will be realigned
-       #JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.bootstrap.servers=${KIE_SERVER_KAFKA_JBPM_BOOTSTRAP_SERVERS}"
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.boopstrap.servers=${KIE_SERVER_KAFKA_JBPM_BOOTSTRAP_SERVERS}"
-        if [ -n "${KIE_SERVER_KAFKA_JBPM_ACKS}" ];then
-          JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.acks=${KIE_SERVER_KAFKA_JBPM_ACKS}"
-        fi
-        if [ -n "${KIE_SERVER_KAFKA_JBPM_CLIENT_ID}" ];then
-          JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.client.id=${KIE_SERVER_KAFKA_JBPM_CLIENT_ID}"
-        fi
-        if [ -n "${KIE_SERVER_KAFKA_JBPM_MAX_BLOCK_MS}" ];then
-          JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.max.block.ms=${KIE_SERVER_KAFKA_JBPM_MAX_BLOCK_MS}"
-        fi
-
-        if [ -f "/opt/jbpm-event-emitters-kafka-7.x.Final.jar" ]; then
-          mv /opt/jbpm-event-emitters-kafka-7.x.Final.jar "/opt/eap/standalone/deployments/ROOT.war/WEB-INF/lib"
-        fi
-
-      else
-        log_warning "JBPM Emitter Bootstrap servers not configured"
-      fi
-
     else
       JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.kafka.server.ext.disabled=true"
       log_warning "Bootstrap servers not configured, kafka extension disabled"
@@ -812,4 +790,35 @@ function configure_kafka(){
     log_info "Kafka Extension disabled"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.kafka.server.ext.disabled=true"
   fi
+}
+
+function configure_kafka_jbpm_emitter(){
+  if [ "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED^^}" = "TRUE" ]; then
+      if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS}" ];then
+          log_info "Kafka JBPM Emitter enabled"
+          # Replace with the follow when this https://issues.redhat.com/browse/JBPM-9716 will be merged and the jar will be realigned
+          #JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.bootstrap.servers=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS}"
+          JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.boopstrap.servers=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS}"
+          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS}" ];then
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.acks=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS}"
+          fi
+          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID}" ];then
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.client.id=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID}"
+          fi
+          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_MAX_BLOCK_MS}" ];then
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.max.block.ms=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_MAX_BLOCK_MS}"
+          fi
+
+          JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.topic.processes=jbpm-process-events"
+          JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.topic.tasks=jbpm-task-events"
+          JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.topic.cases=jbpm-case-events"
+
+          if [ -f "/opt/jbpm-event-emitters-kafka-7.x.Final.jar" ]; then
+            mv /opt/jbpm-event-emitters-kafka-7.x.Final.jar "/opt/eap/standalone/deployments/ROOT.war/WEB-INF/lib"
+          fi
+      else
+        log_warning "JBPM Emitter Bootstrap servers not configured"
+      fi
+  fi
+
 }

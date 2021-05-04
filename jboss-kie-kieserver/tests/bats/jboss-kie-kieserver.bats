@@ -695,22 +695,15 @@ EOF
 }
 
 @test "Verify the Kafka JBPM Emitter" {
-    export KIE_SERVER_KAFKA_EXT_ENABLED="true"
-    export KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS="localhost:9092"
-    export KIE_SERVER_KAFKA_EXT_CLIENT_ID="app"
-    export KIE_SERVER_KAFKA_EXT_GROUP_ID="jbpm-consumer"
-    export KIE_SERVER_KAFKA_EXT_ACKS="2"
-    export KIE_SERVER_KAFKA_EXT_MAX_BLOCK_MS="2000"
-    export KIE_SERVER_KAFKA_EXT_AUTOCREATE_TOPICS="true"
-    export KIE_SERVER_KAFKA_EXT_TOPICS="person=human,dog=animal"
-    export KIE_SERVER_KAFKA_JBPM_BOOTSTRAP_SERVERS="localhost:9093"
-    export KIE_SERVER_KAFKA_JBPM_CLIENT_ID="jbpmapp"
-    export KIE_SERVER_KAFKA_JBPM_ACKS="3"
-    export KIE_SERVER_KAFKA_JBPM_MAX_BLOCK_MS="2100"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED="true"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS="localhost:9093"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID="jbpmapp"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS="3"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_MAX_BLOCK_MS="2100"
 
-    configure_kafka
+    configure_kafka_jbpm_emitter
 
-    local expected=" -Dorg.kie.kafka.server.ext.disabled=false -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=localhost:9092 -Dorg.kie.server.jbpm-kafka.ext.client.id=app -Dorg.kie.server.jbpm-kafka.ext.group.id=jbpm-consumer -Dorg.kie.server.jbpm-kafka.ext.acks=2 -Dorg.kie.server.jbpm-kafka.ext.max.block.ms=2000 -Dorg.kie.server.jbpm-kafka.ext.allow.auto.create.topics=true -Dorg.kie.server.jbpm-kafka.ext.topics.person=human -Dorg.kie.server.jbpm-kafka.ext.topics.dog=animal -Dorg.kie.jbpm.event.emitters.kafka.boopstrap.servers=localhost:9093 -Dorg.kie.jbpm.event.emitters.kafka.acks=3 -Dorg.kie.jbpm.event.emitters.kafka.client.id=jbpmapp -Dorg.kie.jbpm.event.emitters.kafka.max.block.ms=2100"
+    local expected=" -Dorg.kie.jbpm.event.emitters.kafka.boopstrap.servers=localhost:9093 -Dorg.kie.jbpm.event.emitters.kafka.acks=3 -Dorg.kie.jbpm.event.emitters.kafka.client.id=jbpmapp -Dorg.kie.jbpm.event.emitters.kafka.max.block.ms=2100 -Dorg.kie.jbpm.event.emitters.kafka.topic.processes=jbpm-process-events -Dorg.kie.jbpm.event.emitters.kafka.topic.tasks=jbpm-task-events -Dorg.kie.jbpm.event.emitters.kafka.topic.cases=jbpm-case-events"
     echo "  Result: ${JBOSS_KIE_ARGS}"
 
     echo "Expected: ${expected}"
@@ -718,21 +711,14 @@ EOF
 }
 
 @test "Verify the Kafka JBPM Emitter without bootstrap emitter" {
-    export KIE_SERVER_KAFKA_EXT_ENABLED="true"
-    export KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS="localhost:9092"
-    export KIE_SERVER_KAFKA_EXT_CLIENT_ID="app"
-    export KIE_SERVER_KAFKA_EXT_GROUP_ID="jbpm-consumer"
-    export KIE_SERVER_KAFKA_EXT_ACKS="2"
-    export KIE_SERVER_KAFKA_EXT_MAX_BLOCK_MS="2000"
-    export KIE_SERVER_KAFKA_EXT_AUTOCREATE_TOPICS="true"
-    export KIE_SERVER_KAFKA_EXT_TOPICS="person=human,dog=animal"
-    export KIE_SERVER_KAFKA_JBPM_CLIENT_ID="jbpmapp"
-    export KIE_SERVER_KAFKA_JBPM_ACKS="3"
-    export KIE_SERVER_KAFKA_JBPM_MAX_BLOCK_MS="2100"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED="true"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID="jbpmapp"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS="3"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_MAX_BLOCK_MS="2100"
 
-    configure_kafka
+    configure_kafka_jbpm_emitter
 
-    local expected=" -Dorg.kie.kafka.server.ext.disabled=false -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=localhost:9092 -Dorg.kie.server.jbpm-kafka.ext.client.id=app -Dorg.kie.server.jbpm-kafka.ext.group.id=jbpm-consumer -Dorg.kie.server.jbpm-kafka.ext.acks=2 -Dorg.kie.server.jbpm-kafka.ext.max.block.ms=2000 -Dorg.kie.server.jbpm-kafka.ext.allow.auto.create.topics=true -Dorg.kie.server.jbpm-kafka.ext.topics.person=human -Dorg.kie.server.jbpm-kafka.ext.topics.dog=animal"
+    local expected=""
     echo "  Result: ${JBOSS_KIE_ARGS}"
 
     echo "Expected: ${expected}"
@@ -740,17 +726,12 @@ EOF
 }
 
 @test "Verify the Kafka JBPM Emitter without bootstrap ext" {
-    export KIE_SERVER_KAFKA_EXT_ENABLED="true"
-    export KIE_SERVER_KAFKA_EXT_CLIENT_ID="app"
-    export KIE_SERVER_KAFKA_EXT_GROUP_ID="jbpm-consumer"
-    export KIE_SERVER_KAFKA_EXT_ACKS="2"
-    export KIE_SERVER_KAFKA_EXT_MAX_BLOCK_MS="2000"
-    export KIE_SERVER_KAFKA_EXT_AUTOCREATE_TOPICS="true"
-    export KIE_SERVER_KAFKA_JBPM_BOOTSTRAP_SERVERS="localhost:9093"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS="localhost:9093"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED="true"
 
-    configure_kafka
+    configure_kafka_jbpm_emitter
 
-    local expected=" -Dorg.kie.kafka.server.ext.disabled=true"
+    local expected=" -Dorg.kie.jbpm.event.emitters.kafka.boopstrap.servers=localhost:9093 -Dorg.kie.jbpm.event.emitters.kafka.topic.processes=jbpm-process-events -Dorg.kie.jbpm.event.emitters.kafka.topic.tasks=jbpm-task-events -Dorg.kie.jbpm.event.emitters.kafka.topic.cases=jbpm-case-events"
     echo "  Result: ${JBOSS_KIE_ARGS}"
 
     echo "Expected: ${expected}"
