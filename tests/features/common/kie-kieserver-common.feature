@@ -570,3 +570,35 @@ Feature: Kie Server common features
       | SCRIPT_DEBUG                           | true                          |
     Then container log should contain -Dorg.kie.kafka.server.ext.disabled=true
     And container log should contain Bootstrap servers not configured, kafka extension disabled
+
+  Scenario: Check if the Kafka JBPM Emitter is enabled
+    When container is started with env
+      | variable                                              | value                         |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS | localhost:9093                |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED           | true                          |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID         | jbpmapp                       |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS              | 3                             |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_MAX_BLOCK_MS      | 2100                          |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT       | dd-MM-yyyy'T'HH:mm:ss.SSSZ    |
+      | SCRIPT_DEBUG                                          | true                          |
+    Then container log should contain -Dorg.kie.kafka.server.ext.disabled=true
+    And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.bootstrap.servers=localhost:9093
+    And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.client.id=jbpmapp
+    And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.acks=3
+    And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.max.block.ms=2100
+    And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.date_format=dd-MM-yyyy'T'HH:mm:ss.SSSZ
+    And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.topic.processes=jbpm-process-events
+    And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.topic.tasks=jbpm-task-events
+    And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.topic.cases=jbpm-case-events
+
+  Scenario: Check if the Kafka JBPM Emitter is  without bootstrap
+    When container is started with env
+      | variable                                              | value                         |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID         | jbpmapp                       |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS              | 3                             |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_MAX_BLOCK_MS      | 2100                          |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT       | dd-MM-yyyy'T'HH:mm:ss.SSSZ    |
+      | SCRIPT_DEBUG                                          | true                          |
+    Then container log should contain -Dorg.kie.kafka.server.ext.disabled=true
+
+
