@@ -2,8 +2,10 @@
 
 export JBOSS_HOME=$BATS_TMPDIR/jboss_home
 export CONFIG_FILE=${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml
+export DEPLOYMENT_CONFIG_FILE=${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml
 mkdir -p $JBOSS_HOME/bin/launch
 mkdir -p $JBOSS_HOME/standalone/configuration
+mkdir -p $JBOSS_HOME/standalone/deployments/ROOT.war/WEB-INF/
 
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/launch-common.sh $JBOSS_HOME/bin/launch
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/logging.bash $JBOSS_HOME/bin/launch/logging.sh
@@ -12,6 +14,7 @@ cp $BATS_TEST_DIRNAME/../../../jboss-kie-wildfly-common/added/launch/jboss-kie-w
 cp $BATS_TEST_DIRNAME/../../../jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-common.sh $JBOSS_HOME/bin/launch
 cp $BATS_TEST_DIRNAME/../../../jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-security.sh $JBOSS_HOME/bin/launch
 cp $BATS_TEST_DIRNAME/../../../jboss-eap-config-openshift/EAP7.3.0/added/standalone-openshift.xml $JBOSS_HOME/standalone/configuration/standalone-openshift.xml
+cp $BATS_TEST_DIRNAME/resources/jboss-deployment-structure.xml $JBOSS_HOME/standalone/deployments/ROOT.war/WEB-INF/
 
 # mocking
 touch $JBOSS_HOME/bin/launch/datasource-common.sh
@@ -643,6 +646,25 @@ EOF
   echo "Expected: ${expected}"
   echo "Result: ${result}"
   [ "${result}" = "${expected}" ]
+}
+
+@test "Verify if the jbpm required modules are contained in the jboss-deployment-structure.xml when KIE_SERVER_JBPM_CLUSTER is true" {
+  export KIE_SERVER_JBPM_CLUSTER="true"
+  configure_jbpm_cache_modules
+  #this is the return of xmllint --xpath "//*[local-name()='module'][@name='org.infinispan']/@services" /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml
+  expectedInfinispan=' services="export"'
+  resultInfinispan=$(xmllint --xpath "//*[local-name()='module'][@name='org.infinispan']/@services" ${DEPLOYMENT_CONFIG_FILE})
+  echo "Expected Infinispan: ${expectedInfinispan}"
+  echo "Result Infinispan: ${resultInfinispan}"
+  [ "${resultInfinispan}" = "${expectedInfinispan}" ]
+
+  #this is the return of xmllint --xpath "//*[local-name()='module'][@name='org.jgroups']" /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml
+  expectedJgroups=' name="org.jgroups"'
+  resultJgroups=$(xmllint --xpath "//*[local-name()='module'][@name='org.jgroups']/@name" ${DEPLOYMENT_CONFIG_FILE})
+
+  echo "Expected Jgroups: ${expectedJgroups}"
+  echo "Result Jgroups: ${resultJgroups}"
+  [ "${resultJgroups}" = "${expectedJgroups}" ]
 }
 
 @test "Verify the Kafka extension" {
