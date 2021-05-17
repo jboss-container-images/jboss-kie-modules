@@ -735,7 +735,6 @@ function generate_random_id() {
 function configure_jbpm_cluster(){
     if [ "${KIE_SERVER_JBPM_CLUSTER^^}" = "TRUE" ]; then
       configure_jbpm_cache
-      configure_jbpm_cache_modules
       log_info "KIE Server's cluster for Jbpm failover is enabled."
     else
       log_info "KIE Server's cluster for Jbpm failover is disabled."
@@ -752,15 +751,11 @@ function configure_jbpm_cache() {
         <transaction mode="BATCH"/>\
         </replicated-cache>\
         </cache-container>\n<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">#g' ${CONFIG_FILE}
-}
 
-function configure_jbpm_cache_modules() {
-    sed -i 's#<system export="true">#<module name="org.infinispan" services="export"/><module name="org.jgroups"/>\n<system export="true">#g' ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml
+    sed -i 's#<system export="true">#<module name="org.infinispan" services="export"/>\n<module name="org.jgroups"/>\n<system export="true">#g' ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml
 
     if [ -d "/opt/kie/dependencies/jbpm-clustering" ] ;then
-      for f in /opt/kie/dependencies/jbpm-clustering/kie-server-services-jbpm-cluster-*.jar; do
-        mv "$f" ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/lib
-      done
+      mv /opt/kie/dependencies/jbpm-clustering/kie-server-services-jbpm-cluster-* ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/lib
     fi
 }
 

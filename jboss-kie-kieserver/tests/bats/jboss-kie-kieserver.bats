@@ -650,7 +650,7 @@ EOF
 
 @test "Verify if the jbpm required modules are contained in the jboss-deployment-structure.xml when KIE_SERVER_JBPM_CLUSTER is true" {
   export KIE_SERVER_JBPM_CLUSTER="true"
-  configure_jbpm_cache_modules
+  configure_jbpm_cache
   #this is the return of xmllint --xpath "//*[local-name()='module'][@name='org.infinispan']/@services" /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml
   expectedInfinispan=' services="export"'
   resultInfinispan=$(xmllint --xpath "//*[local-name()='module'][@name='org.infinispan']/@services" ${DEPLOYMENT_CONFIG_FILE})
