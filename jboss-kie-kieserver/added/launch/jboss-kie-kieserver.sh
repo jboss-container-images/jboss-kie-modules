@@ -756,7 +756,7 @@ function configure_jbpm_cache() {
 
 
     if [ -d "/opt/kie/dependencies/jbpm-clustering" ] ;then
-      mv /opt/kie/dependencies/jbpm-clustering/kie-server-services-jbpm-cluster-* ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/lib
+      mv -v /opt/kie/dependencies/jbpm-clustering/kie-server-services-jbpm-cluster-*.jar ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/lib
     fi
 }
 
