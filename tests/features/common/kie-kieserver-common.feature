@@ -544,6 +544,8 @@ Feature: Kie Server common features
     Then container log should contain KIE Server's cluster for Jbpm failover is enabled.
     And XML file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml should contain value export on XPath  //*[local-name()='module'][@name='org.infinispan']/@services
     And XML file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml should contain value org.jgroups on XPath  //*[local-name()='module'][@name='org.jgroups']/@name
+    And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml should contain <module name="org.infinispan" services="export"/><module name="org.jgroups"/>
+    And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/lib/kie-server-services-jbpm-cluster-7.52.0.Final-redhat-00004.jar should exist
 
   Scenario: Check KIE_SERVER_JBPM_CLUSTER flag disabled
     When container is started with env
