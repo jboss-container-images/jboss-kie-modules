@@ -535,6 +535,17 @@ Feature: Kie Server common features
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jbpm on XPath //*[local-name()='cache-container']/@name
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value nodes on XPath //*[local-name()='cache-container']/*[local-name()='replicated-cache'][@name='nodes']/@name
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jobs on XPath //*[local-name()='cache-container']/*[local-name()='replicated-cache'][@name='jobs']/@name
+    
+  Scenario: Check KIE_SERVER_JBPM_CLUSTER cache module flag enabled
+    When container is started with env
+      | variable                        | value                |
+      | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
+      | KIE_SERVER_JBPM_CLUSTER         | true                 |
+    Then container log should contain KIE Server's cluster for Jbpm failover is enabled.
+    And XML file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml should contain value export on XPath  //*[local-name()='module'][@name='org.infinispan']/@services
+    And XML file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml should contain value org.infinispan on XPath  //*[local-name()='module'][@name='org.infinispan']/@name
+    And XML file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml should contain value org.jgroups on XPath  //*[local-name()='module'][@name='org.jgroups']/@name
+    And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/lib/kie-server-services-jbpm-cluster-7.52.0.Final-redhat-00004.jar should exist
 
   Scenario: Check KIE_SERVER_JBPM_CLUSTER flag disabled
     When container is started with env
