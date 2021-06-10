@@ -252,6 +252,7 @@ function configure_guvnor_settings() {
         fi
     fi
     # https://github.com/kiegroup/appformer/blob/master/uberfire-ssh/uberfire-ssh-backend/src/main/java/org/uberfire/ssh/service/backend/keystore/impl/storage/DefaultSSHKeyStore.java#L40
+    # TODO swith to main when the repo will move to main or latest as default
     local pkeys_dir=${APPFORMER_SSH_KEYS_STORAGE_FOLDER:-"${kieDataDir}/security/pkeys"}
     if [ -n "${pkeys_dir}" ]; then
         mkdir -p "${pkeys_dir}"
@@ -287,11 +288,13 @@ function configure_guvnor_settings() {
     # User management service (KIECLOUD-246, AF-2083, AF-2086)
     if [ -n "${SSO_URL}" ]; then
         # https://github.com/kiegroup/appformer/tree/master/uberfire-extensions/uberfire-security/uberfire-security-management/uberfire-security-management-keycloak
+         # TODO swith to main when the repo will move to main or latest as default
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.ext.security.management.api.userManagementServices=KCAdapterUserManagementService"
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.ext.security.management.keycloak.authServer=${SSO_URL}"
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.workbench.kie_server.keycloak=true"
     else
         # https://github.com/kiegroup/appformer/tree/master/uberfire-extensions/uberfire-security/uberfire-security-management/uberfire-security-management-wildfly
+        # TODO swith to main when the repo will move to main or latest as default
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.ext.security.management.api.userManagementServices=WildflyCLIUserManagementService"
     fi
     # resource constraints (AF-2240)

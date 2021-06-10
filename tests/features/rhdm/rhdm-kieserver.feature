@@ -12,7 +12,7 @@ Feature: RHDM KIE Server configuration tests
      And run sh -c 'echo $RHDM_KIESERVER_VERSION' in container and check its output for 7.12
 
   Scenario: deploys the hellorules example, then checks if it's deployed. Additionally test if the JAVA_OPTS_APPEND is used in the container verifier step
-    Given s2i build https://github.com/jboss-container-images/rhdm-7-openshift-image from quickstarts/hello-rules/hellorules using master
+    Given s2i build https://github.com/jboss-container-images/rhdm-7-openshift-image from quickstarts/hello-rules/hellorules using main
       | variable                        | value                                                                                        |
       | KIE_SERVER_CONTAINER_DEPLOYMENT | rhdm-kieserver-hellorules=org.openshift.quickstarts:rhdm-kieserver-hellorules:1.6.0-SNAPSHOT |
       | JAVA_OPTS_APPEND                | -Djavax.net.ssl.trustStore=truststore.ts -Djavax.net.ssl.trustStorePassword=123456           |

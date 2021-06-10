@@ -1,6 +1,6 @@
 ## JBoss kie modules Tools
 
-This template docs generator is a edited copy of [this](https://github.com/jboss-openshift/application-templates/tree/master/gen_template_docs.py) script
+This template docs generator is a edited copy of [this](https://github.com/jboss-openshift/application-templates/tree/main/gen_template_docs.py) script
 The script in this repository will generate docs for all application templates available for
 RHDM, RHPAM, IPS and DS.
 

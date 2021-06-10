@@ -39,8 +39,8 @@ Below, all CeKit modules contained in this repository:
 The iteration with this repo will be only for fixing issues, adding new modules and writing tests.
 This repo is used by the [rhdm-7-openshift-image](https://github.com/jboss-container-images/rhdm-7-openshift-image ) and
 [rhpam-7-openshift-image](https://github.com/jboss-container-images/rhpam-7-openshift-image). For example,
-[here](https://github.com/jboss-container-images/rhpam-7-openshift-image/blob/master/kieserver/image.yaml#L179) the
-jboss-kie-module repo is used and in this [line](https://github.com/jboss-container-images/rhpam-7-openshift-image/blob/master/kieserver/image.yaml#L222)
+[here](https://github.com/jboss-container-images/rhpam-7-openshift-image/blob/main/kieserver/image.yaml#L179) the
+jboss-kie-module repo is used and in this [line](https://github.com/jboss-container-images/rhpam-7-openshift-image/blob/main/kieserver/image.yaml#L222)
 the [jboss-kie-kieserver](jboss-kie-kieserver) is imported and installed in the target image.
 
 
@@ -88,7 +88,7 @@ bats jboss-kie-wildfly-security-ldap.bats
 ### Running Behave tests
 
 We use the CeKit to run the Behave tests.
-To run the behave tests for the specific image i.e. [kie-server image](https://github.com/jboss-container-images/rhpam-7-openshift-image/tree/master/kieserver),
+To run the behave tests for the specific image i.e. [kie-server image](https://github.com/jboss-container-images/rhpam-7-openshift-image/tree/main/kieserver),
 you must be accessed the image's directory you want to test, execute the command:
 
 Supposing the image repository is cloned already, let's execute the **smartrouter** tests:
@@ -104,9 +104,9 @@ cekit test -v
 2019-03-21 12:32:39,525 cekit        INFO     Tests collected!
 2019-03-21 12:32:39,562 cekit        DEBUG    Running behave in '/data/dev/sources/rhpam-7-openshift-image/smartrouter/target/test'.
 @rhpam-7/rhpam78-smartrouter-openshift
-Feature: RHPAM Smart Router configuration tests # features/jboss-kie-modules.git-master/rhpam/smartrouter/rhpam-smartrouter.feature:2
+Feature: RHPAM Smart Router configuration tests # features/jboss-kie-modules.git-main/rhpam/smartrouter/rhpam-smartrouter.feature:2
 
-  Scenario: Check if image version and release is printed on boot                          # features/jboss-kie-modules.git-master/rhpam/smartrouter/rhpam-smartrouter.feature:5
+  Scenario: Check if image version and release is printed on boot                          # features/jboss-kie-modules.git-main/rhpam/smartrouter/rhpam-smartrouter.feature:5
     When container is ready                                                                # steps/container_steps.py:13 3.692s
     Then container log should contain rhpam-7/rhpam78-smartrouter-openshift image, version # steps/container_steps.py:27
     Then container log should contain rhpam-7/rhpam78-smartrouter-openshift image, version # steps/container_steps.py:27 0.058s
@@ -121,11 +121,11 @@ Took 12m24.078s
 2019-03-21 12:45:06,855 - cekit - INFO - Finished!
 ```
 
-Our tests are driven by annotations, that means each feature or scenario are annotated with the, i.e. [image name](https://github.com/jboss-container-images/jboss-kie-modules/blob/master/tests/features/common/kie-kieserver-common.feature#L1)
+Our tests are driven by annotations, that means each feature or scenario are annotated with the, i.e. [image name](https://github.com/jboss-container-images/jboss-kie-modules/blob/main/tests/features/common/kie-kieserver-common.feature#L1)
 In this link there are two annotations which means that rhpam and rhdm kieserver images will trigger all tests in that feature file.
 
 Note that, to run the tests, you need to have a previously image that match the image name and version in the
-[image.yaml](https://github.com/jboss-container-images/rhpam-7-openshift-image/blob/master/kieserver/image.yaml#L3-L5) file descriptor.
+[image.yaml](https://github.com/jboss-container-images/rhpam-7-openshift-image/blob/main/kieserver/image.yaml#L3-L5) file descriptor.
 
 
 One useful point is, CeKit allow us to run only one tests, very handy when developing a new test or troubleshooting a existing one.
