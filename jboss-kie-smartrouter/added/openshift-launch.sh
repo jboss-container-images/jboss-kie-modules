@@ -17,7 +17,7 @@ CONFIGURE_SCRIPTS=(
 
 source ${LAUNCH_DIR}/configure.sh
 
-# for JVM property settings please refer to this link https://github.com/jboss-openshift/cct_module/blob/master/jboss/container/java/jvm/api/module.yaml
+# for JVM property settings please refer to this link https://github.com/jboss-openshift/cct_module/blob/0.39.x/jboss/container/java/jvm/api/module.yaml
 source /usr/local/dynamic-resources/dynamic_resources.sh
 JAVA_OPTS="$(adjust_java_options ${JAVA_OPTS})"
 

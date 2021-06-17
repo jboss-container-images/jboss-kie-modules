@@ -1,7 +1,7 @@
 
 ////
   the source for the release notes part of this page is in the file
-  https://github.com/jboss-container-images/jboss-kie-modules/blob/master/tools/gen-template-doc/release-notes-ips.adoc.in
+  https://github.com/jboss-container-images/jboss-kie-modules/blob/main/tools/gen-template-doc/release-notes-ips.adoc.in
 ////
 
 == Release Notes

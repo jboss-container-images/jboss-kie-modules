@@ -18,7 +18,7 @@ Feature: RHPAM KIE Server configuration tests
     Then file /opt/eap/standalone/deployments/node-info.war should exist
 
   Scenario: deploys the library example, then checks if it's deployed.
-    Given s2i build https://github.com/jboss-container-images/rhpam-7-openshift-image from quickstarts/library-process/library using master
+    Given s2i build https://github.com/jboss-container-images/rhpam-7-openshift-image from quickstarts/library-process/library using main
       | variable                        | value                                                                                    |
       | KIE_SERVER_CONTAINER_DEPLOYMENT | rhpam-kieserver-library=org.openshift.quickstarts:rhpam-kieserver-library:1.6.0-SNAPSHOT |
       | JAVA_OPTS_APPEND                | -Djavax.net.ssl.trustStore=truststore.ts -Djavax.net.ssl.trustStorePassword=123456       |
