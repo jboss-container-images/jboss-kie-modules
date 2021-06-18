@@ -5,9 +5,6 @@ description: Legacy os-eap-launch script package.
 execute:
 - script: configure.sh
   user: '185'
-packages:
-      install:
-          - hostname
 envs:
     - name: "DEFAULT_ADMIN_USERNAME"
       value: "eapadmin"
