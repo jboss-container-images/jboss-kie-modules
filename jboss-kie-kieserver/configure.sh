@@ -53,5 +53,10 @@ for dir in /deployments $JBOSS_HOME $HOME; do
     chmod -R g+rwX $dir
 done
 
+# Dir for optional deps
+mkdir -p /opt/kie/dependencies/jbpm-clustering
+chown -R jboss:root /opt/kie/dependencies/jbpm-clustering
+chmod -R 777 /opt/kie/dependencies/jbpm-clustering
+
 mkdir ${JBOSS_HOME}/modules/system/layers/openshift 2&> /dev/null || true
 chown -R jboss:root ${JBOSS_HOME}/modules/system/layers/openshift

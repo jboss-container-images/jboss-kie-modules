@@ -751,6 +751,13 @@ function configure_jbpm_cache() {
         <transaction mode="BATCH"/>\
         </replicated-cache>\
         </cache-container>\n<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">#g' ${CONFIG_FILE}
+
+    sed -i  's#<module name="org.apache.xerces"/>#& \n      <module name="org.infinispan" services="export"/>\n      <module name="org.jgroups"/>#' ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml
+
+
+    if [ -d "/opt/kie/dependencies/jbpm-clustering" ] ;then
+      mv -v /opt/kie/dependencies/jbpm-clustering/kie-server-services-jbpm-cluster-*.jar ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/lib
+    fi
 }
 
 function configure_kafka(){
