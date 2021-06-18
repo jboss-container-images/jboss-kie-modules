@@ -52,3 +52,6 @@ for dir in /deployments $JBOSS_HOME $HOME; do
     chown -R jboss:root $dir
     chmod -R g+rwX $dir
 done
+
+mkdir ${JBOSS_HOME}/modules/system/layers/openshift 2&> /dev/null || true
+chown -R jboss:root ${JBOSS_HOME}/modules/system/layers/openshift

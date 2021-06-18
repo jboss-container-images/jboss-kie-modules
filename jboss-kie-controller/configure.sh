@@ -14,3 +14,6 @@ chmod ug+x ${JBOSS_HOME}/bin/openshift-launch.sh
 # Set bin permissions
 chown -R jboss:root ${JBOSS_HOME}/bin/
 chmod -R g+rwX ${JBOSS_HOME}/bin/
+
+mkdir ${JBOSS_HOME}/modules/system/layers/openshift 2&> /dev/null || true
+chown -R jboss:root ${JBOSS_HOME}/modules/system/layers/openshift
