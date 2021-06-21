@@ -57,3 +57,7 @@ done
 mkdir -p /opt/kie/dependencies/jbpm-clustering
 chown -R jboss:root /opt/kie/dependencies/jbpm-clustering
 chmod -R 777 /opt/kie/dependencies/jbpm-clustering
+
+# Create dir to remove JDBC driver
+mkdir ${JBOSS_HOME}/modules/system/layers/openshift 2&> /dev/null || true
+chown -R jboss:root ${JBOSS_HOME}/modules/system/layers/openshift
