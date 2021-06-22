@@ -25,3 +25,7 @@ chown -R jboss:root ${DATA_DIR}
 chmod -R 777 ${DATA_DIR}
 chown -R jboss:root ${KIE_HOME_DIR}
 chmod -R 777 ${KIE_HOME_DIR}
+
+# Create dir to remove JDBC driver
+mkdir ${JBOSS_HOME}/modules/system/layers/openshift 2&> /dev/null || true
+chown -R jboss:root ${JBOSS_HOME}/modules/system/layers/openshift
