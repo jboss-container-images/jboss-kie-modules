@@ -117,3 +117,47 @@ Feature: Decision/Business Central common features
   Scenario: RHPAM-3517: Update maven to 3.6
     When container is started with command bash
     Then run sh -c "mvn --version | sed -n -e 's/^.*Apache //p' | grep 3.6 && echo  all good" in container and check its output for all good
+
+  Scenario: Test if KIE Server access is correct set with user/pass
+    When container is started with env
+      | variable       | value     |
+      | KIE_ADMIN_USER | superUser |
+      | KIE_ADMIN_PWD  | @w3s0m3   |
+    Then container log should contain -Dorg.kie.server.user=superUser
+     And container log should contain -Dorg.kie.server.pwd=@w3s0m3
+     And container log should not contain -Dorg.kie.server.token
+
+  Scenario: Test if KIE Server access is correct set with token
+    When container is started with env
+      | variable         | value             |
+      | KIE_ADMIN_USER   | superUser         |
+      | KIE_ADMIN_PWD    | @w3s0m3           |
+      | KIE_SERVER_TOKEN | some-random-token |
+    Then container log should not contain -Dorg.kie.server.user=superUser
+     And container log should not contain -Dorg.kie.server.pwd=@w3s0m3
+     And container log should contain -Dorg.kie.server.token=some-random-token
+
+  Scenario: Test if the Controller access is correctly configure with user/pass
+    When container is started with env
+      | variable                    | value                  |
+      | KIE_SERVER_CONTROLLER_HOST  | https://localhost:8443 |
+      | KIE_ADMIN_USER              | superUser              |
+      | KIE_ADMIN_PWD               | @w3s0m3                |
+    Then container log should contain -Dorg.kie.server.controller=http://https://localhost:8443:8080/rest/controller
+     And container log should contain -Dorg.kie.server.controller.user=superUser
+     And container log should contain -Dorg.kie.server.controller.pwd=@w3s0m3
+     And container log should not contain -Dorg.kie.server.controller.token
+
+  @wip
+  Scenario: Test if the Controller access is correctly configure with token
+    When container is started with env
+      | variable                    | value                  |
+      | KIE_SERVER_CONTROLLER_HOST  | https://localhost:8443 |
+      | KIE_ADMIN_USER              | superUser              |
+      | KIE_ADMIN_PWD               | @w3s0m3                |
+      | KIE_SERVER_CONTROLLER_TOKEN | some-random-token      |
+    Then container log should contain -Dorg.kie.server.controller=http://https://localhost:8443:8080/rest/controller
+     And container log should not contain -Dorg.kie.server.controller.user=superUser
+     And container log should not contain -Dorg.kie.server.controller.pwd=@w3s0m3
+     And container log should contain -Dorg.kie.server.controller.token=some-random-token
+
