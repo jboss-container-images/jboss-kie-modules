@@ -9,14 +9,13 @@ mkdir -p ${JBOSS_HOME}/bin/launch
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/launch-common.sh $JBOSS_HOME/bin/launch
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/logging.bash $JBOSS_HOME/bin/launch/logging.sh
 cp $BATS_TEST_DIRNAME/../../../jboss-kie-common/added/launch/jboss-kie-common.sh $JBOSS_HOME/bin/launch/jboss-kie-common.sh
+cp $BATS_TEST_DIRNAME/../../../jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-security.sh $JBOSS_HOME/bin/launch/jboss-kie-wildfly-security.sh
 
 # begin mocks - import if require in future tests
 touch "${JBOSS_HOME}/bin/launch/login-modules-common.sh"
-#touch "${JBOSS_HOME}/bin/launch/jboss-kie-common.sh"
 touch "${JBOSS_HOME}/bin/launch/jboss-kie-wildfly-common.sh"
 touch "${JBOSS_HOME}/bin/launch/management-common.sh"
 touch "${JBOSS_HOME}/bin/launch/logging.sh"
-touch "${JBOSS_HOME}/bin/launch/jboss-kie-wildfly-security.sh"
 mkdir -p "${BATS_TMPDIR}/opt/kie/data"
 
 function query_default_route_host() {
@@ -142,6 +141,66 @@ teardown() {
     expected=" -Ddashbuilder.runtime.location=http://dashbuilder:8080 -Ddashbuilder.export.dir=/opt/kie/data/dash"
 
     configure_dashbuilder
+
+    echo "Expected: ${expected}"
+    echo "Result  : ${JBOSS_KIE_ARGS}"
+
+    [ "${JBOSS_KIE_ARGS}" = "${expected}" ]
+}
+
+@test "Test if KIE Server access is correct set with user/pass" {
+    export KIE_ADMIN_USER="superUser"
+    export KIE_ADMIN_PWD="@w3s0m3"
+
+    expected=' -Dorg.kie.server.user="superUser" -Dorg.kie.server.pwd="@w3s0m3"'
+
+    configure_server_access
+
+    echo "Expected: ${expected}"
+    echo "Result  : ${JBOSS_KIE_ARGS}"
+
+    [ "${JBOSS_KIE_ARGS}" = "${expected}" ]
+}
+
+@test "Test if KIE Server access is correct set with token" {
+    export KIE_ADMIN_USER="superUser"
+    export KIE_ADMIN_PWD="@w3s0m3"
+    export KIE_SERVER_TOKEN="some-random-token"
+
+    expected=' -Dorg.kie.server.token="some-random-token"'
+
+    configure_server_access
+
+    echo "Expected: ${expected}"
+    echo "Result  : ${JBOSS_KIE_ARGS}"
+
+    [ "${JBOSS_KIE_ARGS}" = "${expected}" ]
+}
+
+@test "Test if the Controller access is correctly configure with user/pass" {
+    export KIE_SERVER_CONTROLLER_HOST="https://localhost:8443"
+    export KIE_ADMIN_USER="superUser"
+    export KIE_ADMIN_PWD="@w3s0m3"
+
+    expected=' -Dorg.kie.server.controller=http://https://localhost:8443:8080/rest/controller -Dorg.kie.server.controller.user="superUser" -Dorg.kie.server.controller.pwd="@w3s0m3"'
+
+    configure_controller_access
+
+    echo "Expected: ${expected}"
+    echo "Result  : ${JBOSS_KIE_ARGS}"
+
+    [ "${JBOSS_KIE_ARGS}" = "${expected}" ]
+}
+
+@test "Test if the Controller access is correctly configure with token" {
+    export KIE_SERVER_CONTROLLER_HOST="https://localhost:8443"
+    export KIE_ADMIN_USER="superUser"
+    export KIE_ADMIN_PWD="@w3s0m3"
+    export KIE_SERVER_CONTROLLER_TOKEN="some-random-token"
+
+    expected=' -Dorg.kie.server.controller=http://https://localhost:8443:8080/rest/controller -Dorg.kie.server.controller.token="some-random-token"'
+
+    configure_controller_access
 
     echo "Expected: ${expected}"
     echo "Result  : ${JBOSS_KIE_ARGS}"
