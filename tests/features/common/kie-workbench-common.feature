@@ -148,7 +148,6 @@ Feature: Decision/Business Central common features
      And container log should contain -Dorg.kie.server.controller.pwd=@w3s0m3
      And container log should not contain -Dorg.kie.server.controller.token
 
-  @wip
   Scenario: Test if the Controller access is correctly configure with token
     When container is started with env
       | variable                    | value                  |
