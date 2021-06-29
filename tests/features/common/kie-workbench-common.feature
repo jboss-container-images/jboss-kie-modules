@@ -157,6 +157,6 @@ Feature: Decision/Business Central common features
       | KIE_ADMIN_PWD               | @w3s0m3                |
       | KIE_SERVER_CONTROLLER_TOKEN | some-random-token      |
     Then container log should contain -Dorg.kie.server.controller=http://https://localhost:8443:8080/rest/controller
-     And container log should not contain -Dorg.kie.server.controller.user=superUser
-     And container log should not contain -Dorg.kie.server.controller.pwd=@w3s0m3
+     And container log should not contain -Dorg.kie.server.controller.user
+     And container log should not contain -Dorg.kie.server.controller.pwd
      And container log should contain -Dorg.kie.server.controller.token=some-random-token
