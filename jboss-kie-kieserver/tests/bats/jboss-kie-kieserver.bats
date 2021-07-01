@@ -698,7 +698,7 @@ EOF
     [[ "${JBOSS_KIE_ARGS}" == "${expected}" ]]
 }
 
-@test "Verify the Kafka extension without boootstrapservers" {
+@test "Verify the Kafka extension without bootstrapservers" {
     export KIE_SERVER_KAFKA_EXT_ENABLED="true"
     export KIE_SERVER_KAFKA_EXT_CLIENT_ID="app"
     export KIE_SERVER_KAFKA_EXT_GROUP_ID="jbpm-consumer"
@@ -715,3 +715,65 @@ EOF
     echo "Expected: ${expected}"
     [[ "${JBOSS_KIE_ARGS}" == "${expected}" ]]
 }
+
+@test "Verify the Kafka JBPM Emitter" {
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED="true"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS="localhost:9093"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID="jbpmapp"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS="3"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_MAX_BLOCK_MS="2100"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT="dd-MM-yyyy'T'HH:mm:ss.SSSZ"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_PROCESSES_TOPIC_NAME="my-processes-topic"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_TASKS_TOPIC_NAME="my-tasks-topic"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CASES_TOPIC_NAME="my-cases-topic"
+
+    configure_kafka_jbpm_emitter
+
+    local expected=" -Dorg.kie.jbpm.event.emitters.kafka.bootstrap.servers=localhost:9093 -Dorg.kie.jbpm.event.emitters.kafka.max.block.ms=2100 -Dorg.kie.jbpm.event.emitters.kafka.acks=3 -Dorg.kie.jbpm.event.emitters.kafka.client.id=jbpmapp -Dorg.kie.jbpm.event.emitters.kafka.date_format=dd-MM-yyyy'T'HH:mm:ss.SSSZ -Dorg.kie.jbpm.event.emitters.kafka.topic.processes=my-processes-topic -Dorg.kie.jbpm.event.emitters.kafka.topic.tasks=my-tasks-topic -Dorg.kie.jbpm.event.emitters.kafka.topic.cases=my-cases-topic"
+    echo "  Result: ${JBOSS_KIE_ARGS}"
+
+    echo "Expected: ${expected}"
+    [[ "${JBOSS_KIE_ARGS}" == "${expected}" ]]
+}
+
+@test "Verify the Kafka JBPM Emitter without bootstrap emitter" {
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED="true"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID="jbpmapp"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS="3"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_MAX_BLOCK_MS="2100"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT="dd-MM-yyyy'T'HH:mm:ss.SSSZ"
+
+    configure_kafka_jbpm_emitter
+
+    local expected=""
+    echo "  Result: ${JBOSS_KIE_ARGS}"
+
+    echo "Expected: ${expected}"
+    [[ "${JBOSS_KIE_ARGS}" == "${expected}" ]]
+}
+
+@test "Verify the Kafka JBPM Emitter msg without bootstrap " {
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED="true"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID="jbpmapp"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS="3"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_MAX_BLOCK_MS="2100"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT="dd-MM-yyyy'T'HH:mm:ss.SSSZ"
+
+    run configure_kafka_jbpm_emitter
+
+    [ "${lines[0]}" = "[WARN]JBPM Emitter Bootstrap servers not configured" ]
+}
+
+@test "Verify the Kafka JBPM Emitter without bootstrap ext" {
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS="localhost:9093"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED="true"
+
+    configure_kafka_jbpm_emitter
+
+    local expected=" -Dorg.kie.jbpm.event.emitters.kafka.bootstrap.servers=localhost:9093 -Dorg.kie.jbpm.event.emitters.kafka.max.block.ms=2000"
+    echo "  Result: ${JBOSS_KIE_ARGS}"
+
+    echo "Expected: ${expected}"
+    [[ "${JBOSS_KIE_ARGS}" == "${expected}" ]]
+}
+
