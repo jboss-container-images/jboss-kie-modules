@@ -45,7 +45,7 @@ KIE_DIR=${HOME}/.kie
 mkdir -p ${KIE_DIR}/repository
 # Necessary to permit running with a randomised UID
 chown -R jboss:root ${KIE_DIR}
-chmod -R 777 ${KIE_DIR}
+chmod -R 755 ${KIE_DIR}
 
 # Necessary to permit running with a randomised UID
 for dir in /deployments $JBOSS_HOME $HOME; do
@@ -56,8 +56,13 @@ done
 # Dir for optional deps
 mkdir -p /opt/kie/dependencies/jbpm-clustering
 chown -R jboss:root /opt/kie/dependencies/jbpm-clustering
-chmod -R 777 /opt/kie/dependencies/jbpm-clustering
+chmod -R 755 /opt/kie/dependencies/jbpm-clustering
 
 # Create dir to remove JDBC driver
 mkdir ${JBOSS_HOME}/modules/system/layers/openshift 2&> /dev/null || true
 chown -R jboss:root ${JBOSS_HOME}/modules/system/layers/openshift
+
+# Dir for optional deps
+mkdir -p /opt/kie/dependencies/jbpm-kafka
+chown -R jboss:root /opt/kie/dependencies/jbpm-kafka
+chmod -R 755 /opt/kie/dependencies/jbpm-kafka
