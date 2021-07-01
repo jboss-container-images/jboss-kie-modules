@@ -38,10 +38,13 @@ function prepareEnv() {
     unset KIE_SERVER_KAFKA_EXT_TOPICS
     unset KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS
     unset KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS
+    unset KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CASES_TOPIC_NAME
     unset KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID
+    unset KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT
     unset KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED
     unset KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_MAX_BLOCK_MS
-    unset KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT
+    unset KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_PROCESSES_TOPIC_NAME
+    unset KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_TASKS_TOPIC_NAME
     unset KIE_SERVER_LOCATION
     unset KIE_SERVER_MGMT_DISABLED
     unset KIE_SERVER_MODE
@@ -805,25 +808,34 @@ function configure_kafka_jbpm_emitter(){
       if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS}" ];then
           log_info "Kafka JBPM Emitter enabled"
           JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.bootstrap.servers=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS}"
-          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS}" ];then
-            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.acks=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS}"
-          fi
-          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID}" ];then
-            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.client.id=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID}"
-          fi
-
           JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.max.block.ms=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_MAX_BLOCK_MS:-2000}"
 
-          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT}" ];then
-            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.date_format=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT}"
+          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS}" ];then
+              JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.acks=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS}"
           fi
 
-          JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.topic.processes=jbpm-process-events"
-          JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.topic.tasks=jbpm-task-events"
-          JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.topic.cases=jbpm-case-events"
+          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID}" ];then
+              JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.client.id=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID}"
+          fi
+
+          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT}" ];then
+              JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.date_format=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT}"
+          fi
+
+          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_PROCESSES_TOPIC_NAME}" ];then
+              JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.topic.processes=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_PROCESSES_TOPIC_NAME}"
+          fi
+
+          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_TASKS_TOPIC_NAME}" ];then
+              JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.topic.tasks=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_TASKS_TOPIC_NAME}"
+          fi
+
+          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CASES_TOPIC_NAME}" ];then
+              JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.topic.cases=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CASES_TOPIC_NAME}"
+          fi
 
           if [ -d "/opt/kie/dependencies/jbpm-kafka" ] ;then
-            mv -v /opt/kie/dependencies/jbpm-clustering/jbpm-event-emitters-kafka-*.jar ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/lib
+              mv -v /opt/kie/dependencies/jbpm-clustering/jbpm-event-emitters-kafka-*.jar ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/lib
           fi
 
       else
