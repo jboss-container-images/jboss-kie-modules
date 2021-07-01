@@ -751,7 +751,7 @@ EOF
     echo "Expected: ${expected}"
     [[ "${JBOSS_KIE_ARGS}" == "${expected}" ]]
 
-    [ "${lines[0]}" = "[WARN]JBPM Emitter Bootstrap servers not configured"]
+    [ "${lines[0]}" = "[WARN]JBPM Emitter Bootstrap servers not configured" ]
 }
 
 @test "Verify the Kafka JBPM Emitter without bootstrap ext" {
