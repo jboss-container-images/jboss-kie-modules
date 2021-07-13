@@ -835,7 +835,7 @@ function configure_kafka_jbpm_emitter(){
           fi
 
           if [ -d "/opt/kie/dependencies/jbpm-kafka" ] ;then
-              mv -v /opt/kie/dependencies/jbpm-clustering/jbpm-event-emitters-kafka-*.jar ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/lib
+              mv -v /opt/kie/dependencies/jbpm-kafka/jbpm-event-emitters-kafka-*.jar ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/lib
           fi
 
       else

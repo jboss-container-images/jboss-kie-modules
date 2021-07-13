@@ -1191,7 +1191,7 @@ Feature: RHPAM KIE Server configuration tests
     And XML file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml should contain value export on XPath  //*[local-name()='module'][@name='org.infinispan']/@services
     And XML file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml should contain value org.infinispan on XPath  //*[local-name()='module'][@name='org.infinispan']/@name
     And XML file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml should contain value org.jgroups on XPath  //*[local-name()='module'][@name='org.jgroups']/@name
-    And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/lib/kie-server-services-jbpm-cluster-7.52.0.Final-redhat-00004.jar should exist
+    And run sh -c 'test -f /opt/eap/standalone/deployments/ROOT.war/WEB-INF/lib/kie-server-services-jbpm-cluster-*.jar && echo all good' in container and check its output for all good
 
   Scenario: Check KIE_SERVER_JBPM_CLUSTER flag disabled
     When container is started with env
@@ -1216,3 +1216,82 @@ Feature: RHPAM KIE Server configuration tests
       | KIE_SERVER_JBPM_CLUSTER_TRANSPORT_LOCK_TIMEOUT | 120000               |
     Then container log should contain KIE Server's cluster for Jbpm failover is enabled.
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 120000 on XPath //*[local-name()='cache-container'][@name='jbpm']/*[local-name()='transport']/@lock-timeout
+
+  Scenario: Check if the Kafka integration is disabled
+    When container is started with env
+      | variable                       | value    |
+      | KIE_SERVER_KAFKA_EXT_ENABLED   | false    |
+    Then container log should contain -Dorg.kie.kafka.server.ext.disabled=true
+
+  Scenario: Check if the Kafka integration is enabled
+    When container is started with env
+      | variable                               | value                         |
+      | KIE_SERVER_KAFKA_EXT_ENABLED           | true                          |
+      | KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS | localhost:9092                |
+      | KIE_SERVER_KAFKA_EXT_CLIENT_ID         | app                           |
+      | KIE_SERVER_KAFKA_EXT_GROUP_ID          | jbpm-consumer                 |
+      | KIE_SERVER_KAFKA_EXT_ACKS              | 2                             |
+      | KIE_SERVER_KAFKA_EXT_MAX_BLOCK_MS      | 2000                          |
+      | KIE_SERVER_KAFKA_EXT_AUTOCREATE_TOPICS | true                          |
+      | KIE_SERVER_KAFKA_EXT_TOPICS            | person=human,dog=animal,ant=  |
+      | SCRIPT_DEBUG                           | true                          |
+    Then container log should contain -Dorg.kie.kafka.server.ext.disabled=false
+     And container log should contain -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=localhost:9092
+     And container log should contain -Dorg.kie.server.jbpm-kafka.ext.client.id=app
+     And container log should contain -Dorg.kie.server.jbpm-kafka.ext.group.id=jbpm-consumer
+     And container log should contain -Dorg.kie.server.jbpm-kafka.ext.acks=2
+     And container log should contain -Dorg.kie.server.jbpm-kafka.ext.max.block.ms=2000
+     And container log should contain -Dorg.kie.server.jbpm-kafka.ext.allow.auto.create.topics=true
+     And container log should contain -Dorg.kie.server.jbpm-kafka.ext.topics.person=human
+     And container log should contain -Dorg.kie.server.jbpm-kafka.ext.topics.dog=animal
+     And container log should contain mapping not configured, msg or topic name is empty. Value set [ant=]
+
+  Scenario: Check if the Kafka integration is enabled without bootstrapservers
+    When container is started with env
+      | variable                               | value                         |
+      | KIE_SERVER_KAFKA_EXT_ENABLED           | true                          |
+      | KIE_SERVER_KAFKA_EXT_CLIENT_ID         | app                           |
+      | KIE_SERVER_KAFKA_EXT_GROUP_ID          | jbpm-consumer                 |
+      | KIE_SERVER_KAFKA_EXT_ACKS              | 2                             |
+      | KIE_SERVER_KAFKA_EXT_MAX_BLOCK_MS      | 2000                          |
+      | KIE_SERVER_KAFKA_EXT_AUTOCREATE_TOPICS | true                          |
+      | KIE_SERVER_KAFKA_EXT_TOPICS            | person=human,dog=animal,ant=  |
+      | SCRIPT_DEBUG                           | true                          |
+    Then container log should contain -Dorg.kie.kafka.server.ext.disabled=true
+     And container log should contain Bootstrap servers not configured, kafka extension disabled
+
+  Scenario: Check if the Kafka JBPM Emitter is enabled
+    When container is started with env
+      | variable                                                 | value                         |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS    | localhost:9093                |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED              | true                          |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID            | jbpmapp                       |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS                 | 3                             |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_MAX_BLOCK_MS         | 2100                          |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT          | dd-MM-yyyy'T'HH:mm:ss.SSSZ    |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_PROCESSES_TOPIC_NAME | my-processes-topic            |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_TASKS_TOPIC_NAME     | my-tasks-topic                |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CASES_TOPIC_NAME     | my-cases-topic                |
+      | SCRIPT_DEBUG                                             | true                          |
+    Then container log should contain -Dorg.kie.jbpm.event.emitters.kafka.bootstrap.servers=localhost:9093
+     And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.client.id=jbpmapp
+     And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.acks=3
+     And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.max.block.ms=2100
+     And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.date_format=dd-MM-yyyy'T'HH:mm:ss.SSSZ
+     And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.topic.processes=my-processes-topic
+     And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.topic.tasks=my-tasks-topic
+     And container log should contain -Dorg.kie.jbpm.event.emitters.kafka.topic.cases=my-cases-topic
+     And run sh -c 'test -f /opt/eap/standalone/deployments/ROOT.war/WEB-INF/lib/jbpm-event-emitters-kafka-*.jar && echo all good' in container and check its output for all good
+
+  Scenario: Check if the Kafka JBPM Emitter is  without bootstrap
+    When container is started with env
+      | variable                                         | value                      |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED      | true                       |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID    | jbpmapp                    |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS         | 3                          |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_MAX_BLOCK_MS | 2100                       |
+      | KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT  | dd-MM-yyyy'T'HH:mm:ss.SSSZ |
+      | SCRIPT_DEBUG                                     | true                       |
+    Then container log should contain -Dorg.kie.kafka.server.ext.disabled=true
+     And container log should contain JBPM Emitter Bootstrap servers not configured
+
