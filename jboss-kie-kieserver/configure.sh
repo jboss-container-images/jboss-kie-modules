@@ -30,7 +30,7 @@ done
 cp -p ${ADDED_DIR}/openshift-launch.sh ${JBOSS_HOME}/bin/
 mkdir -p ${JBOSS_HOME}/bin/launch
 cp -r ${ADDED_DIR}/launch/* ${JBOSS_HOME}/bin/launch
-cp -r ${SOURCES_DIR}/slf4j-*.jar ${JBOSS_HOME}/bin/launch
+# cp -r ${SOURCES_DIR}/slf4j-*.jar ${JBOSS_HOME}/bin/launch
 chmod ug+x ${JBOSS_HOME}/bin/openshift-launch.sh
 
 # Set bin permissions
@@ -40,29 +40,24 @@ chmod -R g+rwX ${JBOSS_HOME}/bin/
 # Set exec permissions for scripts files in the launch dir
 chmod -R ug+x ${JBOSS_HOME}/bin/launch/*.sh
 
-# Ensure that the local KIE repository exists
+# Ensure that the local KIE maven repository exists
 KIE_DIR=${HOME}/.kie
 mkdir -p ${KIE_DIR}/repository
 # Necessary to permit running with a randomised UID
 chown -R jboss:root ${KIE_DIR}
 chmod -R 755 ${KIE_DIR}
 
+# /opt/kie directory
+KIE_HOME_DIR=/opt/kie
+
 # Necessary to permit running with a randomised UID
-for dir in /deployments $JBOSS_HOME $HOME; do
+# for dir in /deployments $JBOSS_HOME $HOME; do
+for dir in $JBOSS_HOME/bin $HOME $KIE_HOME_DIR; do
     chown -R jboss:root $dir
     chmod -R g+rwX $dir
 done
-
-# Dir for optional deps
-mkdir -p /opt/kie/dependencies/jbpm-clustering
-chown -R jboss:root /opt/kie/dependencies/jbpm-clustering
-chmod -R 755 /opt/kie/dependencies/jbpm-clustering
 
 # Create dir to remove JDBC driver
 mkdir ${JBOSS_HOME}/modules/system/layers/openshift 2&> /dev/null || true
 chown -R jboss:root ${JBOSS_HOME}/modules/system/layers/openshift
 
-# Dir for optional deps
-mkdir -p /opt/kie/dependencies/jbpm-kafka
-chown -R jboss:root /opt/kie/dependencies/jbpm-kafka
-chmod -R 755 /opt/kie/dependencies/jbpm-kafka
