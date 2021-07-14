@@ -18,7 +18,8 @@ ln -s /deployments $JBOSS_HOME/standalone/deployments
 chown jboss:root $JBOSS_HOME/standalone/deployments
 
 # Necessary to permit running with a randomised UID
-for dir in $SCRIPT_DIR ${JBOSS_HOME} ${HOME} $DEPLOYMENTS_DIR; do
+for dir in ${HOME} $DEPLOYMENTS_DIR; do
     chown -R jboss:root $dir
     chmod -R g+rwX $dir
 done
+
