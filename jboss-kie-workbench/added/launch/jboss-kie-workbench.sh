@@ -186,7 +186,9 @@ function configure_openshift_enhancement() {
     local kscPreferKieService=$(find_env "KIE_SERVER_CONTROLLER_OPENSHIFT_PREFER_KIESERVER_SERVICE" "true")
     local kscTemplateCacheTTL=$(find_env "KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL" "5000")
 
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.controller.ping.alive.disable=${kscOpenShiftEnabled}"
+    if [ "${kscOpenShiftEnabled^^}" == "TRUE" ]; then
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.controller.ping.alive.disable=${kscOpenShiftEnabled}"
+    fi
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.openshift.enabled=${kscOpenShiftEnabled}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.openshift.global.discovery.enabled=${kscGlobalDiscoveryEnabled}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.openshift.prefer.kieserver.service=${kscPreferKieService}"

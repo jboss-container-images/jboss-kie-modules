@@ -207,3 +207,27 @@ teardown() {
 
     [ "${JBOSS_KIE_ARGS}" = "${expected}" ]
 }
+
+@test "test if org.kie.controller.ping.alive.disable is correctly set to disabled when is KIE_SERVER_CONTROLLER_OPENSHIFT_ENABLED is set to true" {
+    export KIE_SERVER_CONTROLLER_OPENSHIFT_ENABLED=true
+
+    expected=" -Dorg.kie.controller.ping.alive.disable=true -Dorg.kie.server.controller.openshift.enabled=true -Dorg.kie.server.controller.openshift.global.discovery.enabled=false -Dorg.kie.server.controller.openshift.prefer.kieserver.service=true -Dorg.kie.server.controller.template.cache.ttl=5000"
+    configure_openshift_enhancement
+
+    echo "Expected: ${expected}"
+    echo "Result  : ${JBOSS_KIE_ARGS}"
+
+    [ "${JBOSS_KIE_ARGS}" = "${expected}" ]
+}
+
+@test "test if org.kie.controller.ping.alive.disable is correctly set to disabled when is KIE_SERVER_CONTROLLER_OPENSHIFT_ENABLED is set to false" {
+    export KIE_SERVER_CONTROLLER_OPENSHIFT_ENABLED=false
+
+    expected=" -Dorg.kie.server.controller.openshift.enabled=false -Dorg.kie.server.controller.openshift.global.discovery.enabled=false -Dorg.kie.server.controller.openshift.prefer.kieserver.service=true -Dorg.kie.server.controller.template.cache.ttl=5000"
+    configure_openshift_enhancement
+
+    echo "Expected: ${expected}"
+    echo "Result  : ${JBOSS_KIE_ARGS}"
+
+    [ "${JBOSS_KIE_ARGS}" = "${expected}" ]
+}
