@@ -30,7 +30,6 @@ done
 cp -p ${ADDED_DIR}/openshift-launch.sh ${JBOSS_HOME}/bin/
 mkdir -p ${JBOSS_HOME}/bin/launch
 cp -r ${ADDED_DIR}/launch/* ${JBOSS_HOME}/bin/launch
-# cp -r ${SOURCES_DIR}/slf4j-*.jar ${JBOSS_HOME}/bin/launch
 chmod ug+x ${JBOSS_HOME}/bin/openshift-launch.sh
 
 # Set bin permissions
@@ -51,13 +50,12 @@ chmod -R 755 ${KIE_DIR}
 KIE_HOME_DIR=/opt/kie
 
 # Necessary to permit running with a randomised UID
-# for dir in /deployments $JBOSS_HOME $HOME; do
 for dir in $JBOSS_HOME/bin $HOME $KIE_HOME_DIR; do
     chown -R jboss:root $dir
     chmod -R g+rwX $dir
 done
 
 # Create dir to remove JDBC driver
-mkdir ${JBOSS_HOME}/modules/system/layers/openshift 2&> /dev/null || true
+mkdir ${JBOSS_HOME}/modules/system/layers/openshift &> /dev/null || true
 chown -R jboss:root ${JBOSS_HOME}/modules/system/layers/openshift
 

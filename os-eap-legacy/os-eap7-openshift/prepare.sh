@@ -15,7 +15,7 @@ else
 fi
 
 ln -s /deployments $JBOSS_HOME/standalone/deployments
-chown jboss:root $JBOSS_HOME/standalone/deployments
+chown -R jboss:root $JBOSS_HOME/standalone
 
 # Necessary to permit running with a randomised UID
 for dir in ${HOME} $DEPLOYMENTS_DIR; do
