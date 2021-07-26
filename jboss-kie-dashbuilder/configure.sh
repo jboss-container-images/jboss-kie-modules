@@ -14,6 +14,8 @@ chmod ug+x ${JBOSS_HOME}/bin/openshift-launch.sh
 mkdir -p /opt/kie/dashbuilder/{imports,components}
 chown -R jboss:root /opt/kie
 
-# Set bin permissions
-chown -R jboss:root ${JBOSS_HOME}/bin/
-chmod -R g+rwX ${JBOSS_HOME}/bin/
+# Necessary to permit running with a randomised UID
+for dir in $JBOSS_HOME/bin /opt/kie; do
+    chown -R jboss:root $dir
+    chmod -R g+rwX $dir
+done
