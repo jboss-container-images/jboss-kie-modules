@@ -11,18 +11,13 @@ mkdir -p ${JBOSS_HOME}/bin/launch
 cp -r ${ADDED_DIR}/launch/* ${JBOSS_HOME}/bin/launch
 chmod ug+x ${JBOSS_HOME}/bin/openshift-launch.sh
 
-# Set bin permissions
-chown -R jboss:root ${JBOSS_HOME}/bin/
-chmod -R g+rwX ${JBOSS_HOME}/bin/
-
-# Ensure that the local data directory exists
-DATA_DIR=${JBOSS_HOME}/standalone/data
+# /opt/kie directory
 KIE_HOME_DIR=/opt/kie
-mkdir -p ${DATA_DIR}
 mkdir -p ${KIE_HOME_DIR}
+
 # Necessary to permit running with a randomised UID
-chown -R jboss:root ${DATA_DIR}
-chmod -R 0755 ${DATA_DIR}
-chown -R jboss:root ${KIE_HOME_DIR}
-chmod -R 0755 ${KIE_HOME_DIR}
+for dir in $JBOSS_HOME/bin $HOME $KIE_HOME_DIR; do
+    chown -R jboss:root $dir
+    chmod -R g+rwX $dir
+done
 
