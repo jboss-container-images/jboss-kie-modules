@@ -16,7 +16,7 @@ Feature: RHPAM Business Central Monitoring configuration tests
     Then container log should contain rhpam-7/rhpam-businesscentral-monitoring-rhel8 image, version
 
   Scenario: Check for product and version environment variables
-    When container is ready
+    When container is started with command bash
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-businesscentral-monitoring
      And run sh -c 'echo $RHPAM_BUSINESS_CENTRAL_MONITORING_VERSION' in container and check its output for 7.12
 
