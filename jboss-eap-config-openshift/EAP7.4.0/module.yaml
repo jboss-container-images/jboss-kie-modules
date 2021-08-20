@@ -1,0 +1,7 @@
+schema_version: 1
+name: jboss.eap.config.openshift
+version: 'EAP7.4.0-kie'
+description: The jboss.eap.config.openshift EAP 7.4.0 version script package. Installs a standalone-openshift.xml compatible with EAP 7.4.0
+execute:
+- script: configure.sh
+  user: '185'
