@@ -7,7 +7,7 @@ Feature: RHPAM KIE Server configuration tests
     Then container log should contain rhpam-7/rhpam-kieserver-rhel8 image, version
 
   Scenario: Check for product and version environment variables
-    When container is ready
+    When container is started with command bash
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-kieserver
      And run sh -c 'echo $RHPAM_KIESERVER_VERSION' in container and check its output for 7.12
 
@@ -1116,7 +1116,7 @@ Feature: RHPAM KIE Server configuration tests
      And container log should contain -Dorg.jbpm.ejb.timer.local.cache=false
 
   Scenario: Checks if the launch directory has the right permissions set
-    When container is ready
+    When container is started with command bash
     Then run sh -c '[ $(ls -l /opt/eap/bin/launch/*.sh | wc -l) -gt 0 ] && echo "has script files"' in container and check its output for has script files
      And run sh -c 'exec=$(find -L /opt/eap/bin/launch -maxdepth 1 -type f -perm /u+x,g+x -name \*.sh | wc -l); nonexec=$(ls -l /opt/eap/bin/launch/*.sh | wc -l); [ $exec = $nonexec ] && echo "permissions ok"' in container and check its output for permissions ok
 
