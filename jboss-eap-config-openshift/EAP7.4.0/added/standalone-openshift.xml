@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<server xmlns="urn:jboss:domain:11.0">
+<server xmlns="urn:jboss:domain:16.0">
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
         <extension module="org.jboss.as.clustering.jgroups"/>
@@ -33,10 +33,8 @@
         <extension module="org.wildfly.extension.elytron"/>
         <extension module="org.wildfly.extension.io"/>
         <extension module="org.wildfly.extension.messaging-activemq"/>
-        <extension module="org.wildfly.extension.microprofile.config-smallrye"/>
-        <extension module="org.wildfly.extension.microprofile.health-smallrye"/>
-        <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
-        <!-- ##TRACING_EXTENSION## -->
+        <extension module="org.wildfly.extension.health"/>
+        <extension module="org.wildfly.extension.metrics"/>
         <extension module="org.wildfly.extension.request-controller"/>
         <extension module="org.wildfly.extension.security.manager"/>
         <extension module="org.wildfly.extension.undertow"/>
@@ -145,7 +143,7 @@
             </thread-pool>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:bean-validation:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:datasources:5.0">
+        <subsystem xmlns="urn:jboss:domain:datasources:6.0">
             <datasources>
                 <!-- ##DATASOURCES## -->
                 <drivers>
@@ -171,7 +169,7 @@
             <infinispan-single-sign-on-management name="default" cache-container="web" cache="sso"/>
             <infinispan-routing cache-container="web" cache="routing"/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:ee:4.0">
+        <subsystem xmlns="urn:jboss:domain:ee:6.0">
             <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
             <concurrent>
                 <context-services>
@@ -195,7 +193,7 @@
                               managed-thread-factory="java:jboss/ee/concurrency/factory/default"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:ee-security:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:ejb3:6.0">
+        <subsystem xmlns="urn:jboss:domain:ejb3:9.0">
             <session-bean>
                 <stateless>
                     <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
@@ -222,7 +220,7 @@
             </passivation-stores>
             <async thread-pool-name="default"/>
             <!-- ##TIMER_SERVICE## -->
-            <remote connector-ref="http-remoting-connector" thread-pool-name="default">
+            <remote cluster="ejb" connectors="http-remoting-connector" thread-pool-name="default">
                 <channel-creation-options>
                     <option name="MAX_OUTBOUND_MESSAGES" value="1234" type="remoting"/>
                 </channel-creation-options>
@@ -230,7 +228,7 @@
             <thread-pools>
                 <thread-pool name="default">
                     <max-threads count="10"/>
-                    <keepalive-time time="100" unit="milliseconds"/>
+                    <keepalive-time time="60" unit="seconds"/>
                 </thread-pool>
             </thread-pools>
             <default-security-domain value="other"/>
@@ -239,7 +237,7 @@
             <log-system-exceptions value="true"/>
             <!-- ##EJB_APPLICATION_SECURITY_DOMAINS## -->
         </subsystem>
-        <subsystem xmlns="urn:wildfly:elytron:8.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+        <subsystem xmlns="urn:wildfly:elytron:13.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
             <providers>
                 <aggregate-providers name="combined-providers">
                     <providers name="elytron"/>
@@ -351,14 +349,14 @@
             <!-- ##TLS## -->
             <!-- ##ELYTRON_TLS## -->
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:infinispan:9.0">
-            <cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">
+        <subsystem xmlns="urn:jboss:domain:infinispan:12.0">
+            <cache-container name="server" aliases="singleton cluster" default-cache="default" modules="org.wildfly.clustering.server">
                 <transport lock-timeout="60000"/>
                 <replicated-cache name="default">
                     <transaction mode="BATCH"/>
                 </replicated-cache>
             </cache-container>
-            <cache-container name="web" default-cache="repl" module="org.wildfly.clustering.web.infinispan">
+            <cache-container name="web" default-cache="repl" modules="org.wildfly.clustering.web.infinispan">
                 <transport lock-timeout="60000"/>
                 <replicated-cache name="repl">
                     <locking isolation="REPEATABLE_READ"/>
@@ -376,11 +374,11 @@
                     <file-store/>
                 </distributed-cache>
             </cache-container>
-            <cache-container name="ejb" aliases="sfsb" default-cache="repl" module="org.wildfly.clustering.ejb.infinispan">
+            <cache-container name="ejb" default-cache="repl" aliases="sfsb" modules="org.wildfly.clustering.ejb.infinispan">
                 <transport lock-timeout="60000"/>
                 <replicated-cache name="repl">
                     <locking isolation="REPEATABLE_READ"/>
-                    <object-memory size="10000"/>
+                    <heap-memory size="10000"/>
                     <transaction mode="BATCH"/>
                     <file-store/>
                 </replicated-cache>
@@ -390,14 +388,17 @@
                     <file-store/>
                 </distributed-cache>
             </cache-container>
-            <cache-container name="hibernate" default-cache="local-query" module="org.infinispan.hibernate-cache">
+            <cache-container name="hibernate" default-cache="local-query" modules="org.infinispan.hibernate-cache">
                 <transport lock-timeout="60000"/>
                 <local-cache name="local-query">
-                    <object-memory size="10000"/>
+                    <heap-memory size="10000"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
+                <local-cache name="pending-puts">
+                    <expiration max-idle="60000"/>
+                </local-cache>
                 <invalidation-cache name="entity">
-                    <object-memory size="10000"/>
+                    <heap-memory size="10000"/>
                     <expiration max-idle="100000"/>
                 </invalidation-cache>
                 <replicated-cache name="timestamps"/>
@@ -407,7 +408,7 @@
             <worker name="default"/>
             <buffer-pool name="default"/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:jaxrs:2.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:5.0">
             <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
             <bean-validation enabled="true"/>
@@ -428,7 +429,7 @@
             <cached-connection-manager/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:jgroups:7.0">
+        <subsystem xmlns="urn:jboss:domain:jgroups:8.0">
             <channels default="ee">
                 <channel name="ee" stack="tcp"/>
             </channels>
@@ -479,20 +480,19 @@
         <subsystem xmlns="urn:jboss:domain:jsf:1.1"/>
         <!-- ##KEYCLOAK_SUBSYSTEM## -->
         <!-- ##KEYCLOAK_SAML_SUBSYSTEM## -->
-        <subsystem xmlns="urn:jboss:domain:mail:3.0">
+        <subsystem xmlns="urn:jboss:domain:jsr77:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:mail:4.0">
             <mail-session name="default" jndi-name="java:jboss/mail/Default">
                 <smtp-server outbound-socket-binding-ref="mail-smtp"/>
             </mail-session>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:messaging-activemq:8.0">
+        <subsystem xmlns="urn:jboss:domain:messaging-activemq:13.0">
             <!-- ##MESSAGING_SUBSYSTEM_CONFIG## -->
         </subsystem>
-        <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0">
-            <!-- ##MICROPROFILE_CONFIG_SOURCE## -->
-        </subsystem>
-        <subsystem xmlns="urn:wildfly:microprofile-health-smallrye:2.0" security-enabled="false" empty-liveness-checks-status="${env.MP_HEALTH_EMPTY_LIVENESS_CHECKS_STATUS:UP}" empty-readiness-checks-status="${env.MP_HEALTH_EMPTY_READINESS_CHECKS_STATUS:UP}"/>
-        <subsystem xmlns="urn:wildfly:microprofile-metrics-smallrye:2.0" security-enabled="false" exposed-subsystems="*" prefix="${wildfly.metrics.prefix:jboss}"/>
-        <!-- ##TRACING_SUBSYSTEM## -->
+        <subsystem xmlns="urn:wildfly:health:1.0" security-enabled="false"/>
+        <subsystem xmlns="urn:wildfly:metrics:1.0" security-enabled="false"
+                   exposed-subsystems="*"
+                   prefix="${wildfly.metrics.prefix:jboss}"/>
         <subsystem xmlns="urn:jboss:domain:modcluster:5.0">
             <proxy name="default" advertise-socket="modcluster" listener="ajp">
                 <dynamic-load-provider>
@@ -510,7 +510,7 @@
             <http-connector name="http-remoting-connector" connector-ref="default" security-realm="ApplicationRealm"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:resource-adapters:5.0">
+        <subsystem xmlns="urn:jboss:domain:resource-adapters:6.0">
             <resource-adapters>
                 <!-- ##RESOURCE_ADAPTERS## -->
             </resource-adapters>
@@ -558,7 +558,7 @@
                 </singleton-policy>
             </singleton-policies>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:transactions:5.0">
+        <subsystem xmlns="urn:jboss:domain:transactions:6.0">
             <core-environment node-identifier="${jboss.node.name}">
                 <process-id>
                     <uuid/>
@@ -569,7 +569,7 @@
             <object-store path="tx-object-store" relative-to="jboss.server.data.dir"/>
             <!-- ##JDBC_STORE## -->
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:undertow:10.0"
+        <subsystem xmlns="urn:jboss:domain:undertow:12.0"
                    default-server="default-server"
                    default-virtual-host="default-host"
                    default-servlet-container="default"
@@ -646,7 +646,7 @@
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>
         <outbound-socket-binding name="mail-smtp">
-            <remote-destination host="localhost" port="25"/>
+            <remote-destination host="${jboss.mail.server.host:localhost}" port="${jboss.mail.server.port:25}"/>
         </outbound-socket-binding>
     </socket-binding-group>
 </server>
