@@ -1,0 +1,12 @@
+pim:
+  auth-method: file
+quarkus:
+  security:
+    users:
+      file:
+        realm-name: pim-file
+        enabled: true
+        plain-text: true
+        users: /opt/rhpam-process-migration/quarkus-app/config/application-users.properties
+        roles: /opt/rhpam-process-migration/quarkus-app/config/application-roles.properties
+

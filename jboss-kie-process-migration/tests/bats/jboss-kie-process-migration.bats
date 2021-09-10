@@ -2,18 +2,19 @@
 
 export JBOSS_HOME=$BATS_TMPDIR/jboss_home
 export LAUNCH_DIR=$JBOSS_HOME/bin/launch
-export CONFIG_DIR=$JBOSS_HOME/configuration
-mkdir -p $LAUNCH_DIR
+export CONFIG_DIR=$JBOSS_HOME/quarkus-app/config
+mkdir -p $LAUNCH_DIR ${CONFIG_DIR} $JBOSS_HOME/quarkus-app/lib/deployment ${JBOSS_HOME}/extra-classpath/
 
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/launch-common.sh $JBOSS_HOME/bin/launch
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/logging.bash $JBOSS_HOME/bin/launch/logging.sh
+cp $BATS_TEST_DIRNAME/../../../jboss-kie-process-migration/added/launch/jboss-kie-pim-common.sh $JBOSS_HOME/bin/launch/jboss-kie-pim-common.sh
 cp $BATS_TEST_DIRNAME/../../../jboss-kie-common/added/launch/jboss-kie-common.sh $JBOSS_HOME/bin/launch/jboss-kie-common.sh
 
 #imports
 source $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-process-migration.sh
 
 setup() {
-  cp -r $BATS_TEST_DIRNAME/../../added/configuration $JBOSS_HOME/configuration
+    cp -rv $BATS_TEST_DIRNAME/../../added/configuration ${CONFIG_DIR}
 }
 
 teardown() {
@@ -21,117 +22,75 @@ teardown() {
 }
 
 @test "check if extra classpath is set correctly" {
-  local expected
-
-  JBOSS_KIE_EXTRA_CLASSPATH="mysql-driver.jar"
-  expected="-Dthorntail.classpath=mysql-driver.jar"
-  configure_extra_classpath >&2
-  echo "JBOSS_KIE_EXTRA_CLASSPATH is ${JBOSS_KIE_EXTRA_CLASSPATH}" >&2
-  echo "Expected is ${expected}" >&2
-  [[ $JBOSS_KIE_EXTRA_CLASSPATH == "${expected}" ]]
+    touch ${JBOSS_HOME}/extra-classpath/mysql-driver.jar
+    JBOSS_KIE_EXTRA_CLASSPATH="${JBOSS_HOME}/extra-classpath/mysql-driver.jar"
+    configure_extra_classpath
+    [ -f $JBOSS_HOME/quarkus-app/lib/deployment/mysql-driver.jar ]
 }
 
 @test "check if extra classpath is set correctly for multiple entries" {
-  local expected
-
-  JBOSS_KIE_EXTRA_CLASSPATH="mysql-driver.jar, oracledb-driver.jar"
-  expected="-Dthorntail.classpath=mysql-driver.jar -Dthorntail.classpath=oracledb-driver.jar"
-  configure_extra_classpath >&2
-  echo "JBOSS_KIE_EXTRA_CLASSPATH is ${JBOSS_KIE_EXTRA_CLASSPATH}" >&2
-  echo "Expected is ${expected}" >&2
-  [[ $JBOSS_KIE_EXTRA_CLASSPATH == "${expected}" ]]
+    touch ${JBOSS_HOME}/extra-classpath/mysql-driver.jar
+    touch ${JBOSS_HOME}/extra-classpath/other.jar
+    JBOSS_KIE_EXTRA_CLASSPATH="${JBOSS_HOME}/extra-classpath/mysql-driver.jar, ${JBOSS_HOME}/extra-classpath/other.jar"
+    configure_extra_classpath
+    [ -f $JBOSS_HOME/quarkus-app/lib/deployment/mysql-driver.jar ]
+    [ -f $JBOSS_HOME/quarkus-app/lib/deployment/other.jar ]
 }
 
-@test "check if extra classpath is empty when defined but empty" {
-  local expected
-
-  JBOSS_KIE_EXTRA_CLASSPATH=""
-  expected=""
-  configure_extra_classpath >&2
-  echo "JBOSS_KIE_EXTRA_CLASSPATH is ${JBOSS_KIE_EXTRA_CLASSPATH}" >&2
-  echo "Expected is ${expected}" >&2
-  [[ $JBOSS_KIE_EXTRA_CLASSPATH == "${expected}" ]]
+@test "check if user files is not populated" {
+    run configure_admin_user
+    echo "Expected is ${lines[0]}"
+    [ "${lines[0]}" = "[WARN]No external configuration or user added, please set one of them." ]
+    [ ! -f $CONFIG_DIR/application-users.properties ]
+    [ ! -f $CONFIG_DIR/application-roles.properties ]
 }
 
-@test "check if extra classpath is empty when undefined" {
-  local expected
-
-  [[ -z $JBOSS_KIE_EXTRA_CLASSPATH ]]
-  expected=""
-  configure_extra_classpath >&2
-  echo "JBOSS_KIE_EXTRA_CLASSPATH is ${JBOSS_KIE_EXTRA_CLASSPATH}" >&2
-  echo "Expected is ${expected}" >&2
-  [[ $JBOSS_KIE_EXTRA_CLASSPATH == "${expected}" ]]
+@test "check if user files is not populated when password is missing" {
+    JBOSS_KIE_ADMIN_USER=foo
+    run configure_admin_user
+    echo "Expected is ${lines[0]}"
+    [ "${lines[0]}" = "[WARN]No external configuration or user added, please set one of them." ]
+    [ ! -f $CONFIG_DIR/application-users.properties ]
+    [ ! -f $CONFIG_DIR/application-roles.properties ]
 }
 
-@test "check if extra config is empty when undefined" {
-  local expected
-
-  [[ -z $JBOSS_KIE_EXTRA_CONFIG ]]
-  expected=""
-  configure_extra_classpath >&2
-  echo "JBOSS_KIE_EXTRA_CONFIG is ${JBOSS_KIE_EXTRA_CONFIG}" >&2
-  echo "Expected is ${expected}" >&2
-  [[ $JBOSS_KIE_EXTRA_CONFIG == "${expected}" ]]
+@test "check if user files file is not populated when user is missing" {
+    JBOSS_KIE_ADMIN_PWD=foo
+    run configure_admin_user
+    echo "Expected is ${lines[0]}"
+    [ "${lines[0]}" = "[WARN]No external configuration or user added, please set one of them." ]
+    [ ! -f $CONFIG_DIR/application-users.properties ]
+    [ ! -f $CONFIG_DIR/application-roles.properties ]
 }
 
-@test "check if extra config is empty when defined but empty" {
-  local expected
+@test "check if user files are populated when credentials are provided" {
+    JBOSS_KIE_ADMIN_USER=foo
+    JBOSS_KIE_ADMIN_PWD=bar
+    echo "pim:
+        auth-method: file
+      quarkus:
+        security:
+          users:
+            file:
+              enabled: true
+              plain-text: true
+              users: /opt/rhpam-process-migration/quarkus-app/config/application-users.properties
+              roles: /opt/rhpam-process-migration/quarkus-app/config/application-roles.properties" > $CONFIG_DIR/default-auth.yaml
 
-  JBOSS_KIE_EXTRA_CONFIG=""
-  expected=""
-  configure_extra_classpath >&2
-  echo "JBOSS_KIE_EXTRA_CONFIG is ${JBOSS_KIE_EXTRA_CONFIG}" >&2
-  echo "Expected is ${expected}" >&2
-  [[ $JBOSS_KIE_EXTRA_CONFIG == "${expected}" ]]
+    run configure_admin_user
+
+    expected_user=$(head -n 1 $CONFIG_DIR/application-users.properties)
+    expected_role=$(head -n 1 $CONFIG_DIR/application-roles.properties)
+    echo "Expected lines 0 is ${lines[0]}"
+    echo "Expected lines 1 is ${lines[1]}"
+    echo "Expected user: $expected_user"
+    echo "Expected role: $expected_role"
+    [ "${lines[0]}" = "renamed '/tmp/jboss_home/quarkus-app/config/default-auth.yaml' -> '/tmp/jboss_home/quarkus-app/config/application.yaml'" ]
+    [ "${lines[1]}" = "[INFO]Basic security auth added for user foo, it is strongly recommended to provide your own configuration file using md5 hash to hide the password." ]
+    [ -f $CONFIG_DIR/application-users.properties ]
+    [ -f $CONFIG_DIR/application-roles.properties ]
+    [ -f $CONFIG_DIR/application.yaml ]
+    [ "${expected_user}" = "foo=bar" ]
+    [ "${expected_role}" = "foo=admin" ]
 }
 
-@test "check if extra config is set" {
-  local expected
-
-  JBOSS_KIE_EXTRA_CONFIG="./config-extra/configuration.yml"
-  expected="-s./config-extra/configuration.yml"
-  configure_extra_config >&2
-  echo "JBOSS_KIE_EXTRA_CONFIG is ${JBOSS_KIE_EXTRA_CONFIG}" >&2
-  echo "Expected is ${expected}" >&2
-  [[ $JBOSS_KIE_EXTRA_CONFIG == "${expected}" ]]
-}
-
-@test "check if roles file is populated with default values" {
-  configure_users
-  local roles=$(head -n 1 $CONFIG_DIR/application-roles.properties)
-  expected="admin=admin"
-  echo "roles first line is ${roles}"
-  echo "Expected is ${expected}" >&2
-  [[ ${roles} == "${expected}" ]]
-}
-
-@test "check if roles file is populated with provided values" {
-  JBOSS_KIE_ADMIN_USER=foo
-  configure_users
-  local roles=$(head -n 1 $CONFIG_DIR/application-roles.properties)
-  expected="foo=admin"
-  echo "roles first line is ${roles}"
-  echo "Expected is ${expected}" >&2
-  [[ ${roles} == "${expected}" ]]
-}
-
-@test "check if users file is populated with default values" {
-  configure_users
-  local users=$(head -n 1 $CONFIG_DIR/application-users.properties)
-  expected="^admin=[a-zA-Z0-9_\!]{8}$"
-  echo "users first line is ${users}"
-  echo "Expected is ${expected}" >&2
-  [[ ${users} =~ ${expected} ]]
-}
-
-@test "check if users file is populated with provided values" {
-  JBOSS_KIE_ADMIN_USER=foo
-  JBOSS_KIE_ADMIN_PWD=test
-  configure_users
-  local users=$(head -n 1 $CONFIG_DIR/application-users.properties)
-  expected="foo=test"
-  echo "users first line is ${users}"
-  echo "Expected is ${expected}" >&2
-  [[ ${users} == "${expected}" ]]
-}
