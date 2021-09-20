@@ -12,6 +12,7 @@ fi
 
 CONFIGURE_SCRIPTS=(
   ${LAUNCH_DIR}/jboss-kie-process-migration.sh
+  ${LAUNCH_DIR}/jboss-kie-pim-reaugment.sh
 )
 
 source ${LAUNCH_DIR}/configure.sh
@@ -19,14 +20,9 @@ source /usr/local/dynamic-resources/dynamic_resources.sh
 
 log_info "Running $JBOSS_IMAGE_NAME image, version $PRODUCT_VERSION"
 
-if [ -n "$CLI_GRACEFUL_SHUTDOWN" ] ; then
-  trap "" TERM
-  log_info "Using CLI Graceful Shutdown instead of TERM signal"
-fi
-
 
 # RHPAM-1135: We need to build and pass an array otherwise spaces in passwords will break the exec
-D_OPTS="${JBOSS_KIE_ARGS}"
+D_OPTS="${JAVA_OPTS_APPEND}"
 D_DLM=" -D"
 D_STR=" ${D_OPTS}${D_DLM}"
 D_ARR=()
@@ -39,4 +35,6 @@ while [[ $D_STR ]]; do
     D_STR=${D_STR#*"$D_DLM"}
 done
 
-exec ${JAVA_HOME}/bin/java ${SHOW_JVM_SETTINGS} "${D_ARR[@]}" ${JBOSS_KIE_EXTRA_CLASSPATH} -jar /opt/${JBOSS_PRODUCT}/${KIE_PROCESS_MIGRATION_DISTRIBUTION_JAR} -s${CONFIG_DIR}/project-cloud.yml ${JBOSS_KIE_EXTRA_CONFIG}
+exec ${JAVA_HOME}/bin/java ${SHOW_JVM_SETTINGS} "${D_ARR[@]}" -jar \
+    /opt/${JBOSS_PRODUCT}/quarkus-app/quarkus-run.jar
+

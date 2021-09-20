@@ -16,10 +16,6 @@ cp -r ${ADDED_DIR}/launch/* ${LAUNCH_DIR}
 mkdir -p ${CONFIG_DIR}
 cp -r ${ADDED_DIR}/configuration/* ${CONFIG_DIR}
 
-mkdir -p ${JDBC_DRIVERS}
-link /usr/lib/java/mariadb-java-client.jar ${JDBC_DRIVERS}/mariadb-java-client.jar
-link /usr/share/java/postgresql-jdbc/postgresql.jar ${JDBC_DRIVERS}/postgresql-jdbc.jar
-
 # Necessary to permit running with a randomised UID
 chown -R jboss:root ${PROCESS_MIGRATION_DIR}
 chmod -R 777 ${PROCESS_MIGRATION_DIR}
