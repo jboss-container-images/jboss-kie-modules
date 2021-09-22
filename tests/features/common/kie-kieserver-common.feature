@@ -528,3 +528,13 @@ Feature: Kie Server common features
     Then container log should contain Using standard EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: test=org.package:mypackage:1.0
      And container log should contain INFO Attempting to pull dependencies for kjar 0 with
 
+  @wip
+  Scenario: Verify if the KieExecutorMDB is configured
+    When container is started with env
+      | variable                            | value                          |
+      | JBOSS_MDB_MAX_SESSIONS              | 987654321123456789             |
+    Then container log should contain Configuring KieServerExecutorMDB Max Sessions on ejb-jar.xml
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <ejb-class>org.kie.server.jms.executor.KieExecutorMDB</ejb-class>
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-name>maxSession</activation-config-property-name>
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>987654321123456789</activation-config-property-value>
+
