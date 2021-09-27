@@ -1181,17 +1181,19 @@ Feature: RHPAM KIE Server configuration tests
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jbpm on XPath //*[local-name()='cache-container']/@name
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value nodes on XPath //*[local-name()='cache-container']/*[local-name()='replicated-cache'][@name='nodes']/@name
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jobs on XPath //*[local-name()='cache-container']/*[local-name()='replicated-cache'][@name='jobs']/@name
-
-  Scenario: Check KIE_SERVER_JBPM_CLUSTER cache module flag enabled
-    When container is started with env
-      | variable                        | value                |
-      | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
-      | KIE_SERVER_JBPM_CLUSTER         | true                 |
-    Then container log should contain KIE Server's cluster for Jbpm failover is enabled.
     And XML file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml should contain value export on XPath  //*[local-name()='module'][@name='org.infinispan']/@services
     And XML file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml should contain value org.infinispan on XPath  //*[local-name()='module'][@name='org.infinispan']/@name
     And XML file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml should contain value org.jgroups on XPath  //*[local-name()='module'][@name='org.jgroups']/@name
     And run sh -c 'test -f /opt/eap/standalone/deployments/ROOT.war/WEB-INF/lib/kie-server-services-jbpm-cluster-*.jar && echo all good' in container and check its output for all good
+
+  Scenario: Check jbpm cache transport lock timeout
+    When container is started with env
+      | variable                                       | value                |
+      | JGROUPS_PING_PROTOCOL                          | kubernetes.KUBE_PING |
+      | KIE_SERVER_JBPM_CLUSTER                        | true                 |
+      | KIE_SERVER_JBPM_CLUSTER_TRANSPORT_LOCK_TIMEOUT | 120000               |
+    Then container log should contain KIE Server's cluster for Jbpm failover is enabled.
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 120000 on XPath //*[local-name()='cache-container'][@name='jbpm']/*[local-name()='transport']/@lock-timeout
 
   Scenario: Check KIE_SERVER_JBPM_CLUSTER flag disabled
     When container is started with env
@@ -1207,15 +1209,6 @@ Feature: RHPAM KIE Server configuration tests
       | JGROUPS_PING_PROTOCOL           | kubernetes.KUBE_PING |
     Then container log should contain KIE Server's cluster for Jbpm failover is disabled.
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <cache-container name="jbpm">
-
-  Scenario: Check jbpm cache transport lock timeout
-    When container is started with env
-      | variable                                       | value                |
-      | JGROUPS_PING_PROTOCOL                          | kubernetes.KUBE_PING |
-      | KIE_SERVER_JBPM_CLUSTER                        | true                 |
-      | KIE_SERVER_JBPM_CLUSTER_TRANSPORT_LOCK_TIMEOUT | 120000               |
-    Then container log should contain KIE Server's cluster for Jbpm failover is enabled.
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 120000 on XPath //*[local-name()='cache-container'][@name='jbpm']/*[local-name()='transport']/@lock-timeout
 
   Scenario: Check if the Kafka integration is disabled
     When container is started with env
