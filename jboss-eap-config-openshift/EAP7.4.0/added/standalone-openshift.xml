@@ -356,6 +356,7 @@
                     <transaction mode="BATCH"/>
                 </replicated-cache>
             </cache-container>
+            <!-- ##JBPM_CLUSTER## -->
             <cache-container name="web" default-cache="repl" modules="org.wildfly.clustering.web.infinispan">
                 <transport lock-timeout="60000"/>
                 <replicated-cache name="repl">

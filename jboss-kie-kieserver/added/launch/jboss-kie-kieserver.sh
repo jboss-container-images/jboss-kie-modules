@@ -752,7 +752,7 @@ function configure_jbpm_cluster(){
 }
 
 function configure_jbpm_cache() {
-    sed -i 's#<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">#<cache-container name="jbpm">\
+    sed -i 's|<!-- ##JBPM_CLUSTER## -->|<cache-container name="jbpm">\
         <transport lock-timeout="'${KIE_SERVER_JBPM_CLUSTER_TRANSPORT_LOCK_TIMEOUT:-60000}'"/>\
         <replicated-cache name="nodes">\
         <transaction mode="BATCH"/>\
@@ -760,87 +760,84 @@ function configure_jbpm_cache() {
         <replicated-cache name="jobs">\
         <transaction mode="BATCH"/>\
         </replicated-cache>\
-        </cache-container>\n<cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">#g' ${CONFIG_FILE}
+        </cache-container>|g' ${CONFIG_FILE}
 
     sed -i  's#<module name="org.apache.xerces"/>#& \n      <module name="org.infinispan" services="export"/>\n      <module name="org.jgroups"/>#' ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/jboss-deployment-structure.xml
 
-
     if [ -d "/opt/kie/dependencies/jbpm-clustering" ] ;then
-      mv -v /opt/kie/dependencies/jbpm-clustering/kie-server-services-jbpm-cluster-*.jar ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/lib
+        mv -v /opt/kie/dependencies/jbpm-clustering/kie-server-services-jbpm-cluster-*.jar ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/lib
     fi
 }
 
 function configure_kafka(){
-  if [ "${KIE_SERVER_KAFKA_EXT_ENABLED^^}" = "TRUE" ]; then
-    if [ -n "${KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS}" ];then
-      log_info "Kafka Extension enabled"
-      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.kafka.server.ext.disabled=false"
-      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=${KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS}"
-      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.client.id=${KIE_SERVER_KAFKA_EXT_CLIENT_ID}"
-      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.group.id=${KIE_SERVER_KAFKA_EXT_GROUP_ID}"
-      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.acks=${KIE_SERVER_KAFKA_EXT_ACKS}"
-      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.max.block.ms=${KIE_SERVER_KAFKA_EXT_MAX_BLOCK_MS}"
-      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.allow.auto.create.topics=${KIE_SERVER_KAFKA_EXT_AUTOCREATE_TOPICS}"
+    if [ "${KIE_SERVER_KAFKA_EXT_ENABLED^^}" = "TRUE" ]; then
+        if [ -n "${KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS}" ]; then
+            log_info "Kafka Extension enabled"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.kafka.server.ext.disabled=false"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=${KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS}"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.client.id=${KIE_SERVER_KAFKA_EXT_CLIENT_ID}"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.group.id=${KIE_SERVER_KAFKA_EXT_GROUP_ID}"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.acks=${KIE_SERVER_KAFKA_EXT_ACKS}"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.max.block.ms=${KIE_SERVER_KAFKA_EXT_MAX_BLOCK_MS}"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.allow.auto.create.topics=${KIE_SERVER_KAFKA_EXT_AUTOCREATE_TOPICS}"
 
-      IFS=',' read -a ks_topics <<< $KIE_SERVER_KAFKA_EXT_TOPICS
-      for topic in "${ks_topics[@]}"; do
-        IFS='=' read -a mapping <<< $topic
-        signal=${mapping[0]}
-        topic_name=${mapping[1]}
-          if [[ -n "$signal" && -n "$topic_name" ]]; then
-            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.topics.${topic}"
-          else
-              log_warning "mapping not configured, msg or topic name is empty. Value set [${signal}=${topic_name}]"
-          fi
-      done
+            IFS=',' read -a ks_topics <<< $KIE_SERVER_KAFKA_EXT_TOPICS
+            for topic in "${ks_topics[@]}"; do
+                IFS='=' read -a mapping <<< $topic
+                signal=${mapping[0]}
+                topic_name=${mapping[1]}
+                if [[ -n "$signal" && -n "$topic_name" ]]; then
+                    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.topics.${topic}"
+                else
+                    log_warning "mapping not configured, msg or topic name is empty. Value set [${signal}=${topic_name}]"
+                fi
+            done
+        else
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.kafka.server.ext.disabled=true"
+            log_warning "Bootstrap servers not configured, kafka extension disabled"
+        fi
     else
-      JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.kafka.server.ext.disabled=true"
-      log_warning "Bootstrap servers not configured, kafka extension disabled"
+        log_info "Kafka Extension disabled"
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.kafka.server.ext.disabled=true"
     fi
-  else
-    log_info "Kafka Extension disabled"
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.kafka.server.ext.disabled=true"
-  fi
 }
 
 function configure_kafka_jbpm_emitter(){
-  if [ "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED^^}" = "TRUE" ]; then
-      if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS}" ];then
-          log_info "Kafka JBPM Emitter enabled"
-          JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.bootstrap.servers=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS}"
-          JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.max.block.ms=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_MAX_BLOCK_MS:-2000}"
+    if [ "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED^^}" = "TRUE" ]; then
+        if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS}" ]; then
+            log_info "Kafka JBPM Emitter enabled"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.bootstrap.servers=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS}"
+            JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.max.block.ms=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_MAX_BLOCK_MS:-2000}"
 
-          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS}" ];then
-              JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.acks=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS}"
-          fi
+            if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS}" ]; then
+                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.acks=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ACKS}"
+            fi
 
-          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID}" ];then
-              JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.client.id=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID}"
-          fi
+            if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID}" ]; then
+                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.client.id=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CLIENT_ID}"
+            fi
 
-          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT}" ];then
-              JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.date_format=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT}"
-          fi
+            if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT}" ]; then
+                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.date_format=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_DATE_FORMAT}"
+            fi
 
-          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_PROCESSES_TOPIC_NAME}" ];then
-              JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.topic.processes=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_PROCESSES_TOPIC_NAME}"
-          fi
+            if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_PROCESSES_TOPIC_NAME}" ]; then
+                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.topic.processes=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_PROCESSES_TOPIC_NAME}"
+            fi
 
-          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_TASKS_TOPIC_NAME}" ];then
-              JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.topic.tasks=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_TASKS_TOPIC_NAME}"
-          fi
+            if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_TASKS_TOPIC_NAME}" ]; then
+                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.topic.tasks=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_TASKS_TOPIC_NAME}"
+            fi
 
-          if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CASES_TOPIC_NAME}" ];then
-              JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.topic.cases=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CASES_TOPIC_NAME}"
-          fi
+            if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CASES_TOPIC_NAME}" ]; then
+                JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.topic.cases=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_CASES_TOPIC_NAME}"
+            fi
 
-          if [ -d "/opt/kie/dependencies/jbpm-kafka" ] ;then
-              mv -v /opt/kie/dependencies/jbpm-kafka/jbpm-event-emitters-kafka-*.jar ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/lib
-          fi
-
-      else
-        log_warning "JBPM Emitter Bootstrap servers not configured"
-      fi
-  fi
-
+            if [ -d "/opt/kie/dependencies/jbpm-kafka" ]; then
+                mv -v /opt/kie/dependencies/jbpm-kafka/jbpm-event-emitters-kafka-*.jar ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/lib
+            fi
+        else
+            log_warning "JBPM Emitter Bootstrap servers not configured"
+        fi
+    fi
 }
