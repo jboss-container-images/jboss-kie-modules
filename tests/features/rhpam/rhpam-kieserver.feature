@@ -9,7 +9,7 @@ Feature: RHPAM KIE Server configuration tests
   Scenario: Check for product and version environment variables
     When container is started with command bash
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-kieserver
-     And run sh -c 'echo $RHPAM_KIESERVER_VERSION' in container and check its output for 7.12
+     And run sh -c 'echo $RHPAM_KIESERVER_VERSION' in container and check its output for 7.13
 
   Scenario: Check custom war file was successfully deployed via CUSTOM_INSTALL_DIRECTORIES
     Given s2i build https://github.com/jboss-openshift/openshift-examples.git from custom-install-directories

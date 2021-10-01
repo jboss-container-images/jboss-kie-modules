@@ -9,7 +9,7 @@ Feature: RHDM Decision Central configuration tests
   Scenario: Check for product and version environment variables
     When container is started with command bash
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhdm-decisioncentral
-     And run sh -c 'echo $RHDM_DECISION_CENTRAL_VERSION' in container and check its output for 7.12
+     And run sh -c 'echo $RHDM_DECISION_CENTRAL_VERSION' in container and check its output for 7.13
 
   # https://issues.jboss.org/browse/CLOUD-2221
   Scenario: Check KieLoginModule is _not_ configured
