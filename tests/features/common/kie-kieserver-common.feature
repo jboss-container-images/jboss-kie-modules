@@ -528,7 +528,6 @@ Feature: Kie Server common features
     Then container log should contain Using standard EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: test=org.package:mypackage:1.0
      And container log should contain INFO Attempting to pull dependencies for kjar 0 with
 
-  @wip
   Scenario: Verify if the KieExecutorMDB is configured
     When container is started with env
       | variable                            | value                          |
