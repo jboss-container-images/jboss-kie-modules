@@ -123,9 +123,9 @@ function configureJmsExecutorMdb(){
     if [ -n "${JBOSS_MDB_MAX_SESSIONS}" ];then
         log_info "Configuring KieServerExecutorMDB Max Sessions on ejb-jar.xml"
         sed -i  's#<activation-config-property-value>queue/KIE.SERVER.EXECUTOR</activation-config-property-value>#<activation-config-property-value>queue/KIE.SERVER.EXECUTOR</activation-config-property-value>\
-            </activation-config-property>\
-            <activation-config-property>\
-                <activation-config-property-name>maxSession</activation-config-property-name>\
-                <activation-config-property-value>'${JBOSS_MDB_MAX_SESSIONS}'</activation-config-property-value>#g' ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml
+                </activation-config-property>\
+                <activation-config-property>\
+                    <activation-config-property-name>maxSession</activation-config-property-name>\
+                    <activation-config-property-value>'${JBOSS_MDB_MAX_SESSIONS}'</activation-config-property-value>#g' ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml
     fi
 }
