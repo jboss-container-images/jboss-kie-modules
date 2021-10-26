@@ -266,9 +266,9 @@ teardown() {
 <activation-config-property-value>javax.jms.Queue</activation-config-property-value>
 <activation-config-property-value>Auto-acknowledge</activation-config-property-value>
 <activation-config-property-value>queue/KIE.SERVER.EXECUTOR</activation-config-property-value>
-<activation-config-property-value>987654321123456789</activation-config-property-value>
 <activation-config-property-value>javax.jms.Queue</activation-config-property-value>
-<activation-config-property-value>Auto-acknowledge</activation-config-property-value>"
+<activation-config-property-value>Auto-acknowledge</activation-config-property-value>
+<activation-config-property-value>987654321123456789</activation-config-property-value>"
 
     result=$(xmllint --xpath "//*[local-name()='activation-config-property-value']" $JBOSS_HOME/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml)
     echo "${result}"
