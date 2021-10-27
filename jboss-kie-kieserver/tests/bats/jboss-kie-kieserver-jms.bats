@@ -238,3 +238,39 @@ teardown() {
     echo "output = ${output}"
     [ "${status}" = "2" ]
 }
+
+@test "Verify the KieExecutorMDB with no provided configuration" {
+    run configureJmsExecutorMdb
+    expectedConfigurationValues="<activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value>
+<activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value>
+<activation-config-property-value>javax.jms.Queue</activation-config-property-value>
+<activation-config-property-value>Auto-acknowledge</activation-config-property-value>
+<activation-config-property-value>queue/KIE.SERVER.EXECUTOR</activation-config-property-value>
+<activation-config-property-value>javax.jms.Queue</activation-config-property-value>
+<activation-config-property-value>Auto-acknowledge</activation-config-property-value>"
+
+    result=$(xmllint --xpath "//*[local-name()='activation-config-property-value']" $JBOSS_HOME/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml)
+    echo "${result}"
+    [[ "${result}" == "${expectedConfigurationValues}" ]]
+}
+
+@test "Verify the KieExecutorMDB" {
+    export JBOSS_MDB_MAX_SESSIONS="987654321123456789"
+
+    run configureJmsExecutorMdb
+
+    [ "${lines[0]}" = "[INFO]Configuring KieServerExecutorMDB Max Sessions on ejb-jar.xml" ]
+
+    expectedConfigurationValues="<activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value>
+<activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value>
+<activation-config-property-value>javax.jms.Queue</activation-config-property-value>
+<activation-config-property-value>Auto-acknowledge</activation-config-property-value>
+<activation-config-property-value>queue/KIE.SERVER.EXECUTOR</activation-config-property-value>
+<activation-config-property-value>javax.jms.Queue</activation-config-property-value>
+<activation-config-property-value>Auto-acknowledge</activation-config-property-value>
+<activation-config-property-value>987654321123456789</activation-config-property-value>"
+
+    result=$(xmllint --xpath "//*[local-name()='activation-config-property-value']" $JBOSS_HOME/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml)
+    echo "${result}"
+    [[ "${result}" == "${expectedConfigurationValues}" ]]
+}

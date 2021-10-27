@@ -557,3 +557,12 @@ Feature: Kie Server common features
      When container is started with env
        | variable                             | value                         |
      Then container log should contain Access log is disabled, ignoring configuration.
+  Scenario: Verify if the KieExecutorMDB is configured
+    When container is started with env
+      | variable                            | value                          |
+      | JBOSS_MDB_MAX_SESSIONS              | 987654321123456789             |
+    Then container log should contain Configuring KieServerExecutorMDB Max Sessions on ejb-jar.xml
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <ejb-class>org.kie.server.jms.executor.KieExecutorMDB</ejb-class>
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-name>maxSession</activation-config-property-name>
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>987654321123456789</activation-config-property-value>
+

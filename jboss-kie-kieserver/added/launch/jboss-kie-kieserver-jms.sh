@@ -6,6 +6,7 @@ source "${JBOSS_HOME}/bin/launch/logging.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
+    unset JBOSS_MDB_MAX_SESSIONS
     unset KIE_SERVER_EXECUTOR_JMS
     unset KIE_SERVER_EXECUTOR_JMS_TRANSACTED
     unset KIE_SERVER_JMS_AUDIT_TRANSACTED
@@ -36,6 +37,7 @@ function configure() {
     configureJmsExecutor
     configureJmsSignal
     configureJmsAudit
+    configureJmsExecutorMdb
 }
 
 function postConfigure {
@@ -114,5 +116,12 @@ function configureJmsAudit() {
         if [ "${transacted^^}" = "FALSE" ]; then
             echo -e "\njbpm.audit.jms.transacted=false" >> "${KIE_AUDIT_PROPERTIES_FILE}"
         fi
+    fi
+}
+
+function configureJmsExecutorMdb(){
+    if [ -n "${JBOSS_MDB_MAX_SESSIONS}" ];then
+        log_info "Configuring KieServerExecutorMDB Max Sessions on ejb-jar.xml"
+        sed -i 's,<!-- ##MAX_SESSION## -->,<activation-config-property>\n<activation-config-property-name>maxSession</activation-config-property-name>\n<activation-config-property-value>'${JBOSS_MDB_MAX_SESSIONS}'</activation-config-property-value>\n</activation-config-property>,g' ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml
     fi
 }
