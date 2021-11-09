@@ -20,4 +20,3 @@ teardown() {
     run format_xml
     assert_xml ${CONFIG_FILE} $BATS_TEST_DIRNAME/expectations/formatter/standalone-expected.xml
 }
-

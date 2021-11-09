@@ -337,3 +337,16 @@ Feature: RHPAM and RHDM common tests
     When container is started with command bash
     Then run sh -c 'test -f /opt/jboss/container/prometheus/jmx_prometheus_javaagent-0.3.2.redhat-00003.jar && echo all good' in container and check its output for all good
     And run sh -c 'md5sum /opt/jboss/container/prometheus/jmx_prometheus_javaagent-0.3.2.redhat-00003.jar' in container and check its output for 8b3af39995b113baf35e53468bad7aae  /opt/jboss/container/prometheus/jmx_prometheus_javaagent-0.3.2.redhat-00003.jar
+
+
+  Scenario:  Make sure the logger pattern is properly configured with a custom pattern
+    When container is started with env
+      | variable          | value                                         |
+      | LOGGER_PATTERN    | %d{yyyy-MM-dd HH:mm:ss.SSS} %-5p [%c{1}] %m%n |
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <logger pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p [%c{1}] %m%n"/>
+
+  Scenario:  Make sure the logger pattern is properly configured with a defaut pattern
+    When container is started with env
+      | variable          | value                                         |
+      | LOGGER_PATTERN    | %K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n |
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <logger pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>

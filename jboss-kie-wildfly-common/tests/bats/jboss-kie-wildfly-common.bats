@@ -1,10 +1,21 @@
 #!/usr/bin/env bats
 
+
+load jboss-kie-wildfly-common
+
 export JBOSS_HOME=$BATS_TMPDIR/jboss_home
+mkdir -p $JBOSS_HOME/standalone/configuration
 mkdir -p $JBOSS_HOME/bin/launch
 
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/logging.bash $JBOSS_HOME/bin/launch/logging.sh
+cp $BATS_TEST_DIRNAME/../../../jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-security-login-modules.sh $JBOSS_HOME/bin/launch
+export CONFIG_FILE=$JBOSS_HOME/standalone/configuration/standalone-openshift-logging.xml
 load $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-wildfly-common.sh
+
+
+setup() {
+  cp $BATS_TEST_DIRNAME/../../../jboss-eap-config-openshift/EAP7.4.0/added/standalone-openshift.xml $CONFIG_FILE
+}
 
 echo "fake xml" > $JBOSS_HOME/bin/launch/settings-non-readable.xml
 echo "<settings xmlns=\"http://maven.apache.org/SETTINGS/1.1.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"
@@ -72,4 +83,27 @@ teardown() {
     [[ "${JAVA_INITIAL_MEM_RATIO}" == 10 ]]
     unset JAVA_INITIAL_MEM_RATIO
     unset JAVA_MAX_MEM_RATIO
+}
+
+@test "verify if the logger pattern  is correctly configured with a custom pattern" {
+
+    export LOGGER_PATTERN="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p [%c{1}] %m%n"
+    configure_formatter
+
+    expected="<pattern-formatter pattern=\"%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p [%c{1}] %m%n\"/>"
+
+    result=$(xmllint -xpath "//*[local-name()='subsystem']//*[local-name()='formatter']//*[local-name()='pattern-formatter']" $CONFIG_FILE)
+    echo "Expected: ${expected}"
+    echo "Result: ${result}"
+    [ "${expected}" = "${result}" ]
+}
+
+@test "verify if the logger pattern  is correctly configured if none is provided" {
+    configure_formatter
+    expected="<pattern-formatter pattern=\"%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n\"/>"
+
+    result=$(xmllint -xpath "//*[local-name()='subsystem']//*[local-name()='formatter']//*[local-name()='pattern-formatter']" $CONFIG_FILE)
+    echo "Expected: ${expected}"
+    echo "Result: ${result}"
+    [ "${expected}" = "${result}" ]
 }
