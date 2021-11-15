@@ -537,3 +537,16 @@ Feature: Kie Server common features
      And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-name>maxSession</activation-config-property-name>
      And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>987654321123456789</activation-config-property-value>
 
+  Scenario: Verify if the ACCESS_LOG_VALVE is configured
+    When container is started with env
+      | variable                             | value                         |
+      | ENABLE_ACCESS_LOG                    | true                          |
+    Then container log should contain Configuring Access Log Valve
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain ##ACCESS_LOG_VALVE##
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain access-log use-server-log="true"
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain pattern="%h %l %u %t %{i,X-Forwarded-Host} &quot;%r&quot; %s %b"
+
+  Scenario: Verify if the ACCESS_LOG_VALVE is not configured
+     When container is started with env
+       | variable                             | value                         |
+     Then container log should contain Access log is disabled, ignoring configuration.
