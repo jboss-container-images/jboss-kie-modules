@@ -75,3 +75,4 @@ Feature: KIE Controller configuration common tests
      Then file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain ##SSL##
       And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain ##HTTPS_CONNECTOR##
       And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <https-listener name="https" socket-binding="https" security-realm="ApplicationRealm" proxy-address-forwarding="true"/>
+
