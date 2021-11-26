@@ -47,6 +47,7 @@ CONFIGURE_SCRIPTS=(
   $JBOSS_HOME/bin/launch/jboss-kie-workbench.sh
   $JBOSS_HOME/bin/launch/jboss-kie-wildfly-elytron.sh
   $JBOSS_HOME/bin/launch/elytron.sh
+  # RHPAM-3299 - jboss-kie-wildfly-common.sh needs to run before maven-settings.sh so MAVEN_LOCAL_REPO can be correctly set
   $JBOSS_HOME/bin/launch/maven-settings.sh
   $JBOSS_HOME/bin/launch/jboss-kie-wildfly-config-files-formatter.sh
   /opt/run-java/proxy-options

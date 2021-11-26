@@ -32,12 +32,10 @@ function configure_kie_fs_realm() {
 }
 
 function update_security_domain() {
-    # TODO add behave test
     sed -i "s|<security-domain>other</security-domain>||" ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/jboss-web.xml
 }
 
 function update_activemq_domain() {
-    # TODO add behave test
     sed -i "s|<server name=\"default\">|      <server name=\"default\">\n        <security elytron-domain=\"ApplicationDomain\"/>|" $CONFIG_FILE
 }
 
