@@ -104,6 +104,7 @@ function configure_ldap_login_module() {
     add_login_module "${login_module}"
 }
 
+# TODO verify if it still needed with elytron
 function configure_role_mapper_login_module() {
     if [[ -z ${AUTH_ROLE_MAPPER_ROLES_PROPERTIES} ]]; then
         log_info "AUTH_ROLE_MAPPER_ROLES_PROPERTIES not set. Skipping RoleMapping login module."

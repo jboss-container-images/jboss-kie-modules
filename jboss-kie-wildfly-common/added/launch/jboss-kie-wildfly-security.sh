@@ -60,6 +60,7 @@ function get_kie_admin_roles() {
 
 function add_kie_admin_user() {
     add_eap_user "admin" "$(get_kie_admin_user)" "$(get_kie_admin_pwd)" "$(get_kie_admin_roles)"
+    migrate_users_from_properties_to_elytron_fs
 }
 
 ########## KIE Server ##########
@@ -71,7 +72,12 @@ function get_kie_server_token() {
 
 function get_kie_server_domain() {
     local default_kie_domain="other"
-    echo $(find_env "KIE_SERVER_DOMAIN" "${default_kie_domain}")
+    local domain=$(find_env "KIE_SERVER_DOMAIN" "${default_kie_domain}")
+    if [ "${domain}" != "other" ]; then
+        export SECDOMAIN_NAME="${domain}"
+        export ELYTRON_SECDOMAIN_NAME="${domain}"
+    fi
+    echo "${domain}"
 }
 
 function get_kie_server_bypass_auth_user() {
@@ -121,6 +127,7 @@ function get_application_roles_properties() {
     echo $(get_application_config "${APPLICATION_ROLES_PROPERTIES}" "application-roles.properties")
 }
 
+# TODO can be removed after fully migrated to elytron
 function set_application_users_config() {
     if [ -n "${APPLICATION_USERS_PROPERTIES}" ]; then
         local application_users_properties="$(get_application_users_properties)"
@@ -129,12 +136,28 @@ function set_application_users_config() {
     fi
 }
 
+# TODO can be removed after fully migrated to elytron
 function set_application_roles_config() {
     if [ -n "${APPLICATION_ROLES_PROPERTIES}" ]; then
         local application_roles_properties="$(get_application_roles_properties)"
         local config_file="${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml"
         sed -i "s,path=\"application-roles.properties\" relative-to=\"jboss.server.config.dir\",path=\"${application_roles_properties}\",g" "${config_file}"
     fi
+}
+
+function migrate_users_from_properties_to_elytron_fs() {
+    local opts=""
+    if [ "${SCRIPT_DEBUG}" = "true" ] ; then
+        opts="--debug"
+    fi
+    log_info "migrating users to elytron kie-filesystem-realm $(get_kie_fs_path)"
+    $JBOSS_HOME/bin/elytron-tool.sh filesystem-realm \
+        --users-file $(get_application_users_properties) \
+        --roles-file $(get_application_roles_properties) \
+        --output-location $(get_kie_fs_path) ${opts}
+
+    # TODO workaround to rename roles to role so business central can understand it.
+    find $(get_kie_fs_path) -name *.xml -exec sed -i 's/<attribute name="roles"/<attribute name="role"/g' {} \;
 }
 
 function add_eap_user() {
@@ -186,7 +209,6 @@ function add_eap_user() {
 # print information if the users creation is skipped
 # This function only have the purpose to print user information to guide the user about what
 # users they need to create on the external auth provider when enabled.
-#
 print_external_user_information() {
     log_info "External authentication/authorization enabled, skipping the embedded users creation."
     if [ "${KIE_ADMIN_USER}x" != "x" ]; then
@@ -195,3 +217,4 @@ print_external_user_information() {
         log_info "Make sure to configure KIE_ADMIN_USER user to access the application with the roles $(get_kie_admin_roles)"
     fi
 }
+

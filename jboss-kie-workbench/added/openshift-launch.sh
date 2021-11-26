@@ -31,9 +31,9 @@ CONFIGURE_SCRIPTS=(
   $JBOSS_HOME/bin/launch/ha.sh
   $JBOSS_HOME/bin/launch/jgroups.sh
   $JBOSS_HOME/bin/launch/https.sh
-  $JBOSS_HOME/bin/launch/elytron.sh
   $JBOSS_HOME/bin/launch/json_logging.sh
   $JBOSS_HOME/bin/launch/configure_logger_category.sh
+  # TODO remove after elytron is fully configured
   $JBOSS_HOME/bin/launch/security-domains.sh
   $JBOSS_HOME/bin/launch/jboss_modules_system_pkgs.sh
   $JBOSS_HOME/bin/launch/keycloak.sh
@@ -45,7 +45,8 @@ CONFIGURE_SCRIPTS=(
   $JBOSS_HOME/bin/launch/filters.sh
   $JBOSS_HOME/bin/launch/jboss-kie-wildfly-common.sh
   $JBOSS_HOME/bin/launch/jboss-kie-workbench.sh
-  # RHPAM-3299 - jboss-kie-wildfly-common.sh needs to run before maven-settings.sh so MAVEN_LOCAL_REPO can be correctly set
+  $JBOSS_HOME/bin/launch/jboss-kie-wildfly-elytron.sh
+  $JBOSS_HOME/bin/launch/elytron.sh
   $JBOSS_HOME/bin/launch/maven-settings.sh
   $JBOSS_HOME/bin/launch/jboss-kie-wildfly-config-files-formatter.sh
   /opt/run-java/proxy-options
@@ -74,4 +75,5 @@ while [[ $D_STR ]]; do
     D_STR=${D_STR#*"$D_DLM"}
 done
 
-exec env M2_HOME=${M2_HOME} $JBOSS_HOME/bin/standalone.sh -c standalone-openshift.xml -bmanagement 127.0.0.1 ${JAVA_PROXY_OPTIONS} ${JBOSS_HA_ARGS} ${JBOSS_MESSAGING_ARGS} "${D_ARR[@]}"
+exec env M2_HOME=${M2_HOME} $JBOSS_HOME/bin/standalone.sh -c standalone-openshift.xml -bmanagement 127.0.0.1 \
+    ${JAVA_PROXY_OPTIONS} ${JBOSS_HA_ARGS} ${JBOSS_MESSAGING_ARGS} "${D_ARR[@]}"

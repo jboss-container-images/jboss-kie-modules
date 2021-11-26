@@ -41,8 +41,6 @@ function prepareEnv() {
     unset KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL
     unset KIE_M2_REPO_DIR
     unset KIE_PERSIST_MAVEN_REPO
-
-
 }
 
 function preConfigure() {
@@ -69,6 +67,7 @@ function configure() {
     configure_ha
 }
 
+# TODO can be removed after fully migrated to elytron
 function configure_local_security() {
     set_application_users_config
     set_application_roles_config
@@ -82,6 +81,7 @@ function configure_admin_security() {
     add_management_interface_realm
     # KieLoginModule breaks Business Central; it needs to be added only for Business Central & Business Central Monitoring
     # rhpam-businesscentral, rhpam-businesscentral-monitoring
+    # TODO it probably can be removed
     if [[ $JBOSS_PRODUCT =~ rhpam\-businesscentral(\-monitoring)? ]]; then
         configure_login_modules "org.kie.security.jaas.KieLoginModule" "optional" "deployment.ROOT.war"
     fi
@@ -257,7 +257,7 @@ function configure_guvnor_settings() {
         fi
     fi
     # https://github.com/kiegroup/appformer/blob/master/uberfire-ssh/uberfire-ssh-backend/src/main/java/org/uberfire/ssh/service/backend/keystore/impl/storage/DefaultSSHKeyStore.java#L40
-    # TODO swith to main when the repo will move to main or latest as default
+    # TODO switch to main when the repo will move to main or latest as default
     local pkeys_dir=${APPFORMER_SSH_KEYS_STORAGE_FOLDER:-"${kieDataDir}/security/pkeys"}
     if [ -n "${pkeys_dir}" ]; then
         mkdir -p "${pkeys_dir}"
