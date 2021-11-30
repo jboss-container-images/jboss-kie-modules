@@ -231,7 +231,7 @@
             <statistics enabled="${wildfly.ejb3.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
             <log-system-exceptions value="true"/>
             <application-security-domains>
-                <application-security-domain name="other" security-domain="ApplicationDomain"/>
+                <!--application-security-domain name="other" security-domain="ApplicationDomain"/-->
                 <!-- ##EJB_APPLICATION_SECURITY_DOMAIN## -->
             </application-security-domains>
         </subsystem>
@@ -535,7 +535,6 @@
                         <!-- ##OTHER_LOGIN_MODULES## -->
                     </authentication>
                 </security-domain>
-                <!-- ##KEYCLOAK_SECURITY_DOMAIN## -->
             </security-domains>
         </subsystem>
 
@@ -594,7 +593,7 @@
                 <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
             </handlers>
             <application-security-domains>
-                <application-security-domain name="other" security-domain="ApplicationDomain"/>
+                <!--application-security-domain name="other" security-domain="ApplicationDomain"/-->
                 <!-- ##HTTP_APPLICATION_SECURITY_DOMAIN## -->
             </application-security-domains>
             <!-- ##HTTP_FILTERS_MARKER## -->

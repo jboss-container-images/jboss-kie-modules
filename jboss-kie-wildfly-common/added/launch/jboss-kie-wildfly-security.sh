@@ -146,18 +146,20 @@ function set_application_roles_config() {
 }
 
 function migrate_users_from_properties_to_elytron_fs() {
-    local opts=""
-    if [ "${SCRIPT_DEBUG}" = "true" ] ; then
-        opts="--debug"
-    fi
-    log_info "migrating users to elytron kie-filesystem-realm $(get_kie_fs_path)"
-    $JBOSS_HOME/bin/elytron-tool.sh filesystem-realm \
-        --users-file $(get_application_users_properties) \
-        --roles-file $(get_application_roles_properties) \
-        --output-location $(get_kie_fs_path) ${opts}
+    if [ "${AUTH_LDAP_URL}x" == "x" ] && [ "${SSO_URL}x" == "x" ]; then
+        local opts=""
+        if [ "${SCRIPT_DEBUG}" = "true" ] ; then
+            opts="--debug"
+        fi
+        log_info "migrating users to elytron kie-filesystem-realm $(get_kie_fs_path)"
+        $JBOSS_HOME/bin/elytron-tool.sh filesystem-realm \
+            --users-file $(get_application_users_properties) \
+            --roles-file $(get_application_roles_properties) \
+            --output-location $(get_kie_fs_path) ${opts}
 
-    # TODO workaround to rename roles to role so business central can understand it.
-    find $(get_kie_fs_path) -name *.xml -exec sed -i 's/<attribute name="roles"/<attribute name="role"/g' {} \;
+        # TODO workaround to rename roles to role so business central can understand it.
+        find $(get_kie_fs_path) -name *.xml -exec sed -i 's/<attribute name="roles"/<attribute name="role"/g' {} \;
+    fi
 }
 
 function add_eap_user() {
