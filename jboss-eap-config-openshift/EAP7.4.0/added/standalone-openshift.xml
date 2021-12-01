@@ -20,6 +20,7 @@
         <extension module="org.jboss.as.pojo"/>
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
+        <!-- TODO remove when everything is migrated to elytron -->
         <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.webservices"/>
@@ -231,7 +232,7 @@
             <statistics enabled="${wildfly.ejb3.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
             <log-system-exceptions value="true"/>
             <application-security-domains>
-                <!--application-security-domain name="other" security-domain="ApplicationDomain"/-->
+                <application-security-domain name="other" security-domain="ApplicationDomain"/>
                 <!-- ##EJB_APPLICATION_SECURITY_DOMAIN## -->
             </application-security-domains>
         </subsystem>
@@ -317,6 +318,7 @@
                         <mechanism mechanism-name="BASIC">
                             <mechanism-realm realm-name="KieFsRealm"/>
                         </mechanism>
+                        <mechanism mechanism-name="FORM"/>
                     </mechanism-configuration>
                 </http-authentication-factory>
                 <provider-http-server-mechanism-factory name="global"/>
@@ -593,7 +595,6 @@
                 <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
             </handlers>
             <application-security-domains>
-                <!--application-security-domain name="other" security-domain="ApplicationDomain"/-->
                 <!-- ##HTTP_APPLICATION_SECURITY_DOMAIN## -->
             </application-security-domains>
             <!-- ##HTTP_FILTERS_MARKER## -->

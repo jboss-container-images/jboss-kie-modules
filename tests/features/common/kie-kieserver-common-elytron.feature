@@ -1,7 +1,6 @@
 @rhdm-7/rhdm-kieserver-rhel8
 @rhpam-7/rhpam-kieserver-rhel8
 Feature: KIE specific elytron configuration
-
   Scenario: test if elytron KieRealm is correctly added with default filesystem location
     When container is started with env
       | variable     | value |
@@ -12,7 +11,6 @@ Feature: KIE specific elytron configuration
     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-web.xml should not contain <security-domain>other</security-domain>
     And container log should contain -Dorg.kie.server.services.jbpm.security.filesystemrealm.folder-path=/opt/kie/data/kie-fs-realm-users
 
-
   Scenario: test if elytron KieRealm is correctly added with custom filesystem location
     When container is started with env
       | variable            | value         |
@@ -22,3 +20,4 @@ Feature: KIE specific elytron configuration
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ApplicationDomain on XPath //*[local-name()='security']/@elytron-domain
     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/jboss-web.xml should not contain <security-domain>other</security-domain>
     And container log should contain -Dorg.kie.server.services.jbpm.security.filesystemrealm.folder-path=/opt/kie/test
+
