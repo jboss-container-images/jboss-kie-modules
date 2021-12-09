@@ -392,14 +392,16 @@ function configure_ha_infinispan() {
     if [ -n "${APPFORMER_INFINISPAN_USERNAME}" -o -n "${APPFORMER_INFINISPAN_USER}" ] ; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.username=${APPFORMER_INFINISPAN_USERNAME:-$APPFORMER_INFINISPAN_USER}"
     fi
+
+    if [ -n "${APPFORMER_INFINISPAN_PASSWORD}" ] ; then
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.password=${APPFORMER_INFINISPAN_PASSWORD}"
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.sasl.qop=auth"
+    fi
+
     if [ -n "${DATAGRID_USER_NAME}" ] ; then
             JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.username=${DATAGRID_USER_NAME}"
     fi
-    if [ -n "${APPFORMER_INFINISPAN_PASSWORD}" ] ; then
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.password=${APPFORMER_INFINISPAN_PASSWORD}"
-    fi
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.username=admin"
-    JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.password=pass"
+
     if [ -n "${DATA_GRID_PASSWORD}" ] ; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.ext.metadata.infinispan.password=${DATA_GRID_PASSWORD}"
     fi
