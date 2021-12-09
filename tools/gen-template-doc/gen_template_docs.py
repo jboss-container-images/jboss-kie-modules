@@ -43,17 +43,16 @@ from pygit2 import clone_repository
 from ptemplate.template import Template
 from shutil import copy
 
-RHDM_GIT_REPO = "https://github.com/jboss-container-images/rhdm-7-openshift-image.git"
+RHDM_GIT_REPO = "https://github.com/jboss-container-images/rhpam-7-openshift-image.git"
 RHPAM_GIT_REPO = "https://github.com/jboss-container-images/rhpam-7-openshift-image.git"
 IPS_GIT_REPO = "https://github.com/jboss-container-images/jboss-processserver-6-openshift-image.git"
 DS_GIT_REPO = "https://github.com/jboss-container-images/jboss-decisionserver-6-openshift-image.git"
 GIT_REPO_LIST = []
 REPO_NAME = "application-templates/"
 TEMPLATE_DOCS = "output/"
-APPLICATION_DIRECTORIES = ("target/rhpam-7-openshift-image", "target/rhdm-7-openshift-image", "output/",
+APPLICATION_DIRECTORIES = ("target/rhpam-7-openshift-image", "output/",
                            "target/jboss-processserver-6-openshift-image", "target/jboss-decisionserver-6-openshift-image")
-template_dirs = ['target/rhpam-7-openshift-image/templates', 'target/rhdm-7-openshift-image/templates', 'target/rhdm-7-openshift-image/templates/optaweb',
-                 'target/jboss-processserver-6-openshift-image/templates', 'target/jboss-decisionserver-6-openshift-image/templates']
+template_dirs = ['target/rhpam-7-openshift-image/templates', 'target/rhpam-7-openshift-image/templates/optaweb', 'target/jboss-processserver-6-openshift-image/templates', 'target/jboss-decisionserver-6-openshift-image/templates']
 
 # TODO: improve it to not use full image name
 # used to link the image to the image.yaml when the given image is used by a s2i build
@@ -477,20 +476,20 @@ def generate_readme(generate_rhdm, generate_rhpam, generate_ips, generate_ds):
     """Generates a README page for the template documentation."""
     if generate_rhdm:
         try:
-            with open('output/target/rhdm-7-openshift-image/README.adoc', 'w') as fh:
-                print('Generating output/target/rhdm-7-openshift-image/README.adoc...')
+            with open('output/target/rhpam-7-openshift-image/README.adoc', 'w') as fh:
+                print('Generating output/target/rhpam-7-openshift-image/README.adoc...')
                 fh.write(autogen_warning)
                 # page header
                 fh.write(open('./README_RHDM.adoc.in').read())
                 for directory in sorted(template_dirs):
                     if not os.path.isdir(directory):
                         continue
-                    elif "rhdm" in directory:
+                    elif "rhpam" in directory:
                         # section header
                         prefix = ''
                         if "optaweb" in directory:
                             prefix = 'optaweb-'
-                        fh.write('\n== %s%s\n\n' % (prefix, "rhdm-7-openshift-image/templates"))
+                        fh.write('\n== %s%s\n\n' % (prefix, "rhpam-7-openshift-image/templates"))
                         # links
                         for template in [os.path.splitext(x)[0] for x in sorted(os.listdir(directory))]:
                             if "image-stream" not in template and template not in deny_list:
@@ -619,7 +618,7 @@ def copy_templates_adoc(generate_rhdm, generate_rhpam, generate_ips, generate_ds
                         ips_docs_final_location, ds_docs_final_location):
 
     for project in APPLICATION_DIRECTORIES:
-        if generate_rhdm and "rhdm" in project:
+        if generate_rhdm and "rhpam" in project:
             try:
                 for dirpath, dirnames, files in os.walk(TEMPLATE_DOCS + "" + project):
                     for template in files:
@@ -695,7 +694,7 @@ if __name__ == "__main__":
                              'defined by the --rhdm-docs-final-location, --rhpam-docs-final-location,'
                              '--ips-docs-final-location and --ds-docs-final-location')
     parser.add_argument('--rhdm-docs-final-location', dest='rhdm_docs_final_location',
-                        default='../../../rhdm-7-openshift-image/templates/docs/',
+                        default='../../../rhpam-7-openshift-image/templates/docs/',
                         help='RHDM final docs location, this directory will be used to copy the generated docs.'
                              'The default location is defined based on this script root\'s directory.')
     parser.add_argument('--rhpam-docs-final-location', dest='rhpam_docs_final_location',
