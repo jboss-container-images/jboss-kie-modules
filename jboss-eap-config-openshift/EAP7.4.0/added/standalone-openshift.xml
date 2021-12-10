@@ -20,7 +20,6 @@
         <extension module="org.jboss.as.pojo"/>
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
-        <!-- TODO remove when everything is migrated to elytron -->
         <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.webservices"/>
@@ -232,7 +231,6 @@
             <statistics enabled="${wildfly.ejb3.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
             <log-system-exceptions value="true"/>
             <application-security-domains>
-                <application-security-domain name="other" security-domain="ApplicationDomain"/>
                 <!-- ##EJB_APPLICATION_SECURITY_DOMAIN## -->
             </application-security-domains>
         </subsystem>
@@ -258,6 +256,7 @@
                     <realm name="ManagementRealm" role-decoder="groups-to-roles"/>
                     <realm name="local" role-mapper="super-user-mapper"/>
                 </security-domain>
+                <!-- ##KIE_LDAP_SECURITY_DOMAIN## -->
             </security-domains>
             <security-realms>
                 <identity-realm name="local" identity="$local"/>
@@ -266,12 +265,13 @@
                     <groups-properties path="mgmt-groups.properties" relative-to="jboss.server.config.dir"/>
                 </properties-realm>
                 <!-- ##KIE_FS_REALM## -->
+                <!-- ##KIE_LDAP_REALM## -->
             </security-realms>
             <mappers>
                 <simple-permission-mapper name="default-permission-mapper" mapping-mode="first">
                     <permission-mapping>
                         <principal name="anonymous"/>
-                        <permission-set name="default-permissions"/>
+                        <!-- no permissions set, avoid anonymous to log in -->
                     </permission-mapping>
                     <permission-mapping match-all="true">
                         <permission-set name="login-permission"/>
@@ -279,12 +279,13 @@
                     </permission-mapping>
                 </simple-permission-mapper>
                 <constant-realm-mapper name="local" realm-name="local"/>
-                <!-- needed to so business central can load roles -->
-                <simple-role-decoder name="from-roles-attribute" attribute="role"/>
-                <simple-role-decoder name="groups-to-roles" attribute="groups"/>
                 <constant-role-mapper name="super-user-mapper">
                     <role name="SuperUser"/>
                 </constant-role-mapper>
+                <!-- ##KIE_AUTH_LDAP_DEFAULT_ROLE## -->
+                <!-- ##KIE_ROLE_DECODER## -->
+                <simple-role-decoder name="groups-to-roles" attribute="groups"/>
+                <!-- ##AUTH_ROLE_MAPPER## -->
             </mappers>
             <permission-sets>
                 <permission-set name="login-permission">
@@ -311,14 +312,6 @@
                         <mechanism mechanism-name="DIGEST">
                             <mechanism-realm realm-name="ManagementRealm"/>
                         </mechanism>
-                    </mechanism-configuration>
-                </http-authentication-factory>
-                <http-authentication-factory name="ejb-http-authentication" security-domain="ApplicationDomain" http-server-mechanism-factory="global">
-                    <mechanism-configuration>
-                        <mechanism mechanism-name="BASIC">
-                            <mechanism-realm realm-name="KieFsRealm"/>
-                        </mechanism>
-                        <mechanism mechanism-name="FORM"/>
                     </mechanism-configuration>
                 </http-authentication-factory>
                 <provider-http-server-mechanism-factory name="global"/>
@@ -352,6 +345,7 @@
                 </mechanism-provider-filtering-sasl-server-factory>
                 <provider-sasl-server-factory name="global"/>
             </sasl>
+            <!-- ##KIE_LDAP_DIR_CONTEXT## -->
             <!-- ##TLS## -->
             <!-- ##ELYTRON_TLS## -->
         </subsystem>
@@ -522,24 +516,9 @@
             </resource-adapters>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
-
         <subsystem xmlns="urn:jboss:domain:security:2.0">
             <!-- ##ELYTRON_INTEGRATION## -->
-            <security-domains>
-                <security-domain name="other" cache-type="default">
-                    <authentication>
-                        <login-module code="Remoting" flag="optional">
-                            <module-option name="password-stacking" value="useFirstPass"/>
-                        </login-module>
-                        <login-module code="RealmDirect" flag="required">
-                            <module-option name="password-stacking" value="useFirstPass"/>
-                        </login-module>
-                        <!-- ##OTHER_LOGIN_MODULES## -->
-                    </authentication>
-                </security-domain>
-            </security-domains>
         </subsystem>
-
         <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
             <deployment-permissions>
                 <maximum-set>
@@ -584,7 +563,7 @@
                     <location name="/" handler="welcome-content"/>
                     <!-- ##ACCESS_LOG_VALVE## -->
                     <!-- ##FILTER_REFS## -->
-                    <http-invoker http-authentication-factory="ejb-http-authentication"/>
+                    <http-invoker http-authentication-factory="application-http-authentication"/>
                 </host>
             </server>
             <servlet-container name="default">

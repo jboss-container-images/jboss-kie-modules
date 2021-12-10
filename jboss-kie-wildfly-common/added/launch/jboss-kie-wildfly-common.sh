@@ -1,7 +1,6 @@
 #!/bin/bash
 
 source "${JBOSS_HOME}/bin/launch/logging.sh"
-source "${JBOSS_HOME}/bin/launch/jboss-kie-wildfly-security-login-modules.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
@@ -15,10 +14,8 @@ function configureEnv() {
 
 function configure() {
     configure_mem_ratio
-    # TODO move it out from this common module, all images needs other configuration but this one
-    # configure_maven_settings
     configure_mbeans
-    configure_auth_login_modules
+    #configure_auth_login_modules
 }
 
 function configure_mem_ratio() {

@@ -33,8 +33,6 @@ CONFIGURE_SCRIPTS=(
   $JBOSS_HOME/bin/launch/https.sh
   $JBOSS_HOME/bin/launch/json_logging.sh
   $JBOSS_HOME/bin/launch/configure_logger_category.sh
-  # TODO remove after elytron is fully configured
-  $JBOSS_HOME/bin/launch/security-domains.sh
   $JBOSS_HOME/bin/launch/jboss_modules_system_pkgs.sh
   $JBOSS_HOME/bin/launch/keycloak.sh
   $JBOSS_HOME/bin/launch/deploymentScanner.sh

@@ -140,6 +140,7 @@ Feature: Kie Server common features
      And container log should contain External authentication/authorization enabled, skipping the embedded users creation.
      And container log should contain Make sure to configure KIE_ADMIN_USER user to access the application with the roles kie-server,rest-all,admin,kiemgmt,Administrators,user
 
+  @wip
   Scenario: Configure kie server to use LDAP authentication
     When container is started with env
       | variable                    | value                         |
@@ -151,37 +152,30 @@ Feature: Kie Server common features
       | AUTH_LDAP_ROLE_ATTRIBUTE_ID | cn                            |
       | AUTH_LDAP_ROLES_CTX_DN      | ou=Roles,dc=example,dc=com    |
       | AUTH_LDAP_ROLE_FILTER       | (member={1})                  |
-    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="RealmDirect" flag="optional">
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="java.naming.provider.url" value="test_url"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="bindDN" value="cn=Manager,dc=example,dc=com"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="bindCredential" value="admin"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="baseCtxDN" value="ou=Users,dc=example,dc=com"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="baseFilter" value="(uid={0})"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="rolesCtxDN" value="ou=Roles,dc=example,dc=com"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleFilter" value="(member={1})"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleAttributeID" value="cn"/>
+    Then container log should contain AUTH_LDAP_URL is set to [test_url], setting up LDAP authentication with elytron...
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain  <dir-context name="KIELdapDC" url="test_url" principal="cn=Manager,dc=example,dc=com">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <credential-reference clear-text="my-password"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=roles,dc=example,dc=com"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <identity-mapping rdn-identifier="(uid={0})" search-base-dn="ou=people,dc=example,dc=com">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIELdapRealm" role-mapper="kie-ldap-role-mapper">
+    And file /opt/eat/standalone/deploy/ROOT/WEB-INF/jboss-web.xml should contain <security-domain>KIELdapSecurityDomain</security-domain>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security elytron-domain="KIELdapSecurityDomain"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <application-security-domain name="other" security-domain="KIELdapSecurityDomain"/>
+    And file /opt/eat/standalone/deploy/ROOT/WEB-INF/jboss-web.xml should contain <security-domain>KIELdapSecurityDomain</security-domain>
 
   Scenario: Don't configure kie server to use LDAP authentication
     When container is ready
     Then container log should contain AUTH_LDAP_URL not set. Skipping LDAP integration...
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <login-module code="LdapExtended"
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <dir-context name="KIELdapDC" url="test_url"
 
-  Scenario: Configure kie server to use LDAP authentication
-    When container is started with env
-      | variable      | value     |
-      | AUTH_LDAP_URL | test_url  |
-    Then container log should contain AUTH_LDAP_URL is set to test_url. Added LdapExtended login-module
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended"
-
+  @wip
   Scenario: Test custom login module configuration
     When container is started with env
-      | variable                          | value              |
-      | AUTH_ROLE_MAPPER_ROLES_PROPERTIES | roles_mapper_test  |
-      | AUTH_ROLE_MAPPER_REPLACE_ROLE     | role_test          |
-    Then container log should contain AUTH_ROLE_MAPPER_ROLES_PROPERTIES is set to roles_mapper_test
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="rolesProperties" value="roles_mapper_test"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="replaceRole" value="role_test"/>
+      | variable                          | value                         |
+      | AUTH_ROLE_MAPPER_ROLES_PROPERTIES | admin=PowerUser,BillingAdmin  |
+      | AUTH_LDAP_MAPPER_KEEP_MAPPED      | true                          |
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <mapped-role-mapper name="kie-custom-role-mapper" keep-mapped="true" keep-non-mapped="false">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <role-mapping from="admin" to="PowerUser BillingAdmin"/>
 
   # https://issues.jboss.org/browse/CLOUD-1145 - base test
   Scenario: Check custom war file was successfully deployed via CUSTOM_INSTALL_DIRECTORIES

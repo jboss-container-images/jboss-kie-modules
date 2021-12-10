@@ -72,8 +72,11 @@ function get_kie_server_token() {
 
 function get_kie_server_domain() {
     local default_kie_domain="other"
+    if [ "${AUTH_LDAP_URL}x" != "x" ]; then
+        default_kie_domain="KIELdapSecurityDomain"
+    fi
     local domain=$(find_env "KIE_SERVER_DOMAIN" "${default_kie_domain}")
-    if [ "${domain}" != "other" ]; then
+    if [ "${domain}" != "other" ] && [ "${domain}" != "KIELdapSecurityDomain" ]; then
         export SECDOMAIN_NAME="${domain}"
         export ELYTRON_SECDOMAIN_NAME="${domain}"
     fi
@@ -127,37 +130,20 @@ function get_application_roles_properties() {
     echo $(get_application_config "${APPLICATION_ROLES_PROPERTIES}" "application-roles.properties")
 }
 
-# TODO can be removed after fully migrated to elytron
-function set_application_users_config() {
-    if [ -n "${APPLICATION_USERS_PROPERTIES}" ]; then
-        local application_users_properties="$(get_application_users_properties)"
-        local config_file="${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml"
-        sed -i "s,path=\"application-users.properties\" relative-to=\"jboss.server.config.dir\",path=\"${application_users_properties}\",g" "${config_file}"
-    fi
-}
-
-# TODO can be removed after fully migrated to elytron
-function set_application_roles_config() {
-    if [ -n "${APPLICATION_ROLES_PROPERTIES}" ]; then
-        local application_roles_properties="$(get_application_roles_properties)"
-        local config_file="${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml"
-        sed -i "s,path=\"application-roles.properties\" relative-to=\"jboss.server.config.dir\",path=\"${application_roles_properties}\",g" "${config_file}"
-    fi
-}
-
 function migrate_users_from_properties_to_elytron_fs() {
     if [ "${AUTH_LDAP_URL}x" == "x" ] && [ "${SSO_URL}x" == "x" ]; then
         local opts=""
         if [ "${SCRIPT_DEBUG}" = "true" ] ; then
             opts="--debug"
         fi
-        log_info "migrating users to elytron kie-filesystem-realm $(get_kie_fs_path)"
+        log_info "Migrating users to elytron kie-filesystem-realm $(get_kie_fs_path)."
         $JBOSS_HOME/bin/elytron-tool.sh filesystem-realm \
             --users-file $(get_application_users_properties) \
             --roles-file $(get_application_roles_properties) \
             --output-location $(get_kie_fs_path) ${opts}
 
         # TODO workaround to rename roles to role so business central can understand it.
+        # when fixed on BC or wfly code base we can remove it
         find $(get_kie_fs_path) -name *.xml -exec sed -i 's/<attribute name="roles"/<attribute name="role"/g' {} \;
     fi
 }

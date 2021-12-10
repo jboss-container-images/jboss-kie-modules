@@ -4,7 +4,6 @@ export JBOSS_HOME=$BATS_TMPDIR/jboss_home
 mkdir -p $JBOSS_HOME/bin/launch
 
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/logging.bash $JBOSS_HOME/bin/launch/logging.sh
-cp $BATS_TEST_DIRNAME/../../../jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-security-login-modules.sh $JBOSS_HOME/bin/launch
 load $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-wildfly-common.sh
 
 echo "fake xml" > $JBOSS_HOME/bin/launch/settings-non-readable.xml

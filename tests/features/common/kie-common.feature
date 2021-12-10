@@ -7,13 +7,15 @@ Feature: RHPAM and RHDM common tests
      And run sh -c '/usr/bin/rpm -q java-1.8.0-openjdk-headless || true' in container and check its output for package java-1.8.0-openjdk-headless is not installed
      And run sh -c '/usr/bin/rpm -q java-1.8.0-openjdk || true' in container and check its output for package java-1.8.0-openjdk is not installed
 
+  @wip
   Scenario: Configure container to use LDAP authentication
     When container is started with env
       | variable      | value    |
       | AUTH_LDAP_URL | test_url |
-    Then container log should contain AUTH_LDAP_URL is set to test_url. Added LdapExtended login-module
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended"
+    Then container log should contain AUTH_LDAP_URL is set to [test_url], setting up LDAP authentication with elytron...
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" />
 
+  @wip
   Scenario: Configure images to use LDAP authentication
     When container is started with env
       | variable                                      | value                        |
@@ -27,52 +29,29 @@ Feature: RHPAM and RHDM common tests
       | AUTH_LDAP_ROLE_FILTER                         | (member={1})                 |
       | AUTH_LDAP_ALLOW_EMPTY_PASSWORDS               | true                         |
       | AUTH_LDAP_DEFAULT_ROLE                        | test                         |
-      | AUTH_LDAP_DISTINGUISHED_NAME_ATTRIBUTE        | name1                        |
-      | AUTH_LDAP_JAAS_SECURITY_DOMAIN                | other                        |
-      | AUTH_LDAP_PARSE_ROLE_NAME_FROM_DN             | true                         |
-      | AUTH_LDAP_PARSE_USERNAME                      | true                         |
-      | AUTH_LDAP_REFERRAL_USER_ATTRIBUTE_ID_TO_CHECK | uid                          |
-      | AUTH_LDAP_ROLE_ATTRIBUTE_IS_DN                | true                         |
-      | AUTH_LDAP_ROLE_NAME_ATTRIBUTE_ID              | roleId                       |
       | AUTH_LDAP_ROLE_RECURSION                      | true                         |
-      | AUTH_LDAP_SEARCH_SCOPE                        | SUBTREE                      |
       | AUTH_LDAP_SEARCH_TIME_LIMIT                   | 100                          |
-      | AUTH_LDAP_USERNAME_BEGIN_STRING               | USER                         |
-      | AUTH_LDAP_USERNAME_END_STRING                 | ENDUSER                      |
-    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="RealmDirect" flag="optional">
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="java.naming.provider.url" value="test_url"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="bindDN" value="cn=Manager,dc=example,dc=com"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="bindCredential" value="admin"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="baseCtxDN" value="ou=Users,dc=example,dc=com"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="baseFilter" value="(uid={0})"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="rolesCtxDN" value="ou=Roles,dc=example,dc=com"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleFilter" value="(member={1})"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleAttributeID" value="cn"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="allowEmptyPasswords" value="true"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="defaultRole" value="test"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="distinguishedNameAttribute" value="name1"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="jaasSecurityDomain" value="other"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="parseRoleNameFromDN" value="true"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="parseUsername" value="true"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="referralUserAttributeIDToCheck" value="uid"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleAttributeIsDN" value="true"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleNameAttributeID" value="roleId"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="roleRecursion" value="true"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="searchScope" value="SUBTREE"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="searchTimeLimit" value="100"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="usernameBeginString" value="USER"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="usernameEndString" value="ENDUSER"/>
+      | AUTH_LDAP_REFERRAL_MODE                       | follow                       |
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" read-timeout="10000" referral-mode="FOLLOW" principal="cn=Manager,dc=example,dc=com">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <credential-reference clear-text="my-password"/>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=roles,dc=example,dc=com" role-recursion="true"/>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <ldap-realm name="KIELdapRealm" direct-verification="true" allow-blank-password="true" dir-context="KIELdapDC">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <identity-mapping rdn-identifier="(uid={0})" search-base-dn="ou=Users,dc=example,dc=com">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIELdapRealm" role-mapper="kie-ldap-role-mapper" permission-mapper="default-permission-mapper">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security elytron-domain="KIELdapSecurityDomain"/>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <application-security-domain name="other" security-domain="KIELdapSecurityDomain"/>
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <constant-role-mapper name="kie-ldap-role-mapper">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <role name="test"/>
+     And file /opt/eat/standalone/deploy/ROOT/WEB-INF/jboss-web.xml should contain <security-domain>KIELdapSecurityDomain</security-domain>
 
+  @wip
   Scenario: Check LDAP Base Filter is correctly configured if AUTH_LDAP_BASE_FILTER contains special char '&' and '|'
     When container is started with env
       | variable                                      | value                                                                |
       | AUTH_LDAP_URL                                 | test_url                                                             |
       | AUTH_LDAP_BASE_FILTER                         | (&(mail={0}))(\|(objectclass=dbperson)(objectclass=inetOrgPerson)))  |
-    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="RealmDirect" flag="optional">
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="java.naming.provider.url" value="test_url"/>
-     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <module-option name="baseFilter" value="(&amp;(mail={0}))(|(objectclass=dbperson)(objectclass=inetOrgPerson)))"/>
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" read-timeout="10000" referral-mode="FOLLOW" principal="cn=Manager,dc=example,dc=com">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <identity-mapping rdn-identifier="(&amp;(mail={0}))(|(objectclass=dbperson)(objectclass=inetOrgPerson)))" search-base-dn="ou=Users,dc=example,dc=com">
 
   Scenario: Check if eap users are not being created if SSO is configured with no users env
     When container is started with env
@@ -115,20 +94,6 @@ Feature: RHPAM and RHDM common tests
     When container is ready
     Then file /opt/eap/standalone/configuration/application-users.properties should contain adminUser=de3155e1927c6976555925dec24a53ac
     And file /opt/eap/standalone/configuration/application-roles.properties should contain adminUser=kie-server,rest-all,admin,kiemgmt,Administrators
-
-  Scenario: Configure the LDAP authentication with the flag value as optional
-    When container is started with env
-      | variable               | value     |
-      | AUTH_LDAP_URL          | test_url  |
-      | AUTH_LDAP_LOGIN_MODULE | optional  |
-    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="optional">
-
-  Scenario: Configure the LDAP authentication with the flag value as required
-    When container is started with env
-      | variable               | value     |
-      | AUTH_LDAP_URL          | test_url  |
-      | AUTH_LDAP_LOGIN_MODULE | required  |
-    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="LdapExtended" flag="required">
 
   Scenario: [KIECLOUD-520] - Make sure the jmx_prometheus_agent is on the desired version
     When container is started with command bash
