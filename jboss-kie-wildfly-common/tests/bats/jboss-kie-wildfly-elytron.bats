@@ -301,6 +301,29 @@ teardown() {
 }
 
 
+@test "test elytron ldap configuration dir-context with search limit timeout and referral mode" {
+    AUTH_LDAP_URL="ldap://test:12345"
+    AUTH_LDAP_BIND_DN="uid=admin,ou=system"
+    AUTH_LDAP_BIND_CREDENTIAL="my-password"
+    AUTH_LDAP_SEARCH_TIME_LIMIT="10000"
+    AUTH_LDAP_REFERRAL_MODE="ignore"
+
+    configure_elytron_ldap_auth
+
+    expected="<dir-contexts>
+                <dir-context name=\"KIELdapDC\" url=\"ldap://test:12345\" read-timeout=\"10000\" referral-mode=\"IGNORE\" principal=\"uid=admin,ou=system\">
+                    <credential-reference clear-text=\"my-password\"/>
+                </dir-context>
+            </dir-contexts>"
+
+    result="$(xmllint --xpath "//*[local-name()='dir-contexts']" $CONFIG_FILE)"
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
+}
+
+
 @test "test elytron ldap configuration dir-context with referral mode" {
     AUTH_LDAP_URL="ldap://test:12345"
     AUTH_LDAP_BIND_DN="uid=admin,ou=system"
@@ -389,6 +412,35 @@ teardown() {
     echo "result  : ${result}"
     [ "${expected}" = "${result}" ]
 }
+
+
+@test "test elytron ldap configuration ldap-realm with identity-mapping and attribute mapping with special characters on baseFilter" {
+    AUTH_LDAP_URL="ldap://test:12345"
+    AUTH_LDAP_BASE_FILTER="(&(mail={0}))(|(objectclass=dbperson)(objectclass=inetOrgPerson)))"
+    AUTH_LDAP_BASE_CTX_DN="ou=people,dc=example,dc=com"
+    AUTH_LDAP_ROLE_ATTRIBUTE_ID="cn"
+    AUTH_LDAP_ROLE_FILTER="(member={1})"
+    AUTH_LDAP_ROLES_CTX_DN="ou=roles,dc=example,dc=com"
+
+    configure_elytron_ldap_auth
+
+    expected="<ldap-realm name=\"KIELdapRealm\" dir-context=\"KIELdapDC\">
+                <identity-mapping rdn-identifier=\"(&amp;(mail={0}))(|(objectclass=dbperson)(objectclass=inetOrgPerson)))\" search-base-dn=\"ou=people,dc=example,dc=com\">
+                    <attribute-mapping>
+                        <attribute from=\"cn\" to=\"Roles\" filter=\"(member={1})\" filter-base-dn=\"ou=roles,dc=example,dc=com\"/>
+                    </attribute-mapping>
+                    <!-- ##KIE_LDAP_NEW_IDENTITY_ATTRIBUTES## -->
+                    <user-password-mapper from=\"userPassword\" writable=\"true\"/>
+                </identity-mapping>
+            </ldap-realm>"
+
+    result="$(xmllint --xpath "//*[local-name()='ldap-realm']" $CONFIG_FILE)"
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
+}
+
 
 
 @test "test elytron ldap configuration ldap-realm with identity-mapping and attribute mapping using recursive search and blank password" {
@@ -551,7 +603,7 @@ teardown() {
 }
 
 
-@test "test the elytron_role_mapping with property file" {
+@test "test the configure_elytron_role_mapping with property file with keep mapped" {
     AUTH_ROLE_MAPPER_ROLES_PROPERTIES=$JBOSS_HOME/roles.properties
     echo "admin=PowerUser,BillingAdmin" > ${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}
     echo "guest=guest" >> ${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}
@@ -559,7 +611,7 @@ teardown() {
     echo "controllerUser=kie-server,rest-all" >> ${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}
     AUTH_LDAP_MAPPER_KEEP_MAPPED="true"
 
-    elytron_role_mapping
+    configure_elytron_role_mapping
 
     expected="<mapped-role-mapper name=\"kie-custom-role-mapper\" keep-mapped=\"true\" keep-non-mapped=\"false\">
                    <role-mapping from=\"admin\" to=\"PowerUser BillingAdmin\"/>
@@ -575,11 +627,36 @@ teardown() {
     [ "${expected}" = "${result}" ]
 }
 
+@test "test the configure_elytron_role_mapping with property file with keep mapped and non mapped" {
+    AUTH_ROLE_MAPPER_ROLES_PROPERTIES=$JBOSS_HOME/roles.properties
+    echo "admin=PowerUser,BillingAdmin" > ${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}
+    echo "guest=guest" >> ${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}
+    echo "Administrator=admin,kie-server,rest-all" >> ${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}
+    echo "controllerUser=kie-server,rest-all" >> ${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}
+    AUTH_LDAP_MAPPER_KEEP_MAPPED="true"
+    AUTH_LDAP_MAPPER_KEEP_NON_MAPPED="true"
 
-@test "test the elytron_role_mapping with without properties file" {
+    configure_elytron_role_mapping
+
+    expected="<mapped-role-mapper name=\"kie-custom-role-mapper\" keep-mapped=\"true\" keep-non-mapped=\"true\">
+                   <role-mapping from=\"admin\" to=\"PowerUser BillingAdmin\"/>
+<role-mapping from=\"guest\" to=\"guest\"/>
+<role-mapping from=\"Administrator\" to=\"admin kie-server rest-all\"/>
+<role-mapping from=\"controllerUser\" to=\"kie-server rest-all\"/>
+                </mapped-role-mapper>"
+
+    result=$(xmllint --xpath "//*[local-name()='mapped-role-mapper']" $CONFIG_FILE)
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
+}
+
+
+@test "test the configure_elytron_role_mapping with without properties file" {
     AUTH_ROLE_MAPPER_ROLES_PROPERTIES="admin=PowerUser,BillingAdmin;guest=guest;Administrator=admin,kie-server,rest-all;controllerUser=kie-server,rest-all"
 
-    elytron_role_mapping
+    configure_elytron_role_mapping
 
     expected="<mapped-role-mapper name=\"kie-custom-role-mapper\" keep-mapped=\"false\" keep-non-mapped=\"false\">
                    <role-mapping from=\"admin\" to=\"PowerUser BillingAdmin\"/>
@@ -596,10 +673,10 @@ teardown() {
 }
 
 
-@test "test the elytron_role_mapping with without properties file with invalid role pattern" {
+@test "test the configure_elytron_role_mapping with without properties file with invalid role pattern" {
     AUTH_ROLE_MAPPER_ROLES_PROPERTIES="admin=PowerUser,BillingAdmin;guest=guest;Administrator=admin,kie-server,rest-all;controllerUser=kie-server,rest-all;invalid_role_mapping="
 
-    elytron_role_mapping
+    configure_elytron_role_mapping
 
     expected="<mapped-role-mapper name=\"kie-custom-role-mapper\" keep-mapped=\"false\" keep-non-mapped=\"false\">
                    <role-mapping from=\"admin\" to=\"PowerUser BillingAdmin\"/>

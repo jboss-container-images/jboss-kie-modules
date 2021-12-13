@@ -39,6 +39,7 @@ function configure() {
     configure_business_central_kie_git_config
     configure_elytron_ldap_auth
     configure_elytron_http_auth_factory
+    configure_elytron_role_mapping
     configure_ldap_sec_domain
     configure_new_identity_attributes
     configure_role_decoder
@@ -174,8 +175,11 @@ function configure_elytron_ldap_auth() {
     if [ "${AUTH_LDAP_ALLOW_EMPTY_PASSWORDS^^}" == "TRUE" ]; then
         allow_empty_pass="direct-verification=\"true\" allow-blank-password=\"true\" "
     fi
+    base_filter=${AUTH_LDAP_BASE_FILTER}
+    base_filter=${base_filter//\|/\\|}
+    base_filter=${base_filter//\&/\\&amp;}
     local kie_elytron_ldap_realm="<ldap-realm name=\"KIELdapRealm\" ${allow_empty_pass}dir-context=\"KIELdapDC\">\n\
-                <identity-mapping rdn-identifier=\"${AUTH_LDAP_BASE_FILTER}\" search-base-dn=\"${AUTH_LDAP_BASE_CTX_DN}\""
+                <identity-mapping rdn-identifier=\"${base_filter}\" search-base-dn=\"${AUTH_LDAP_BASE_CTX_DN}\""
 
     if [ "${AUTH_LDAP_RECURSIVE_SEARCH^^}" == "TRUE" ]; then
         kie_elytron_ldap_realm="${kie_elytron_ldap_realm} use-recursive-search=\"${AUTH_LDAP_RECURSIVE_SEARCH}\">\n"
@@ -188,6 +192,7 @@ function configure_elytron_ldap_auth() {
                     <user-password-mapper from=\"userPassword\" writable=\"true\"/>\n\
                 </identity-mapping>\n\
             </ldap-realm>"
+    echo "ss ${kie_elytron_ldap_realm}"
     sed -i "s|<!-- ##KIE_LDAP_REALM## -->|${kie_elytron_ldap_realm}|" $CONFIG_FILE
 
     # configure ldap attribute mapping
@@ -239,7 +244,7 @@ function configure_elytron_http_auth_factory() {
 
 }
 
-function elytron_role_mapping() {
+function configure_elytron_role_mapping() {
     local mapped_roles
     if [ -f "${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}" ]; then
         while IFS= read -r line
@@ -249,7 +254,7 @@ function elytron_role_mapping() {
             map_to=$(echo $line | cut -d= -f2 | sed 's/,/ /g')
             mapped_roles="${mapped_roles}<role-mapping from=\"${role}\" to=\"${map_to}\"/>\r"
         done < "$AUTH_ROLE_MAPPER_ROLES_PROPERTIES"
-    else
+    elif [ "${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}x" != "x" ]; then
         IFS=";" read -a roles_to_map <<< $AUTH_ROLE_MAPPER_ROLES_PROPERTIES
         for role_to_map in ${roles_to_map[@]}; do
         	if [[ $role_to_map =~ [0-9a-zA-Z]=[0-9a-zA-Z] ]];then
@@ -261,10 +266,13 @@ function elytron_role_mapping() {
         	fi
         done
     fi
-    local role_mapper="<mapped-role-mapper name=\"kie-custom-role-mapper\" keep-mapped=\"${AUTH_LDAP_MAPPER_KEEP_MAPPED:-false}\" keep-non-mapped=\"${AUTH_LDAP_MAPPER_KEEP_NON_MAPPED:-false}\">\n\
+
+    if [ "${mapped_roles}x" != "x" ];then
+        local role_mapper="<mapped-role-mapper name=\"kie-custom-role-mapper\" keep-mapped=\"${AUTH_LDAP_MAPPER_KEEP_MAPPED:-false}\" keep-non-mapped=\"${AUTH_LDAP_MAPPER_KEEP_NON_MAPPED:-false}\">\n\
                    $(echo -ne ${mapped_roles} | sed '/^[[:space:]]*$/d')\n\
                 </mapped-role-mapper>"
-     sed -i "s|<!-- ##AUTH_ROLE_MAPPER## -->|${role_mapper}|" $CONFIG_FILE
+         sed -i "s|<!-- ##AUTH_ROLE_MAPPER## -->|${role_mapper}|" $CONFIG_FILE
+    fi
 }
 
 function configure_new_identity_attributes() {

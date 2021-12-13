@@ -73,6 +73,6 @@ while [[ $D_STR ]]; do
     fi
     D_STR=${D_STR#*"$D_DLM"}
 done
-
+cat $CONFIG_FILE
 exec env M2_HOME=${M2_HOME} $JBOSS_HOME/bin/standalone.sh -c standalone-openshift.xml -bmanagement 127.0.0.1 \
     ${JAVA_PROXY_OPTIONS} ${JBOSS_HA_ARGS} ${JBOSS_MESSAGING_ARGS} "${D_ARR[@]}"

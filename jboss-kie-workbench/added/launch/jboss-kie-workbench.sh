@@ -52,9 +52,6 @@ function configureEnv() {
 }
 
 function configure() {
-    # the "configure_local_security" function needs to be executed
-    # before any direct or indirect calls to add_eap_user
-    #configure_local_security
     configure_admin_security
     configure_dashbuilder
     configure_kie_keystore
@@ -66,12 +63,6 @@ function configure() {
     configure_metaspace
     configure_ha
 }
-
-# TODO can be removed after fully migrated to elytron
-# function configure_local_security() {
-#     set_application_users_config
-#     set_application_roles_config
-# }
 
 function configure_admin_security() {
     # add eap users (see jboss-kie-wildfly-security.sh)

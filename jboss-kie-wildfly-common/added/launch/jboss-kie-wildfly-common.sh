@@ -15,7 +15,6 @@ function configureEnv() {
 function configure() {
     configure_mem_ratio
     configure_mbeans
-    #configure_auth_login_modules
 }
 
 function configure_mem_ratio() {
