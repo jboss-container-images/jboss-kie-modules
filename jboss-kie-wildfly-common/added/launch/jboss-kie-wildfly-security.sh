@@ -131,7 +131,7 @@ function get_application_roles_properties() {
 }
 
 function migrate_users_from_properties_to_elytron_fs() {
-    if [ "${AUTH_LDAP_URL}x" == "x" ] && [ "${SSO_URL}x" == "x" ]; then
+    if [ "${AUTH_LDAP_URL}x" == "x" ] && [ "${SSO_URL}x" == "x" ] || [ "${AUTH_LDAP_LOGIN_FAILOVER^^}" == "TRUE" ] || [ "${AUTH_LDAP_LOGIN_MODULE}" == "optional" ]; then
         local opts=""
         if [ "${SCRIPT_DEBUG}" = "true" ] ; then
             opts="--debug"
@@ -150,7 +150,8 @@ function migrate_users_from_properties_to_elytron_fs() {
 
 function add_eap_user() {
     # If LDAP/SSO integration is enabled do not create eap users.
-    if [ "${AUTH_LDAP_URL}x" == "x" ] && [ "${SSO_URL}x" == "x" ]; then
+    # even if ldap url is set, create the KIE_ADMIN_USER for failover to FsRealm
+    if [ "${AUTH_LDAP_URL}x" == "x" ] && [ "${SSO_URL}x" == "x" ] || [ "${AUTH_LDAP_LOGIN_FAILOVER^^}" == "TRUE" ] || [ "${AUTH_LDAP_LOGIN_MODULE}" == "optional" ]; then
         local kie_type="${1}"
         local eap_user="${2}"
         local eap_pwd="${3}"

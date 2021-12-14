@@ -61,6 +61,23 @@ teardown() {
     [[ "${expected}" =~  ${result} ]]
 }
 
+
+@test "test if the role-decoder is correctly added when Ldap URL is set with failover enabled" {
+    AUTH_LDAP_URL="url"
+    AUTH_LDAP_LOGIN_FAILOVER="true"
+
+    configure_role_decoder
+
+    expected="<simple-role-decoder name=\"from-roles-attribute\" attribute=\"Roles\"/>
+<simple-role-decoder name=\"from-role-attribute\" attribute=\"role\"/>
+<simple-role-decoder name=\"groups-to-roles\" attribute=\"groups\"/>"
+    result=$(xmllint --xpath "//*[local-name()='simple-role-decoder']" $CONFIG_FILE)
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [[ "${expected}" =~  ${result} ]]
+}
+
 @test "[KIE Server] test if the kie-fs-realm is correctly added with custom directory" {
     export JBOSS_PRODUCT=rhpam-kieserver
     export KIE_ELYTRON_FS_PATH=/tmp/test/kie-fs
@@ -519,6 +536,36 @@ teardown() {
     [ "${expected}" = "${result}" ]
 }
 
+
+@test "test if ldap security domain is correctly added with failover" {
+    AUTH_LDAP_URL="test"
+    AUTH_LDAP_LOGIN_FAILOVER="true"
+
+    configure_ldap_sec_domain
+
+    expected="<security-domain name=\"KIELdapWithFailOverSecDomain\" default-realm=\"KIEFailOverRealm\" permission-mapper=\"default-permission-mapper\">
+                    <realm name=\"KIEFailOverRealm\" role-decoder=\"kie-aggregate-role-decoder\"/>
+                </security-domain>"
+    result="$(xmllint --xpath "//*[local-name()='security-domain'][3]" $CONFIG_FILE)"
+
+
+    configure_role_decoder
+    expected_aggregate_role_mapper="<aggregate-role-decoder name=\"kie-aggregate-role-decoder\">
+                <role-decoder name=\"from-roles-attribute\"/>
+                <role-decoder name=\"from-role-attribute\"/>
+            </aggregate-role-decoder>"
+    result_aggregate_role_mapper="$(xmllint --xpath "//*[local-name()='aggregate-role-decoder']" $CONFIG_FILE)"
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
+
+    echo "expected_aggregate_role_mapper: ${expected_aggregate_role_mapper}"
+    echo "result_aggregate_role_mapper  : ${result_aggregate_role_mapper}"
+    [ "${expected_aggregate_role_mapper}" = "${result_aggregate_role_mapper}" ]
+}
+
+
 @test "test if ldap security domain is correctly added with default role mapping" {
     AUTH_LDAP_URL="test"
     AUTH_LDAP_DEFAULT_ROLE="my-default-role"
@@ -527,6 +574,60 @@ teardown() {
 
     expected="<security-domain name=\"KIELdapSecurityDomain\" default-realm=\"KIELdapRealm\" role-mapper=\"kie-ldap-role-mapper\" permission-mapper=\"default-permission-mapper\">
                     <realm name=\"KIELdapRealm\" role-decoder=\"from-roles-attribute\"/>
+                </security-domain>"
+    result="$(xmllint --xpath "//*[local-name()='security-domain'][3]" $CONFIG_FILE)"
+
+    default_map_role_expected="<constant-role-mapper name=\"kie-ldap-role-mapper\">
+                    <role name=\"my-default-role\"/>
+                </constant-role-mapper>"
+    default_map_role_result="$(xmllint --xpath "//*[local-name()='constant-role-mapper'][2]" $CONFIG_FILE)"
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
+
+    echo "default_map_role_expected: ${default_map_role_expected}"
+    echo "default_map_role_result  : ${default_map_role_result}"
+    [ "${default_map_role_expected}" = "${default_map_role_result}" ]
+}
+
+
+@test "test if ldap security domain is correctly added with default role mapping and failover enabled" {
+    AUTH_LDAP_URL="test"
+    AUTH_LDAP_DEFAULT_ROLE="my-default-role"
+    AUTH_LDAP_LOGIN_FAILOVER="true"
+
+    configure_ldap_sec_domain
+
+    expected="<security-domain name=\"KIELdapWithFailOverSecDomain\" default-realm=\"KIEFailOverRealm\" role-mapper=\"kie-ldap-role-mapper\" permission-mapper=\"default-permission-mapper\">
+                    <realm name=\"KIEFailOverRealm\" role-decoder=\"kie-aggregate-role-decoder\"/>
+                </security-domain>"
+    result="$(xmllint --xpath "//*[local-name()='security-domain'][3]" $CONFIG_FILE)"
+
+    default_map_role_expected="<constant-role-mapper name=\"kie-ldap-role-mapper\">
+                    <role name=\"my-default-role\"/>
+                </constant-role-mapper>"
+    default_map_role_result="$(xmllint --xpath "//*[local-name()='constant-role-mapper'][2]" $CONFIG_FILE)"
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
+
+    echo "default_map_role_expected: ${default_map_role_expected}"
+    echo "default_map_role_result  : ${default_map_role_result}"
+    [ "${default_map_role_expected}" = "${default_map_role_result}" ]
+}
+
+
+@test "test if ldap security domain is correctly added with default role mapping and login module enabled" {
+    AUTH_LDAP_URL="test"
+    AUTH_LDAP_DEFAULT_ROLE="my-default-role"
+    AUTH_LDAP_LOGIN_MODULE="optional"
+
+    configure_ldap_sec_domain
+
+    expected="<security-domain name=\"KIELdapSecurityDomain\" default-realm=\"KIEDistributedRealm\" role-mapper=\"kie-ldap-role-mapper\" permission-mapper=\"default-permission-mapper\">
+                    <realm name=\"KIEDistributedRealm\" role-decoder=\"kie-aggregate-role-decoder\"/>
                 </security-domain>"
     result="$(xmllint --xpath "//*[local-name()='security-domain'][3]" $CONFIG_FILE)"
 
@@ -566,7 +667,7 @@ teardown() {
 }
 
 
-@test "test if the get_security_domain returns the expected value when ldap url is set" {
+@test "test if the get_security_domain function returns the expected value when ldap url is set" {
     AUTH_LDAP_URL="test"
     result=$(get_security_domain)
     expected="KIELdapSecurityDomain"
@@ -578,7 +679,31 @@ teardown() {
 }
 
 
-@test "test if the get_security_domain returns the expected value when no ldap url is set" {
+@test "test if the get_security_domain function returns the expected value when ldap url and AUTH_LDAP_LOGIN_FAILOVER=true are set" {
+    AUTH_LDAP_URL="test"
+    AUTH_LDAP_LOGIN_FAILOVER="true"
+    result=$(get_security_domain)
+    expected="KIELdapWithFailOverSecDomain"
+    echo "result  : ${result}"
+    echo "expected: ${expected}"
+
+   [ "${expected}" = "${result}" ]
+}
+
+
+@test "test if the get_security_domain function returns the expected value when ldap url is set and AUTH_LDAP_LOGIN_FAILOVER failover disabled" {
+    AUTH_LDAP_URL="test"
+    AUTH_LDAP_LOGIN_FAILOVER="invalid"
+    result=$(get_security_domain)
+    expected="KIELdapSecurityDomain"
+    echo "result  : ${result}"
+    echo "expected: ${expected}"
+
+   [ "${expected}" = "${result}" ]
+}
+
+
+@test "test if the get_security_domain function returns the expected value when no ldap url is set" {
     result=$(get_security_domain)
     expected="ApplicationDomain"
     echo "result  : ${result}"
@@ -587,6 +712,39 @@ teardown() {
    [ "${expected}" = "${result}" ]
 
 }
+
+
+@test "test if the get_ldap_realm function returns the expected default value" {
+    result=$(get_ldap_realm)
+    expected="KIELdapRealm"
+    echo "result  : ${result}"
+    echo "expected: ${expected}"
+
+   [ "${expected}" = "${result}" ]
+}
+
+
+@test "test if the get_ldap_realm function returns the expected value when failover is enabled" {
+    AUTH_LDAP_LOGIN_FAILOVER="true"
+    result=$(get_ldap_realm)
+    expected="KIEFailOverRealm"
+    echo "result  : ${result}"
+    echo "expected: ${expected}"
+
+   [ "${expected}" = "${result}" ]
+}
+
+
+@test "test if the get_ldap_realm function returns the expected value when optional login is enabled" {
+    AUTH_LDAP_LOGIN_MODULE="optional"
+    result=$(get_ldap_realm)
+    expected="KIEDistributedRealm"
+    echo "result  : ${result}"
+    echo "expected: ${expected}"
+
+   [ "${expected}" = "${result}" ]
+}
+
 
 @test "test if the correct application domain is set on the config file for ldap" {
     AUTH_LDAP_URL="test"
@@ -727,4 +885,56 @@ teardown() {
     echo "expected: ${expected}"
     echo "result  : ${result}"
     [ "${expected}" = "${result}" ]
+}
+
+
+@test "test if the ldap failover is correctly configured" {
+    AUTH_LDAP_URL="url"
+    AUTH_LDAP_LOGIN_FAILOVER="true"
+
+    configure_ldap_login_failover
+
+    expected="<failover-realm name=\"KIEFailOverRealm\" delegate-realm=\"KIELdapRealm\" failover-realm=\"KieFsRealm\"/>"
+    result="$(xmllint --xpath "//*[local-name()='failover-realm']" $CONFIG_FILE)"
+
+    configure_role_decoder
+    expected_aggregate_role_mapper="<aggregate-role-decoder name=\"kie-aggregate-role-decoder\">
+                <role-decoder name=\"from-roles-attribute\"/>
+                <role-decoder name=\"from-role-attribute\"/>
+            </aggregate-role-decoder>"
+    result_aggregate_role_mapper="$(xmllint --xpath "//*[local-name()='aggregate-role-decoder']" $CONFIG_FILE)"
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
+
+    echo "expected_aggregate_role_mapper: ${expected_aggregate_role_mapper}"
+    echo "result_aggregate_role_mapper  : ${result_aggregate_role_mapper}"
+    [ "${expected_aggregate_role_mapper}" = "${result_aggregate_role_mapper}" ]
+}
+
+
+@test "test if the ldap optional login module is correctly configured" {
+    AUTH_LDAP_URL="url"
+    AUTH_LDAP_LOGIN_MODULE="optional"
+
+    configure_ldap_optional_login
+
+    expected="<distributed-realm name=\"KIEDistributedRealm\" realms=\"KIELdapRealm KieFsRealm\"/>"
+    result="$(xmllint --xpath "//*[local-name()='distributed-realm']" $CONFIG_FILE)"
+
+    configure_role_decoder
+    expected_aggregate_role_mapper="<aggregate-role-decoder name=\"kie-aggregate-role-decoder\">
+                <role-decoder name=\"from-roles-attribute\"/>
+                <role-decoder name=\"from-role-attribute\"/>
+            </aggregate-role-decoder>"
+    result_aggregate_role_mapper="$(xmllint --xpath "//*[local-name()='aggregate-role-decoder']" $CONFIG_FILE)"
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
+
+    echo "expected_aggregate_role_mapper: ${expected_aggregate_role_mapper}"
+    echo "result_aggregate_role_mapper  : ${result_aggregate_role_mapper}"
+    [ "${expected_aggregate_role_mapper}" = "${result_aggregate_role_mapper}" ]
 }

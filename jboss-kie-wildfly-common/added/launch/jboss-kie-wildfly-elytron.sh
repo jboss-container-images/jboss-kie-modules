@@ -13,6 +13,8 @@ function unset_kie_security_auth_env() {
     unset AUTH_LDAP_MAPPER_KEEP_MAPPED
     unset AUTH_LDAP_MAPPER_KEEP_NON_MAPPED
     unset AUTH_LDAP_NEW_IDENTITY_ATTRIBUTES
+    unset AUTH_LDAP_LOGIN_FAILOVER
+    unset AUTH_LDAP_LOGIN_MODULE
     unset AUTH_LDAP_RECURSIVE_SEARCH
     unset AUTH_LDAP_REFERRAL_MODE
     unset AUTH_LDAP_ROLE_ATTRIBUTE_ID
@@ -64,11 +66,21 @@ function configure_kie_fs_realm() {
 }
 
 function configure_role_decoder() {
-    local role_decoder="role"
+    #local role_decoder="role"
     if [ "${AUTH_LDAP_URL}x" != "x" ]; then
-        role_decoder="Roles"
+        role_decoder=""
+        sed -i "s|<!-- ##KIE_ROLE_DECODER## -->|<simple-role-decoder name=\"from-roles-attribute\" attribute=\"Roles\"/>\n<!-- ##KIE_ROLE_DECODER## -->|" $CONFIG_FILE
+        if [ "${AUTH_LDAP_LOGIN_FAILOVER^^}" == "TRUE" ] || [ "${AUTH_LDAP_LOGIN_MODULE}" == "optional" ]; then
+            local aggregate_role_decoder="<aggregate-role-decoder name=\"kie-aggregate-role-decoder\">\n\
+                <role-decoder name=\"from-roles-attribute\"/>\n\
+                <role-decoder name=\"from-role-attribute\"/>\n\
+            </aggregate-role-decoder>"
+            sed -i "s|<!-- ##KIE_ROLE_DECODER## -->|${aggregate_role_decoder}\n<!-- ##KIE_ROLE_DECODER## -->|" $CONFIG_FILE
+            sed -i "s|<!-- ##KIE_ROLE_DECODER## -->|<simple-role-decoder name=\"from-role-attribute\" attribute=\"role\"/>\n<!-- ##KIE_ROLE_DECODER## -->|" $CONFIG_FILE
+        fi
+    else
+        sed -i "s|<!-- ##KIE_ROLE_DECODER## -->|<simple-role-decoder name=\"from-roles-attribute\" attribute=\"role\"/><!-- ##KIE_ROLE_DECODER## -->|" $CONFIG_FILE
     fi
-    sed -i "s|<!-- ##KIE_ROLE_DECODER## -->|<simple-role-decoder name=\"from-roles-attribute\" attribute=\"${role_decoder}\"/>|" $CONFIG_FILE
 }
 
 function update_security_domain() {
@@ -128,6 +140,9 @@ function get_security_domain() {
     local sec_domain="ApplicationDomain"
     if [ "${AUTH_LDAP_URL}x" != "x" ]; then
         sec_domain="KIELdapSecurityDomain"
+        if [ "${AUTH_LDAP_LOGIN_FAILOVER^^}" == "TRUE" ]; then
+            sec_domain="KIELdapWithFailOverSecDomain"
+        fi
     fi
     echo ${sec_domain}
 }
@@ -192,7 +207,7 @@ function configure_elytron_ldap_auth() {
                     <user-password-mapper from=\"userPassword\" writable=\"true\"/>\n\
                 </identity-mapping>\n\
             </ldap-realm>"
-    echo "ss ${kie_elytron_ldap_realm}"
+
     sed -i "s|<!-- ##KIE_LDAP_REALM## -->|${kie_elytron_ldap_realm}|" $CONFIG_FILE
 
     # configure ldap attribute mapping
@@ -209,6 +224,25 @@ function configure_elytron_ldap_auth() {
     kie_elytron_ldap_attribute_mapping="${kie_elytron_ldap_attribute_mapping}                    </attribute-mapping>"
     sed -i "s|<!-- ##KIE_LDAP_ATTRIBUTE_MAPPING## -->|${kie_elytron_ldap_attribute_mapping}|" $CONFIG_FILE
 
+    # ldap fail over, if ldap is down use the kie-fs-realm
+    configure_ldap_login_failover
+
+    # supports legacy optional flag from legacy security subsystem
+    configure_ldap_optional_login
+}
+
+function configure_ldap_login_failover() {
+    if [ "${AUTH_LDAP_LOGIN_FAILOVER^^}" == "TRUE" ]; then
+        local failover_realm="<failover-realm name=\"KIEFailOverRealm\" delegate-realm=\"KIELdapRealm\" failover-realm=\"KieFsRealm\"/>"
+        sed -i "s|<!-- ##KIE_FAILOVER_REALM## -->|${failover_realm}|" $CONFIG_FILE
+    fi
+}
+
+function configure_ldap_optional_login() {
+    if [ "${AUTH_LDAP_LOGIN_MODULE}" == "optional" ]; then
+        local distributed_login_realm="<distributed-realm name=\"KIEDistributedRealm\" realms=\"KIELdapRealm KieFsRealm\"/>"
+        sed -i "s|<!-- ##KIE_DISTRIBUTED_REALM## -->|${distributed_login_realm}|" $CONFIG_FILE
+    fi
 }
 
 function configure_ldap_sec_domain() {
@@ -222,8 +256,12 @@ function configure_ldap_sec_domain() {
             sed -i "s|<!-- ##KIE_AUTH_LDAP_DEFAULT_ROLE## -->|${default_role}|" $CONFIG_FILE
         fi
 
-        local sec_domain="<security-domain name=\"KIELdapSecurityDomain\" default-realm=\"KIELdapRealm\" ${sec_domain_default_role}permission-mapper=\"default-permission-mapper\">\n\
-                    <realm name=\"KIELdapRealm\" role-decoder=\"from-roles-attribute\"/>\n\
+        local role_decoder="from-roles-attribute"
+        if [ "${AUTH_LDAP_LOGIN_FAILOVER^^}" == "TRUE" ] || [ "${AUTH_LDAP_LOGIN_MODULE}" == "optional" ]; then
+            role_decoder="kie-aggregate-role-decoder"
+        fi
+        local sec_domain="<security-domain name=\"$(get_security_domain)\" default-realm=\"$(get_ldap_realm)\" ${sec_domain_default_role}permission-mapper=\"default-permission-mapper\">\n\
+                    <realm name=\"$(get_ldap_realm)\" role-decoder=\"${role_decoder}\"/>\n\
                 </security-domain>"
         sed -i "s|<!-- ##KIE_LDAP_SECURITY_DOMAIN## -->|${sec_domain}|" $CONFIG_FILE
     fi
@@ -231,17 +269,27 @@ function configure_ldap_sec_domain() {
 
 function configure_elytron_http_auth_factory() {
     if [ "${AUTH_LDAP_URL}x" != "x" ]; then
-        local http_authentication_factory="<http-authentication-factory name=\"kie-ldap-http-auth\" http-server-mechanism-factory=\"global\" security-domain=\"KIELdapSecurityDomain\">\n\
+        local http_authentication_factory="<http-authentication-factory name=\"kie-ldap-http-auth\" http-server-mechanism-factory=\"global\" security-domain=\"$(get_security_domain)\">\n\
                     <mechanism-configuration>\n\
                         <mechanism mechanism-name=\"BASIC\">\n\
-                            <mechanism-realm realm-name=\"KIELdapRealm\"/>\n\
+                            <mechanism-realm realm-name=\"$(get_ldap_realm)\"/>\n\
                         </mechanism>\n\
                         <mechanism mechanism-name=\"FORM\"/>\n\
                     </mechanism-configuration>\n\
                 </http-authentication-factory>"
         sed -i "s|<!-- ##HTTP_AUTHENTICATION_FACTORY## -->|${http_authentication_factory}<!-- ##HTTP_AUTHENTICATION_FACTORY## -->|" $CONFIG_FILE
     fi
+}
 
+function get_ldap_realm() {
+    local realm="KIELdapRealm"
+    if [ "${AUTH_LDAP_LOGIN_FAILOVER^^}" == "TRUE" ]; then
+        realm="KIEFailOverRealm"
+    fi
+    if [ "${AUTH_LDAP_LOGIN_MODULE}" == "optional" ]; then
+        realm="KIEDistributedRealm"
+    fi
+    echo ${realm}
 }
 
 function configure_elytron_role_mapping() {

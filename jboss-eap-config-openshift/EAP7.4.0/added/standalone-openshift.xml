@@ -266,6 +266,8 @@
                 </properties-realm>
                 <!-- ##KIE_FS_REALM## -->
                 <!-- ##KIE_LDAP_REALM## -->
+                <!-- ##KIE_FAILOVER_REALM## -->
+                <!-- ##KIE_DISTRIBUTED_REALM## -->
             </security-realms>
             <mappers>
                 <simple-permission-mapper name="default-permission-mapper" mapping-mode="first">
