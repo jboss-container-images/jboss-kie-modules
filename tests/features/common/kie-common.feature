@@ -117,6 +117,7 @@ Feature: RHPAM and RHDM common tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <application-security-domain name="other" security-domain="KIELdapSecurityDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <constant-role-mapper name="kie-ldap-role-mapper">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <role name="test"/>
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value KIELdapRealm on XPath //*[local-name()='mechanism-realm']/@realm-name
     And file /opt/eat/standalone/deploy/ROOT/WEB-INF/jboss-web.xml should not contain <security-domain>other</security-domain>
 
   Scenario: Configure images to use LDAP authentication with search time limit and blank password
@@ -174,6 +175,7 @@ Feature: RHPAM and RHDM common tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <role name="test"/>
     And file /opt/eat/standalone/deploy/ROOT/WEB-INF/jboss-web.xml should not contain <security-domain>other</security-domain>
 
+    @wip
   Scenario: Configure images to use LDAP authentication with search time limit and referral mode with ldap failover enabled
     When container is started with env
       | variable                                      | value                        |
@@ -206,8 +208,9 @@ Feature: RHPAM and RHDM common tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <role-decoder name="from-roles-attribute"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <role-decoder name="from-role-attribute"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain </aggregate-role-decoder>
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value KIEFailOverRealm on XPath //*[local-name()='mechanism-realm']/@realm-name
     And file /opt/eat/standalone/deploy/ROOT/WEB-INF/jboss-web.xml should not contain <security-domain>other</security-domain>
-
+  @wip
   Scenario: Configure images to use LDAP authentication with search time limit and referral mode with ldap login module set to optional
     When container is started with env
       | variable                                      | value                        |
@@ -240,6 +243,7 @@ Feature: RHPAM and RHDM common tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <role-decoder name="from-roles-attribute"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <role-decoder name="from-role-attribute"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain </aggregate-role-decoder>
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value KIEDistributedRealm on XPath //*[local-name()='mechanism-realm']/@realm-name
     And file /opt/eat/standalone/deploy/ROOT/WEB-INF/jboss-web.xml should not contain <security-domain>other</security-domain>
 
 
