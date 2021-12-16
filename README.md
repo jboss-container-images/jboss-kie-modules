@@ -68,7 +68,7 @@ outputs as expected.
 
 The bats tests are generally added to each module under the **tests** directory, i.e. [jboss-kie-wildfly-common](jboss-kie-wildfly-common).
 
-TODO: Note that, just a few of modules contain the bats tests, more tests will be added in the future.
+TODO: Note that, just a few of modules contains the bats tests, more tests will be added in the future.
 
 
 To run the Bats tests, access a module that already have it, i.e. [jboss-kie-wildfly-common](jboss-kie-wildfly-common)

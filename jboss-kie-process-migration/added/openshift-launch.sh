@@ -10,6 +10,8 @@ if [ "${SCRIPT_DEBUG}" = "true" ] ; then
     log_info "JVM settings debug is enabled."
 fi
 
+log_info "Running $JBOSS_IMAGE_NAME image, version $PRODUCT_VERSION"
+
 CONFIGURE_SCRIPTS=(
   ${LAUNCH_DIR}/jboss-kie-process-migration.sh
   ${LAUNCH_DIR}/jboss-kie-pim-reaugment.sh
@@ -17,9 +19,6 @@ CONFIGURE_SCRIPTS=(
 
 source ${LAUNCH_DIR}/configure.sh
 source /usr/local/dynamic-resources/dynamic_resources.sh
-
-log_info "Running $JBOSS_IMAGE_NAME image, version $PRODUCT_VERSION"
-
 
 # RHPAM-1135: We need to build and pass an array otherwise spaces in passwords will break the exec
 D_OPTS="${JAVA_OPTS_APPEND}"

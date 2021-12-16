@@ -15,6 +15,7 @@ function configureEnv() {
 
 function configure() {
     configure_controller_security
+    configure_local_security
     configure_server_access
 }
 
