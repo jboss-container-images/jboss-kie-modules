@@ -52,3 +52,50 @@ Feature: KIE Controller configuration common tests
   Scenario: RHPAM-3517: Update maven to 3.6
     When container is started with command bash
     Then run sh -c "mvn --version | sed -n -e 's/^.*Apache //p' | grep 3.6 && echo  all good" in container and check its output for all good
+
+  Scenario: Verify if the HTTPS is not configured
+     When container is started with env
+       | variable                             | value                         |
+     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain ##SSL##
+      And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain ##HTTPS_CONNECTOR##
+
+  Scenario: Verify if the HTTPS is configured for ELYTRON
+     When container is started with env
+       | variable                             | value                         |
+       | CONFIGURE_ELYTRON_SSL                | true                          |
+     Then container log should contain Using Elytron for SSL configuration.
+
+  Scenario: Verify if the HTTPS is configured
+     When container is started with env
+       | variable                             | value                         |
+       | HTTPS_PASSWORD                       | 0p3n$3s@m3                    |
+       | HTTPS_KEYSTORE_DIR                   | /opt/eap/keys                 |
+       | HTTPS_KEYSTORE                       | keystore                      |
+       | HTTPS_KEYSTORE_TYPE                  | idk                           |
+     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain ##SSL##
+      And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain ##HTTPS_CONNECTOR##
+      And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <https-listener name="https" socket-binding="https" security-realm="ApplicationRealm" proxy-address-forwarding="true"/>
+
+  Scenario: Verify if the properties were correctly set using DEFAULT MEM RATIO
+    When container is started with args
+      | arg       | value                                                    |
+      | mem_limit | 1073741824                                               |
+      | env_json  | {"JAVA_MAX_MEM_RATIO": 80, "JAVA_INITIAL_MEM_RATIO": 25} |
+    Then container log should match regex -Xms205m
+    And container log should match regex -Xmx819m
+
+  Scenario: Verify if the DEFAULT MEM RATIO properties are overridden with different values
+    When container is started with args
+      | arg       | value                                                    |
+      | mem_limit | 1073741824                                               |
+      | env_json  | {"JAVA_MAX_MEM_RATIO": 50, "JAVA_INITIAL_MEM_RATIO": 10} |
+    Then container log should match regex -Xms51m
+    And container log should match regex -Xmx512m
+
+  Scenario: Verify if the properties were correctly set when aren't passed
+    When container is started with args
+      | arg       | value                                                    |
+      | mem_limit | 1073741824                                               |
+    Then container log should match regex -Xms205m
+    And container log should match regex -Xmx819m
+

@@ -49,6 +49,8 @@ chmod -R 755 ${KIE_DIR}
 # /opt/kie directory
 KIE_HOME_DIR=/opt/kie
 mkdir -p ${KIE_HOME_DIR}
+# kie-fs-realm
+mkdir ${KIE_HOME_DIR}/data
 
 # Necessary to permit running with a randomised UID
 for dir in $JBOSS_HOME/bin $HOME $KIE_HOME_DIR; do

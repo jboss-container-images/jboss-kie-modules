@@ -11,11 +11,6 @@ Feature: RHPAM Business Central configuration tests
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-businesscentral
      And run sh -c 'echo $RHPAM_BUSINESS_CENTRAL_VERSION' in container and check its output for 7.12
 
-  # https://issues.jboss.org/browse/CLOUD-2221
-  Scenario: Check KieLoginModule is configured
-    When container is ready
-    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <login-module code="org.kie.security.jaas.KieLoginModule"
-
   # https://issues.jboss.org/browse/JBPM-7834
   # https://issues.jboss.org/projects/JBPM/issues/JBPM-8269
   Scenario: Check OpenShiftStartupStrategy is enabled in RHPAM 7

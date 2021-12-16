@@ -41,8 +41,6 @@ function prepareEnv() {
     unset KIE_SERVER_CONTROLLER_TEMPLATE_CACHE_TTL
     unset KIE_M2_REPO_DIR
     unset KIE_PERSIST_MAVEN_REPO
-
-
 }
 
 function preConfigure() {
@@ -54,9 +52,6 @@ function configureEnv() {
 }
 
 function configure() {
-    # the "configure_local_security" function needs to be executed
-    # before any direct or indirect calls to add_eap_user
-    configure_local_security
     configure_admin_security
     configure_dashbuilder
     configure_kie_keystore
@@ -69,22 +64,12 @@ function configure() {
     configure_ha
 }
 
-function configure_local_security() {
-    set_application_users_config
-    set_application_roles_config
-}
-
 function configure_admin_security() {
     # add eap users (see jboss-kie-wildfly-security.sh)
     add_kie_admin_user
 
     # (see management-common.sh and login-modules-common.sh)
     add_management_interface_realm
-    # KieLoginModule breaks Business Central; it needs to be added only for Business Central & Business Central Monitoring
-    # rhpam-businesscentral, rhpam-businesscentral-monitoring
-    if [[ $JBOSS_PRODUCT =~ rhpam\-businesscentral(\-monitoring)? ]]; then
-        configure_login_modules "org.kie.security.jaas.KieLoginModule" "optional" "deployment.ROOT.war"
-    fi
 }
 
 function configure_dashbuilder() {
@@ -257,7 +242,7 @@ function configure_guvnor_settings() {
         fi
     fi
     # https://github.com/kiegroup/appformer/blob/master/uberfire-ssh/uberfire-ssh-backend/src/main/java/org/uberfire/ssh/service/backend/keystore/impl/storage/DefaultSSHKeyStore.java#L40
-    # TODO swith to main when the repo will move to main or latest as default
+    # TODO switch to main when the repo will move to main or latest as default
     local pkeys_dir=${APPFORMER_SSH_KEYS_STORAGE_FOLDER:-"${kieDataDir}/security/pkeys"}
     if [ -n "${pkeys_dir}" ]; then
         mkdir -p "${pkeys_dir}"
@@ -293,13 +278,13 @@ function configure_guvnor_settings() {
     # User management service (KIECLOUD-246, AF-2083, AF-2086)
     if [ -n "${SSO_URL}" ]; then
         # https://github.com/kiegroup/appformer/tree/master/uberfire-extensions/uberfire-security/uberfire-security-management/uberfire-security-management-keycloak
-         # TODO swith to main when the repo will move to main or latest as default
+         # TODO switch to main when the repo will move to main or latest as default
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.ext.security.management.api.userManagementServices=KCAdapterUserManagementService"
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.ext.security.management.keycloak.authServer=${SSO_URL}"
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.workbench.kie_server.keycloak=true"
     else
         # https://github.com/kiegroup/appformer/tree/master/uberfire-extensions/uberfire-security/uberfire-security-management/uberfire-security-management-wildfly
-        # TODO swith to main when the repo will move to main or latest as default
+        # TODO switch to main when the repo will move to main or latest as default
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.ext.security.management.api.userManagementServices=WildflyCLIUserManagementService"
     fi
     # resource constraints (AF-2240)
