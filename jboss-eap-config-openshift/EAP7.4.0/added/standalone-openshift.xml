@@ -41,6 +41,7 @@
         <!-- ##KEYCLOAK_EXTENSION## -->
     </extensions>
     <management>
+        <identity security-domain="ManagementDomain"/>
         <security-realms>
             <security-realm name="ManagementRealm">
                 <authentication>
@@ -53,13 +54,6 @@
             </security-realm>
             <security-realm name="ApplicationRealm">
                 <!-- ##SSL## -->
-                <authentication>
-                    <local default-user="$local" allowed-users="*" skip-group-loading="true"/>
-                    <properties path="application-users.properties" relative-to="jboss.server.config.dir"/>
-                </authentication>
-                <authorization>
-                    <properties path="application-roles.properties" relative-to="jboss.server.config.dir"/>
-                </authorization>
             </security-realm>
         </security-realms>
         <audit-log>
@@ -76,8 +70,8 @@
             </logger>
         </audit-log>
         <management-interfaces>
-            <http-interface console-enabled="false"><!-- ##MGMT_IFACE_REALM## -->
-                <http-upgrade enabled="true"/>
+            <http-interface console-enabled="false" http-authentication-factory="management-http-authentication"><!-- ##MGMT_IFACE_REALM## -->
+                <http-upgrade enabled="true" sasl-authentication-factory="management-sasl-authentication"/>
                 <socket-binding http="management-http"/>
             </http-interface>
         </management-interfaces>
@@ -133,6 +127,7 @@
         <subsystem xmlns="urn:jboss:domain:batch-jberet:2.0">
             <!-- ##DEFAULT_JOB_REPOSITORY## -->
             <default-thread-pool name="batch"/>
+            <security-domain name="ApplicationDomain"/>
             <job-repository name="in-memory">
                 <in-memory/>
             </job-repository>
@@ -235,7 +230,9 @@
             <default-missing-method-permissions-deny-access value="true"/>
             <statistics enabled="${wildfly.ejb3.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
             <log-system-exceptions value="true"/>
-            <!-- ##EJB_APPLICATION_SECURITY_DOMAINS## -->
+            <application-security-domains>
+                <!-- ##EJB_APPLICATION_SECURITY_DOMAIN## -->
+            </application-security-domains>
         </subsystem>
         <subsystem xmlns="urn:wildfly:elytron:13.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
             <providers>
@@ -251,31 +248,32 @@
             </audit-logging>
             <security-domains>
                 <!-- ##ELYTRON_SECURITY_DOMAIN## -->
-                <security-domain name="ApplicationDomain" default-realm="ApplicationRealm" permission-mapper="default-permission-mapper">
-                    <realm name="ApplicationRealm" role-decoder="groups-to-roles"/>
+                <security-domain name="ApplicationDomain" default-realm="KieFsRealm" permission-mapper="default-permission-mapper">
+                    <realm name="KieFsRealm" role-decoder="from-roles-attribute"/>
                     <realm name="local"/>
                 </security-domain>
                 <security-domain name="ManagementDomain" default-realm="ManagementRealm" permission-mapper="default-permission-mapper">
                     <realm name="ManagementRealm" role-decoder="groups-to-roles"/>
                     <realm name="local" role-mapper="super-user-mapper"/>
                 </security-domain>
+                <!-- ##KIE_LDAP_SECURITY_DOMAIN## -->
             </security-domains>
             <security-realms>
                 <identity-realm name="local" identity="$local"/>
-                <properties-realm name="ApplicationRealm">
-                    <users-properties path="application-users.properties" relative-to="jboss.server.config.dir" digest-realm-name="ApplicationRealm"/>
-                    <groups-properties path="application-roles.properties" relative-to="jboss.server.config.dir"/>
-                </properties-realm>
                 <properties-realm name="ManagementRealm">
                     <users-properties path="mgmt-users.properties" relative-to="jboss.server.config.dir" digest-realm-name="ManagementRealm"/>
                     <groups-properties path="mgmt-groups.properties" relative-to="jboss.server.config.dir"/>
                 </properties-realm>
+                <!-- ##KIE_FS_REALM## -->
+                <!-- ##KIE_LDAP_REALM## -->
+                <!-- ##KIE_FAILOVER_REALM## -->
+                <!-- ##KIE_DISTRIBUTED_REALM## -->
             </security-realms>
             <mappers>
                 <simple-permission-mapper name="default-permission-mapper" mapping-mode="first">
                     <permission-mapping>
                         <principal name="anonymous"/>
-                        <permission-set name="default-permissions"/>
+                        <!-- no permissions set, avoid anonymous to log in -->
                     </permission-mapping>
                     <permission-mapping match-all="true">
                         <permission-set name="login-permission"/>
@@ -283,10 +281,13 @@
                     </permission-mapping>
                 </simple-permission-mapper>
                 <constant-realm-mapper name="local" realm-name="local"/>
-                <simple-role-decoder name="groups-to-roles" attribute="groups"/>
                 <constant-role-mapper name="super-user-mapper">
                     <role name="SuperUser"/>
                 </constant-role-mapper>
+                <!-- ##KIE_AUTH_LDAP_DEFAULT_ROLE## -->
+                <!-- ##KIE_ROLE_DECODER## -->
+                <simple-role-decoder name="groups-to-roles" attribute="groups"/>
+                <!-- ##AUTH_ROLE_MAPPER## -->
             </mappers>
             <permission-sets>
                 <permission-set name="login-permission">
@@ -303,7 +304,7 @@
                 <http-authentication-factory name="application-http-authentication" http-server-mechanism-factory="global" security-domain="ApplicationDomain">
                     <mechanism-configuration>
                         <mechanism mechanism-name="BASIC">
-                            <mechanism-realm realm-name="ApplicationRealm"/>
+                            <mechanism-realm realm-name="KieFsRealm"/>
                         </mechanism>
                         <mechanism mechanism-name="FORM"/>
                     </mechanism-configuration>
@@ -322,7 +323,7 @@
                     <mechanism-configuration>
                         <mechanism mechanism-name="JBOSS-LOCAL-USER" realm-mapper="local"/>
                         <mechanism mechanism-name="DIGEST-MD5">
-                            <mechanism-realm realm-name="ApplicationRealm"/>
+                            <mechanism-realm realm-name="KieFsRealm"/>
                         </mechanism>
                     </mechanism-configuration>
                 </sasl-authentication-factory>
@@ -346,6 +347,7 @@
                 </mechanism-provider-filtering-sasl-server-factory>
                 <provider-sasl-server-factory name="global"/>
             </sasl>
+            <!-- ##KIE_LDAP_DIR_CONTEXT## -->
             <!-- ##TLS## -->
             <!-- ##ELYTRON_TLS## -->
         </subsystem>
@@ -507,7 +509,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
         <subsystem xmlns="urn:jboss:domain:remoting:4.0">
-            <http-connector name="http-remoting-connector" connector-ref="default" security-realm="ApplicationRealm"/>
+            <http-connector name="http-remoting-connector" connector-ref="default" sasl-authentication-factory="application-sasl-authentication"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
         <subsystem xmlns="urn:jboss:domain:resource-adapters:6.0">
@@ -518,31 +520,6 @@
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
         <subsystem xmlns="urn:jboss:domain:security:2.0">
             <!-- ##ELYTRON_INTEGRATION## -->
-            <security-domains>
-                <security-domain name="other" cache-type="default">
-                    <authentication>
-                        <login-module code="Remoting" flag="optional">
-                            <module-option name="password-stacking" value="useFirstPass"/>
-                        </login-module>
-                        <login-module code="RealmDirect" flag="required">
-                            <module-option name="password-stacking" value="useFirstPass"/>
-                        </login-module>
-                        <!-- ##OTHER_LOGIN_MODULES## -->
-                    </authentication>
-                </security-domain>
-                <security-domain name="jboss-web-policy" cache-type="default">
-                    <authorization>
-                        <policy-module code="Delegating" flag="required"/>
-                    </authorization>
-                </security-domain>
-                <security-domain name="jboss-ejb-policy" cache-type="default">
-                    <authorization>
-                        <policy-module code="Delegating" flag="required"/>
-                    </authorization>
-                </security-domain>
-                <!-- ##KEYCLOAK_SECURITY_DOMAIN## -->
-                <!-- ##ADDITIONAL_SECURITY_DOMAINS## -->
-            </security-domains>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
             <deployment-permissions>
@@ -588,7 +565,7 @@
                     <location name="/" handler="welcome-content"/>
                     <!-- ##ACCESS_LOG_VALVE## -->
                     <!-- ##FILTER_REFS## -->
-                    <http-invoker security-realm="ApplicationRealm"/>
+                    <http-invoker http-authentication-factory="application-http-authentication"/>
                 </host>
             </server>
             <servlet-container name="default">
@@ -598,7 +575,9 @@
             <handlers>
                 <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
             </handlers>
-            <!-- ##HTTP_APPLICATION_SECURITY_DOMAINS## -->
+            <application-security-domains>
+                <!-- ##HTTP_APPLICATION_SECURITY_DOMAIN## -->
+            </application-security-domains>
             <!-- ##HTTP_FILTERS_MARKER## -->
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:webservices:2.0" statistics-enabled="${wildfly.webservices.statistics-enabled:${wildfly.statistics-enabled:false}}">

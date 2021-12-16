@@ -54,8 +54,8 @@ Feature: RHPAM Process Migration tests
 
   Scenario: Test extra system properties are correctly added
     When container is started with env
-      | variable             | value                                         |
-      | JBOSS_KIE_EXTRA_ARGS | -Dsystem.prop.1=value1 -Dsystem.prop.2=value2 |
-      | SCRIPT_DEBUG         | true                                          |
+      | variable         | value                                         |
+      | JAVA_OPTS_APPEND | -Dsystem.prop.1=value1 -Dsystem.prop.2=value2 |
+      | SCRIPT_DEBUG     | true                                          |
     Then container log should contain system.prop.1 = value1
      And container log should contain system.prop.2 = value2
