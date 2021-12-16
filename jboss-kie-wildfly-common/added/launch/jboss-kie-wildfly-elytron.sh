@@ -57,7 +57,7 @@ function configure_kie_fs_realm() {
                 </filesystem-realm>"
 
     sed -i "s|<!-- ##KIE_FS_REALM## -->|${fs_realm}|" $CONFIG_FILE
-    if [ "${JBOSS_PRODUCT}" = "rhpam-kieserver" ]; then
+    if [[ "${JBOSS_PRODUCT}" =~ (rhpam|rhdm)-kieserver ]]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.services.jbpm.security.filesystemrealm.folder-path=${path}"
     else
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.ext.security.management.wildfly.filesystem.folder-path=${path}"

@@ -15,8 +15,27 @@ teardown() {
     rm -rf $JBOSS_HOMEs
 }
 
-@test "[KIE Server] test if the default kie-fs-realm is correctly added" {
+@test "[KIE Server] test if the default kie-fs-realm is correctly added for rhpam" {
     export JBOSS_PRODUCT=rhpam-kieserver
+
+    configure_kie_fs_realm
+
+    expected="<filesystem-realm name=\"KieFsRealm\">
+                    <file path=\"/opt/kie/data/kie-fs-realm-users\"/>                </filesystem-realm>"
+    result=$(xmllint --xpath "//*[local-name()='filesystem-realm']" $CONFIG_FILE)
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    echo "expected_role_decoder: ${expected}"
+    echo "result_role_decoder  : ${result}"
+    echo "JBOSS_KIE_ARGS: ${JBOSS_KIE_ARGS}"
+    [ "${expected}" = "${result}" ]
+    [ "${JBOSS_KIE_ARGS}" = " -Dorg.kie.server.services.jbpm.security.filesystemrealm.folder-path=/opt/kie/data/kie-fs-realm-users" ]
+}
+
+
+@test "[KIE Server] test if the default kie-fs-realm is correctly added for rhdm" {
+    export JBOSS_PRODUCT=rhdm-kieserver
 
     configure_kie_fs_realm
 
