@@ -347,7 +347,7 @@ teardown() {
     configure_elytron_ldap_auth
 
     expected="<dir-contexts>
-                <dir-context name=\"KIELdapDC\" url=\"ldap://test:12345\" read-timeout=\"10000\" referral-mode=\"IGNORE\" principal=\"uid=admin,ou=system\">
+                <dir-context name=\"KIELdapDC\" url=\"ldap://test:12345\" read-timeout=\"10000\" referral-mode=\"ignore\" principal=\"uid=admin,ou=system\">
                     <credential-reference clear-text=\"my-password\"/>
                 </dir-context>
             </dir-contexts>"
@@ -369,7 +369,7 @@ teardown() {
     configure_elytron_ldap_auth
 
     expected="<dir-contexts>
-                <dir-context name=\"KIELdapDC\" url=\"ldap://test:12345\" referral-mode=\"FOLLOW\" principal=\"uid=admin,ou=system\">
+                <dir-context name=\"KIELdapDC\" url=\"ldap://test:12345\" referral-mode=\"follow\" principal=\"uid=admin,ou=system\">
                     <credential-reference clear-text=\"my-password\"/>
                 </dir-context>
             </dir-contexts>"
@@ -388,7 +388,7 @@ teardown() {
     AUTH_LDAP_BIND_CREDENTIAL="my-password"
     AUTH_LDAP_REFERRAL_MODE="invalid"
 
-    configure_elytron_ldap_auth
+    run configure_elytron_ldap_auth
 
     expected="<dir-contexts>
                 <dir-context name=\"KIELdapDC\" url=\"ldap://test:12345\" principal=\"uid=admin,ou=system\">
@@ -398,9 +398,12 @@ teardown() {
 
     result="$(xmllint --xpath "//*[local-name()='dir-contexts']" $CONFIG_FILE)"
 
+    echo "lines: ${lines[1]}"
+
     echo "expected: ${expected}"
     echo "result  : ${result}"
     [ "${expected}" = "${result}" ]
+    [[ "${lines[1]}" = "[WARN]Provided referral mode [INVALID] is not valid, ignoring referral mode, the valid ones are FOLLOW IGNORE THROW" ]]
 }
 
 
