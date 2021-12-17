@@ -163,12 +163,13 @@ function configure_elytron_ldap_auth() {
     local supported_referral_mode="FOLLOW IGNORE THROW"
     if [ "${AUTH_LDAP_REFERRAL_MODE}x" != "x" ]; then
          for referral in ${supported_referral_mode[@]}; do
-            if [ "${referral}" = "${AUTH_LDAP_REFERRAL_MODE^^}" ]; then
-                referral_mode="referral-mode=\"${referral}\""
-            else
-                log_warning "Provided referral mode [${AUTH_LDAP_REFERRAL_MODE}] is not valid, ignoring referral mode"
+            if [ "${referral^^}" = "${AUTH_LDAP_REFERRAL_MODE^^}" ]; then
+                referral_mode="referral-mode=\"${referral,,}\""
             fi
          done
+    fi
+    if [ "${referral_mode}x" == "x" ]; then
+        log_warning "Provided referral mode [${AUTH_LDAP_REFERRAL_MODE^^}] is not valid, ignoring referral mode, the valid ones are ${supported_referral_mode[@]}"
     fi
 
     local kie_elytron_ldap_dir_context="\n            <dir-contexts>\n\

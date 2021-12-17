@@ -83,7 +83,7 @@ Feature: RHPAM and RHDM common tests
       | AUTH_LDAP_ROLES_CTX_DN                        | ou=Roles,dc=example,dc=com   |
       | AUTH_LDAP_ROLE_FILTER                         | (member={1})                 |
       | AUTH_LDAP_REFERRAL_MODE                       | follow                       |
-    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" referral-mode="FOLLOW" principal="cn=Manager,dc=example,dc=com">
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" referral-mode="follow" principal="cn=Manager,dc=example,dc=com">
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <credential-reference clear-text="admin"/>
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=Roles,dc=example,dc=com"/>
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <ldap-realm name="KIELdapRealm" dir-context="KIELdapDC">
@@ -107,7 +107,7 @@ Feature: RHPAM and RHDM common tests
       | AUTH_LDAP_DEFAULT_ROLE                        | test                         |
       | AUTH_LDAP_ROLE_RECURSION                      | 100                          |
       | AUTH_LDAP_REFERRAL_MODE                       | follow                       |
-    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" referral-mode="FOLLOW" principal="cn=Manager,dc=example,dc=com">
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" referral-mode="follow" principal="cn=Manager,dc=example,dc=com">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <credential-reference clear-text="admin"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=Roles,dc=example,dc=com" role-recursion="100"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <ldap-realm name="KIELdapRealm" dir-context="KIELdapDC">
@@ -163,7 +163,7 @@ Feature: RHPAM and RHDM common tests
       | AUTH_LDAP_ROLE_RECURSION                      | 2434                         |
       | AUTH_LDAP_SEARCH_TIME_LIMIT                   | 1000                         |
       | AUTH_LDAP_REFERRAL_MODE                       | follow                       |
-    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" read-timeout="1000" referral-mode="FOLLOW" principal="cn=Manager,dc=example,dc=com">
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" read-timeout="1000" referral-mode="follow" principal="cn=Manager,dc=example,dc=com">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <credential-reference clear-text="admin"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=Roles,dc=example,dc=com" role-recursion="2434"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <ldap-realm name="KIELdapRealm" direct-verification="true" allow-blank-password="true" dir-context="KIELdapDC">
@@ -173,9 +173,9 @@ Feature: RHPAM and RHDM common tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <application-security-domain name="other" security-domain="KIELdapSecurityDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <constant-role-mapper name="kie-ldap-role-mapper">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <role name="test"/>
+    And container log should not contain Provided referral mode [FOLLOW] is not valid, ignoring referral mode, the valid ones are FOLLOW IGNORE THROW
     And file /opt/eat/standalone/deploy/ROOT/WEB-INF/jboss-web.xml should not contain <security-domain>other</security-domain>
 
-    @wip
   Scenario: Configure images to use LDAP authentication with search time limit and referral mode with ldap failover enabled
     When container is started with env
       | variable                                      | value                        |
@@ -193,7 +193,7 @@ Feature: RHPAM and RHDM common tests
       | AUTH_LDAP_SEARCH_TIME_LIMIT                   | 1000                         |
       | AUTH_LDAP_REFERRAL_MODE                       | follow                       |
       | AUTH_LDAP_LOGIN_FAILOVER                      | true                         |
-    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" read-timeout="1000" referral-mode="FOLLOW" principal="cn=Manager,dc=example,dc=com">
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" read-timeout="1000" referral-mode="follow" principal="cn=Manager,dc=example,dc=com">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <credential-reference clear-text="admin"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=Roles,dc=example,dc=com" role-recursion="2434"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <ldap-realm name="KIELdapRealm" direct-verification="true" allow-blank-password="true" dir-context="KIELdapDC">
@@ -210,7 +210,7 @@ Feature: RHPAM and RHDM common tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain </aggregate-role-decoder>
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value KIEFailOverRealm on XPath //*[local-name()='mechanism-realm']/@realm-name
     And file /opt/eat/standalone/deploy/ROOT/WEB-INF/jboss-web.xml should not contain <security-domain>other</security-domain>
-  @wip
+
   Scenario: Configure images to use LDAP authentication with search time limit and referral mode with ldap login module set to optional
     When container is started with env
       | variable                                      | value                        |
@@ -228,7 +228,7 @@ Feature: RHPAM and RHDM common tests
       | AUTH_LDAP_SEARCH_TIME_LIMIT                   | 1000                         |
       | AUTH_LDAP_REFERRAL_MODE                       | follow                       |
       | AUTH_LDAP_LOGIN_MODULE                        | optional                     |
-    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" read-timeout="1000" referral-mode="FOLLOW" principal="cn=Manager,dc=example,dc=com">
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" read-timeout="1000" referral-mode="follow" principal="cn=Manager,dc=example,dc=com">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <credential-reference clear-text="admin"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=Roles,dc=example,dc=com" role-recursion="2434"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <ldap-realm name="KIELdapRealm" direct-verification="true" allow-blank-password="true" dir-context="KIELdapDC">
@@ -245,7 +245,6 @@ Feature: RHPAM and RHDM common tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain </aggregate-role-decoder>
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value KIEDistributedRealm on XPath //*[local-name()='mechanism-realm']/@realm-name
     And file /opt/eat/standalone/deploy/ROOT/WEB-INF/jboss-web.xml should not contain <security-domain>other</security-domain>
-
 
   Scenario: Check LDAP Base Filter is correctly configured if AUTH_LDAP_BASE_FILTER contains special char '&' and '|'
     When container is started with env
