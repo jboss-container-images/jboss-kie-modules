@@ -1,4 +1,11 @@
-@rhdm-7/rhdm-kieserver-rhel8 @rhpam-7/rhpam-kieserver-rhel8 @rhdm-7/rhdm-decisioncentral-rhel8 @rhpam-7/rhpam-businesscentral-rhel8 @rhpam-7/rhpam-businesscentral-monitoring-rhel8 @rhpam-7/rhpam-dashbuilder-rhel8 @rhpam-7/rhpam-controller-rhel8 @rhdm-7/rhdm-controller-rhel8
+@rhdm-7/rhdm-kieserver-rhel8
+@rhpam-7/rhpam-kieserver-rhel8
+@rhdm-7/rhdm-decisioncentral-rhel8
+@rhpam-7/rhpam-businesscentral-rhel8
+@rhpam-7/rhpam-businesscentral-monitoring-rhel8
+@rhpam-7/rhpam-dashbuilder-rhel8
+@rhpam-7/rhpam-controller-rhel8
+@rhdm-7/rhdm-controller-rhel8
 Feature: RHPAM and RHDM common tests
 
   Scenario: Ensure the openjdk8 packages are not installed on container.
@@ -276,6 +283,22 @@ Feature: RHPAM and RHDM common tests
      And file /opt/eap/standalone/configuration/application-roles.properties should not contain adminUser
      And container log should contain External authentication/authorization enabled, skipping the embedded users creation.
      And container log should contain Make sure to configure KIE_ADMIN_USER user to access the application with the roles kie-server,rest-all,admin,kiemgmt,Administrators,user
+
+  Scenario: Check if elytron is correctly configured when SSO is enabled.
+    When container is started with env
+      | variable                   | value         |
+      | SSO_URL                    | http://url    |
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <custom-realm name="KeycloakOIDCRealm" module="org.keycloak.keycloak-wildfly-elytron-oidc-adapter" class-name="org.keycloak.adapters.elytron.KeycloakSecurityRealm"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KeycloakDomain" default-realm="KeycloakOIDCRealm" permission-mapper="default-permission-mapper" security-event-listener="local-audit">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <realm name="KeycloakOIDCRealm"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <constant-realm-mapper name="keycloak-oidc-realm-mapper" realm-name="KeycloakOIDCRealm"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <aggregate-http-server-mechanism-factory name="keycloak-http-server-mechanism-factory">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <http-server-mechanism-factory name="keycloak-oidc-http-server-mechanism-factory"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <service-loader-http-server-mechanism-factory name="keycloak-oidc-http-server-mechanism-factory" module="org.keycloak.keycloak-wildfly-elytron-oidc-adapter"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <http-authentication-factory name="keycloak-http-authentication" security-domain="KeycloakDomain" http-server-mechanism-factory="keycloak-http-server-mechanism-factory">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <mechanism mechanism-name="KEYCLOAK">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <mechanism-realm realm-name="KeycloakOIDCRealm" realm-mapper="keycloak-oidc-realm-mapper"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <application-security-domain name="other" http-authentication-factory="keycloak-http-authentication"/>
 
   Scenario: KIECLOUD-274 Prepare PAM/DM images to accept the logger category configuration
     When container is started with env

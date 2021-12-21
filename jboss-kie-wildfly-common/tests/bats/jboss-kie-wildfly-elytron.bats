@@ -12,7 +12,7 @@ cp $BATS_TEST_DIRNAME/../../../jboss-eap-config-openshift/EAP7.4.0/added/standal
 source $BATS_TEST_DIRNAME/../../added/launch/jboss-kie-wildfly-elytron.sh
 
 teardown() {
-    rm -rf $JBOSS_HOMEs
+    rm -rf $JBOSS_HOME
 }
 
 @test "[KIE Server] test if the default kie-fs-realm is correctly added for rhpam" {
@@ -175,17 +175,18 @@ teardown() {
     [ "${expected}" = "${result}" ]
 }
 
+
 @test "test if the correct sso application domain is set on the config file" {
     export SSO_URL="http://test"
     update_security_domain
 
-    expected="<application-security-domain name=\"other\" security-domain=\"ApplicationDomain\"/>"
+    expected="<application-security-domain name=\"other\" security-domain=\"KeycloakDomain\"/>
+<application-security-domain name=\"other\" http-authentication-factory=\"keycloak-http-authentication\"/>"
     result=$(xmllint --xpath "//*[local-name()='application-security-domain']" $CONFIG_FILE)
 
     echo "expected: ${expected}"
     echo "result  : ${result}"
     [ "${expected}" = "${result}" ]
-
 }
 
 
@@ -736,6 +737,17 @@ teardown() {
 }
 
 
+@test "test if the get_security_domain function returns the expected value when sso url is set" {
+    SSO_URL="http://sso=url"
+    result=$(get_security_domain)
+    expected="KeycloakDomain"
+    echo "result  : ${result}"
+    echo "expected: ${expected}"
+
+   [ "${expected}" = "${result}" ]
+}
+
+
 @test "test if the get_ldap_realm function returns the expected default value" {
     result=$(get_ldap_realm)
     expected="KIELdapRealm"
@@ -959,4 +971,83 @@ teardown() {
     echo "expected_aggregate_role_mapper: ${expected_aggregate_role_mapper}"
     echo "result_aggregate_role_mapper  : ${result_aggregate_role_mapper}"
     [ "${expected_aggregate_role_mapper}" = "${result_aggregate_role_mapper}" ]
+}
+
+
+@test "test if rhsso custom-realm is correctly added" {
+    configure_rhsso_custom_realm
+
+    expected="<custom-realm name=\"KeycloakOIDCRealm\" module=\"org.keycloak.keycloak-wildfly-elytron-oidc-adapter\" class-name=\"org.keycloak.adapters.elytron.KeycloakSecurityRealm\"/>"
+    result="$(xmllint --xpath "//*[local-name()='custom-realm']" $CONFIG_FILE)"
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
+}
+
+
+@test "test if rhsso security-domain is correctly added" {
+    configure_rhsso_security_domain
+
+    expected="<security-domain name=\"KeycloakDomain\" default-realm=\"KeycloakOIDCRealm\" permission-mapper=\"default-permission-mapper\" security-event-listener=\"local-audit\">
+                        <realm name=\"KeycloakOIDCRealm\"/>
+                    </security-domain>"
+    result="$(xmllint --xpath "//*[local-name()='security-domain'][3]" $CONFIG_FILE)"
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
+}
+
+
+@test "test if rhsso constant realm mapper is correctly added" {
+    configure_rhsso_constant_realm_mapper
+
+    expected="<constant-realm-mapper name=\"keycloak-oidc-realm-mapper\" realm-name=\"KeycloakOIDCRealm\"/>"
+    result="$(xmllint --xpath "//*[local-name()='constant-realm-mapper'][2]" $CONFIG_FILE)"
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
+}
+
+
+@test "test if rhsso factory mechanism are correctly added" {
+    configure_rhsso_aggregate_http_server_mechanism_factory
+
+    expected="<aggregate-http-server-mechanism-factory name=\"keycloak-http-server-mechanism-factory\">
+                    <http-server-mechanism-factory name=\"keycloak-oidc-http-server-mechanism-factory\"/>
+                    <http-server-mechanism-factory name=\"global\"/>
+                </aggregate-http-server-mechanism-factory>"
+    result="$(xmllint --xpath "//*[local-name()='aggregate-http-server-mechanism-factory']" $CONFIG_FILE)"
+
+    expected_service_loader="<service-loader-http-server-mechanism-factory name=\"keycloak-oidc-http-server-mechanism-factory\" module=\"org.keycloak.keycloak-wildfly-elytron-oidc-adapter\"/>"
+    result_service_loader="$(xmllint --xpath "//*[local-name()='service-loader-http-server-mechanism-factory']" $CONFIG_FILE)"
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
+
+    echo "expected_service_loader: ${expected_service_loader}"
+    echo "result_service_loader  : ${result_service_loader}"
+    [ "${expected_service_loader}" = "${result_service_loader}" ]
+}
+
+
+@test "test if rhsso http authentication factory is correctly added" {
+    SSO_URL="http://sso-url"
+    configure_rhsso_http_authentication_factory
+
+    expected="<http-authentication-factory name=\"keycloak-http-authentication\" security-domain=\"KeycloakDomain\" http-server-mechanism-factory=\"keycloak-http-server-mechanism-factory\">
+                    <mechanism-configuration>
+                        <mechanism mechanism-name=\"KEYCLOAK\">
+                            <mechanism-realm realm-name=\"KeycloakOIDCRealm\" realm-mapper=\"keycloak-oidc-realm-mapper\"/>
+                        </mechanism>
+                    </mechanism-configuration>
+                </http-authentication-factory>"
+    result="$(xmllint --xpath "//*[local-name()='http-authentication-factory'][3]" $CONFIG_FILE)"
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
 }
