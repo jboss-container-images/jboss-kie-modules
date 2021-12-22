@@ -44,6 +44,7 @@ function configure() {
     configure_elytron_role_mapping
     configure_ldap_sec_domain
     configure_new_identity_attributes
+    configure_rhsso
     configure_role_decoder
     update_activemq_domain
     update_jboss_web_xml
@@ -84,8 +85,11 @@ function configure_role_decoder() {
 }
 
 function update_security_domain() {
-   if [ "${SSO_URL}x" == "x" ]; then
-       # undertow subsystem
+   if [ "${SSO_URL}x" != "x" ]; then
+   # undertow subsystem
+        sed -i "s|<!-- ##HTTP_APPLICATION_SECURITY_DOMAIN## -->|<application-security-domain name=\"other\" http-authentication-factory=\"keycloak-http-authentication\"/>\n\
+                        <!-- ##HTTP_APPLICATION_SECURITY_DOMAIN## -->|" $CONFIG_FILE
+   else
         sed -i "s|<!-- ##HTTP_APPLICATION_SECURITY_DOMAIN## -->|<application-security-domain name=\"other\" security-domain=\"$(get_security_domain)\"/>\n\
                         <!-- ##HTTP_APPLICATION_SECURITY_DOMAIN## -->|" $CONFIG_FILE
    fi
@@ -136,6 +140,53 @@ EOF
     fi
 }
 
+function configure_rhsso(){
+     if [ "${SSO_URL}x" != "x" ]; then
+        configure_rhsso_custom_realm
+        configure_rhsso_security_domain
+        configure_rhsso_constant_realm_mapper
+        configure_rhsso_aggregate_http_server_mechanism_factory
+        configure_rhsso_http_authentication_factory
+     fi
+}
+
+function configure_rhsso_custom_realm() {
+    local custom_realm="<custom-realm name=\"KeycloakOIDCRealm\" module=\"org.keycloak.keycloak-wildfly-elytron-oidc-adapter\" class-name=\"org.keycloak.adapters.elytron.KeycloakSecurityRealm\"/>"
+    sed -i "s|<!-- ##KIE_SSO_CUSTOM_REALM## -->|${custom_realm}|" $CONFIG_FILE
+}
+
+function configure_rhsso_security_domain() {
+    local sec_domain="<security-domain name=\"KeycloakDomain\" default-realm=\"KeycloakOIDCRealm\" permission-mapper=\"default-permission-mapper\" security-event-listener=\"local-audit\">\n\
+                        <realm name=\"KeycloakOIDCRealm\"/>\n\
+                    </security-domain>"
+    sed -i "s|<!-- ##KIE_SSO_SECURITY_DOMAIN## -->|${sec_domain}|" $CONFIG_FILE
+}
+
+function configure_rhsso_constant_realm_mapper() {
+    local constant_realm_mapper="<constant-realm-mapper name=\"keycloak-oidc-realm-mapper\" realm-name=\"KeycloakOIDCRealm\"/>"
+    sed -i "s|<!-- ##KIE_SSO_CONSTANT_REALM_MAPPER## -->|${constant_realm_mapper}|" $CONFIG_FILE
+}
+
+function configure_rhsso_aggregate_http_server_mechanism_factory() {
+    local aggregate_http_server_mechanism_factory="<aggregate-http-server-mechanism-factory name=\"keycloak-http-server-mechanism-factory\">\n\
+                    <http-server-mechanism-factory name=\"keycloak-oidc-http-server-mechanism-factory\"/>\n\
+                    <http-server-mechanism-factory name=\"global\"/>\n\
+                </aggregate-http-server-mechanism-factory>\n\
+                <service-loader-http-server-mechanism-factory name=\"keycloak-oidc-http-server-mechanism-factory\" module=\"org.keycloak.keycloak-wildfly-elytron-oidc-adapter\"/>"
+    sed -i "s|<!-- ##KIE_SSO_MECHANISM_FACTORY## -->|${aggregate_http_server_mechanism_factory}|" $CONFIG_FILE
+}
+
+function configure_rhsso_http_authentication_factory() {
+    local http_auth_factory="<http-authentication-factory name=\"keycloak-http-authentication\" security-domain=\"$(get_security_domain)\" http-server-mechanism-factory=\"keycloak-http-server-mechanism-factory\">\n\
+                    <mechanism-configuration>\n\
+                        <mechanism mechanism-name=\"KEYCLOAK\">\n\
+                            <mechanism-realm realm-name=\"KeycloakOIDCRealm\" realm-mapper=\"keycloak-oidc-realm-mapper\"/>\n\
+                        </mechanism>\n\
+                    </mechanism-configuration>\n\
+                </http-authentication-factory>"
+    sed -i "s|<!-- ##KIE_SSO_HTTP_AUTHENTICATION_FACTORY## -->|${http_auth_factory}|" $CONFIG_FILE
+}
+
 function get_security_domain() {
     local sec_domain="ApplicationDomain"
     if [ "${AUTH_LDAP_URL}x" != "x" ]; then
@@ -143,6 +194,8 @@ function get_security_domain() {
         if [ "${AUTH_LDAP_LOGIN_FAILOVER^^}" == "TRUE" ]; then
             sec_domain="KIELdapWithFailOverSecDomain"
         fi
+    elif [ "${SSO_URL}x" != "x" ]; then
+        sec_domain="KeycloakDomain"
     fi
     echo ${sec_domain}
 }

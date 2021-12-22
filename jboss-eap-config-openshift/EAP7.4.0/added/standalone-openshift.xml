@@ -257,6 +257,7 @@
                     <realm name="local" role-mapper="super-user-mapper"/>
                 </security-domain>
                 <!-- ##KIE_LDAP_SECURITY_DOMAIN## -->
+                <!-- ##KIE_SSO_SECURITY_DOMAIN## -->
             </security-domains>
             <security-realms>
                 <identity-realm name="local" identity="$local"/>
@@ -268,6 +269,7 @@
                 <!-- ##KIE_LDAP_REALM## -->
                 <!-- ##KIE_FAILOVER_REALM## -->
                 <!-- ##KIE_DISTRIBUTED_REALM## -->
+                <!-- ##KIE_SSO_CUSTOM_REALM## -->
             </security-realms>
             <mappers>
                 <simple-permission-mapper name="default-permission-mapper" mapping-mode="first">
@@ -288,6 +290,7 @@
                 <!-- ##KIE_ROLE_DECODER## -->
                 <simple-role-decoder name="groups-to-roles" attribute="groups"/>
                 <!-- ##AUTH_ROLE_MAPPER## -->
+                <!-- ##KIE_SSO_CONSTANT_REALM_MAPPER## -->
             </mappers>
             <permission-sets>
                 <permission-set name="login-permission">
@@ -316,6 +319,8 @@
                         </mechanism>
                     </mechanism-configuration>
                 </http-authentication-factory>
+                <!-- ##KIE_SSO_HTTP_AUTHENTICATION_FACTORY## -->
+                <!-- ##KIE_SSO_MECHANISM_FACTORY## -->
                 <provider-http-server-mechanism-factory name="global"/>
             </http>
             <sasl>
