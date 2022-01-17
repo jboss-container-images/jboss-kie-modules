@@ -332,8 +332,10 @@ function declare_xa_variables {
                 eval ${prefix}_XA_CONNECTION_PROPERTY_ServerName=${host}
                 eval ${prefix}_XA_CONNECTION_PROPERTY_PortNumber=${port}
 
-            else
+            elif [ "${host}x" != "x" ] || [ "${port}x" != "x" ]; then
                 eval ${prefix}_XA_CONNECTION_PROPERTY_URL="${jdbcUrl}"
+            else
+                eval unset ${prefix}_XA_CONNECTION_PROPERTY_URL
             fi
         fi
 
@@ -373,7 +375,7 @@ function declare_xa_variables {
         fi
 
     elif [ "x${url}" != "x" ]; then
-            # RHPAM-2261 - db2 does not accept URL/Url XA property
+        # RHPAM-2261 - db2 does not accept URL/Url XA property
         if [[ $EJB_TIMER_DRIVER = *"db2"* ]]; then
             local unprefixedUrl=${url#jdbc:db2://}
             local serverName=${unprefixedUrl%:*}
