@@ -6,6 +6,7 @@ function prepareEnv() {
     # please keep these in alphabetical order
     unset KIE_MBEANS
     unset_kie_security_auth_env
+    unset LOGGER_PATTERN
 }
 
 function configureEnv() {
@@ -15,6 +16,7 @@ function configureEnv() {
 function configure() {
     configure_mem_ratio
     configure_mbeans
+    configure_formatter
 }
 
 function configure_mem_ratio() {
@@ -57,4 +59,12 @@ function configure_mbeans() {
         fi
     fi
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dkie.mbeans=${kieMbeans} -Dkie.scanner.mbeans=${kieMbeans}"
+}
+
+function configure_formatter(){
+  local pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"
+  if [ "x${LOGGER_PATTERN}" != "x" ]; then
+        pattern=${LOGGER_PATTERN}
+  fi
+  sed -i "s|##PATTERN_FORMATTER##|${pattern}|" $CONFIG_FILE
 }
