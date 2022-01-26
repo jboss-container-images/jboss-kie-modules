@@ -349,3 +349,16 @@ Feature: RHPAM and RHDM common tests
       | variable          | value                                         |
       | LOGGER_PATTERN    | %K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n |
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <logger pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
+
+  Scenario: [KIECLOUD-592] - Verify JBoss contains only the needed files and folders
+     When container is started with command bash
+     Then run sh -c "[ ! -d "$JBOSS_HOME/domain/" ] && echo Directory domain DOES NOT exists." in container and check its output for domain DOES NOT exists
+     Then run sh -c "[ ! -d "$JBOSS_HOME/migration/" ] && echo Directory migration DOES NOT exists." in container and check its output for migration DOES NOT exists
+     Then run sh -c "[ -d "$JBOSS_HOME/.installation/" ]  && [ $(ls -1 $JBOSS_HOME/.installation/* 2>/dev/null | wc -l) -eq 0 ] &&  echo Directory .installation is empty." in container and check its output for .installation is empty.
+     Then run sh -c "[ ! -d "$JBOSS_HOME/bin/init.d/" ] && echo Directory init.d DOES NOT exists." in container and check its output for init.d DOES NOT exists
+     Then run sh -c "[ $(ls -1 $JBOSS_HOME/bin/*.bat 2>/dev/null | wc -l) -eq 0 ] && echo Success no BAT files" in container and check its output for Success no BAT files
+     Then run sh -c "[ $(ls -1 $JBOSS_HOME/bin/*.ps1 2>/dev/null | wc -l) -eq 0 ] && echo Success no PS1 files" in container and check its output for Success no PS1 files
+     Then run sh -c "[ $(ls -1 $JBOSS_HOME/bin/domain* 2>/dev/null | wc -l) -eq 0 ] && echo Success no domain files" in container and check its output for Success no domain files
+     Then run sh -c "[ $(ls -1 $JBOSS_HOME/standalone/configuration/standalone-*.xml 2>/dev/null | wc -l) -eq 1 ] && echo Deleted files successfully" in container and check its output for Deleted files successfully
+     Then run sh -c "[ $(ls -1 $JBOSS_HOME/standalone/configuration/mgmt-*.properties 2>/dev/null | wc -l) -eq 0 ] && echo Deleted mgmt files successfully" in container and check its output for Deleted mgmt files successfully
+     Then run sh -c "[ -f $JBOSS_HOME/standalone/configuration/standalone-openshift.xml ] && echo Standalone Openshift is still there" in container and check its output for Standalone Openshift is still there
