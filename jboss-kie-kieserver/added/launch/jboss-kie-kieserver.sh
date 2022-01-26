@@ -159,11 +159,15 @@ function set_url {
     local prefixedUrl=$(find_env "${1}_URL")
     url=$(find_env "${1}_XA_CONNECTION_PROPERTY_URL" "${prefixedUrl}")
     url=$(echo ${url} | sed -e 's/\;/\\;/g')
+    # remove spaces, newlines, etc from url, see RHPAM-3808
+    url=$(echo ${url} | tr -d '[:space:]')
     if [ "${prefixedUrl}x" = "x" ]; then
         eval ${1}_URL="${url}"
+    else
+        eval ${1}_URL='${url}'
     fi
     if [ -z "$(eval echo \$${1}_XA_CONNECTION_PROPERTY_URL)" ]; then
-        eval ${1}_XA_CONNECTION_PROPERTY_URL="${url}"
+        eval ${1}_XA_CONNECTION_PROPERTY_URL='${url}'
     fi
 }
 
@@ -185,13 +189,18 @@ function declare_timer_common_variables {
     for var in ${common_vars[@]}; do
         local value=$(find_env "${prefix}_${var}")
         if [[ -n ${value} ]]; then
-          if [ "${var}" = "PASSWORD" ] || [ "${var}" = "USERNAME" ]; then
-            ## https://issues.redhat.com/browse/RHPAM-3211 avoid expansion if $n is in the username/password
-            eval "EJB_TIMER_${var}=\$value"
-          else
-            value=$(echo ${value} | sed -e 's/\;/\\;/g')
-            eval EJB_TIMER_${var}="${value}"
-          fi
+            if [ "${var}" = "PASSWORD" ] || [ "${var}" = "USERNAME" ]; then
+                ## https://issues.redhat.com/browse/RHPAM-3211 avoid expansion if $n is in the username/password
+                eval "EJB_TIMER_${var}=\$value"
+            else
+                if [ "${var}" = "XA_CONNECTION_PROPERTY_URL" ]; then
+                    value=$(echo ${value} | tr -d '[:space:]')
+                    eval EJB_TIMER_${var}='${value}'
+                else
+                    value=$(echo ${value} | sed -e 's/\;/\\;/g')
+                    eval EJB_TIMER_${var}="${value}"
+                fi
+            fi
         fi
     done
 }

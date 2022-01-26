@@ -34,7 +34,8 @@ teardown() {
     export RHPAM_NONXA="false"
     configure_EJB_Timer_datasource >&2
     echo "Expected EJB_TIMER url is ${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}" >&2
-    echo "Expected RHPAM_URL is ${RHPAM_URL}" >&2
+    echo "Expected RHPAM_URL is '${RHPAM_URL}'" >&2
+    echo "Expected RHPAM_XA_CONNECTION_PROPERTY_URL is ${RHPAM_XA_CONNECTION_PROPERTY_URL}" >&2
     echo "Expected DATASOURCES is ${DATASOURCES}" >&2
     [ "${TIMER_SERVICE_DATA_STORE^^}" = "${expected_timer_service}" ]
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}" = "${expected_url}" ]
@@ -455,6 +456,39 @@ teardown() {
     # the URL property must not be set
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}" = "" ]
 }
+
+@test "verify if EJB_TIMER is correctly configured with with Oracle HA jdbc URL" {
+    local expected_timer_service="EJB_TIMER"
+    local expected_datasources="EJB_TIMER,RHPAM"
+    local expected_url="jdbc:oracle:thin:@(DESCRIPTION=(LOAD_BALANCE=on)(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=host1)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=host2)(PORT=1521)))(CONNECT_DATA=(SERVICE_NAME=service_name)))"
+
+    export DATASOURCES="RHPAM"
+    export RHPAM_DRIVER="oracle"
+    export RHPAM_USERNAME="rhpam-user"
+    export RHPAM_PASSWORD="rhpam-pwd"
+    export RHPAM_URL="jdbc:oracle:thin:@(DESCRIPTION=
+
+                     (LOAD_BALANCE=on)
+
+                     (ADDRESS_LIST= (ADDRESS=(PROTOCOL=TCP)(HOST=host1) (PORT=1521)) (ADDRESS=(PROTOCOL=TCP)(HOST=host2)(PORT=1521))) (CONNECT_DATA=(SERVICE_NAME=service_name)))"
+    export RHPAM_JNDI="java:/jboss/datasources/rhpam"
+    export RHPAM_JTA="true"
+    export RHPAM_NONXA="true"
+
+    configure_EJB_Timer_datasource
+
+    echo "RHPAM_URL url is ${RHPAM_URL}"
+    echo "EJB_TIMER_XA_CONNECTION_PROPERTY_URL is ${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}"
+    echo "TIMER_SERVICE_DATA_STORE: ${TIMER_SERVICE_DATA_STORE}"
+    echo "Output ${lines[@]}"
+
+    [ "${TIMER_SERVICE_DATA_STORE^^}" = "${expected_timer_service}" ]
+    [ "${DATASOURCES}" = "${expected_datasources}" ]
+    [ "${EJB_TIMER_DRIVER}" = "${RHPAM_DRIVER}" ]
+    [ "${RHPAM_URL}" = "${expected_url}" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}" = "${expected_url}" ]
+}
+
 
 @test "check if kie server location is set according to the route" {
     local expected="http://${HOSTNAME}:80/services/rest/server"
