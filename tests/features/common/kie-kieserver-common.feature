@@ -535,3 +535,25 @@ Feature: Kie Server common features
     Then container log should contain Using standard EnvVar KIE_SERVER_CONTAINER_DEPLOYMENT: test=org.package:mypackage:1.0
      And container log should contain INFO Attempting to pull dependencies for kjar 0 with
 
+  Scenario: Verify if the KieExecutorMDB is configured
+    When container is started with env
+      | variable                            | value                          |
+      | JBOSS_MDB_MAX_SESSIONS              | 987654321123456789             |
+    Then container log should contain Configuring KieServerExecutorMDB Max Sessions on ejb-jar.xml
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <ejb-class>org.kie.server.jms.executor.KieExecutorMDB</ejb-class>
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-name>maxSession</activation-config-property-name>
+     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>987654321123456789</activation-config-property-value>
+
+  Scenario: Verify if the ACCESS_LOG_VALVE is configured
+    When container is started with env
+      | variable                             | value                         |
+      | ENABLE_ACCESS_LOG                    | true                          |
+    Then container log should contain Configuring Access Log Valve
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain ##ACCESS_LOG_VALVE##
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain access-log use-server-log="true"
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain pattern="%h %l %u %t %{i,X-Forwarded-Host} &quot;%r&quot; %s %b"
+
+  Scenario: Verify if the ACCESS_LOG_VALVE is not configured
+     When container is started with env
+       | variable                             | value                         |
+     Then container log should contain Access log is disabled, ignoring configuration.
