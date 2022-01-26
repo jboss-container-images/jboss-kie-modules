@@ -455,6 +455,7 @@ teardown() {
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_PortNumber}" = "${RHPAM_SERVICE_PORT}" ]
     # the URL property must not be set
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}" = "" ]
+    [ "${RHPAM_XA_CONNECTION_PROPERTY_URL}" = "" ]
 }
 
 @test "verify if EJB_TIMER is correctly configured with with Oracle HA jdbc URL" {
