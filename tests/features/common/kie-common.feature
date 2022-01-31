@@ -45,7 +45,8 @@ Feature: RHPAM and RHDM common tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=Roles,dc=example,dc=com"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <ldap-realm name="KIELdapRealm" dir-context="KIELdapDC">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <identity-mapping rdn-identifier="uid" search-base-dn="ou=Users,dc=example,dc=com">
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIELdapRealm" role-mapper="kie-ldap-role-mapper" permission-mapper="default-permission-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIELdapRealm" permission-mapper="default-permission-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <realm name="KIELdapRealm" role-decoder="from-roles-attribute" role-mapper="kie-ldap-logical-default-role-mapper"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security elytron-domain="KIELdapSecurityDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <application-security-domain name="other" security-domain="KIELdapSecurityDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <constant-role-mapper name="kie-ldap-role-mapper">
@@ -71,7 +72,8 @@ Feature: RHPAM and RHDM common tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=Roles,dc=example,dc=com" role-recursion="2"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <ldap-realm name="KIELdapRealm" dir-context="KIELdapDC">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <identity-mapping rdn-identifier="uid" search-base-dn="ou=Users,dc=example,dc=com" use-recursive-search="true">
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIELdapRealm" role-mapper="kie-ldap-role-mapper" permission-mapper="default-permission-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIELdapRealm" permission-mapper="default-permission-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <realm name="KIELdapRealm" role-decoder="from-roles-attribute" role-mapper="kie-ldap-logical-default-role-mapper"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security elytron-domain="KIELdapSecurityDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <application-security-domain name="other" security-domain="KIELdapSecurityDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <constant-role-mapper name="kie-ldap-role-mapper">
@@ -119,7 +121,8 @@ Feature: RHPAM and RHDM common tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=Roles,dc=example,dc=com" role-recursion="100"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <ldap-realm name="KIELdapRealm" dir-context="KIELdapDC">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <identity-mapping rdn-identifier="uid" search-base-dn="ou=Users,dc=example,dc=com">
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIELdapRealm" role-mapper="kie-ldap-role-mapper" permission-mapper="default-permission-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIELdapRealm" permission-mapper="default-permission-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <realm name="KIELdapRealm" role-decoder="from-roles-attribute" role-mapper="kie-ldap-logical-default-role-mapper"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security elytron-domain="KIELdapSecurityDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <application-security-domain name="other" security-domain="KIELdapSecurityDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <constant-role-mapper name="kie-ldap-role-mapper">
@@ -147,7 +150,8 @@ Feature: RHPAM and RHDM common tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=Roles,dc=example,dc=com" role-recursion="34"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <ldap-realm name="KIELdapRealm" direct-verification="true" allow-blank-password="true" dir-context="KIELdapDC">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <identity-mapping rdn-identifier="uid" search-base-dn="ou=Users,dc=example,dc=com">
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIELdapRealm" role-mapper="kie-ldap-role-mapper" permission-mapper="default-permission-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIELdapRealm" permission-mapper="default-permission-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <realm name="KIELdapRealm" role-decoder="from-roles-attribute" role-mapper="kie-ldap-logical-default-role-mapper"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security elytron-domain="KIELdapSecurityDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <application-security-domain name="other" security-domain="KIELdapSecurityDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <constant-role-mapper name="kie-ldap-role-mapper">
@@ -175,7 +179,8 @@ Feature: RHPAM and RHDM common tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=Roles,dc=example,dc=com" role-recursion="2434"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <ldap-realm name="KIELdapRealm" direct-verification="true" allow-blank-password="true" dir-context="KIELdapDC">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <identity-mapping rdn-identifier="uid" search-base-dn="ou=Users,dc=example,dc=com">
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIELdapRealm" role-mapper="kie-ldap-role-mapper" permission-mapper="default-permission-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIELdapRealm" permission-mapper="default-permission-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <realm name="KIELdapRealm" role-decoder="from-roles-attribute" role-mapper="kie-ldap-logical-default-role-mapper"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security elytron-domain="KIELdapSecurityDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <application-security-domain name="other" security-domain="KIELdapSecurityDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <constant-role-mapper name="kie-ldap-role-mapper">
@@ -205,7 +210,8 @@ Feature: RHPAM and RHDM common tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=Roles,dc=example,dc=com" role-recursion="2434"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <ldap-realm name="KIELdapRealm" direct-verification="true" allow-blank-password="true" dir-context="KIELdapDC">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <identity-mapping rdn-identifier="uid" search-base-dn="ou=Users,dc=example,dc=com">
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapWithFailOverSecDomain" default-realm="KIEFailOverRealm" role-mapper="kie-ldap-role-mapper" permission-mapper="default-permission-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapWithFailOverSecDomain" default-realm="KIEFailOverRealm" permission-mapper="default-permission-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <realm name="KIEFailOverRealm" role-decoder="kie-aggregate-role-decoder" role-mapper="kie-ldap-logical-default-role-mapper"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security elytron-domain="KIELdapWithFailOverSecDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <application-security-domain name="other" security-domain="KIELdapWithFailOverSecDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <constant-role-mapper name="kie-ldap-role-mapper">
@@ -240,7 +246,8 @@ Feature: RHPAM and RHDM common tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=Roles,dc=example,dc=com" role-recursion="2434"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <ldap-realm name="KIELdapRealm" direct-verification="true" allow-blank-password="true" dir-context="KIELdapDC">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <identity-mapping rdn-identifier="uid" search-base-dn="ou=Users,dc=example,dc=com">
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIEDistributedRealm" role-mapper="kie-ldap-role-mapper" permission-mapper="default-permission-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIEDistributedRealm" permission-mapper="default-permission-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <realm name="KIEDistributedRealm" role-decoder="kie-aggregate-role-decoder" role-mapper="kie-ldap-logical-default-role-mapper"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security elytron-domain="KIELdapSecurityDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <application-security-domain name="other" security-domain="KIELdapSecurityDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <constant-role-mapper name="kie-ldap-role-mapper">
