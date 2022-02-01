@@ -303,10 +303,15 @@ function configure_ldap_sec_domain() {
     if [ "${AUTH_LDAP_URL}x" != "x" ]; then
         local sec_domain_default_role=""
         if [ "${AUTH_LDAP_DEFAULT_ROLE}x" != "x" ]; then
-            sec_domain_default_role="role-mapper=\"kie-ldap-role-mapper\" "
+            sec_domain_default_role="role-mapper=\"kie-ldap-logical-default-role-mapper\""
             local default_role="<constant-role-mapper name=\"kie-ldap-role-mapper\">\n\
                     <role name=\"${AUTH_LDAP_DEFAULT_ROLE}\"/>\n\
-                </constant-role-mapper>"
+                </constant-role-mapper>\n\
+                <mapped-role-mapper name=\"kie-ldap-mapped-roles\" keep-mapped=\"true\" keep-non-mapped=\"true\">\n\
+                    <role-mapping from=\"${AUTH_LDAP_DEFAULT_ROLE}\" to=\"${AUTH_LDAP_DEFAULT_ROLE}\"/>\n\
+                </mapped-role-mapper>\n\
+                <logical-role-mapper name=\"kie-ldap-logical-default-role-mapper\" logical-operation=\"or\" left=\"kie-ldap-mapped-roles\" right=\"kie-ldap-role-mapper\"/>"
+
             sed -i "s|<!-- ##KIE_AUTH_LDAP_DEFAULT_ROLE## -->|${default_role}|" $CONFIG_FILE
         fi
 
@@ -314,8 +319,8 @@ function configure_ldap_sec_domain() {
         if [ "${AUTH_LDAP_LOGIN_FAILOVER^^}" == "TRUE" ] || [ "${AUTH_LDAP_LOGIN_MODULE}" == "optional" ]; then
             role_decoder="kie-aggregate-role-decoder"
         fi
-        local sec_domain="<security-domain name=\"$(get_security_domain)\" default-realm=\"$(get_ldap_realm)\" ${sec_domain_default_role}permission-mapper=\"default-permission-mapper\">\n\
-                    <realm name=\"$(get_ldap_realm)\" role-decoder=\"${role_decoder}\"/>\n\
+        local sec_domain="<security-domain name=\"$(get_security_domain)\" default-realm=\"$(get_ldap_realm)\" permission-mapper=\"default-permission-mapper\">\n\
+                    <realm name=\"$(get_ldap_realm)\" role-decoder=\"${role_decoder}\" ${sec_domain_default_role}/>\n\
                 </security-domain>"
         sed -i "s|<!-- ##KIE_LDAP_SECURITY_DOMAIN## -->|${sec_domain}|" $CONFIG_FILE
     fi

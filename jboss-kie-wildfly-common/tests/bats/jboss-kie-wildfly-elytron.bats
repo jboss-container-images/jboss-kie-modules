@@ -595,8 +595,8 @@ teardown() {
 
     configure_ldap_sec_domain
 
-    expected="<security-domain name=\"KIELdapSecurityDomain\" default-realm=\"KIELdapRealm\" role-mapper=\"kie-ldap-role-mapper\" permission-mapper=\"default-permission-mapper\">
-                    <realm name=\"KIELdapRealm\" role-decoder=\"from-roles-attribute\"/>
+    expected="<security-domain name=\"KIELdapSecurityDomain\" default-realm=\"KIELdapRealm\" permission-mapper=\"default-permission-mapper\">
+                    <realm name=\"KIELdapRealm\" role-decoder=\"from-roles-attribute\" role-mapper=\"kie-ldap-logical-default-role-mapper\"/>
                 </security-domain>"
     result="$(xmllint --xpath "//*[local-name()='security-domain'][3]" $CONFIG_FILE)"
 
@@ -605,6 +605,14 @@ teardown() {
                 </constant-role-mapper>"
     default_map_role_result="$(xmllint --xpath "//*[local-name()='constant-role-mapper'][2]" $CONFIG_FILE)"
 
+    expected_mapped_role_mapper="<mapped-role-mapper name=\"kie-ldap-mapped-roles\" keep-mapped=\"true\" keep-non-mapped=\"true\">
+                    <role-mapping from=\"${AUTH_LDAP_DEFAULT_ROLE}\" to=\"${AUTH_LDAP_DEFAULT_ROLE}\"/>
+                </mapped-role-mapper>"
+    result_mapped_role_mapper="$(xmllint --xpath "//*[local-name()='mapped-role-mapper']" $CONFIG_FILE)"
+
+    expected_logical_role_mapper="<logical-role-mapper name=\"kie-ldap-logical-default-role-mapper\" logical-operation=\"or\" left=\"kie-ldap-mapped-roles\" right=\"kie-ldap-role-mapper\"/>"
+    result_logical_role_mapper="$(xmllint --xpath "//*[local-name()='logical-role-mapper']" $CONFIG_FILE)"
+
     echo "expected: ${expected}"
     echo "result  : ${result}"
     [ "${expected}" = "${result}" ]
@@ -612,6 +620,14 @@ teardown() {
     echo "default_map_role_expected: ${default_map_role_expected}"
     echo "default_map_role_result  : ${default_map_role_result}"
     [ "${default_map_role_expected}" = "${default_map_role_result}" ]
+
+    echo "expected_mapped_role_mapper: ${expected_mapped_role_mapper}"
+    echo "result_mapped_role_mapper  : ${result_mapped_role_mapper}"
+    [ "${expected_mapped_role_mapper}" = "${result_mapped_role_mapper}" ]
+
+     echo "expected_logical_role_mapper: ${expected_logical_role_mapper}"
+     echo "result_logical_role_mapper  : ${result_logical_role_mapper}"
+     [ "${expected_logical_role_mapper}" = "${result_logical_role_mapper}" ]
 }
 
 
@@ -622,8 +638,8 @@ teardown() {
 
     configure_ldap_sec_domain
 
-    expected="<security-domain name=\"KIELdapWithFailOverSecDomain\" default-realm=\"KIEFailOverRealm\" role-mapper=\"kie-ldap-role-mapper\" permission-mapper=\"default-permission-mapper\">
-                    <realm name=\"KIEFailOverRealm\" role-decoder=\"kie-aggregate-role-decoder\"/>
+    expected="<security-domain name=\"KIELdapWithFailOverSecDomain\" default-realm=\"KIEFailOverRealm\" permission-mapper=\"default-permission-mapper\">
+                    <realm name=\"KIEFailOverRealm\" role-decoder=\"kie-aggregate-role-decoder\" role-mapper=\"kie-ldap-logical-default-role-mapper\"/>
                 </security-domain>"
     result="$(xmllint --xpath "//*[local-name()='security-domain'][3]" $CONFIG_FILE)"
 
@@ -632,6 +648,14 @@ teardown() {
                 </constant-role-mapper>"
     default_map_role_result="$(xmllint --xpath "//*[local-name()='constant-role-mapper'][2]" $CONFIG_FILE)"
 
+    expected_mapped_role_mapper="<mapped-role-mapper name=\"kie-ldap-mapped-roles\" keep-mapped=\"true\" keep-non-mapped=\"true\">
+                    <role-mapping from=\"${AUTH_LDAP_DEFAULT_ROLE}\" to=\"${AUTH_LDAP_DEFAULT_ROLE}\"/>
+                </mapped-role-mapper>"
+    result_mapped_role_mapper="$(xmllint --xpath "//*[local-name()='mapped-role-mapper']" $CONFIG_FILE)"
+
+    expected_logical_role_mapper="<logical-role-mapper name=\"kie-ldap-logical-default-role-mapper\" logical-operation=\"or\" left=\"kie-ldap-mapped-roles\" right=\"kie-ldap-role-mapper\"/>"
+    result_logical_role_mapper="$(xmllint --xpath "//*[local-name()='logical-role-mapper']" $CONFIG_FILE)"
+
     echo "expected: ${expected}"
     echo "result  : ${result}"
     [ "${expected}" = "${result}" ]
@@ -639,6 +663,14 @@ teardown() {
     echo "default_map_role_expected: ${default_map_role_expected}"
     echo "default_map_role_result  : ${default_map_role_result}"
     [ "${default_map_role_expected}" = "${default_map_role_result}" ]
+
+    echo "expected_mapped_role_mapper: ${expected_mapped_role_mapper}"
+    echo "result_mapped_role_mapper  : ${result_mapped_role_mapper}"
+    [ "${expected_mapped_role_mapper}" = "${result_mapped_role_mapper}" ]
+
+     echo "expected_logical_role_mapper: ${expected_logical_role_mapper}"
+     echo "result_logical_role_mapper  : ${result_logical_role_mapper}"
+     [ "${expected_logical_role_mapper}" = "${result_logical_role_mapper}" ]
 }
 
 
@@ -649,8 +681,8 @@ teardown() {
 
     configure_ldap_sec_domain
 
-    expected="<security-domain name=\"KIELdapSecurityDomain\" default-realm=\"KIEDistributedRealm\" role-mapper=\"kie-ldap-role-mapper\" permission-mapper=\"default-permission-mapper\">
-                    <realm name=\"KIEDistributedRealm\" role-decoder=\"kie-aggregate-role-decoder\"/>
+    expected="<security-domain name=\"KIELdapSecurityDomain\" default-realm=\"KIEDistributedRealm\" permission-mapper=\"default-permission-mapper\">
+                    <realm name=\"KIEDistributedRealm\" role-decoder=\"kie-aggregate-role-decoder\" role-mapper=\"kie-ldap-logical-default-role-mapper\"/>
                 </security-domain>"
     result="$(xmllint --xpath "//*[local-name()='security-domain'][3]" $CONFIG_FILE)"
 
@@ -659,6 +691,14 @@ teardown() {
                 </constant-role-mapper>"
     default_map_role_result="$(xmllint --xpath "//*[local-name()='constant-role-mapper'][2]" $CONFIG_FILE)"
 
+    expected_mapped_role_mapper="<mapped-role-mapper name=\"kie-ldap-mapped-roles\" keep-mapped=\"true\" keep-non-mapped=\"true\">
+                    <role-mapping from=\"${AUTH_LDAP_DEFAULT_ROLE}\" to=\"${AUTH_LDAP_DEFAULT_ROLE}\"/>
+                </mapped-role-mapper>"
+    result_mapped_role_mapper="$(xmllint --xpath "//*[local-name()='mapped-role-mapper']" $CONFIG_FILE)"
+
+    expected_logical_role_mapper="<logical-role-mapper name=\"kie-ldap-logical-default-role-mapper\" logical-operation=\"or\" left=\"kie-ldap-mapped-roles\" right=\"kie-ldap-role-mapper\"/>"
+    result_logical_role_mapper="$(xmllint --xpath "//*[local-name()='logical-role-mapper']" $CONFIG_FILE)"
+
     echo "expected: ${expected}"
     echo "result  : ${result}"
     [ "${expected}" = "${result}" ]
@@ -666,6 +706,14 @@ teardown() {
     echo "default_map_role_expected: ${default_map_role_expected}"
     echo "default_map_role_result  : ${default_map_role_result}"
     [ "${default_map_role_expected}" = "${default_map_role_result}" ]
+
+    echo "expected_mapped_role_mapper: ${expected_mapped_role_mapper}"
+    echo "result_mapped_role_mapper  : ${result_mapped_role_mapper}"
+    [ "${expected_mapped_role_mapper}" = "${result_mapped_role_mapper}" ]
+
+     echo "expected_logical_role_mapper: ${expected_logical_role_mapper}"
+     echo "result_logical_role_mapper  : ${result_logical_role_mapper}"
+     [ "${expected_logical_role_mapper}" = "${result_logical_role_mapper}" ]
 }
 
 
