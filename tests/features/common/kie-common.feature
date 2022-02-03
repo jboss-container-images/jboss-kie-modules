@@ -367,5 +367,4 @@ Feature: RHPAM and RHDM common tests
      Then run sh -c "[ $(ls -1 $JBOSS_HOME/bin/*.ps1 2>/dev/null | wc -l) -eq 0 ] && echo Success no PS1 files" in container and check its output for Success no PS1 files
      Then run sh -c "[ $(ls -1 $JBOSS_HOME/bin/domain* 2>/dev/null | wc -l) -eq 0 ] && echo Success no domain files" in container and check its output for Success no domain files
      Then run sh -c "[ $(ls -1 $JBOSS_HOME/standalone/configuration/standalone-*.xml 2>/dev/null | wc -l) -eq 1 ] && echo Deleted files successfully" in container and check its output for Deleted files successfully
-     Then run sh -c "[ $(ls -1 $JBOSS_HOME/standalone/configuration/mgmt-*.properties 2>/dev/null | wc -l) -eq 0 ] && echo Deleted mgmt files successfully" in container and check its output for Deleted mgmt files successfully
      Then run sh -c "[ -f $JBOSS_HOME/standalone/configuration/standalone-openshift.xml ] && echo Standalone Openshift is still there" in container and check its output for Standalone Openshift is still there
