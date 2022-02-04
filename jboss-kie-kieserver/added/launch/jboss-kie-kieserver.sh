@@ -158,15 +158,22 @@ function configure_EJB_Timer_datasource {
 function set_url {
     local prefixedUrl=$(find_env "${1}_URL")
     url=$(find_env "${1}_XA_CONNECTION_PROPERTY_URL" "${prefixedUrl}")
-    url=$(echo ${url} | sed -e 's/\;/\\;/g')
     # remove spaces, newlines, etc from url, see RHPAM-3808
     url=$(echo ${url} | tr -d '[:space:]')
     if [ "${prefixedUrl}x" = "x" ]; then
+        # KIECLOUD-598 We need to escape the & if it isn't already escaped...
+        url=$(echo "${url}" | sed 's|\([^\\]\)&amp|\1\\\&amp|g')
+        # KIECLOUD-598 ...and we need to escape also the ; only in this case
+        url=$(echo ${url} | sed -e 's/\;/\\;/g')
         eval ${1}_URL="${url}"
     else
         eval ${1}_URL='${url}'
     fi
     if [ -z "$(eval echo \$${1}_XA_CONNECTION_PROPERTY_URL)" ]; then
+        # KIECLOUD-598 We need to escape the & if it isn't already escaped...
+        url=$(echo "${url}" | sed 's|\([^\\]\)&amp|\1\\\&amp|g')
+        # KIECLOUD-598 ...and we need to escape also the ; only in this case
+        url=$(echo ${url} | sed -e 's/\;/\\;/g')
         eval ${1}_XA_CONNECTION_PROPERTY_URL='${url}'
     fi
 }
@@ -268,8 +275,17 @@ function set_timer_defaults {
 # XA Set URL method for postgresql is Url, fixes: Method setURL not found
 function fix_ejbtimer_xa_url {
     if [[ $EJB_TIMER_DRIVER =~ postgresql|mariadb ]]; then
-        EJB_TIMER_XA_CONNECTION_PROPERTY_Url=${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}
+      if [ ! -z "$EJB_TIMER_XA_CONNECTION_PROPERTY_URL" ]; then
+        # KIECLOUD-598 If a EJB_TIMER_XA_CONNECTION_PROPERTY_URL is set let's escape the & for each &amp
+        EJB_TIMER_XA_CONNECTION_PROPERTY_Url=$(echo "$EJB_TIMER_XA_CONNECTION_PROPERTY_URL" | sed 's|\([^\\]\)&amp|\1\\\&amp|g')
         unset EJB_TIMER_XA_CONNECTION_PROPERTY_URL
+      else
+        # KIECLOUD-598 If there isn't a EJB_TIMER_XA_CONNECTION_PROPERTY_URL let's use the $1 param
+        local url=$1;
+        url=$(echo ${url} | sed 's|\([^\\]\)&amp|\1\\\&amp|g')
+        url=$(echo ${url} | sed -e 's/\([^\\]\);/\1\\\;/g')
+        EJB_TIMER_XA_CONNECTION_PROPERTY_Url=$url
+      fi
     fi
 }
 
