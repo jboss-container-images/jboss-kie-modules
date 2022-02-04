@@ -162,7 +162,7 @@ setupFilesAndFoldersForCleanupTests(){
     # application-users.properties and application-roles.properties
     # in the standalone/configuration folder but no mgmt properties
     result="$(ls $JBOSS_HOME/standalone/configuration | wc -l)"
-    [ "$result" -eq 4 ]
+    [ "$result" -eq 6 ]
 
     # Let's verify that the standalone-openshift.xml is still there
     [ -f $JBOSS_HOME/standalone/configuration/standalone-openshift.xml ]
@@ -208,7 +208,7 @@ setupFilesAndFoldersForCleanupTests(){
     # application-users.properties and application-roles.properties
     # in the standalone/configuration folder but no mgmt properties
     result="$(ls $JBOSS_HOME/standalone/configuration | wc -l)"
-    [ "$result" -eq 4 ]
+    [ "$result" -eq 6 ]
 
     # Let's verify that the standalone-openshift.xml is still there
     [ -f $JBOSS_HOME/standalone/configuration/standalone-openshift.xml ]

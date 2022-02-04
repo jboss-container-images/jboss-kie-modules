@@ -33,6 +33,3 @@ rm -rf ${JBOSS_HOME}/bin/{*.bat,*.ps1,init.d,domain*}
 # Deleting not needed standalone-*.xml files
 # NOTE: standalone.xml is referenced in the welcome-content
 rm -rf ${JBOSS_HOME}/standalone/configuration/standalone-{full,ha,full-ha,load-balancer}.xml
-
-# Deleting mgmt-groups and mgmt-users properties files
-rm -rf ${JBOSS_HOME}/standalone/configuration/mgmt-*.properties
