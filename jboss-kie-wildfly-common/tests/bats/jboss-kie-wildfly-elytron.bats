@@ -592,6 +592,7 @@ teardown() {
 @test "test if ldap security domain is correctly added with default role mapping" {
     AUTH_LDAP_URL="test"
     AUTH_LDAP_DEFAULT_ROLE="my-default-role"
+    AUTH_LDAP_MAPPER_KEEP_MAPPED="true"
 
     configure_ldap_sec_domain
 
@@ -625,9 +626,9 @@ teardown() {
     echo "result_mapped_role_mapper  : ${result_mapped_role_mapper}"
     [ "${expected_mapped_role_mapper}" = "${result_mapped_role_mapper}" ]
 
-     echo "expected_logical_role_mapper: ${expected_logical_role_mapper}"
-     echo "result_logical_role_mapper  : ${result_logical_role_mapper}"
-     [ "${expected_logical_role_mapper}" = "${result_logical_role_mapper}" ]
+    echo "expected_logical_role_mapper: ${expected_logical_role_mapper}"
+    echo "result_logical_role_mapper  : ${result_logical_role_mapper}"
+    [ "${expected_logical_role_mapper}" = "${result_logical_role_mapper}" ]
 }
 
 
@@ -635,6 +636,8 @@ teardown() {
     AUTH_LDAP_URL="test"
     AUTH_LDAP_DEFAULT_ROLE="my-default-role"
     AUTH_LDAP_LOGIN_FAILOVER="true"
+    AUTH_LDAP_MAPPER_KEEP_MAPPED="true"
+    AUTH_LDAP_MAPPER_KEEP_NON_MAPPED="true"
 
     configure_ldap_sec_domain
 
@@ -678,6 +681,8 @@ teardown() {
     AUTH_LDAP_URL="test"
     AUTH_LDAP_DEFAULT_ROLE="my-default-role"
     AUTH_LDAP_LOGIN_MODULE="optional"
+    AUTH_LDAP_MAPPER_KEEP_MAPPED="false"
+    AUTH_LDAP_MAPPER_KEEP_NON_MAPPED="true"
 
     configure_ldap_sec_domain
 
@@ -691,7 +696,7 @@ teardown() {
                 </constant-role-mapper>"
     default_map_role_result="$(xmllint --xpath "//*[local-name()='constant-role-mapper'][2]" $CONFIG_FILE)"
 
-    expected_mapped_role_mapper="<mapped-role-mapper name=\"kie-ldap-mapped-roles\" keep-mapped=\"true\" keep-non-mapped=\"true\">
+    expected_mapped_role_mapper="<mapped-role-mapper name=\"kie-ldap-mapped-roles\" keep-mapped=\"false\" keep-non-mapped=\"true\">
                     <role-mapping from=\"${AUTH_LDAP_DEFAULT_ROLE}\" to=\"${AUTH_LDAP_DEFAULT_ROLE}\"/>
                 </mapped-role-mapper>"
     result_mapped_role_mapper="$(xmllint --xpath "//*[local-name()='mapped-role-mapper']" $CONFIG_FILE)"
@@ -844,6 +849,7 @@ teardown() {
 
 
 @test "test the configure_elytron_role_mapping with property file with keep mapped" {
+    AUTH_LDAP_URL="ldap://test"
     AUTH_ROLE_MAPPER_ROLES_PROPERTIES=$JBOSS_HOME/roles.properties
     echo "admin=PowerUser,BillingAdmin" > ${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}
     echo "guest=guest" >> ${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}
@@ -851,7 +857,7 @@ teardown() {
     echo "controllerUser=kie-server,rest-all" >> ${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}
     AUTH_LDAP_MAPPER_KEEP_MAPPED="true"
 
-    configure_elytron_role_mapping
+    configure_ldap_sec_domain
 
     expected="<mapped-role-mapper name=\"kie-custom-role-mapper\" keep-mapped=\"true\" keep-non-mapped=\"false\">
                    <role-mapping from=\"admin\" to=\"PowerUser BillingAdmin\"/>
@@ -859,15 +865,24 @@ teardown() {
 <role-mapping from=\"Administrator\" to=\"admin kie-server rest-all\"/>
 <role-mapping from=\"controllerUser\" to=\"kie-server rest-all\"/>
                 </mapped-role-mapper>"
-
     result=$(xmllint --xpath "//*[local-name()='mapped-role-mapper']" $CONFIG_FILE)
+
+    expected_sec_domain="<security-domain name=\"KIELdapSecurityDomain\" default-realm=\"KIELdapRealm\" permission-mapper=\"default-permission-mapper\">
+                    <realm name=\"KIELdapRealm\" role-decoder=\"from-roles-attribute\" role-mapper=\"kie-custom-role-mapper\"/>
+                </security-domain>"
+    result_sec_domain="$(xmllint --xpath "//*[local-name()='security-domain'][3]" $CONFIG_FILE)"
 
     echo "expected: ${expected}"
     echo "result  : ${result}"
     [ "${expected}" = "${result}" ]
+
+    echo "expected_sec_domain: ${expected_sec_domain}"
+    echo "result_sec_domain  : ${result_sec_domain}"
+    [ "${expected_sec_domain}" = "${result_sec_domain}" ]
 }
 
 @test "test the configure_elytron_role_mapping with property file with keep mapped and non mapped" {
+    AUTH_LDAP_URL="ldap://test"
     AUTH_ROLE_MAPPER_ROLES_PROPERTIES=$JBOSS_HOME/roles.properties
     echo "admin=PowerUser,BillingAdmin" > ${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}
     echo "guest=guest" >> ${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}
@@ -876,7 +891,7 @@ teardown() {
     AUTH_LDAP_MAPPER_KEEP_MAPPED="true"
     AUTH_LDAP_MAPPER_KEEP_NON_MAPPED="true"
 
-    configure_elytron_role_mapping
+    configure_ldap_sec_domain
 
     expected="<mapped-role-mapper name=\"kie-custom-role-mapper\" keep-mapped=\"true\" keep-non-mapped=\"true\">
                    <role-mapping from=\"admin\" to=\"PowerUser BillingAdmin\"/>
@@ -884,19 +899,28 @@ teardown() {
 <role-mapping from=\"Administrator\" to=\"admin kie-server rest-all\"/>
 <role-mapping from=\"controllerUser\" to=\"kie-server rest-all\"/>
                 </mapped-role-mapper>"
-
     result=$(xmllint --xpath "//*[local-name()='mapped-role-mapper']" $CONFIG_FILE)
+
+    expected_sec_domain="<security-domain name=\"KIELdapSecurityDomain\" default-realm=\"KIELdapRealm\" permission-mapper=\"default-permission-mapper\">
+                    <realm name=\"KIELdapRealm\" role-decoder=\"from-roles-attribute\" role-mapper=\"kie-custom-role-mapper\"/>
+                </security-domain>"
+    result_sec_domain="$(xmllint --xpath "//*[local-name()='security-domain'][3]" $CONFIG_FILE)"
 
     echo "expected: ${expected}"
     echo "result  : ${result}"
     [ "${expected}" = "${result}" ]
+
+    echo "expected_sec_domain: ${expected_sec_domain}"
+    echo "result_sec_domain  : ${result_sec_domain}"
+    [ "${expected_sec_domain}" = "${result_sec_domain}" ]
 }
 
 
 @test "test the configure_elytron_role_mapping with without properties file" {
+    AUTH_LDAP_URL="ldap://test"
     AUTH_ROLE_MAPPER_ROLES_PROPERTIES="admin=PowerUser,BillingAdmin;guest=guest;Administrator=admin,kie-server,rest-all;controllerUser=kie-server,rest-all"
 
-    configure_elytron_role_mapping
+    configure_ldap_sec_domain
 
     expected="<mapped-role-mapper name=\"kie-custom-role-mapper\" keep-mapped=\"false\" keep-non-mapped=\"false\">
                    <role-mapping from=\"admin\" to=\"PowerUser BillingAdmin\"/>
@@ -904,32 +928,59 @@ teardown() {
 <role-mapping from=\"Administrator\" to=\"admin kie-server rest-all\"/>
 <role-mapping from=\"controllerUser\" to=\"kie-server rest-all\"/>
                 </mapped-role-mapper>"
-
     result=$(xmllint --xpath "//*[local-name()='mapped-role-mapper']" $CONFIG_FILE)
+
+    expected_sec_domain="<security-domain name=\"KIELdapSecurityDomain\" default-realm=\"KIELdapRealm\" permission-mapper=\"default-permission-mapper\">
+                    <realm name=\"KIELdapRealm\" role-decoder=\"from-roles-attribute\" role-mapper=\"kie-custom-role-mapper\"/>
+                </security-domain>"
+    result_sec_domain="$(xmllint --xpath "//*[local-name()='security-domain'][3]" $CONFIG_FILE)"
 
     echo "expected: ${expected}"
     echo "result  : ${result}"
     [ "${expected}" = "${result}" ]
+
+    echo "expected_sec_domain: ${expected_sec_domain}"
+    echo "result_sec_domain  : ${result_sec_domain}"
+    [ "${expected_sec_domain}" = "${result_sec_domain}" ]
 }
 
 
-@test "test the configure_elytron_role_mapping with without properties file with invalid role pattern" {
+@test "test the configure_elytron_role_mapping with without properties file with invalid role pattern and with default role mapping" {
+    AUTH_LDAP_URL="ldap://test"
+    AUTH_LDAP_DEFAULT_ROLE="my-default-role"
+    AUTH_LDAP_MAPPER_KEEP_MAPPED="true"
     AUTH_ROLE_MAPPER_ROLES_PROPERTIES="admin=PowerUser,BillingAdmin;guest=guest;Administrator=admin,kie-server,rest-all;controllerUser=kie-server,rest-all;invalid_role_mapping="
 
-    configure_elytron_role_mapping
+    configure_ldap_sec_domain
 
-    expected="<mapped-role-mapper name=\"kie-custom-role-mapper\" keep-mapped=\"false\" keep-non-mapped=\"false\">
-                   <role-mapping from=\"admin\" to=\"PowerUser BillingAdmin\"/>
+    expected="<mapped-role-mapper name=\"kie-ldap-mapped-roles\" keep-mapped=\"true\" keep-non-mapped=\"true\">
+                    <role-mapping from=\"admin\" to=\"PowerUser BillingAdmin\"/>
 <role-mapping from=\"guest\" to=\"guest\"/>
 <role-mapping from=\"Administrator\" to=\"admin kie-server rest-all\"/>
 <role-mapping from=\"controllerUser\" to=\"kie-server rest-all\"/>
+<role-mapping from=\"my-default-role\" to=\"my-default-role\"/>
                 </mapped-role-mapper>"
-
     result=$(xmllint --xpath "//*[local-name()='mapped-role-mapper']" $CONFIG_FILE)
+
+    expected_sec_domain="<security-domain name=\"KIELdapSecurityDomain\" default-realm=\"KIELdapRealm\" permission-mapper=\"default-permission-mapper\">
+                    <realm name=\"KIELdapRealm\" role-decoder=\"from-roles-attribute\" role-mapper=\"kie-ldap-logical-default-role-mapper\"/>
+                </security-domain>"
+    result_sec_domain="$(xmllint --xpath "//*[local-name()='security-domain'][3]" $CONFIG_FILE)"
+
+    expected_logical_role_mapper="<logical-role-mapper name=\"kie-ldap-logical-default-role-mapper\" logical-operation=\"or\" left=\"kie-ldap-mapped-roles\" right=\"kie-ldap-role-mapper\"/>"
+    result_logical_role_mapper="$(xmllint --xpath "//*[local-name()='logical-role-mapper']" $CONFIG_FILE)"
 
     echo "expected: ${expected}"
     echo "result  : ${result}"
     [ "${expected}" = "${result}" ]
+
+    echo "expected_sec_domain: ${expected_sec_domain}"
+    echo "result_sec_domain  : ${result_sec_domain}"
+    [ "${expected_sec_domain}" = "${result_sec_domain}" ]
+
+    echo "expected_logical_role_mapper: ${expected_logical_role_mapper}"
+    echo "result_logical_role_mapper  : ${result_logical_role_mapper}"
+    [ "${expected_logical_role_mapper}" = "${result_logical_role_mapper}" ]
 }
 
 

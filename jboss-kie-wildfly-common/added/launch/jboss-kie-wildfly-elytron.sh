@@ -41,7 +41,6 @@ function configure() {
     configure_business_central_kie_git_config
     configure_elytron_ldap_auth
     configure_elytron_http_auth_factory
-    configure_elytron_role_mapping
     configure_ldap_sec_domain
     configure_new_identity_attributes
     configure_rhsso
@@ -221,7 +220,8 @@ function configure_elytron_ldap_auth() {
             fi
          done
     fi
-    if [ "${referral_mode}x" == "x" ]; then
+
+    if [ "${referral_mode}x" == "x" ] && [ "${AUTH_LDAP_REFERRAL_MODE}x" != "x" ]; then
         log_warning "Provided referral mode [${AUTH_LDAP_REFERRAL_MODE^^}] is not valid, ignoring referral mode, the valid ones are ${supported_referral_mode[@]}"
     fi
 
@@ -301,18 +301,50 @@ function configure_ldap_optional_login() {
 
 function configure_ldap_sec_domain() {
     if [ "${AUTH_LDAP_URL}x" != "x" ]; then
-        local sec_domain_default_role=""
+        local sec_domain_role_mapper=""
+        local mapped_roles
+        if [ -f "${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}" ]; then
+            while IFS= read -r line
+            do
+                [[ "${line}" = \#* ]] && continue
+                role=$(echo $line | cut -d= -f1)
+                map_to=$(echo $line | cut -d= -f2 | sed 's/,/ /g')
+                mapped_roles="${mapped_roles}<role-mapping from=\"${role}\" to=\"${map_to}\"/>\r"
+            done < "$AUTH_ROLE_MAPPER_ROLES_PROPERTIES"
+        elif [ "${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}x" != "x" ]; then
+            IFS=";" read -a roles_to_map <<< $AUTH_ROLE_MAPPER_ROLES_PROPERTIES
+            for role_to_map in ${roles_to_map[@]}; do
+                if [[ $role_to_map =~ [0-9a-zA-Z]=[0-9a-zA-Z] ]];then
+                    role=$(echo $role_to_map | cut -d= -f1)
+                    map_to=$(echo $role_to_map | cut -d= -f2 | sed 's/,/ /g')
+                    mapped_roles="${mapped_roles}<role-mapping from=\"${role}\" to=\"${map_to}\"/>\r"
+                else
+                    log_warning "$role_to_map is a not valid role to map, should be string=string1,string2"
+                fi
+            done
+        fi
+
         if [ "${AUTH_LDAP_DEFAULT_ROLE}x" != "x" ]; then
-            sec_domain_default_role="role-mapper=\"kie-ldap-logical-default-role-mapper\""
+            sec_domain_role_mapper="role-mapper=\"kie-ldap-logical-default-role-mapper\""
+            mapped_roles="${mapped_roles}<role-mapping from=\"${AUTH_LDAP_DEFAULT_ROLE}\" to=\"${AUTH_LDAP_DEFAULT_ROLE}\"/>\r"
+            AUTH_LDAP_MAPPER_KEEP_NON_MAPPED="true"
             local default_role="<constant-role-mapper name=\"kie-ldap-role-mapper\">\n\
                     <role name=\"${AUTH_LDAP_DEFAULT_ROLE}\"/>\n\
                 </constant-role-mapper>\n\
-                <mapped-role-mapper name=\"kie-ldap-mapped-roles\" keep-mapped=\"true\" keep-non-mapped=\"true\">\n\
-                    <role-mapping from=\"${AUTH_LDAP_DEFAULT_ROLE}\" to=\"${AUTH_LDAP_DEFAULT_ROLE}\"/>\n\
+                <mapped-role-mapper name=\"kie-ldap-mapped-roles\" keep-mapped=\"${AUTH_LDAP_MAPPER_KEEP_MAPPED:-false}\" keep-non-mapped=\"${AUTH_LDAP_MAPPER_KEEP_NON_MAPPED:-false}\">\n\
+                    $(echo -ne ${mapped_roles} | sed '/^[[:space:]]*$/d')\n\
                 </mapped-role-mapper>\n\
                 <logical-role-mapper name=\"kie-ldap-logical-default-role-mapper\" logical-operation=\"or\" left=\"kie-ldap-mapped-roles\" right=\"kie-ldap-role-mapper\"/>"
 
             sed -i "s|<!-- ##KIE_AUTH_LDAP_DEFAULT_ROLE## -->|${default_role}|" $CONFIG_FILE
+
+        elif [ "${mapped_roles}x" != "x" ] && [ "${AUTH_LDAP_DEFAULT_ROLE}x" == "x" ];then
+            local mapped_role_name="kie-custom-role-mapper"
+            local role_mapper="<mapped-role-mapper name=\"${mapped_role_name}\" keep-mapped=\"${AUTH_LDAP_MAPPER_KEEP_MAPPED:-false}\" keep-non-mapped=\"${AUTH_LDAP_MAPPER_KEEP_NON_MAPPED:-false}\">\n\
+                   $(echo -ne ${mapped_roles} | sed '/^[[:space:]]*$/d')\n\
+                </mapped-role-mapper>"
+            sed -i "s|<!-- ##AUTH_ROLE_MAPPER## -->|${role_mapper}|" $CONFIG_FILE
+            sec_domain_role_mapper="role-mapper=\"${mapped_role_name}\""
         fi
 
         local role_decoder="from-roles-attribute"
@@ -320,7 +352,7 @@ function configure_ldap_sec_domain() {
             role_decoder="kie-aggregate-role-decoder"
         fi
         local sec_domain="<security-domain name=\"$(get_security_domain)\" default-realm=\"$(get_ldap_realm)\" permission-mapper=\"default-permission-mapper\">\n\
-                    <realm name=\"$(get_ldap_realm)\" role-decoder=\"${role_decoder}\" ${sec_domain_default_role}/>\n\
+                    <realm name=\"$(get_ldap_realm)\" role-decoder=\"${role_decoder}\" ${sec_domain_role_mapper}/>\n\
                 </security-domain>"
         sed -i "s|<!-- ##KIE_LDAP_SECURITY_DOMAIN## -->|${sec_domain}|" $CONFIG_FILE
     fi
@@ -349,37 +381,6 @@ function get_ldap_realm() {
         realm="KIEDistributedRealm"
     fi
     echo ${realm}
-}
-
-function configure_elytron_role_mapping() {
-    local mapped_roles
-    if [ -f "${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}" ]; then
-        while IFS= read -r line
-        do
-            [[ "${line}" = \#* ]] && continue
-            role=$(echo $line | cut -d= -f1)
-            map_to=$(echo $line | cut -d= -f2 | sed 's/,/ /g')
-            mapped_roles="${mapped_roles}<role-mapping from=\"${role}\" to=\"${map_to}\"/>\r"
-        done < "$AUTH_ROLE_MAPPER_ROLES_PROPERTIES"
-    elif [ "${AUTH_ROLE_MAPPER_ROLES_PROPERTIES}x" != "x" ]; then
-        IFS=";" read -a roles_to_map <<< $AUTH_ROLE_MAPPER_ROLES_PROPERTIES
-        for role_to_map in ${roles_to_map[@]}; do
-        	if [[ $role_to_map =~ [0-9a-zA-Z]=[0-9a-zA-Z] ]];then
-        		role=$(echo $role_to_map | cut -d= -f1)
-			    map_to=$(echo $role_to_map | cut -d= -f2 | sed 's/,/ /g')
-        		mapped_roles="${mapped_roles}<role-mapping from=\"${role}\" to=\"${map_to}\"/>\r"
-        	else
-        		log_warning "$role_to_map is a not valid role to map, should be string=string1,string2"
-        	fi
-        done
-    fi
-
-    if [ "${mapped_roles}x" != "x" ];then
-        local role_mapper="<mapped-role-mapper name=\"kie-custom-role-mapper\" keep-mapped=\"${AUTH_LDAP_MAPPER_KEEP_MAPPED:-false}\" keep-non-mapped=\"${AUTH_LDAP_MAPPER_KEEP_NON_MAPPED:-false}\">\n\
-                   $(echo -ne ${mapped_roles} | sed '/^[[:space:]]*$/d')\n\
-                </mapped-role-mapper>"
-         sed -i "s|<!-- ##AUTH_ROLE_MAPPER## -->|${role_mapper}|" $CONFIG_FILE
-    fi
 }
 
 function configure_new_identity_attributes() {
