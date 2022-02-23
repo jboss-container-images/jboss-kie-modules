@@ -33,8 +33,8 @@ func validateAnnotations(annotations map[string]string, templateName string) {
 				}
 			}
 			if strings.Contains(templateName, "rhdm") {
-				if !utils.In_array(tags, "decisionserver") {
-					validationErrors["Annotations"] = append(validationErrors["Annotations"], "The tag decisionserver was not found in template tags.")
+				if !utils.In_array(tags, "decision") {
+					validationErrors["Annotations"] = append(validationErrors["Annotations"], "The tag decision was not found in template tags.")
 				}
 			}
 		}

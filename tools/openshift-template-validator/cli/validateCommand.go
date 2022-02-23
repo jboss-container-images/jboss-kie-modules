@@ -17,53 +17,53 @@ var ValidateCommand = cli.Command{
 	Usage:       "Validate OpenShift Application Template(s)",
 	Description: "Validate just one template or a bunch of them, the issues found will be printed, the binary will exit with 0, means success and any value different than 0 means that some issue happened (10 - file or directory not found, 12 - validation issues, 15 - panic)",
 	Flags: []cli.Flag{
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "file, f",
-			Usage:       "Set the template or imagestream to be validate, can be a local file or a remote valid url with raw content.",
+			Usage:       "Set the template or imagestream to be validated, can be a local file or a remote valid url with raw content.",
 			Destination: &utils.File,
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "dir, d",
 			Usage:       "Define a directory to be read, all yaml and json files in the given directory will be validated by the tool.",
 			Destination: &utils.LocalDir,
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:        "persist, p",
 			Usage:       "If set, the validated yaml file be saved on /tmp/<file-name> in the json format.",
 			Destination: &utils.Persist,
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "custom-annotation, a",
 			Usage:       "Define a custom annotation to be tested against the target template's annotations, values must be separated by comma ',' with no spaces. The default annotations are [" + arrayToString(utils.RequiredAnnotations) + "]",
 			Destination: &utils.CustomAnnotation,
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "template-version, v",
 			Value:       "1.2",
 			Usage:       "The template version that will br tested with the target templates, if not provided.",
 			Destination: &utils.ProvidedTemplateVersion,
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:        "validate-version, V",
 			Usage:       "If set, the template version will be validate.",
 			Destination: &utils.ValidateTemplateVersion,
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:        "verbose, vv",
 			Usage:       "Prints detailed log messages",
 			Destination: &utils.Debug,
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:        "strict, s",
 			Usage:       "Enable the strict mode, will verify if any required parameter have no value.",
 			Destination: &utils.Strict,
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:        "dump, du",
 			Usage:       "Dump all parsed template parameters.",
 			Destination: &utils.DumpParameters,
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:        "disable-defer",
 			Usage:       "Disable defer which recover from panic for troubleshooting purposes.",
 			Destination: &utils.DisableDefer,
