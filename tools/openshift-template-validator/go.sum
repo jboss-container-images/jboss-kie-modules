@@ -6,8 +6,8 @@ github.com/certifi/gocertifi v0.0.0-20180905225744-ee1a9a0726d2 h1:MmeatFT1pTPSV
 github.com/certifi/gocertifi v0.0.0-20180905225744-ee1a9a0726d2/go.mod h1:GJKEexRPVJrBSOjoqN5VNOIKJ5Q3RViH6eu3puDRwx4=
 github.com/davecgh/go-spew v1.1.1-0.20170626231645-782f4967f2dc h1:NlbIJbqL8zjb55Vdrsr5uqyVC6/NoUUd2YrLojfE2zI=
 github.com/davecgh/go-spew v1.1.1-0.20170626231645-782f4967f2dc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/docker/distribution v2.6.0-rc.1.0.20170726174610-edc3ab29cdff+incompatible h1:357nGVUC8gSpeSc2Axup8HfrfTLLUfWfCsCUhiQSKIg=
-github.com/docker/distribution v2.6.0-rc.1.0.20170726174610-edc3ab29cdff+incompatible/go.mod h1:J2gT2udsDAN96Uj4KfcMRqY0/ypR+oyYUYmja8H+y+w=
+github.com/docker/distribution v2.8.0+incompatible h1:l9EaZDICImO1ngI+uTifW+ZYvvz7fKISBAKpg+MbWbY=
+github.com/docker/distribution v2.8.0+incompatible/go.mod h1:J2gT2udsDAN96Uj4KfcMRqY0/ypR+oyYUYmja8H+y+w=
 github.com/docker/engine v17.12.0-ce-rc1.0.20180718150940-a3ef7e9a9bda+incompatible h1:n+1DRtr6Uc5QPzz1XrEVdkbwA9BfgQO5hHOURtQw1MM=
 github.com/docker/engine v17.12.0-ce-rc1.0.20180718150940-a3ef7e9a9bda+incompatible/go.mod h1:3CPr2caMgTHxxIAZgEMd3uLYPDlRvPqCpyeRf6ncPcY=
 github.com/docker/go-connections v0.3.0 h1:3lOnM9cSzgGwx8VfK/NGOW5fLQ0GjIlCkaktF+n1M6o=
@@ -36,7 +36,6 @@ github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NH
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/json-iterator/go v0.0.0-20180612202835-f2b4162afba3 h1:/UewZcckqhvnnS0C6r3Sher2hSEbVmM6Ogpcjen08+Y=
 github.com/json-iterator/go v0.0.0-20180612202835-f2b4162afba3/go.mod h1:+SdeFBvtyEkXs7REEP0seUULqWtbJapLOCVDaaPEHmU=
-github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v0.0.0-20180320133207-05fbef0ca5da h1:ZQGIPjr1iTtUPXZFk8WShqb5G+Qg65VHFLtSvmHh+Mw=
@@ -51,8 +50,6 @@ github.com/openshift/client-go v0.0.0-20180830153425-431ec9a26e50 h1:y59/+XbTbwz
 github.com/openshift/client-go v0.0.0-20180830153425-431ec9a26e50/go.mod h1:6rzn+JTr7+WYS2E1TExP4gByoABxMznR6y2SnUIkmxk=
 github.com/openshift/library-go v0.0.0-20180828150415-0b8367a46798 h1:wHTSXcHZippt8xy0q2TcOBKZbYqC5AVVO9JPs72dIF0=
 github.com/openshift/library-go v0.0.0-20180828150415-0b8367a46798/go.mod h1:NBttNjZpWwup/nthuLbPAPSYC8Qyo+BBK5bCtFoyYjo=
-github.com/openshift/moby-moby v1.4.2-0.20190308215630-da810a85109d h1:1LuQzDKgiXj1omPNDcY1E/mEOE/90jdobR+7WBfBQYA=
-github.com/openshift/moby-moby v1.4.2-0.20190308215630-da810a85109d/go.mod h1:LJM49W8fBVSj+rvcopJZu9mgH5Tx6HwLHySIYeGeu4k=
 github.com/openshift/origin v3.11.0+incompatible h1:DsJmCxDgQzGkW+r+h7rzXSx2HI7HHiIMuYKSOjxVleg=
 github.com/openshift/origin v3.11.0+incompatible/go.mod h1:0Rox5r9C8aQn6j1oAOQ0c1uC86mYbUFObzjBRvUKHII=
 github.com/openshift/source-to-image v1.1.12-0.20181024142939-d7dca853b2f3 h1:764QR0sxwIRNw0GgcZ+EKA7OHtZ45QHj5YzP5r01iaw=
@@ -67,6 +64,7 @@ github.com/spf13/cobra v0.0.2-0.20180319062004-c439c4fa0937 h1:ns0O6Khmb+//83zoz
 github.com/spf13/cobra v0.0.2-0.20180319062004-c439c4fa0937/go.mod h1:1l0Ry5zgKvJasoi3XT1TypsSe7PqH0Sj9dhYf7v3XqQ=
 github.com/spf13/pflag v1.0.1 h1:aCvUg6QPl3ibpQUxyLkrEkCHtPqYJL4x9AuhqVqFis4=
 github.com/spf13/pflag v1.0.1/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
+github.com/stretchr/testify v1.2.2-0.20180319223459-c679ae2cc0cb h1:nt7YdN09XZcT7sloqA3JXOxGaxxErL1UMzBKFUlcIxc=
 github.com/stretchr/testify v1.2.2-0.20180319223459-c679ae2cc0cb/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/urfave/cli v1.20.0 h1:fDqGv3UG/4jbVl/QkFwEdddtEDjh/5Ov6X+0B/3bPaw=
 github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
@@ -80,6 +78,7 @@ golang.org/x/text v0.0.0-20170810154203-b19bf474d317 h1:WKW+OPdYPlvOTVGHuMfjnIC6
 golang.org/x/text v0.0.0-20170810154203-b19bf474d317/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/time v0.0.0-20161028155119-f51c12702a4d h1:TnM+PKb3ylGmZvyPXmo9m/wktg7Jn/a/fNmr33HSj8g=
 golang.org/x/time v0.0.0-20161028155119-f51c12702a4d/go.mod h1:tRJNPiyCQ0inRvYxbN9jk5I+vvW/OXSQhTDSoE431IQ=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/inf.v0 v0.9.0 h1:3zYtXIO92bvsdS3ggAdA8Gb4Azj0YU+TVY1uGYNFA8o=
 gopkg.in/inf.v0 v0.9.0/go.mod h1:cWUDdTG/fYaXco+Dcufb5Vnc6Gp2YChqWtbxRZE0mXw=
