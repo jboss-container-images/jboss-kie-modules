@@ -11,7 +11,7 @@ var annotations = make(map[string]string)
 
 func TestAnnotations(t *testing.T) {
 	prepare()
-	validateAnnotations(annotations)
+	validateAnnotations(annotations, "testing-template")
 	if len(validationErrors) > 0 {
 		t.Errorf("annotation tests failed: %s", validationErrors)
 	}
@@ -23,7 +23,7 @@ func TestTemplateVersionDifferent(t *testing.T) {
 	utils.ValidateTemplateVersion = true
 	utils.ProvidedTemplateVersion = "1s0"
 
-	validateAnnotations(annotations)
+	validateAnnotations(annotations, "testing-template")
 
 	if len(validationErrors) < 1 {
 		t.Error("Validation error, template version is different than provided, but no issue was reported")
@@ -38,7 +38,7 @@ func TestMissingJBossTag(t *testing.T) {
 	ann := annotations
 	ann["tags"] = "jbosssssss"
 
-	validateAnnotations(ann)
+	validateAnnotations(ann, "testing-template")
 
 	assert.Equal(t, len(validationErrors) > 0, true)
 	if len(validationErrors) == 0 {
@@ -50,7 +50,7 @@ func TestDisplayNameValue(t *testing.T) {
 	prepare()
 	ann := annotations
 	ann["openshift.io/provider-display-name"] = "anyName"
-	validateAnnotations(ann)
+	validateAnnotations(ann, "testing-template")
 	assert.Equal(t, len(validationErrors) > 0, true)
 	assert.Equal(t, fmt.Sprint(validationErrors), "map[Annotations:[The annotation openshift.io/provider-display-name does not have the required value [Red Hat, Inc.]]]")
 }
@@ -60,7 +60,7 @@ func TestSupportUrlValue(t *testing.T) {
 	prepare()
 	ann := annotations
 	ann["template.openshift.io/support-url"] = "anyValue"
-	validateAnnotations(ann)
+	validateAnnotations(ann, "testing-template")
 	assert.Equal(t, len(validationErrors) > 0, true)
 	assert.Equal(t, fmt.Sprint(validationErrors), "map[Annotations:[The annotation template.openshift.io/support-url does not have the required value [https://access.redhat.com]]]")
 }
@@ -69,7 +69,7 @@ func TestWrongBindableValue(t *testing.T) {
 	prepare()
 	ann := annotations
 	ann["template.openshift.io/bindable"] = "true"
-	validateAnnotations(ann)
+	validateAnnotations(ann, "testing-template")
 	assert.Equal(t, len(validationErrors) > 0, true)
 	assert.Equal(t, fmt.Sprint(validationErrors), "map[Annotations:[The annotation template.openshift.io/bindable does not have the required value [false]]]")
 }
@@ -78,7 +78,7 @@ func TestWrongBindableValue(t *testing.T) {
 func TestCustomAnnotations(t *testing.T) {
 	prepare()
 	utils.CustomAnnotation = "valuea=A,foo,bar"
-	validateAnnotations(annotations)
+	validateAnnotations(annotations, "testing-template")
 	assert.Equal(t, len(validationErrors) > 0, true)
 	assert.Equal(t, fmt.Sprint(validationErrors), "map[Annotations:[Annotation valuea was not found in the template annotations. Annotation foo was not found in the template annotations. Annotation bar was not found in the template annotations.]]")
 }
@@ -90,7 +90,7 @@ func TestCustomAnnotationsWithValue(t *testing.T) {
 	ann["valuea"] = "B"
 	ann["foo"] = "bar"
 	ann["bar"] = "foo"
-	validateAnnotations(ann)
+	validateAnnotations(ann, "testing-template")
 	assert.Equal(t, len(validationErrors) > 0, true)
 	assert.Equal(t, fmt.Sprint(validationErrors), "map[Annotations:[Annotation valuea was found in the template annotations but does not contain the required value[A].]]")
 }

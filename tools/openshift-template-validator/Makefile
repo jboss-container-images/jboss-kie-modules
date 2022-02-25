@@ -3,7 +3,7 @@ SHELL = /bin/bash
 GO_EXECUTABLE ?= go
 DIST_DIR ?= $(shell echo ${GOPATH}/bin)
 SRC_DIR = $(shell pwd)
-VERSION ?= $(shell git describe --tags)
+VERSION ?= main-$(shell git rev-parse --short=11 HEAD)
 
 build:
 	${GO_EXECUTABLE} build -o openshift-template-validator-linux-amd64 -ldflags "-X main.version=${VERSION}" main.go

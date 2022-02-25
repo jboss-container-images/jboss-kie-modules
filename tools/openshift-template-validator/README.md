@@ -237,54 +237,23 @@ The next lines contains all the necessary steps to build this tool from source.
 
 ###### Requirements
 
-- golang
-- glide
-
-#### Getting the source and building it
-
-Install Golang, glide, and prepare the GOPATH env.
-
-```bash
-$ sudo dnf install golang
-$ mkdir -p ~/go/{bin,pkg,src}
-$ echo 'export GOPATH=$HOME/go' >> ~/.bashrc
-$ echo 'export PATH=$PATH:$GOPATH/bin' >> ~/.bashrc
-$ source ~/.bashrc
-$ go env GOPATH
-/home/spolti/go
-
-$ curl https://glide.sh/get | sh
-
-
-#### Cloning the repo
-$ git clone https://github.com/jboss-container-images/jboss-kie-modules.git
-$ mkdir -p $GOPATH/src/github.com/jboss-container-images/jboss-kie-modules/tools/
-$ cp -r jboss-kie-modules/tools/openshift-template-validator/ $GOPATH/src/github.com/jboss-container-images/jboss-kie-modules/tools/
-```
-
+- golang 1.16
 
 ##### Building
 
-Just execute the command below in the *$GOPATH/src/github.com/jboss-container-images/jboss-kie-modules/tools/openshift-template-validator* directory:
 
-
- ```bash
- $ sh hack.sh
- ````
-It will download all the needed dependencies and prepare the $GOPATH, after the script gets finished, we can build/install the binaries:
-
-The build/install will generate two binaries:
-- openshift-template-validator-linux-amd64
-- openshift-template-validator-amd64.exe
-
-Just build:
+Build:
 ```bash
 $ make
 ```
 
+The build will generate two binaries:
+- openshift-template-validator-linux-amd64
+- openshift-template-validator-amd64.exe
+
 Install the binaries on the $GOPATH/bin (make sure you have this path on your $PATH env variable)
 ```bash
-$ sudo make install
+$ make install
 ```
 
 To clean the binaries
