@@ -361,6 +361,29 @@ teardown() {
 }
 
 
+@test "test elytron ldap configuration dir-context with search limit timeout and referral mode and using special characters on bind credential" {
+    AUTH_LDAP_URL="ldap://test:12345"
+    AUTH_LDAP_BIND_DN="uid=admin,ou=system"
+    AUTH_LDAP_BIND_CREDENTIAL="P&s\$w1'\"ord"
+    AUTH_LDAP_SEARCH_TIME_LIMIT="10000"
+    AUTH_LDAP_REFERRAL_MODE="ignore"
+
+    configure_elytron_ldap_auth
+
+    expected="<dir-contexts>
+                <dir-context name=\"KIELdapDC\" url=\"ldap://test:12345\" read-timeout=\"10000\" referral-mode=\"ignore\" principal=\"uid=admin,ou=system\">
+                    <credential-reference clear-text=\"P&amp;s\$w1'&quot;ord\"/>
+                </dir-context>
+            </dir-contexts>"
+
+    result="$(xmllint --xpath "//*[local-name()='dir-contexts']" $CONFIG_FILE)"
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
+}
+
+
 @test "test elytron ldap configuration dir-context with referral mode" {
     AUTH_LDAP_URL="ldap://test:12345"
     AUTH_LDAP_BIND_DN="uid=admin,ou=system"
@@ -456,7 +479,7 @@ teardown() {
 
 @test "test elytron ldap configuration ldap-realm with identity-mapping and attribute mapping with special characters on baseFilter" {
     AUTH_LDAP_URL="ldap://test:12345"
-    AUTH_LDAP_BASE_FILTER="(&(mail={0}))(|(objectclass=dbperson)(objectclass=inetOrgPerson)))"
+    AUTH_LDAP_BASE_FILTER="(&(mail={0}))(\|(objectclass=dbperson)(objectclass=inetOrgPerson)))"
     AUTH_LDAP_BASE_CTX_DN="ou=people,dc=example,dc=com"
     AUTH_LDAP_ROLE_ATTRIBUTE_ID="cn"
     AUTH_LDAP_ROLE_FILTER="(member={1})"

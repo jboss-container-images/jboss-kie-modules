@@ -334,7 +334,7 @@ Feature: RHPAM and RHDM common tests
       | AUTH_LDAP_ROLE_ATTRIBUTE_ID | cn                                                                   |
       | AUTH_LDAP_ROLES_CTX_DN      | ou=Roles,dc=example,dc=com                                           |
       | AUTH_LDAP_BASE_FILTER       | (&(mail={0}))(\|(objectclass=dbperson)(objectclass=inetOrgPerson)))  |
-      | SCRIPT_DEBUG                | true                                                            |
+      | SCRIPT_DEBUG                | true                                                                 |
     Then container log should contain AUTH_LDAP_URL is set to [test_url], setting up LDAP authentication with elytron...
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" principal="cn=Manager,dc=example,dc=com">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <credential-reference clear-text="admin"/>
@@ -344,6 +344,30 @@ Feature: RHPAM and RHDM common tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security elytron-domain="KIELdapSecurityDomain"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <application-security-domain name="other" security-domain="KIELdapSecurityDomain"/>
     And file /opt/eat/standalone/deploy/ROOT/WEB-INF/jboss-web.xml should not contain <security-domain>other</security-domain>
+
+
+  Scenario: Check LDAP Base Filter is correctly configured if AUTH_LDAP_BASE_FILTER contains special char '&' and '|' and AUTH_LDAP_BIND_CREDENTIAL with special characters
+    When container is started with env
+      | variable                    | value                                                                |
+      | AUTH_LDAP_URL               | test_url                                                             |
+      | AUTH_LDAP_BIND_DN           | cn=Manager,dc=example,dc=com                                         |
+      | AUTH_LDAP_BIND_CREDENTIAL   | P&s$w1'"ord                                                          |
+      | AUTH_LDAP_BASE_CTX_DN       | ou=Users,dc=example,dc=com                                           |
+      | AUTH_LDAP_ROLE_FILTER       | (member={1})                                                         |
+      | AUTH_LDAP_ROLE_ATTRIBUTE_ID | cn                                                                   |
+      | AUTH_LDAP_ROLES_CTX_DN      | ou=Roles,dc=example,dc=com                                           |
+      | AUTH_LDAP_BASE_FILTER       | (&(mail={0}))(\|(objectclass=dbperson)(objectclass=inetOrgPerson)))  |
+      | SCRIPT_DEBUG                | true                                                                 |
+    Then container log should contain AUTH_LDAP_URL is set to [test_url], setting up LDAP authentication with elytron...
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" principal="cn=Manager,dc=example,dc=com">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <credential-reference clear-text="P&amp;s$w1'&quot;ord"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=Roles,dc=example,dc=com"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <identity-mapping rdn-identifier="(&amp;(mail={0}))(|(objectclass=dbperson)(objectclass=inetOrgPerson)))" search-base-dn="ou=Users,dc=example,dc=com">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIELdapRealm" permission-mapper="default-permission-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security elytron-domain="KIELdapSecurityDomain"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <application-security-domain name="other" security-domain="KIELdapSecurityDomain"/>
+    And file /opt/eat/standalone/deploy/ROOT/WEB-INF/jboss-web.xml should not contain <security-domain>other</security-domain>
+
 
   Scenario: Check if eap users are not being created if SSO is configured with no users env
     When container is started with env
