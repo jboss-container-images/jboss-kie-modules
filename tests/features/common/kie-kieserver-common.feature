@@ -168,25 +168,49 @@ Feature: Kie Server common features
 
   Scenario: Test custom role mapper
     When container is started with env
-      | variable                          | value                         |
-      | AUTH_ROLE_MAPPER_ROLES_PROPERTIES | admin=PowerUser,BillingAdmin  |
+      | variable                           | value                        |
+      | AUTH_LDAP_URL                      | test_url                     |
+      | AUTH_LDAP_BIND_DN                  | cn=Manager,dc=example,dc=com |
+      | AUTH_LDAP_BIND_CREDENTIAL          | admin                        |
+      | AUTH_LDAP_BASE_CTX_DN              | ou=Users,dc=example,dc=com   |
+      | AUTH_LDAP_BASE_FILTER              | uid                          |
+      | AUTH_LDAP_ROLE_ATTRIBUTE_ID        | cn                           |
+      | AUTH_LDAP_ROLES_CTX_DN             | ou=Roles,dc=example,dc=com   |
+      | AUTH_LDAP_ROLE_FILTER              | (member={1})                 |
+      | AUTH_ROLE_MAPPER_ROLES_PROPERTIES  | admin=PowerUser,BillingAdmin |
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <mapped-role-mapper name="kie-custom-role-mapper" keep-mapped="false" keep-non-mapped="false">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <role-mapping from="admin" to="PowerUser BillingAdmin"/>
 
   Scenario: Test custom role mapper with mapper keep mapped
     When container is started with env
-      | variable                          | value                         |
-      | AUTH_ROLE_MAPPER_ROLES_PROPERTIES | admin=PowerUser,BillingAdmin  |
-      | AUTH_LDAP_MAPPER_KEEP_MAPPED      | true                          |
+      | variable                          | value                        |
+      | AUTH_LDAP_URL                     | test_url                     |
+      | AUTH_LDAP_BIND_DN                 | cn=Manager,dc=example,dc=com |
+      | AUTH_LDAP_BIND_CREDENTIAL         | admin                        |
+      | AUTH_LDAP_BASE_CTX_DN             | ou=Users,dc=example,dc=com   |
+      | AUTH_LDAP_BASE_FILTER             | uid                          |
+      | AUTH_LDAP_ROLE_ATTRIBUTE_ID       | cn                           |
+      | AUTH_LDAP_ROLES_CTX_DN            | ou=Roles,dc=example,dc=com   |
+      | AUTH_LDAP_ROLE_FILTER             | (member={1})                 |
+      | AUTH_ROLE_MAPPER_ROLES_PROPERTIES | admin=PowerUser,BillingAdmin |
+      | AUTH_LDAP_MAPPER_KEEP_MAPPED      | true                         |
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <mapped-role-mapper name="kie-custom-role-mapper" keep-mapped="true" keep-non-mapped="false">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <role-mapping from="admin" to="PowerUser BillingAdmin"/>
 
   Scenario: Test custom role mapper with mapper keep mapped false and non mapped
     When container is started with env
-      | variable                          | value                         |
-      | AUTH_ROLE_MAPPER_ROLES_PROPERTIES | admin=PowerUser,BillingAdmin  |
-      | AUTH_LDAP_MAPPER_KEEP_MAPPED      | false                         |
-      | AUTH_LDAP_MAPPER_KEEP_NON_MAPPED  | true                          |
+      | variable                          | value                        |
+      | AUTH_LDAP_URL                     | test_url                     |
+      | AUTH_LDAP_BIND_DN                 | cn=Manager,dc=example,dc=com |
+      | AUTH_LDAP_BIND_CREDENTIAL         | admin                        |
+      | AUTH_LDAP_BASE_CTX_DN             | ou=Users,dc=example,dc=com   |
+      | AUTH_LDAP_BASE_FILTER             | uid                          |
+      | AUTH_LDAP_ROLE_ATTRIBUTE_ID       | cn                           |
+      | AUTH_LDAP_ROLES_CTX_DN            | ou=Roles,dc=example,dc=com   |
+      | AUTH_LDAP_ROLE_FILTER             | (member={1})                 |
+      | AUTH_ROLE_MAPPER_ROLES_PROPERTIES | admin=PowerUser,BillingAdmin |
+      | AUTH_LDAP_MAPPER_KEEP_MAPPED      | false                        |
+      | AUTH_LDAP_MAPPER_KEEP_NON_MAPPED  | true                         |
     Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <mapped-role-mapper name="kie-custom-role-mapper" keep-mapped="false" keep-non-mapped="true">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <role-mapping from="admin" to="PowerUser BillingAdmin"/>
 

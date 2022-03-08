@@ -228,8 +228,9 @@ function configure_elytron_ldap_auth() {
     local kie_elytron_ldap_dir_context="\n            <dir-contexts>\n\
                 <dir-context name=\"KIELdapDC\" url=\"${AUTH_LDAP_URL}\" ${read_timeout}${referral_mode}"
     if [[ ! -z ${AUTH_LDAP_BIND_DN} ]] && [[ ! -z ${AUTH_LDAP_BIND_CREDENTIAL} ]]; then
+        normalized_pwd="$(normalize_string "${AUTH_LDAP_BIND_CREDENTIAL}")"
         kie_elytron_ldap_dir_context="${kie_elytron_ldap_dir_context} principal=\"${AUTH_LDAP_BIND_DN}\">\n\
-                    <credential-reference clear-text=\"${AUTH_LDAP_BIND_CREDENTIAL}\"/>\n\
+                    <credential-reference clear-text=\"${normalized_pwd}\"/>\n\
                 </dir-context>\n\
             </dir-contexts>"
     else
@@ -244,9 +245,12 @@ function configure_elytron_ldap_auth() {
     if [ "${AUTH_LDAP_ALLOW_EMPTY_PASSWORDS^^}" == "TRUE" ]; then
         allow_empty_pass="direct-verification=\"true\" allow-blank-password=\"true\" "
     fi
-    base_filter=${AUTH_LDAP_BASE_FILTER}
-    base_filter=${base_filter//\|/\\|}
-    base_filter=${base_filter//\&/\\&amp;}
+
+    local base_filter="${AUTH_LDAP_BASE_FILTER}"
+    if [[ "${AUTH_LDAP_BASE_FILTER}" =~ "\|" ]]; then
+        base_filter=${AUTH_LDAP_BASE_FILTER//\\|/|}
+    fi
+    base_filter="$(normalize_string "${base_filter}")"
     local kie_elytron_ldap_realm="<ldap-realm name=\"KIELdapRealm\" ${allow_empty_pass}dir-context=\"KIELdapDC\">\n\
                 <identity-mapping rdn-identifier=\"${base_filter}\" search-base-dn=\"${AUTH_LDAP_BASE_CTX_DN}\""
 
@@ -398,4 +402,18 @@ function configure_new_identity_attributes() {
     sed -i "s|<!-- ##IDENTITY## -->|${identity}|" $CONFIG_FILE
 }
 
-
+# normalize string that might contains xml special characters:
+# & -> &#38;
+# $ -> &#36;
+# " -> &#34;
+# ' -> &#39;
+# | -> &#124;
+# ${1} - string to be normnalized
+function normalize_string() {
+    local str="${1//&/\\&#38;}"
+    str="${str//$/\\&#36;}"
+    str="${str//\"/\\&#34;}"
+    str="${str//\'/\\&#39;}"
+    str="${str//|/\\&#124;}"
+    echo ${str}
+}
