@@ -271,13 +271,13 @@ Feature: Kie Server common features
     Then container log should contain -Dorg.drools.server.filter.classes=true
 
   Scenario: CLOUD-747/KIECLOUD-49, test multi-module builds
-    Given s2i build https://github.com/jboss-container-images/rhdm-7-openshift-image from quickstarts/hello-rules-multi-module using main
+    Given s2i build https://github.com/jboss-container-images/rhpam-7-openshift-image from quickstarts/hello-rules-multi-module using main
       | variable                          | value                                                                         |
-      | KIE_SERVER_CONTAINER_DEPLOYMENT   | hellorules=org.openshift.quickstarts:rhdm-kieserver-hellorules:1.6.0-SNAPSHOT |
+      | KIE_SERVER_CONTAINER_DEPLOYMENT   | hellorules=org.openshift.quickstarts:rhpam-kieserver-decisions:1.6.0-SNAPSHOT |
       | ARTIFACT_DIR                      | hellorules/target,hellorules-model/target                                     |
-    Then run sh -c 'test -d /home/jboss/.m2/repository/org/openshift/quickstarts/rhdm-kieserver-parent/ && echo all good' in container and check its output for all good
-     And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rhdm-kieserver-hellorules/1.6.0-SNAPSHOT/rhdm-kieserver-hellorules-1.6.0-SNAPSHOT.jar && echo all good' in container and check its output for all good
-     And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rhdm-kieserver-hellorules-model/1.6.0-SNAPSHOT/rhdm-kieserver-hellorules-model-1.6.0-SNAPSHOT.jar && echo all good' in container and check its output for all good
+    Then run sh -c 'test -d /home/jboss/.m2/repository/org/openshift/quickstarts/rhpam-kieserver-parent/ && echo all good' in container and check its output for all good
+     And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rsthpam-kieserver-decisions/1.6.0-SNAPSHOT/rhpam-kieserver-decisions-1.6.0-SNAPSHOT.jar && echo all good' in container and check its output for all good
+     And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rhpam-kieserver-decisions-model/1.6.0-SNAPSHOT/rhpam-kieserver-decisions-model-1.6.0-SNAPSHOT.jar && echo all good' in container and check its output for all good
 
   Scenario: test Kie Server controller access with default values
     When container is started with env
