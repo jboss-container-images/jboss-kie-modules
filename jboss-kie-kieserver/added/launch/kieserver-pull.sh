@@ -38,7 +38,7 @@ if [[ "x${KIE_SERVER_CONTAINER_DEPLOYMENT}" != "x" && "${KIE_SERVER_DISABLE_KC_P
         # Add JVM default options
         export MAVEN_OPTS="${MAVEN_OPTS:-$(/opt/run-java/java-default-options)}"
         # Use maven batch mode (CLOUD-579)
-        mavenArgsPull="-e -DskipTests dependency:go-offline -f ${pullPomFile} --batch-mode -Djava.net.preferIPv4Stack=true -Popenshift -Dcom.redhat.xpaas.repo.redhatga ${MAVEN_ARGS_APPEND}"
+        mavenArgsPull="-e -DskipTests dependency:resolve dependency:resolve-plugins dependency:go-offline -f ${pullPomFile} --batch-mode -DincludeScope=test -Djava.net.preferIPv4Stack=true -Popenshift -Dcom.redhat.xpaas.repo.redhatga ${MAVEN_ARGS_APPEND}"
 
         log_info "Attempting to pull dependencies for kjar ${i} with 'mvn ${mavenArgsPull}'"
         log_info "Using MAVEN_OPTS '${MAVEN_OPTS}'"
