@@ -51,7 +51,11 @@ CONFIGURE_SCRIPTS=(
   /opt/run-java/proxy-options
 )
 
-source $JBOSS_HOME/bin/launch/configure.sh
+# Sources the configure-modules, it also will invoke all the modules configured in the CONFIGURE_SCRIPTS array
+source $JBOSS_HOME/bin/launch/configure-modules.sh
+
+# run the delayed postinstall of modules
+executeModules delayedPostConfigure
 
 log_info "Running $JBOSS_IMAGE_NAME image, version $JBOSS_IMAGE_VERSION"
 
