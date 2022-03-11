@@ -8,6 +8,8 @@ mkdir -p $JBOSS_HOME/bin/launch
 
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/launch-common.sh $JBOSS_HOME/bin/launch
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/logging.bash $JBOSS_HOME/bin/launch/logging.sh
+mkdir -p $JBOSS_HOME/standalone/configuration
+cp $BATS_TEST_DIRNAME/../../../jboss-eap-config-openshift/EAP7.4.0/added/standalone-openshift.xml $JBOSS_HOME/standalone/configuration/standalone-openshift.xml
 mkdir -p $JBOSS_HOME/standalone/deployments/ROOT.war/{META-INF,WEB-INF/classes}
 
 
@@ -252,6 +254,10 @@ teardown() {
     result=$(xmllint --xpath "//*[local-name()='activation-config-property-value']" $JBOSS_HOME/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml)
     echo "${result}"
     [[ "${result}" == "${expectedConfigurationValues}" ]]
+
+    expectedConfiguration='derive-size="from-cpu-count"'
+    resultStandalone=$(xmllint --xpath "//*[local-name()='strict-max-pool'][@name='mdb-strict-max-pool']/@derive-size" $JBOSS_HOME/standalone/configuration/standalone-openshift.xml)
+    [[ "${resultStandalone#" "}" == "${expectedConfiguration}" ]]
 }
 
 @test "Verify the KieExecutorMDB" {
@@ -273,4 +279,8 @@ teardown() {
     result=$(xmllint --xpath "//*[local-name()='activation-config-property-value']" $JBOSS_HOME/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml)
     echo "${result}"
     [[ "${result}" == "${expectedConfigurationValues}" ]]
+
+    expectedConfiguration='max-pool-size="${jboss.mdb.strict.max.pool.size:60}"'
+    resultStandalone=$(xmllint --xpath "//*[local-name()='strict-max-pool'][@name='mdb-strict-max-pool']/@max-pool-size" $JBOSS_HOME/standalone/configuration/standalone-openshift.xml)
+    [[ "${resultStandalone#" "}" == "${expectedConfiguration}" ]]
 }

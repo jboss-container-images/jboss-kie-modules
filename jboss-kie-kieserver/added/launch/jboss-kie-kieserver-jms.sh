@@ -126,5 +126,8 @@ function configureJmsExecutorMdb(){
                     <activation-config-property-name>maxSession</activation-config-property-name>\
                     <activation-config-property-value>'${JBOSS_MDB_MAX_SESSIONS}'</activation-config-property-value>\
                 </activation-config-property>|g' ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml
+
+        log_info "Configuring mdb-strict-max-pool on standalone-openshift.xml"
+        sed -i  's|derive-size="from-cpu-count"|max-pool-size="${jboss.mdb.strict.max.pool.size:60}"|g' ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml
     fi
 }
