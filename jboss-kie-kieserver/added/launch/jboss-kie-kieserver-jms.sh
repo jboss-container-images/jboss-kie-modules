@@ -6,7 +6,7 @@ source "${JBOSS_HOME}/bin/launch/logging.sh"
 
 function prepareEnv() {
     # please keep these in alphabetical order
-    unset JBOSS_MDB_MAX_SESSIONS
+    unset KIE_EXECUTOR_MDB_MAX_SESSIONS
     unset KIE_SERVER_EXECUTOR_JMS
     unset KIE_SERVER_EXECUTOR_JMS_TRANSACTED
     unset KIE_SERVER_JMS_AUDIT_TRANSACTED
@@ -120,11 +120,14 @@ function configureJmsAudit() {
 }
 
 function configureJmsExecutorMdb(){
-    if [ -n "${JBOSS_MDB_MAX_SESSIONS}" ];then
+    if [ -n "${KIE_EXECUTOR_MDB_MAX_SESSIONS}" ];then
         log_info "Configuring KieServerExecutorMDB Max Sessions on ejb-jar.xml"
         sed -i  's|<!-- ##MAX_SESSION## -->|<activation-config-property>\
                     <activation-config-property-name>maxSession</activation-config-property-name>\
-                    <activation-config-property-value>'${JBOSS_MDB_MAX_SESSIONS}'</activation-config-property-value>\
+                    <activation-config-property-value>'${KIE_EXECUTOR_MDB_MAX_SESSIONS}'</activation-config-property-value>\
                 </activation-config-property>|g' ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml
+
+        log_info "Configuring mdb-strict-max-pool on standalone-openshift.xml"
+        sed -i  's|derive-size="from-cpu-count"|max-pool-size="${jboss.mdb.strict.max.pool.size:60}"|g' ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml
     fi
 }
