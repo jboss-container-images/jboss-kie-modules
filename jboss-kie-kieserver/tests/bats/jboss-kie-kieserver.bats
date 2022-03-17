@@ -84,6 +84,17 @@ teardown() {
     [[ $JBOSS_KIE_ARGS == *"${expected_ejb_timer_local_cache}"* ]]
 }
 
+@test "verify if EJB_TIMER related default settings are not set if KIE_SERVER_DECISIONS_ONLY is true" {
+    local TIMER_SERVICE_DATA_STORE="EJB_TIMER"
+    local expected_ejb_timer_tx="-Dorg.jbpm.ejb.timer.tx=true"
+    local expected_ejb_timer_local_cache="-Dorg.jbpm.ejb.timer.local.cache=false"
+    local KIE_SERVER_DECISIONS_ONLY="true"
+    configure_EJB_Timer_datasource >&2
+    echo "Result is ${JBOSS_KIE_ARGS}"
+    [[ $JBOSS_KIE_ARGS != *"${expected_ejb_timer_tx}"* ]]
+    [[ $JBOSS_KIE_ARGS != *"${expected_ejb_timer_local_cache}"* ]]
+}
+
 @test "verify if EJB_TIMER related settings are changed" {
     local TIMER_SERVICE_DATA_STORE="EJB_TIMER"
     local JBPM_EJB_TIMER_TX="false"
@@ -704,6 +715,23 @@ EOF
     [ "${result}" = "${expected}" ]
 }
 
+@test "Verify if the jbpm cache is not contained in the standalone-openshift.xml when KIE_SERVER_DECISIONS_ONLY is true" {
+    export KIE_SERVER_JBPM_CLUSTER="true"
+    export KIE_SERVER_JBPM_CLUSTER_TRANSPORT_LOCK_TIMEOUT="74000"
+    export KIE_SERVER_DECISIONS_ONLY="true"
+    configure_jbpm_cluster
+    #this is the return of xmllint --xpath "//*[local-name()='cache-container'][@name='jbpm']" $CONFIG_FILE
+    expected="jbpm cache is not contained"
+    if xmllint --xpath "//*[local-name()='cache-container'][@name='jbpm']" ${CONFIG_FILE}; then
+        result="jbpm cache is contained"
+    else
+        result="jbpm cache is not contained"
+    fi
+    echo "Expected: ${expected}"
+    echo "Result  : ${result}"
+    [ "${result}" = "${expected}" ]
+}
+
 @test "Verify if the jbpm required modules are contained in the jboss-deployment-structure.xml when KIE_SERVER_JBPM_CLUSTER is true" {
       export KIE_SERVER_JBPM_CLUSTER="true"
     configure_jbpm_cache
@@ -833,6 +861,22 @@ EOF
     [[ "${JBOSS_KIE_ARGS}" == "${expected}" ]]
 }
 
+@test "Verify the Kafka JBPM Emitter is not configured if KIE_SERVER_DECISIONS_ONLY is TRUE" {
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS="localhost:9093"
+    export KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED="true"
+
+    export KIE_SERVER_DECISIONS_ONLY="true"
+
+
+    configure_kafka_jbpm_emitter
+
+    local expected=""
+    echo "  Result: ${JBOSS_KIE_ARGS}"
+
+    echo "Expected: ${expected}"
+    [[ "${JBOSS_KIE_ARGS}" == "${expected}" ]]
+}
+
 @test "Verify that EJB_TIMER_URL is configured managing the esd special chars (& and ;)" {
     local expected_ejbtimer_xa_url="jdbc:postgres://host:3306/postgres?ssl=true\&amp\;sslmode=allow"
     export EJB_TIMER_DRIVER="postgresql"
@@ -840,4 +884,15 @@ EOF
     fix_ejbtimer_xa_url $url  >&2
     echo "Expected EJB_TIMER url is ${EJB_TIMER_XA_CONNECTION_PROPERTY_Url}" >&2
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Url}" = "${expected_ejbtimer_xa_url}" ]
+}
+
+@test "Verify that JBOSS_KIE_ARGS are configured to bootstrap a decision only kieserver" {
+    local expected_jboss_kie_args=("-Dorg.jbpm.server.ext.disabled=true" "-Dorg.jbpm.ui.server.ext.disabled=true" "-Dorg.jbpm.case.server.ext.disabled=true")
+    export KIE_SERVER_DECISIONS_ONLY="true"
+    configure_jbpm
+    echo "Expected JBOSS_KIE_ARGS should contain ${expected_jboss_kie_args}" >&2
+    for jboss_kie_arg in "${expected_jboss_kie_args[@]}"; do
+      [[ "${JBOSS_KIE_ARGS}" = *"${jboss_kie_arg}"* ]]
+    done
+
 }

@@ -22,6 +22,7 @@ function prepareEnv() {
     unset KIE_SERVER_CONTROLLER_PORT
     unset KIE_SERVER_CONTROLLER_PROTOCOL
     unset KIE_SERVER_CONTROLLER_SERVICE
+    unset KIE_SERVER_DECISIONS_ONLY
     unset KIE_SERVER_DISABLE_KC_PULL_DEPS
     unset KIE_SERVER_DISABLE_KC_VERIFICATION
     unset KIE_SERVER_HOST
@@ -98,58 +99,61 @@ function configure() {
     configure_optaplanner
     # configure_server_state always has to be last
     configure_server_state
+
 }
 
 function configure_EJB_Timer_datasource {
+    # KIECLOUD-603: Create KIE Server configuration option for RHDM capabalities only
+    if [ "${KIE_SERVER_DECISIONS_ONLY^^}" != "TRUE" ]; then
+      source $JBOSS_HOME/bin/launch/datasource-common.sh
 
-    source $JBOSS_HOME/bin/launch/datasource-common.sh
+      local autoConfigure=${AUTO_CONFIGURE_EJB_TIMER:-true}
+      if [ "${autoConfigure^^}" = "TRUE" ]; then
+          log_info "EJB Timer will be auto configured if any datasource is configured via DB_SERVICE_PREFIX_MAPPING or DATASOURCES envs."
 
-    local autoConfigure=${AUTO_CONFIGURE_EJB_TIMER:-true}
-    if [ "${autoConfigure^^}" = "TRUE" ]; then
-        log_info "EJB Timer will be auto configured if any datasource is configured via DB_SERVICE_PREFIX_MAPPING or DATASOURCES envs."
+          # configure the EJB timer datasource based on DB_SERVICE_PREFIX_MAPPING
+          if [ -n "${DB_SERVICE_PREFIX_MAPPING}" ]; then
+              log_info "configuring EJB Timer Datasource based on DB_SERVICE_PREFIX_MAPPING env"
+              local serviceMappingName=${DB_SERVICE_PREFIX_MAPPING%=*}
+              local prefix=${DB_SERVICE_PREFIX_MAPPING#*=}
+              local service=${serviceMappingName^^}
+              service=${service//-/_}
 
-        # configure the EJB timer datasource based on DB_SERVICE_PREFIX_MAPPING
-        if [ -n "${DB_SERVICE_PREFIX_MAPPING}" ]; then
-            log_info "configuring EJB Timer Datasource based on DB_SERVICE_PREFIX_MAPPING env"
-            local serviceMappingName=${DB_SERVICE_PREFIX_MAPPING%=*}
-            local prefix=${DB_SERVICE_PREFIX_MAPPING#*=}
-            local service=${serviceMappingName^^}
-            service=${service//-/_}
+              DB_SERVICE_PREFIX_MAPPING="${serviceMappingName}=EJB_TIMER,${DB_SERVICE_PREFIX_MAPPING}"
+              TIMER_SERVICE_DATA_STORE="EJB_TIMER"
+              EJB_TIMER_DRIVER=${serviceMappingName##*-}
 
-            DB_SERVICE_PREFIX_MAPPING="${serviceMappingName}=EJB_TIMER,${DB_SERVICE_PREFIX_MAPPING}"
-            TIMER_SERVICE_DATA_STORE="EJB_TIMER"
-            EJB_TIMER_DRIVER=${serviceMappingName##*-}
+              set_url $prefix
+              set_timer_env $prefix $service
+          elif [ -n "${DATASOURCES}" ]; then
+              log_info "configuring EJB Timer Datasource based on DATASOURCES env"
+              # Make sure that the EJB datasource is configured first, in this way the timer's default-data-store wil be the
+              # EJBTimer datasource
+              local dsPrefix="${DATASOURCES%,*}"
+              DATASOURCES="EJB_TIMER,${DATASOURCES}"
 
-            set_url $prefix
-            set_timer_env $prefix $service
-        elif [ -n "${DATASOURCES}" ]; then
-            log_info "configuring EJB Timer Datasource based on DATASOURCES env"
-            # Make sure that the EJB datasource is configured first, in this way the timer's default-data-store wil be the
-            # EJBTimer datasource
-            local dsPrefix="${DATASOURCES%,*}"
-            DATASOURCES="EJB_TIMER,${DATASOURCES}"
+              # default value for ${prefix)_NONXA should be true
+              if [ -z "$(eval echo \$${dsPrefix}_NONXA)" ]; then
+                  eval ${dsPrefix}_NONXA="true"
+              fi
 
-            # default value for ${prefix)_NONXA should be true
-            if [ -z "$(eval echo \$${dsPrefix}_NONXA)" ]; then
-                eval ${dsPrefix}_NONXA="true"
-            fi
+              set_url $dsPrefix
+              set_timer_env $dsPrefix
+              TIMER_SERVICE_DATA_STORE="EJB_TIMER"
 
-            set_url $dsPrefix
-            set_timer_env $dsPrefix
-            TIMER_SERVICE_DATA_STORE="EJB_TIMER"
+              # set 4 as default value for ${prefix)_XA_CONNECTION_PROPERTY_DRIVER_TYPE
+              if [[ "$(eval echo \$${dsPrefix}_DRIVER)" = *"db2"* ]]; then
+                  local driverType=$(find_env "${dsPrefix}_DRIVER_TYPE" "4")
+                  eval ${dsPrefix}_XA_CONNECTION_PROPERTY_DriverType="${driverType}"
+                  EJB_TIMER_XA_CONNECTION_PROPERTY_DriverType="${driverType}"
+              fi
+          fi
+      fi
 
-            # set 4 as default value for ${prefix)_XA_CONNECTION_PROPERTY_DRIVER_TYPE
-            if [[ "$(eval echo \$${dsPrefix}_DRIVER)" = *"db2"* ]]; then
-                local driverType=$(find_env "${dsPrefix}_DRIVER_TYPE" "4")
-                eval ${dsPrefix}_XA_CONNECTION_PROPERTY_DriverType="${driverType}"
-                EJB_TIMER_XA_CONNECTION_PROPERTY_DriverType="${driverType}"
-            fi
-        fi
-    fi
-
-    if [ -n "${TIMER_SERVICE_DATA_STORE}" ]; then
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ejb.timer.tx=${JBPM_EJB_TIMER_TX:-true}"
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ejb.timer.local.cache=${JBPM_EJB_TIMER_LOCAL_CACHE:-false}"
+      if [ -n "${TIMER_SERVICE_DATA_STORE}" ]; then
+          JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ejb.timer.tx=${JBPM_EJB_TIMER_TX:-true}"
+          JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ejb.timer.local.cache=${JBPM_EJB_TIMER_LOCAL_CACHE:-false}"
+      fi
     fi
 }
 
@@ -635,7 +639,7 @@ function configure_server_sync_deploy() {
 
 # Enable/disable the jbpm capabilities according with the product
 function configure_jbpm() {
-    if [ "${JBOSS_PRODUCT}" = "rhpam-kieserver" ]; then
+    if [ "${JBOSS_PRODUCT}" = "rhpam-kieserver" ] && [ "${KIE_SERVER_DECISIONS_ONLY^^}" != "TRUE" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.executor.retry.count=${KIE_EXECUTOR_RETRIES:-3}"
         if [ "${JBPM_HT_CALLBACK_METHOD}" != "" ]; then
             JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ht.callback=${JBPM_HT_CALLBACK_METHOD}"
@@ -647,7 +651,8 @@ function configure_jbpm() {
             # yes, this starts with -Djbpm not -Dorg.jbpm
             JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Djbpm.loop.level.disabled=${JBPM_LOOP_LEVEL_DISABLED}"
         fi
-    elif [ "${JBOSS_PRODUCT}" = "rhdm-kieserver" ]; then
+    elif [ "${KIE_SERVER_DECISIONS_ONLY^^}" = "TRUE" ]; then
+        log_info "KIE Server will be executed with DM only capabilities."
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.server.ext.disabled=true -Dorg.jbpm.ui.server.ext.disabled=true -Dorg.jbpm.case.server.ext.disabled=true"
     fi
 }
@@ -770,7 +775,7 @@ function generate_random_id() {
 }
 
 function configure_jbpm_cluster(){
-    if [ "${KIE_SERVER_JBPM_CLUSTER^^}" = "TRUE" ]; then
+    if [ "${KIE_SERVER_JBPM_CLUSTER^^}" = "TRUE" ] && [ "${KIE_SERVER_DECISIONS_ONLY^^}" != "TRUE" ]; then
       configure_jbpm_cache
       log_info "KIE Server's cluster for Jbpm failover is enabled."
     else
@@ -830,7 +835,7 @@ function configure_kafka(){
 }
 
 function configure_kafka_jbpm_emitter(){
-    if [ "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED^^}" = "TRUE" ]; then
+    if [ "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_ENABLED^^}" = "TRUE" ] && [ "${KIE_SERVER_DECISIONS_ONLY^^}" != "TRUE" ]; then
         if [ -n "${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS}" ]; then
             log_info "Kafka JBPM Emitter enabled"
             JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.jbpm.event.emitters.kafka.bootstrap.servers=${KIE_SERVER_KAFKA_JBPM_EVENT_EMITTER_BOOTSTRAP_SERVERS}"

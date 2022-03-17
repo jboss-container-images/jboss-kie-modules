@@ -581,3 +581,29 @@ Feature: Kie Server common features
      When container is started with env
        | variable                             | value                         |
      Then container log should contain Access log is disabled, ignoring configuration.
+
+  Scenario: Verify that KieServer has got decision only capabilities
+    When container is started with env
+      | variable                             | value                         |
+      | KIE_SERVER_DECISIONS_ONLY             | TRUE                          |
+    Then container log should contain KIE Server will be executed with DM only capabilities.
+     And container log should contain KIE Server's cluster for Jbpm failover is disabled.
+     And container log should contain Drools KIE Server extension has been successfully registered as server extension
+     And container log should contain DMN KIE Server extension has been successfully registered as server extension
+     And container log should contain OptaPlanner KIE Server extension has been successfully registered as server extension
+     And container log should not contain jBPM KIE Server extension has been successfully registered as server extension
+     And container log should not contain Case-Mgmt KIE Server extension has been successfully registered as server extension
+     And container log should not contain jBPM-UI KIE Server extension has been successfully registered as server extension
+     And container log should not contain Kafka JBPM Emitter enabled
+     And container log should not contain EJB Timer will be auto configured if any datasource is configured via DB_SERVICE_PREFIX_MAPPING or DATASOURCES envs.
+
+  Scenario: Verify that KieServer is started with all the capabilities/extensions by default
+    When container is started with env
+      | variable                             | value                         |
+    Then container log should contain KIE Server's cluster for Jbpm failover is disabled.
+    And container log should contain Drools KIE Server extension has been successfully registered as server extension
+    And container log should contain DMN KIE Server extension has been successfully registered as server extension
+    And container log should contain OptaPlanner KIE Server extension has been successfully registered as server extension
+    And container log should contain jBPM KIE Server extension has been successfully registered as server extension
+    And container log should contain Case-Mgmt KIE Server extension has been successfully registered as server extension
+    And container log should contain jBPM-UI KIE Server extension has been successfully registered as server extension
