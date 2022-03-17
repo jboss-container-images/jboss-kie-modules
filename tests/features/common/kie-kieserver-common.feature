@@ -557,12 +557,15 @@ Feature: Kie Server common features
      When container is started with env
        | variable                             | value                         |
      Then container log should contain Access log is disabled, ignoring configuration.
+    
   Scenario: Verify if the KieExecutorMDB is configured
     When container is started with env
-      | variable                            | value                          |
-      | JBOSS_MDB_MAX_SESSIONS              | 987654321123456789             |
+      | variable                            | value                               |
+      | KIE_EXECUTOR_MDB_MAX_SESSIONS       | 987654321123456789                  |
+      | JAVA_OPTS_APPEND                    | -Djboss.mdb.strict.max.pool.size=40 |
     Then container log should contain Configuring KieServerExecutorMDB Max Sessions on ejb-jar.xml
-     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <ejb-class>org.kie.server.jms.executor.KieExecutorMDB</ejb-class>
-     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-name>maxSession</activation-config-property-name>
-     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>987654321123456789</activation-config-property-value>
-
+    And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <ejb-class>org.kie.server.jms.executor.KieExecutorMDB</ejb-class>
+    And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-name>maxSession</activation-config-property-name>
+    And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>987654321123456789</activation-config-property-value>
+    And container log should contain -Djboss.mdb.strict.max.pool.size=40
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <strict-max-pool name="mdb-strict-max-pool" derive-size="from-cpu-count"
