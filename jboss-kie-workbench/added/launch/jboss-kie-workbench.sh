@@ -163,6 +163,11 @@ function configure_server_access() {
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.user=\"$(get_kie_admin_user)\""
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.pwd=\"$(esc_kie_admin_pwd)\""
     fi
+
+    local kieServerBypassAuthUser="$(get_kie_server_bypass_auth_user)"
+    if [ "${kieServerBypassAuthUser}" != "" ]; then
+        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.bypass.auth.user=\"${kieServerBypassAuthUser}\""
+    fi
 }
 
 function configure_openshift_enhancement() {

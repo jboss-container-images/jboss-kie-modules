@@ -159,3 +159,9 @@ Feature: Decision/Business Central common features
      And container log should not contain -Dorg.kie.server.controller.user
      And container log should not contain -Dorg.kie.server.controller.pwd
      And container log should contain -Dorg.kie.server.controller.token=some-random-token
+
+  Scenario: Verify the KIE_SERVER_BYPASS_AUTH_USER configuration
+    When container is started with env
+      | variable                    | value    |
+      | KIE_SERVER_BYPASS_AUTH_USER | true     |
+    Then container log should contain -Dorg.kie.server.bypass.auth.user=true
