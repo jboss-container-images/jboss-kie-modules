@@ -231,3 +231,37 @@ teardown() {
 
     [ "${JBOSS_KIE_ARGS}" = "${expected}" ]
 }
+
+@test "test if KIE_SERVER_BYPASS_AUTH_USER correctly sets org.kie.server.bypass.auth.user to true" {
+    export KIE_SERVER_BYPASS_AUTH_USER="true"
+
+    expected=" -Dorg.kie.server.user=\"adminUser\" -Dorg.kie.server.pwd=\"admin1!\" -Dorg.kie.server.bypass.auth.user=\"true\""
+    configure_server_access
+
+    echo "Expected: ${expected}"
+    echo "Result  : ${JBOSS_KIE_ARGS}"
+
+    [ "${JBOSS_KIE_ARGS}" = "${expected}" ]
+}
+
+@test "test if KIE_SERVER_BYPASS_AUTH_USER correctly sets org.kie.server.bypass.auth.user to false" {
+    export KIE_SERVER_BYPASS_AUTH_USER="false"
+
+    expected=" -Dorg.kie.server.user=\"adminUser\" -Dorg.kie.server.pwd=\"admin1!\" -Dorg.kie.server.bypass.auth.user=\"false\""
+    configure_server_access
+
+    echo "Expected: ${expected}"
+    echo "Result  : ${JBOSS_KIE_ARGS}"
+
+    [ "${JBOSS_KIE_ARGS}" = "${expected}" ]
+}
+
+@test "test if KIE_SERVER_BYPASS_AUTH_USER when empty does not set org.kie.server.bypass.auth.user" {
+    expected=" -Dorg.kie.server.user=\"adminUser\" -Dorg.kie.server.pwd=\"admin1!\""
+    configure_server_access
+
+    echo "Expected: ${expected}"
+    echo "Result  : ${JBOSS_KIE_ARGS}"
+
+    [ "${JBOSS_KIE_ARGS}" = "${expected}" ]
+}
