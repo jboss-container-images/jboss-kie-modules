@@ -276,7 +276,7 @@ Feature: Kie Server common features
       | KIE_SERVER_CONTAINER_DEPLOYMENT   | hellorules=org.openshift.quickstarts:rhpam-kieserver-decisions:1.6.0-SNAPSHOT |
       | ARTIFACT_DIR                      | hellorules/target,hellorules-model/target                                     |
     Then run sh -c 'test -d /home/jboss/.m2/repository/org/openshift/quickstarts/rhpam-kieserver-parent/ && echo all good' in container and check its output for all good
-     And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rsthpam-kieserver-decisions/1.6.0-SNAPSHOT/rhpam-kieserver-decisions-1.6.0-SNAPSHOT.jar && echo all good' in container and check its output for all good
+     And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rhpam-kieserver-decisions/1.6.0-SNAPSHOT/rhpam-kieserver-decisions-1.6.0-SNAPSHOT.jar && echo all good' in container and check its output for all good
      And run sh -c 'test -f /home/jboss/.m2/repository/org/openshift/quickstarts/rhpam-kieserver-decisions-model/1.6.0-SNAPSHOT/rhpam-kieserver-decisions-model-1.6.0-SNAPSHOT.jar && echo all good' in container and check its output for all good
 
   Scenario: test Kie Server controller access with default values
@@ -562,11 +562,14 @@ Feature: Kie Server common features
   Scenario: Verify if the KieExecutorMDB is configured
     When container is started with env
       | variable                            | value                          |
-      | JBOSS_MDB_MAX_SESSIONS              | 987654321123456789             |
-    Then container log should contain Configuring KieServerExecutorMDB Max Sessions on ejb-jar.xml
-     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <ejb-class>org.kie.server.jms.executor.KieExecutorMDB</ejb-class>
-     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-name>maxSession</activation-config-property-name>
-     And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>987654321123456789</activation-config-property-value>
+      | KIE_EXECUTOR_MDB_MAX_SESSIONS       | 987654321123456789                  |
+      | JAVA_OPTS_APPEND                    | -Djboss.mdb.strict.max.pool.size=40 |
+      Then container log should contain Configuring KieServerExecutorMDB Max Sessions on ejb-jar.xml
+       And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <ejb-class>org.kie.server.jms.executor.KieExecutorMDB</ejb-class>
+       And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-name>maxSession</activation-config-property-name>
+       And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>987654321123456789</activation-config-property-value>
+       And container log should contain -Djboss.mdb.strict.max.pool.size=40
+       And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <strict-max-pool name="mdb-strict-max-pool" derive-size="from-cpu-count"
 
   Scenario: Verify if the ACCESS_LOG_VALVE is configured
     When container is started with env
@@ -609,12 +612,3 @@ Feature: Kie Server common features
     And container log should contain jBPM KIE Server extension has been successfully registered as server extension
     And container log should contain Case-Mgmt KIE Server extension has been successfully registered as server extension
     And container log should contain jBPM-UI KIE Server extension has been successfully registered as server extension
-      | variable                            | value                               |
-      | KIE_EXECUTOR_MDB_MAX_SESSIONS       | 987654321123456789                  |
-      | JAVA_OPTS_APPEND                    | -Djboss.mdb.strict.max.pool.size=40 |
-    Then container log should contain Configuring KieServerExecutorMDB Max Sessions on ejb-jar.xml
-    And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <ejb-class>org.kie.server.jms.executor.KieExecutorMDB</ejb-class>
-    And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-name>maxSession</activation-config-property-name>
-    And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>987654321123456789</activation-config-property-value>
-    And container log should contain -Djboss.mdb.strict.max.pool.size=40
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <strict-max-pool name="mdb-strict-max-pool" derive-size="from-cpu-count"
