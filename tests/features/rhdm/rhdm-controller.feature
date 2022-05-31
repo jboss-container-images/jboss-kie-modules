@@ -9,4 +9,4 @@ Feature: RHDM Controller configuration tests
   Scenario: Check for product and version environment variables
     When container is started with command bash
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhdm-controller
-     And run sh -c 'echo $RHDM_CONTROLLER_VERSION' in container and check its output for 7.13
+     And run sh -c 'echo $RHDM_CONTROLLER_VERSION' in container and check its output for 7.14
