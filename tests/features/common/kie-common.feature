@@ -6,7 +6,7 @@
 @rhpam-7/rhpam-dashbuilder-rhel8
 @rhpam-7/rhpam-controller-rhel8
 @rhdm-7/rhdm-controller-rhel8
-Feature: RHPAM and RHDM common tests
+Feature:  IBM BAMOE and RHDM common tests
 
   Scenario: Ensure the openjdk8 packages are not installed on container.
     When container is started with command bash

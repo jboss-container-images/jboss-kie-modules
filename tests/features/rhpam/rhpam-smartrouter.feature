@@ -1,5 +1,5 @@
 @rhpam-7/rhpam-smartrouter-rhel8
-Feature: RHPAM Smart Router configuration tests
+Feature:  IBM BAMOE Smart Router configuration tests
 
   Scenario: Test REST API is available and valid
     When container is started with env

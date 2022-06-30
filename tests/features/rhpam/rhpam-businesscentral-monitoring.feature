@@ -1,5 +1,5 @@
 @rhpam-7/rhpam-businesscentral-monitoring-rhel8
-Feature: RHPAM Business Central Monitoring configuration tests
+Feature:  IBM BAMOE Business Central Monitoring configuration tests
 
   Scenario: Web console is available
     When container is ready

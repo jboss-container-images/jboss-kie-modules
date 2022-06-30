@@ -1,5 +1,5 @@
 @rhpam-7/rhpam-dashbuilder-rhel8
-Feature: RHPAM Dashbuilder Runtime configuration tests
+Feature:  IBM BAMOE Dashbuilder Runtime configuration tests
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot

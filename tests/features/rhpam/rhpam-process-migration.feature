@@ -1,5 +1,5 @@
 @rhpam-7/rhpam-process-migration-rhel8
-Feature: RHPAM Process Migration tests
+Feature:  IBM BAMOE Process Migration tests
 
   Scenario: Verify if all labels are correctly set on rhpam-process-migration-rhel8 image
     When container is started with command bash

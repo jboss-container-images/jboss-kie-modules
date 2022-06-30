@@ -1,5 +1,5 @@
 @rhpam-7/rhpam-businesscentral-rhel8
-Feature: RHPAM Business Central configuration tests
+Feature:  IBM BAMOE Business Central configuration tests
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot

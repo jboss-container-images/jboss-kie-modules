@@ -1,5 +1,5 @@
 @rhpam-7/rhpam-kieserver-rhel8
-Feature: RHPAM KIE Server configuration tests
+Feature:  IBM BAMOE KIE Server configuration tests
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
