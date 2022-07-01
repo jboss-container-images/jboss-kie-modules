@@ -104,7 +104,7 @@ cekit test -v
 2019-03-21 12:32:39,525 cekit        INFO     Tests collected!
 2019-03-21 12:32:39,562 cekit        DEBUG    Running behave in '/data/dev/sources/rhpam-7-openshift-image/smartrouter/target/test'.
 @rhpam-7/rhpam78-smartrouter-openshift
-Feature:  IBM BAMOE Smart Router configuration tests # features/jboss-kie-modules.git-main/rhpam/smartrouter/rhpam-smartrouter.feature:2
+Feature: IBM BAMOE Smart Router configuration tests # features/jboss-kie-modules.git-main/rhpam/smartrouter/rhpam-smartrouter.feature:2
 
   Scenario: Check if image version and release is printed on boot                          # features/jboss-kie-modules.git-main/rhpam/smartrouter/rhpam-smartrouter.feature:5
     When container is ready                                                                # steps/container_steps.py:13 3.692s
