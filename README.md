@@ -147,7 +147,7 @@ $ cekit test --test-wip v
 2019-01-10 18:17:21,815 cekit        INFO     Fetching common steps from 'https://github.com/cekit/behave-test-steps.git'.
 2019-01-10 18:17:23,195 cekit        INFO     Tests collected!
 @rhpam-7/rhpam73-businesscentral-openshift
-Feature:  IBM BAMOE Business Central configuration tests # features/jboss-kie-modules/rhpam/businesscentral/rhpam-businesscentral.feature:2
+Feature: IBM BAMOE Business Central configuration tests # features/jboss-kie-modules/rhpam/businesscentral/rhpam-businesscentral.feature:2
 
   @wip
   Scenario: Check if JBOSS_HOME is correctly set                                     # features/jboss-kie-modules/rhpam/businesscentral/rhpam-businesscentral.feature:54
