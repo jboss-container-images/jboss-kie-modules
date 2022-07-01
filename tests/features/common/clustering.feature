@@ -1,5 +1,5 @@
 @rhpam-7/rhpam-businesscentral-rhel8 @rhpam-7/rhpam-businesscentral-monitoring-rhel8 @rhdm-7/rhdm-decisioncentral-rhel8
-Feature:  IBM BAMOE RHDM Workbench clustering configuration
+Feature: IBM BAMOE Workbench clustering configuration
 
   Scenario: HA will not be configured
     When container is ready
