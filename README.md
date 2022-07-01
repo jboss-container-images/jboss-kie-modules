@@ -12,11 +12,11 @@ Below, all CeKit modules contained in this repository:
   - [jboss-eap-config-openshift](jboss-eap-config-openshift): Holds the JBoss EAP standalone-openshift.xml file used by the IBM BAMOE images.
   - [jboss-kie-common](jboss-kie-common): This module holds common functions reused on IBM BAMOE images.
   - [jboss-kie-common-dependencies](jboss-kie-common-dependencies): Installs common rpm packages on IBM BAMOE images.
-  - [jboss-kie-controller](jboss-kie-controller): RHDM/PAM Controller Image specific module.
+  - [jboss-kie-controller](jboss-kie-controller): IBM BAMOE Controller Image specific module.
   - [jboss-kie-dashbuilder](jboss-kie-dashbuilder): IBM BAMOE Dashbuilder Image specific module.
   - [jboss-kie-db-drivers](jboss-kie-db-drivers): Provides the MariaDB and PostgreSQL jdbc drivers through rpm package manager.
   - [jboss-kie-jdk-clean](jboss-kie-jdk-clean): Clean possible JDK packages not needed on the runtime image.
-  - [jboss-kie-kieserver](jboss-kie-kieserver): RHDM/PAM Execution Server Image specific module.
+  - [jboss-kie-kieserver](jboss-kie-kieserver): IBM BAMOE Execution Server Image specific module.
   - [jboss-kie-process-migration](jboss-kie-process-migration): IBM BAMOE Process Instance Migration Image specific module.
   - [jboss-kie-smartrouter](jboss-kie-smartrouter): IBM BAMOE Smart Router specific module.
   - [jboss-kie-wildfly-common](jboss-kie-wildfly-common): Common modules shared between all images.

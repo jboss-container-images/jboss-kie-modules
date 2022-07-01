@@ -328,7 +328,7 @@ handle_rhdm_artifacts() {
         return 1
     fi
 
-    # RHDM Add-Ons
+    # IBM BAMOE Decisions Add-Ons
     local add_ons_distribution_zip
     local add_ons_distribution_md5
     if product_matches "${product}" "rhdm" "controller" ; then
@@ -346,7 +346,7 @@ handle_rhdm_artifacts() {
         fi
     fi
 
-    # RHDM Controller
+    # IBM BAMOE Decisions Controller
     if product_matches "${product}" "rhdm" "controller" ; then
         local controller_distribution_zip="rhdm-${short_version}-controller-ee7.zip"
         local controller_overrides_yaml="${overrides_dir}/rhdm-controller-overrides.yaml"
@@ -390,7 +390,7 @@ EOF
         fi
     fi
 
-    # RHDM Decision Central
+    # IBM BAMOE Decision Central
     if product_matches "${product}" "rhdm" "decisioncentral" ; then
         local decision_central_distribution_url=$(get_artifact_url "rhdm.decision-central-eap7.latest.url" "${build_file}")
         local decision_central_distribution_zip=$(get_artifact_name "${decision_central_distribution_url}")
@@ -436,7 +436,7 @@ EOF
         fi
     fi
 
-    # RHDM KIE Server
+    # IBM BAMOE Decisions KIE Server
     if product_matches "${product}" "rhdm" "kieserver" ; then
         local kie_server_distribution_url=$(get_artifact_url "rhdm.kie-server.ee8.latest.url" "${build_file}")
         local kie_server_distribution_zip=$(get_artifact_name "${kie_server_distribution_url}")

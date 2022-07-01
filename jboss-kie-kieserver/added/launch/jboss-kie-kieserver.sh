@@ -103,7 +103,7 @@ function configure() {
 }
 
 function configure_EJB_Timer_datasource {
-    # KIECLOUD-603: Create KIE Server configuration option for RHDM capabalities only
+    # KIECLOUD-603: Create KIE Server configuration option for Decisions capabalities only
     if [ "${KIE_SERVER_DECISIONS_ONLY^^}" != "TRUE" ]; then
       source $JBOSS_HOME/bin/launch/datasource-common.sh
 

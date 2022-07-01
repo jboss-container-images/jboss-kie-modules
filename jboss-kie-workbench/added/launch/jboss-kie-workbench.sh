@@ -187,7 +187,7 @@ function configure_openshift_enhancement() {
 
 function configure_workbench_profile() {
     local simplifiedMon=$(find_env "ORG_APPFORMER_SERVER_SIMPLIFIED_MONITORING_ENABLED" "false")
-    # Business Central is unified for RHDM and RHPAM; For rhpam-decisioncentral needs to be set org.kie.workbench.profile
+    # Business Central is unified for Decision and Process capabilities; For rhpam-decisioncentral needs to be set org.kie.workbench.profile
     # to FORCE_PLANNER_AND_RULES and for rhpam-businesscentral and rhpam-businesscentral-monitoring needst to be set to
     # FORCE_FULL
     if [ "$JBOSS_PRODUCT" = "rhdm-decisioncentral" ]; then

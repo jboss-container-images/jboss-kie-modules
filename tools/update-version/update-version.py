@@ -112,7 +112,7 @@ def update_adocs_readme(version, confirm):
     :param confirm: if true will save the changes otherwise will print the proposed changes
     """
 
-    readmes = ['tools/gen-template-doc/README_RHDM.adoc.in', 'tools/gen-template-doc/README_RHPAM.adoc.in']
+    readmes = [t'tools/gen-template-doc/README_IBM_BAMOE.adoc.in']
 
     if confirm:
         for readme in readmes:

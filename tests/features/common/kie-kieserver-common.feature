@@ -427,16 +427,16 @@ Feature: Kie Server common features
     Then container log should contain Invalid value "foobar" for PROMETHEUS_SERVER_EXT_DISABLED. Must be "true" or "false".
      And container log should not contain -javaagent:/opt/jboss/container/prometheus/jmx_prometheus_javaagent.jar
 
-  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, remove unneeded files
+  Scenario: KIECLOUD-122 - Enable JMS for IBM BAMOE, remove unneeded files
     When container is ready
     Then file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/weblogic-ejb-jar.xml should not exist
 
-  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, check if the custom jms file configuration are present on the image
+  Scenario: KIECLOUD-122 - Enable JMS for IBM BAMOE, check if the custom jms file configuration are present on the image
     When container is ready
     Then file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain org.kie.server.jms.KieServerMDB
      And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain org.kie.server.jms.executor.KieExecutorMDB
 
-  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, test default request/response queue values on kie-server-jms.xml
+  Scenario: KIECLOUD-122 - Enable JMS for IBM BAMOE, test default request/response queue values on kie-server-jms.xml
     When container is ready
     Then file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain <entry name="queue/KIE.SERVER.REQUEST" />
      And file /opt/eap/standalone/deployments/ROOT.war/META-INF/kie-server-jms.xml should contain <jms-queue name="KIE.SERVER.REQUEST">
@@ -449,7 +449,7 @@ Feature: Kie Server common features
      And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>queue/KIE.SERVER.REQUEST</activation-config-property-value>
      And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>queue/KIE.SERVER.EXECUTOR</activation-config-property-value>
 
-  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, test custom request/response queue values on kie-server-jms.xml
+  Scenario: KIECLOUD-122 - Enable JMS for IBM BAMOE, test custom request/response queue values on kie-server-jms.xml
     When container is started with env
       | variable                       | value                        |
       | KIE_SERVER_JMS_QUEUE_RESPONSE  | queue/MY.KIE.SERVER.RESPONSE |
@@ -463,7 +463,7 @@ Feature: Kie Server common features
      And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>queue/MY.KIE.SERVER.REQUEST</activation-config-property-value>
      And file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/ejb-jar.xml should contain <activation-config-property-value>queue/MY.KIE.SERVER.EXECUTOR</activation-config-property-value>
 
-  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, verify if the JMS is disabled
+  Scenario: KIECLOUD-122 - Enable JMS for IBM BAMOE, verify if the JMS is disabled
     When container is started with env
       | variable                | value    |
       | KIE_SERVER_EXECUTOR_JMS | false    |
@@ -473,7 +473,7 @@ Feature: Kie Server common features
      And container log should not contain -Dorg.kie.executor.jms.transacted
      And container log should not contain -Dorg.kie.executor.jms.queue
 
-  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, verify META-INF/jms-server-jms.xml is removed if external AMQ integration is enabled
+  Scenario: KIECLOUD-122 - Enable JMS for IBM BAMOE, verify META-INF/jms-server-jms.xml is removed if external AMQ integration is enabled
     When container is started with env
       | variable                  | value     |
       | MQ_SERVICE_PREFIX_MAPPING | AMQPREFIX |

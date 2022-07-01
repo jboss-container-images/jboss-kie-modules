@@ -15,9 +15,9 @@
 #       - pygit2 - dnf install pygit2
 #
 # Usage
-#   Generate docs for RHPAM: ./gen_template_docs.py
-#   Generate docs only for rhpam: ./gen_template_docs.py --rhpam
-#   Generate docs specifying custom branch: ./gen_template_docs.py --rhpam-git-branch 7.1.0
+#   Generate docs for IBM BAMOE: ./gen_template_docs.py
+#   Generate docs only for ibm-bamoe: ./gen_template_docs.py --rhpam
+#   Generate docs specifying custom branch: ./gen_template_docs.py --rhpam-git-branch 7.13.x-blue
 #   Generate docs and copy the docs to its final location:
 #       The default location of the generated docs are: ../../../<repo_name>/templates/docs/
 #       Considering that jboss-kie-modules and the other projects are in the same directory level, i.e:
@@ -424,7 +424,7 @@ def generate_readme(generate_rhpam):
                 print('Generating output/target/README.adoc...')
                 fh.write(autogen_warning)
                 # page header
-                fh.write(open('./README_RHPAM.adoc.in').read())
+                fh.write(open('./README_IBM_BAMOE.adoc.in').read())
 
                 for directory in sorted(template_dirs):
                     if not os.path.isdir(directory):
@@ -446,9 +446,9 @@ def generate_readme(generate_rhpam):
                             if "image-stream" not in template and template not in deny_list:
                                 fh.write("* link:%s.adoc[%s]\n" % ("decision/"+template, template))
                 # release notes
-                fh.write(open('./release-notes-rhpam.adoc.in').read())
+                fh.write(open('./release-notes-ibm-bamoe.adoc.in').read())
         except IOError as err:
-            print("Error while writing README_RHPAM.adoc: " + str(err))
+            print("Error while writing README_IBM_BAMOE.adoc: " + str(err))
             pass
 
 

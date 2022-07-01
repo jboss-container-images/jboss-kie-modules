@@ -27,6 +27,16 @@ Feature:  IBM BAMOE KIE Server configuration tests
     And s2i build log should contain java -Djavax.net.ssl.trustStore=truststore.ts -Djavax.net.ssl.trustStorePassword=123456 --add-modules
     And s2i build log should not contain And s2i build log should not contain java.lang.ClassNotFoundException: org.apache.maven.model.io.xpp3.MavenXpp3WriterEx
 
+  Scenario: deploys the hellorules example, then checks if it's deployed. Additionally test if the JAVA_OPTS_APPEND is used in the container verifier step
+    Given s2i build https://github.com/jboss-container-images/rhpam-7-openshift-image from quickstarts/hello-rules/hellorules using main
+      | variable                        | value                                                                                        |
+      | KIE_SERVER_CONTAINER_DEPLOYMENT | rhdm-kieserver-hellorules=org.openshift.quickstarts:rhpam-kieserver-decisions:1.6.0-SNAPSHOT |
+      | JAVA_OPTS_APPEND                | -Djavax.net.ssl.trustStore=truststore.ts -Djavax.net.ssl.trustStorePassword=123456           |
+      | SCRIPT_DEBUG                    | true                                                                                         |
+    Then s2i build log should contain Attempting to verify kie server containers with 'java org.kie.server.services.impl.KieServerContainerVerifier  org.openshift.quickstarts:rhpam-kieserver-decisions:1.6.0-SNAPSHOT'
+    And s2i build log should contain java -Djavax.net.ssl.trustStore=truststore.ts -Djavax.net.ssl.trustStorePassword=123456 --add-modules
+    And s2i build log should not contain java.lang.ClassNotFoundException: org.apache.maven.model.io.xpp3.MavenXpp3WriterEx
+
   # https://issues.jboss.org/browse/JBPM-7834
   Scenario: Check OpenShiftStartupStrategy is enabled in RHPAM 7
     When container is started with env
@@ -76,7 +86,7 @@ Feature:  IBM BAMOE KIE Server configuration tests
     Then container log should contain -Dorg.kie.executor.retry.count=40
      And container log should contain - Retries per Request: 40
 
-  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, verify if the JMS is the default executor and jms transacted is false
+  Scenario: KIECLOUD-122 - Enable JMS for IBM BAMOE, verify if the JMS is the default executor and jms transacted is false
     When container is ready
     Then container log should contain -Dorg.kie.executor.jms=true
      And container log should contain -Dorg.kie.executor.jms.queue=queue/KIE.SERVER.EXECUTOR
@@ -84,7 +94,7 @@ Feature:  IBM BAMOE KIE Server configuration tests
      And container log should contain Executor JMS based support successfully activated on queue ActiveMQQueue[jms.queue.KIE.SERVER.EXECUTOR]
 
   # if this test fail, increase the cekit execution timeout, i.e. $ export CTF_WAIT_TIME=5; cekit....
-  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, verify if the JMS executor configuration
+  Scenario: KIECLOUD-122 - Enable JMS for IBM BAMOE, verify if the JMS executor configuration
     When container is started with env
       | variable                           | value                             |
       | KIE_SERVER_JMS_QUEUE_EXECUTOR      | queue/KIE.SERVER.EXECUTOR.CUSTOM  |
