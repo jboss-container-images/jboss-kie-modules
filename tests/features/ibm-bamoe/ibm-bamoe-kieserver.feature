@@ -1,5 +1,5 @@
 @rhpam-7/rhpam-kieserver-rhel8
-Feature:  IBM BAMOE KIE Server configuration tests
+Feature: IBM BAMOE KIE Server configuration tests
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
@@ -9,7 +9,7 @@ Feature:  IBM BAMOE KIE Server configuration tests
   Scenario: Check for product and version environment variables
     When container is started with command bash
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-kieserver
-     And run sh -c 'echo $RHPAM_KIESERVER_VERSION' in container and check its output for 7.13
+     And run sh -c 'echo $RHPAM_KIESERVER_VERSION' in container and check its output for 8.0
 
   Scenario: Check custom war file was successfully deployed via CUSTOM_INSTALL_DIRECTORIES
     Given s2i build https://github.com/jboss-openshift/openshift-examples.git from custom-install-directories
@@ -86,7 +86,7 @@ Feature:  IBM BAMOE KIE Server configuration tests
     Then container log should contain -Dorg.kie.executor.retry.count=40
      And container log should contain - Retries per Request: 40
 
-  Scenario: KIECLOUD-122 - Enable JMS for IBM BAMOE, verify if the JMS is the default executor and jms transacted is false
+  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, verify if the JMS is the default executor and jms transacted is false
     When container is ready
     Then container log should contain -Dorg.kie.executor.jms=true
      And container log should contain -Dorg.kie.executor.jms.queue=queue/KIE.SERVER.EXECUTOR
@@ -94,7 +94,7 @@ Feature:  IBM BAMOE KIE Server configuration tests
      And container log should contain Executor JMS based support successfully activated on queue ActiveMQQueue[jms.queue.KIE.SERVER.EXECUTOR]
 
   # if this test fail, increase the cekit execution timeout, i.e. $ export CTF_WAIT_TIME=5; cekit....
-  Scenario: KIECLOUD-122 - Enable JMS for IBM BAMOE, verify if the JMS executor configuration
+  Scenario: KIECLOUD-122 - Enable JMS for RHDM and RHPAM, verify if the JMS executor configuration
     When container is started with env
       | variable                           | value                             |
       | KIE_SERVER_JMS_QUEUE_EXECUTOR      | queue/KIE.SERVER.EXECUTOR.CUSTOM  |

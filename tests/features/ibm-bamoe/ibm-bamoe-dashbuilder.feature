@@ -1,5 +1,5 @@
 @rhpam-7/rhpam-dashbuilder-rhel8
-Feature:  IBM BAMOE Dashbuilder Runtime configuration tests
+Feature: IBM BAMOE Dashbuilder Runtime configuration tests
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
@@ -9,7 +9,7 @@ Feature:  IBM BAMOE Dashbuilder Runtime configuration tests
   Scenario: Check for product and version environment variables
     When container is started with command bash
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-dashbuilder
-     And run sh -c 'echo $RHPAM_DASHBUILDER_VERSION' in container and check its output for 7.13
+     And run sh -c 'echo $RHPAM_DASHBUILDER_VERSION' in container and check its output for 8.0
 
   Scenario: Verify if the properties were correctly set using DEFAULT MEM RATIO
     When container is started with args

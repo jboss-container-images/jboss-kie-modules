@@ -1,12 +1,12 @@
 @rhpam-7/rhpam-process-migration-rhel8
-Feature:  IBM BAMOE Process Migration tests
+Feature: IBM BAMOE Process Migration tests
 
   Scenario: Verify if all labels are correctly set on rhpam-process-migration-rhel8 image
     When container is started with command bash
     Then the image should contain label com.redhat.component with value rhpam-7-process-migration-rhel8-container
     And the image should contain label io.openshift.expose-services with value 8080:http
     And the image should contain label io.k8s.description with value Platform for running Red Hat Process Automation Manager Process Migration
-    And the image should contain label io.k8s.display-name with value Red Hat Process Automation Manager Process Migration 7.13
+    And the image should contain label io.k8s.display-name with value Red Hat Process Automation Manager Process Migration 8.0
     And the image should contain label io.openshift.tags with value javaee,rhpam,rhpam7,quarkus
 
   # https://issues.jboss.org/browse/CLOUD-180
@@ -17,7 +17,7 @@ Feature:  IBM BAMOE Process Migration tests
   Scenario: Check for product and version environment variables
     When container is started with command bash
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-process-migration
-    And run sh -c 'echo $RHPAM_PROCESS_MIGRATION_VERSION' in container and check its output for 7.13
+    And run sh -c 'echo $RHPAM_PROCESS_MIGRATION_VERSION' in container and check its output for 8.0
 
   Scenario: Test health endpoints are available and valid
     When container is ready
