@@ -7,7 +7,7 @@ Feature: IBM BAMOE Process Migration tests
     And the image should contain label io.openshift.expose-services with value 8080:http
     And the image should contain label io.k8s.description with value Platform for running Red Hat Process Automation Manager Process Migration
     And the image should contain label io.k8s.display-name with value Red Hat Process Automation Manager Process Migration 8.0
-    And the image should contain label io.openshift.tags with value javaee,rhpam,rhpam7,quarkus
+    And the image should contain label io.openshift.tags with value javaee,eap,eap7,rhpam8,ibm-bamoe
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
