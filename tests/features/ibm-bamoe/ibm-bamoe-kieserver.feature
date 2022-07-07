@@ -1,15 +1,15 @@
-@rhpam-7/rhpam-kieserver-rhel8
+@ibm-bamoe/bamoe-kieserver-rhel8
 Feature: IBM BAMOE KIE Server configuration tests
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
     When container is ready
-    Then container log should contain rhpam-7/rhpam-kieserver-rhel8 image, version
+    Then container log should contain ibm-bamoe/bamoe-kieserver-rhel8 image, version
 
   Scenario: Check for product and version environment variables
     When container is started with command bash
-    Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-kieserver
-     And run sh -c 'echo $RHPAM_KIESERVER_VERSION' in container and check its output for 8.0
+    Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for ibm-bamoe-kieserver
+     And run sh -c 'echo $IBM_BAMOE_KIESERVER_VERSION' in container and check its output for 8.0
 
   Scenario: Check custom war file was successfully deployed via CUSTOM_INSTALL_DIRECTORIES
     Given s2i build https://github.com/jboss-openshift/openshift-examples.git from custom-install-directories
@@ -22,9 +22,8 @@ Feature: IBM BAMOE KIE Server configuration tests
       | variable                        | value                                                                                    |
       | KIE_SERVER_CONTAINER_DEPLOYMENT | rhpam-kieserver-library=org.openshift.quickstarts:rhpam-kieserver-library:1.6.0-SNAPSHOT |
       | JAVA_OPTS_APPEND                | -Djavax.net.ssl.trustStore=truststore.ts -Djavax.net.ssl.trustStorePassword=123456       |
-      | SCRIPT_DEBUG                    | true                                                                                     |
     Then s2i build log should contain Attempting to verify kie server containers with 'java org.kie.server.services.impl.KieServerContainerVerifier  org.openshift.quickstarts:rhpam-kieserver-library:1.6.0-SNAPSHOT'
-    And s2i build log should contain java -Djavax.net.ssl.trustStore=truststore.ts -Djavax.net.ssl.trustStorePassword=123456 --add-modules
+    And s2i build log should contain -Djavax.net.ssl.trustStore=truststore.ts -Djavax.net.ssl.trustStorePassword=123456
     And s2i build log should not contain And s2i build log should not contain java.lang.ClassNotFoundException: org.apache.maven.model.io.xpp3.MavenXpp3WriterEx
 
   Scenario: deploys the hellorules example, then checks if it's deployed. Additionally test if the JAVA_OPTS_APPEND is used in the container verifier step
@@ -32,9 +31,9 @@ Feature: IBM BAMOE KIE Server configuration tests
       | variable                        | value                                                                                        |
       | KIE_SERVER_CONTAINER_DEPLOYMENT | rhdm-kieserver-hellorules=org.openshift.quickstarts:rhpam-kieserver-decisions:1.6.0-SNAPSHOT |
       | JAVA_OPTS_APPEND                | -Djavax.net.ssl.trustStore=truststore.ts -Djavax.net.ssl.trustStorePassword=123456           |
-      | SCRIPT_DEBUG                    | true                                                                                         |
+      | SCRIPT_DEBUG                    | false                                                                                        |
     Then s2i build log should contain Attempting to verify kie server containers with 'java org.kie.server.services.impl.KieServerContainerVerifier  org.openshift.quickstarts:rhpam-kieserver-decisions:1.6.0-SNAPSHOT'
-    And s2i build log should contain java -Djavax.net.ssl.trustStore=truststore.ts -Djavax.net.ssl.trustStorePassword=123456 --add-modules
+    And s2i build log should contain -Djavax.net.ssl.trustStore=truststore.ts -Djavax.net.ssl.trustStorePassword=123456
     And s2i build log should not contain java.lang.ClassNotFoundException: org.apache.maven.model.io.xpp3.MavenXpp3WriterEx
 
   # https://issues.jboss.org/browse/JBPM-7834

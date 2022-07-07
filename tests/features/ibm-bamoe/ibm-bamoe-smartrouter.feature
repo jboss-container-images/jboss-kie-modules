@@ -1,4 +1,4 @@
-@rhpam-7/rhpam-smartrouter-rhel8
+@ibm-bamoe/bamoe-smartrouter-rhel8
 Feature: IBM BAMOE Smart Router configuration tests
 
   Scenario: Test REST API is available and valid
@@ -14,12 +14,12 @@ Feature: IBM BAMOE Smart Router configuration tests
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
     When container is ready
-    Then container log should contain rhpam-7/rhpam-smartrouter-rhel8 image, version
+    Then container log should contain ibm-bamoe/bamoe-smartrouter-rhel8 image, version
 
   Scenario: Check for product and version environment variables
     When container is started with command bash
-    Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-smartrouter
-     And run sh -c 'echo $RHPAM_SMARTROUTER_VERSION' in container and check its output for 8.0
+    Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for ibm-bamoe-smartrouter
+     And run sh -c 'echo $IBM_BAMOE_SMARTROUTER_VERSION' in container and check its output for 8.0
 
   # If KIE_SERVER_ROUTER_TLS_TEST is true the launch script will generate a certificate at /tmp/keystore.jks
   # with key alias "jboss" and password "mykeystorepass" and reset KIE_SERVER_ROUTER_TLS_KEYSTORE to /tmp/keystore.jks
@@ -57,7 +57,7 @@ Feature: IBM BAMOE Smart Router configuration tests
     When container is started with env
       | variable                                 | value                                      |
       | KIE_SERVER_ROUTER_TLS_TEST               | true                                       |
-      | KIE_SERVER_ROUTER_TLS_KEYSTORE           | /opt/rhpam-smartrouter/openshift-launch.sh |
+      | KIE_SERVER_ROUTER_TLS_KEYSTORE           | /opt/ibm-bamoe-smartrouter/openshift-launch.sh |
       | KIE_SERVER_ROUTER_TLS_KEYSTORE_KEYALIAS  | jboss                                      |
       | KIE_SERVER_ROUTER_TLS_KEYSTORE_PASSWORD  | mykeystorepass                             |
     Then container log should contain Unable to read TLS keystore, skipping https setup
@@ -165,8 +165,8 @@ Feature: IBM BAMOE Smart Router configuration tests
       | SCRIPT_DEBUG            | true                    |
       | LOG_LEVEL               | SEVERE                  |
       | LOGGER_CATEGORIES       | org.xyz=INFO            |
-    Then container log should contain -Djava.util.logging.config.file=/opt/rhpam-smartrouter/logging.properties
+    Then container log should contain -Djava.util.logging.config.file=/opt/ibm-bamoe-smartrouter/logging.properties
      And container log should contain Configuring logger categories org.xyz=INFO with level SEVERE
-     And file /opt/rhpam-smartrouter/logging.properties should contain org.xyz=INFO
-     And file /opt/rhpam-smartrouter/logging.properties should contain SEVERE
+     And file /opt/ibm-bamoe-smartrouter/logging.properties should contain org.xyz=INFO
+     And file /opt/ibm-bamoe-smartrouter/logging.properties should contain SEVERE
 

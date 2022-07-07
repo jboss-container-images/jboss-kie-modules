@@ -26,8 +26,6 @@ Below, all CeKit modules contained in this repository:
      - [bats](tests/bats): Common files for Bats tests.
      - [features](tests/features): Image tests (behave)
   - [tools](tools)
-     _ [build-osbs](tools/build-osbs): Auxiliary script to perform local OSBS builds.
-     - [build-overrides](tools/build-overrides): Tool used to help to perform image builds using nightly, staging, or candidate artifact builds.
      - [gen-template-doc](tools/gen-template-doc): Tool that generates the reference documentation from  Application Templates.
      - [openshift-template-validator](tools/openshift-template-validator): Tool used to validate the application templates, if you’re going to develop templates, this tool helps to prevent syntax or accidental issues.
      - [python-mock-server](tools/python-mock-server): Small server to mock k8s requests used in the Bats tests
@@ -103,13 +101,13 @@ cekit test -v
 ...
 2019-03-21 12:32:39,525 cekit        INFO     Tests collected!
 2019-03-21 12:32:39,562 cekit        DEBUG    Running behave in '/data/dev/sources/rhpam-7-openshift-image/smartrouter/target/test'.
-@rhpam-7/rhpam78-smartrouter-openshift
-Feature: IBM BAMOE Smart Router configuration tests # features/jboss-kie-modules.git-main/rhpam/smartrouter/rhpam-smartrouter.feature:2
+@ibm-bamoe/rhpam78-smartrouter-openshift
+Feature: IBM BAMOE Smart Router configuration tests # features/jboss-kie-modules.git-main/rhpam/smartrouter/ibm-bamoe-smartrouter.feature:2
 
-  Scenario: Check if image version and release is printed on boot                          # features/jboss-kie-modules.git-main/rhpam/smartrouter/rhpam-smartrouter.feature:5
+  Scenario: Check if image version and release is printed on boot                          # features/jboss-kie-modules.git-main/rhpam/smartrouter/ibm-bamoe-smartrouter.feature:5
     When container is ready                                                                # steps/container_steps.py:13 3.692s
-    Then container log should contain rhpam-7/rhpam78-smartrouter-openshift image, version # steps/container_steps.py:27
-    Then container log should contain rhpam-7/rhpam78-smartrouter-openshift image, version # steps/container_steps.py:27 0.058s
+    Then container log should contain ibm-bamoe/rhpam78-smartrouter-openshift image, version # steps/container_steps.py:27
+    Then container log should contain ibm-bamoe/rhpam78-smartrouter-openshift image, version # steps/container_steps.py:27 0.058s
 2019-03-21 12:32:44,003 - dock.middleware.container - INFO - Removing container '61fab7c508fdd56f9c86bbc054d8574ca267113f73b3145eee5fb20892bbd50c', 1 try...
 2019-03-21 12:32:44,022 - dock.middleware.container - INFO - Container '61fab7c508fdd56f9c86bbc054d8574ca267113f73b3145eee5fb20892bbd50c' removed
 ...
@@ -146,7 +144,7 @@ $ cekit test --test-wip v
 ...
 2019-01-10 18:17:21,815 cekit        INFO     Fetching common steps from 'https://github.com/cekit/behave-test-steps.git'.
 2019-01-10 18:17:23,195 cekit        INFO     Tests collected!
-@rhpam-7/rhpam73-businesscentral-openshift
+@ibm-bamoe/rhpam73-businesscentral-openshift
 Feature: IBM BAMOE Business Central configuration tests # features/jboss-kie-modules/rhpam/businesscentral/rhpam-businesscentral.feature:2
 
   @wip

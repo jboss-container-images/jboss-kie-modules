@@ -112,7 +112,7 @@ def update_adocs_readme(version, confirm):
     :param confirm: if true will save the changes otherwise will print the proposed changes
     """
 
-    readmes = [t'tools/gen-template-doc/README_IBM_BAMOE.adoc.in']
+    readmes = ['tools/gen-template-doc/README_IBM_BAMOE.adoc.in']
 
     if confirm:
         for readme in readmes:
@@ -130,32 +130,6 @@ def update_adocs_readme(version, confirm):
 
     else:
         print("Skipping adocs README {0}".format(readmes))
-
-
-def update_build_overrides_script(version, confirm):
-    """
-    Update the build-overrides.sh script occurrences of the given version.
-    :param version: version to set updated
-    :param confirm: if true will save the changes otherwise will print the proposed changes
-    """
-
-    build_overrides_file = 'tools/build-overrides/build-overrides.sh'
-
-    if confirm:
-        try:
-            with open(build_overrides_file) as ig:
-                # replace all occurrences of shortened version first
-                plain = VERSION_REGEX.sub(version, ig.read())
-
-            with open(build_overrides_file, 'w') as ig:
-                print("Updating the {0} version occurrences to {1} using version".format(build_overrides_file, version))
-                ig.write(plain)
-
-        except TypeError:
-            raise
-
-    else:
-        print("Skipping build-overrides {0} file".format(build_overrides_file))
 
 
 if __name__ == "__main__":
@@ -179,7 +153,6 @@ if __name__ == "__main__":
             update_rhdm_behave_tests(args.t_version, args.confirm)
             update_rhpam_behave_tests(args.t_version, args.confirm)
             update_adocs_readme(args.t_version, args.confirm)
-            update_build_overrides_script(args.t_version, args.confirm)
 
         else:
             print("Provided version {0} does not match the expected regex - {1}".format(args.t_version, pattern))

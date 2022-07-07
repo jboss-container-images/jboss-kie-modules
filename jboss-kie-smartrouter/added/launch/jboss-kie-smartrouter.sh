@@ -51,7 +51,7 @@ function configure_mem_ratio() {
 function configure_logger_config_file() {
     # JUL implementation: https://docs.oracle.com/javase/7/docs/api/java/util/logging/Level.html
     local allowed_log_levels=("ALL" "CONFIG" "FINE" "FINER" "FINEST" "INFO" "OFF" "SEVERE" "WARNING")
-    local config_dir=${CONFIG_DIR:-"/opt/rhpam-smartrouter"}
+    local config_dir=${CONFIG_DIR:-"/opt/ibm-bamoe-smartrouter"}
     if [[ ! "${allowed_log_levels[@]}" =~ "${LOG_LEVEL}" ]]; then
         log_warning "Log Level ${LOG_LEVEL} is not allowed, the allowed levels are ${allowed_log_levels[*]}"
     else

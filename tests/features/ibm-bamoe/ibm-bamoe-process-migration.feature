@@ -1,23 +1,23 @@
-@rhpam-7/rhpam-process-migration-rhel8
+@ibm-bamoe/bamoe-process-migration-rhel8
 Feature: IBM BAMOE Process Migration tests
 
-  Scenario: Verify if all labels are correctly set on rhpam-process-migration-rhel8 image
+  Scenario: Verify if all labels are correctly set on ibm-bamoe-process-migration-rhel8 image
     When container is started with command bash
-    Then the image should contain label com.redhat.component with value rhpam-7-process-migration-rhel8-container
+    Then the image should contain label com.ibm.component with value ibm-bamoe-8-process-migration-rhel8-container
     And the image should contain label io.openshift.expose-services with value 8080:http
-    And the image should contain label io.k8s.description with value Platform for running Red Hat Process Automation Manager Process Migration
-    And the image should contain label io.k8s.display-name with value Red Hat Process Automation Manager Process Migration 8.0
-    And the image should contain label io.openshift.tags with value javaee,eap,eap7,rhpam8,ibm-bamoe
+    And the image should contain label io.k8s.description with value Platform for running IBM Business Automation Manager Open Editions Process Migration
+    And the image should contain label io.k8s.display-name with value IBM Process Migration 8.0
+    And the image should contain label io.openshift.tags with value javaee,rhpam8,quarkus,ibm-bamoe
 
   # https://issues.jboss.org/browse/CLOUD-180
   Scenario: Check if image version and release is printed on boot
     When container is ready
-    Then container log should contain rhpam-7/rhpam-process-migration-rhel8 image, version
+    Then container log should contain ibm-bamoe/bamoe-process-migration-rhel8 image, version
 
   Scenario: Check for product and version environment variables
     When container is started with command bash
-    Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for rhpam-process-migration
-    And run sh -c 'echo $RHPAM_PROCESS_MIGRATION_VERSION' in container and check its output for 8.0
+    Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for ibm-bamoe-process-migration
+    And run sh -c 'echo $IBM_BAMOE_PROCESS_MIGRATION_VERSION' in container and check its output for 8.0
 
   Scenario: Test health endpoints are available and valid
     When container is ready
@@ -49,8 +49,8 @@ Feature: IBM BAMOE Process Migration tests
       | username             | user123 |
       | password             | pwd123  |
       | expected_status_code | 200     |
-    And file /opt/rhpam-process-migration/quarkus-app/config/application-users.properties should contain user123=pwd123
-    And file /opt/rhpam-process-migration/quarkus-app/config/application-roles.properties should contain user123=admin
+    And file /opt/ibm-bamoe-process-migration/quarkus-app/config/application-users.properties should contain user123=pwd123
+    And file /opt/ibm-bamoe-process-migration/quarkus-app/config/application-roles.properties should contain user123=admin
 
   Scenario: Test extra system properties are correctly added
     When container is started with env

@@ -1,4 +1,4 @@
-@rhdm-7/rhdm-controller-rhel8 @rhpam-7/rhpam-controller-rhel8
+@ibm-bamoe/bamoe-controller-rhel8
 Feature: KIE Controller configuration common tests
 
   Scenario: Test REST API is secure

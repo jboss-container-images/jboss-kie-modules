@@ -190,9 +190,7 @@ function configure_workbench_profile() {
     # Business Central is unified for Decision and Process capabilities; For rhpam-decisioncentral needs to be set org.kie.workbench.profile
     # to FORCE_PLANNER_AND_RULES and for rhpam-businesscentral and rhpam-businesscentral-monitoring needst to be set to
     # FORCE_FULL
-    if [ "$JBOSS_PRODUCT" = "rhdm-decisioncentral" ]; then
-        JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.workbench.profile=FORCE_PLANNER_AND_RULES"
-    elif [[ $JBOSS_PRODUCT =~ rhpam\-businesscentral(\-monitoring)? ]]; then
+    if [[ $JBOSS_PRODUCT =~ ibm\-bamoe\-businesscentral(\-monitoring)? ]]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.workbench.profile=FORCE_FULL"
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.appformer.server.simplified.monitoring.enabled=${simplifiedMon}"
     fi

@@ -1,4 +1,5 @@
-@rhpam-7/rhpam-businesscentral-rhel8 @rhpam-7/rhpam-businesscentral-monitoring-rhel8 @rhdm-7/rhdm-decisioncentral-rhel8
+@ibm-bamoe/bamoe-businesscentral-rhel8
+@ibm-bamoe/bamoe-businesscentral-monitoring-rhel8
 Feature: IBM BAMOE Workbench clustering configuration
 
   Scenario: HA will not be configured

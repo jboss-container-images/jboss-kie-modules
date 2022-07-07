@@ -1,11 +1,8 @@
-@rhdm-7/rhdm-kieserver-rhel8
-@rhpam-7/rhpam-kieserver-rhel8
-@rhdm-7/rhdm-decisioncentral-rhel8
-@rhpam-7/rhpam-businesscentral-rhel8
-@rhpam-7/rhpam-businesscentral-monitoring-rhel8
-@rhpam-7/rhpam-dashbuilder-rhel8
-@rhpam-7/rhpam-controller-rhel8
-@rhdm-7/rhdm-controller-rhel8
+@ibm-bamoe/bamoe-kieserver-rhel8
+@ibm-bamoe/bamoe-businesscentral-rhel8
+@ibm-bamoe/bamoe-businesscentral-monitoring-rhel8
+@ibm-bamoe/bamoe-dashbuilder-rhel8
+@ibm-bamoe/bamoe-controller-rhel8
 Feature: IBM BAMOE common tests
 
   Scenario: Ensure the openjdk8 packages are not installed on container.

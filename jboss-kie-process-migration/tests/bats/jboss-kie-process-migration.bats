@@ -74,8 +74,8 @@ teardown() {
             file:
               enabled: true
               plain-text: true
-              users: /opt/rhpam-process-migration/quarkus-app/config/application-users.properties
-              roles: /opt/rhpam-process-migration/quarkus-app/config/application-roles.properties" > $CONFIG_DIR/default-auth.yaml
+              users: /opt/ibm-bamoe-process-migration/quarkus-app/config/application-users.properties
+              roles: /opt/ibm-bamoe-process-migration/quarkus-app/config/application-roles.properties" > $CONFIG_DIR/default-auth.yaml
 
     run configure_admin_user
 
