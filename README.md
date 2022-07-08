@@ -26,8 +26,7 @@ Below, all CeKit modules contained in this repository:
      - [bats](tests/bats): Common files for Bats tests.
      - [features](tests/features): Image tests (behave)
   - [tools](tools)
-     - [gen-template-doc](tools/gen-template-doc): Tool that generates the reference documentation from  Application Templates.
-     - [openshift-template-validator](tools/openshift-template-validator): Tool used to validate the application templates, if you’re going to develop templates, this tool helps to prevent syntax or accidental issues.
+     - [openshift-template-validator](tools/openshift-template-validator): Tool used to validate imagestreams, if you’re going to develop imagestreams, this tool helps to prevent syntax or accidental issues.
      - [python-mock-server](tools/python-mock-server): Small server to mock k8s requests used in the Bats tests
      - [update-version](tools/update-version): Auxiliary script to help maintainers to bump the product version when performing a new release. 
 
