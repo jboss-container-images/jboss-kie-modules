@@ -16,26 +16,7 @@ teardown() {
 }
 
 @test "[KIE Server] test if the default kie-fs-realm is correctly added for rhpam" {
-    export JBOSS_PRODUCT=rhpam-kieserver
-
-    configure_kie_fs_realm
-
-    expected="<filesystem-realm name=\"KieFsRealm\">
-                    <file path=\"/opt/kie/data/kie-fs-realm-users\"/>                </filesystem-realm>"
-    result=$(xmllint --xpath "//*[local-name()='filesystem-realm']" $CONFIG_FILE)
-
-    echo "expected: ${expected}"
-    echo "result  : ${result}"
-    echo "expected_role_decoder: ${expected}"
-    echo "result_role_decoder  : ${result}"
-    echo "JBOSS_KIE_ARGS: ${JBOSS_KIE_ARGS}"
-    [ "${expected}" = "${result}" ]
-    [ "${JBOSS_KIE_ARGS}" = " -Dorg.kie.server.services.jbpm.security.filesystemrealm.folder-path=/opt/kie/data/kie-fs-realm-users" ]
-}
-
-
-@test "[KIE Server] test if the default kie-fs-realm is correctly added for rhdm" {
-    export JBOSS_PRODUCT=rhdm-kieserver
+    export JBOSS_PRODUCT=ibm-bamoe-kieserver
 
     configure_kie_fs_realm
 
@@ -98,7 +79,7 @@ teardown() {
 }
 
 @test "[KIE Server] test if the kie-fs-realm is correctly added with custom directory" {
-    export JBOSS_PRODUCT=rhpam-kieserver
+    export JBOSS_PRODUCT=ibm-bamoe-kieserver
     export KIE_ELYTRON_FS_PATH=/tmp/test/kie-fs
 
     configure_kie_fs_realm
@@ -190,8 +171,32 @@ teardown() {
 }
 
 
-@test "test if the kie_git_config file is correctly generated" {
-    export JBOSS_PRODUCT="rhpam-businesscentral"
+@test "[Business Central] test if the kie_git_config file is correctly generated" {
+    export JBOSS_PRODUCT="ibm-bamoe-businesscentral"
+    export SSO_URL="https://test"
+    export SSO_SECRET="web-secret"
+    export SSO_REALM="sso-realm"
+    configure_business_central_kie_git_config
+
+    expected="{
+    \"realm\": \"sso-realm\",
+    \"auth-server-url\": \"https://test\",
+    \"ssl-required\": \"external\",
+    \"resource\": \"kie-git\",
+    \"credentials\": {
+        \"secret\": \"web-secret\"
+    }
+}"
+
+    result=$(cat ${JBOSS_HOME}/kie_git_config.json)
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
+}
+
+@test "[Business Central Monitoring] test if the kie_git_config file is correctly generated" {
+    export JBOSS_PRODUCT="ibm-bamoe-businesscentral-monitoring"
     export SSO_URL="https://test"
     export SSO_SECRET="web-secret"
     export SSO_REALM="sso-realm"
@@ -215,36 +220,8 @@ teardown() {
 }
 
 
-@test "test if the kie_git_config file is correctly generated with public key" {
-    export JBOSS_PRODUCT="rhpam-businesscentral"
-    export SSO_URL="https://test"
-    export SSO_SECRET="web-secret"
-    export SSO_REALM="sso-realm"
-    export SSO_PUBLIC_KEY="some-random-key"
-    configure_business_central_kie_git_config
-
-    expected="{
-    \"realm\": \"sso-realm\",
-    \"realm-public-key\": \"some-random-key\",
-    \"auth-server-url\": \"https://test\",
-    \"ssl-required\": \"external\",
-    \"resource\": \"kie-git\",
-    \"credentials\": {
-        \"secret\": \"web-secret\"
-    }
-}"
-
-    result=$(cat ${JBOSS_HOME}/kie_git_config.json)
-
-    echo "expected: ${expected}"
-    echo "result  : ${result}"
-    [ "${expected}" = "${result}" ]
-
-}
-
-
-@test "test if the kie_git_config file is correctly generated with public key for decisioncentral" {
-    export JBOSS_PRODUCT="rhdm-decisioncentral"
+@test "[Business Central] test if the kie_git_config file is correctly generated with public key" {
+    export JBOSS_PRODUCT="ibm-bamoe-businesscentral"
     export SSO_URL="https://test"
     export SSO_SECRET="web-secret"
     export SSO_REALM="sso-realm"
@@ -271,8 +248,36 @@ teardown() {
 }
 
 
-@test "test if the kie_git_config is configured if custom file is provided" {
-    export JBOSS_PRODUCT="rhpam-businesscentral"
+@test "[Business Central Monitoring] test if the kie_git_config file is correctly generated with public key" {
+    export JBOSS_PRODUCT="ibm-bamoe-businesscentral-monitoring"
+    export SSO_URL="https://test"
+    export SSO_SECRET="web-secret"
+    export SSO_REALM="sso-realm"
+    export SSO_PUBLIC_KEY="some-random-key"
+    configure_business_central_kie_git_config
+
+    expected="{
+    \"realm\": \"sso-realm\",
+    \"realm-public-key\": \"some-random-key\",
+    \"auth-server-url\": \"https://test\",
+    \"ssl-required\": \"external\",
+    \"resource\": \"kie-git\",
+    \"credentials\": {
+        \"secret\": \"web-secret\"
+    }
+}"
+
+    result=$(cat ${JBOSS_HOME}/kie_git_config.json)
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
+
+}
+
+
+@test "[Business Central] test if the kie_git_config is configured if custom file is provided" {
+    export JBOSS_PRODUCT="ibm-bamoe-businesscentral"
     mkdir ${JBOSS_HOME}/kie &2> /dev/null
     KIE_GIT_CONFIG_PATH="${JBOSS_HOME}/kie/my_git_kie_config.json"
     touch ${KIE_GIT_CONFIG_PATH}
@@ -283,6 +288,21 @@ teardown() {
     echo "JBOSS_KIE_ARGS: ${JBOSS_KIE_ARGS}"
     [ "${JBOSS_KIE_ARGS}" = " -Dorg.uberfire.ext.security.keycloak.keycloak-config-file=/tmp/jboss_home/kie/my_git_kie_config.json" ]
 }
+
+
+@test "[Business Central Monitoring] test if the kie_git_config is configured if custom file is provided" {
+    export JBOSS_PRODUCT="ibm-bamoe-businesscentral-monitoring"
+    mkdir ${JBOSS_HOME}/kie &2> /dev/null
+    KIE_GIT_CONFIG_PATH="${JBOSS_HOME}/kie/my_git_kie_config.json"
+    touch ${KIE_GIT_CONFIG_PATH}
+    export SSO_URL="https://test"
+
+    configure_business_central_kie_git_config
+
+    echo "JBOSS_KIE_ARGS: ${JBOSS_KIE_ARGS}"
+    [ "${JBOSS_KIE_ARGS}" = " -Dorg.uberfire.ext.security.keycloak.keycloak-config-file=/tmp/jboss_home/kie/my_git_kie_config.json" ]
+}
+
 
 
 @test "test elytron ldap configuration dir-context without url" {

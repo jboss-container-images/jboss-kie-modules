@@ -76,7 +76,7 @@ function configureJmsExecutor() {
     else
         KIE_SERVER_EXECUTOR_JMS_TRANSACTED="false"
     fi
-    if [ "${enableJmsExecutor^^}" = "TRUE" -a "${JBOSS_PRODUCT}" = "rhpam-kieserver" ]; then
+    if [ "${enableJmsExecutor^^}" = "TRUE" -a "${JBOSS_PRODUCT}" = "ibm-bamoe-kieserver" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.executor.jms=${enableJmsExecutor}"
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.executor.jms.queue=${queueExecutor}"
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.executor.jms.transacted=${KIE_SERVER_EXECUTOR_JMS_TRANSACTED}"

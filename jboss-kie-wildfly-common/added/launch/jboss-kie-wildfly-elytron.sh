@@ -57,7 +57,7 @@ function configure_kie_fs_realm() {
                 </filesystem-realm>"
 
     sed -i "s|<!-- ##KIE_FS_REALM## -->|${fs_realm}|" $CONFIG_FILE
-    if [[ "${JBOSS_PRODUCT}" =~ (rhpam|rhdm)-kieserver ]]; then
+    if [ "${JBOSS_PRODUCT}" = "ibm-bamoe-kieserver" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.services.jbpm.security.filesystemrealm.folder-path=${path}"
     else
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.uberfire.ext.security.management.wildfly.filesystem.folder-path=${path}"
@@ -110,7 +110,7 @@ function get_kie_fs_path() {
 }
 
 function configure_business_central_kie_git_config() {
-    if [ "${SSO_URL}x" != "x" ] && [[ "${JBOSS_PRODUCT}" =~ rhpam-businesscentral|rhdm-decisioncentral ]]; then
+    if [ "${SSO_URL}x" != "x" ] && [[ $JBOSS_PRODUCT =~ ibm\-bamoe\-businesscentral(\-monitoring)? ]]; then
         if [ "${KIE_GIT_CONFIG_PATH}x" == "x" ]; then
             if [ "${SSO_PUBLIC_KEY}x" != "x" ]; then
                 local public_key="\"realm-public-key\": \"${SSO_PUBLIC_KEY}\","

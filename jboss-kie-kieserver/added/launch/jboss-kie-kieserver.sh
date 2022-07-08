@@ -103,7 +103,7 @@ function configure() {
 }
 
 function configure_EJB_Timer_datasource {
-    # KIECLOUD-603: Create KIE Server configuration option for RHDM capabalities only
+    # KIECLOUD-603: Create KIE Server configuration option for Decisions capabalities only
     if [ "${KIE_SERVER_DECISIONS_ONLY^^}" != "TRUE" ]; then
       source $JBOSS_HOME/bin/launch/datasource-common.sh
 
@@ -639,7 +639,7 @@ function configure_server_sync_deploy() {
 
 # Enable/disable the jbpm capabilities according with the product
 function configure_jbpm() {
-    if [ "${JBOSS_PRODUCT}" = "rhpam-kieserver" ] && [ "${KIE_SERVER_DECISIONS_ONLY^^}" != "TRUE" ]; then
+    if [ "${JBOSS_PRODUCT}" = "ibm-bamoe-kieserver" ] && [ "${KIE_SERVER_DECISIONS_ONLY^^}" != "TRUE" ]; then
         JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.executor.retry.count=${KIE_EXECUTOR_RETRIES:-3}"
         if [ "${JBPM_HT_CALLBACK_METHOD}" != "" ]; then
             JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.jbpm.ht.callback=${JBPM_HT_CALLBACK_METHOD}"

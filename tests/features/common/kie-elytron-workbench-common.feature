@@ -1,6 +1,5 @@
-@rhdm-7/rhdm-decisioncentral-rhel8
-@rhpam-7/rhpam-businesscentral-rhel8
-@rhpam-7/rhpam-businesscentral-monitoring-rhel8
+@ibm-bamoe/bamoe-businesscentral-rhel8
+@ibm-bamoe/bamoe-businesscentral-monitoring-rhel8
 Feature: KIE specific elytron configuration
 
   Scenario: test if elytron KieRealm is correctly added with custom filesystem location

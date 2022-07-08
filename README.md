@@ -9,25 +9,23 @@ Below, all CeKit modules contained in this repository:
 - **jboss-kie-modules**:
   - [jboss](jboss): Contains the Prometheus agent and config modules and S2I bash module as well.
   - [jboss-eap-cd-jolokia](jboss-eap-cd-jolokia): Module responsible to add the needed JVM configurations on the standalone.conf file.
-  - [jboss-eap-config-openshift](jboss-eap-config-openshift): Holds the JBoss EAP standalone-openshift.xml file used by the RHDM and RHPAM images.
-  - [jboss-kie-common](jboss-kie-common): This module holds common functions reused between RHDM and RHPAM images.
-  - [jboss-kie-common-dependencies](jboss-kie-common-dependencies): Installs common rpm packages on RHDM and RHPAM images.
-  - [jboss-kie-controller](jboss-kie-controller): RHDM/PAM Controller Image specific module.
-  - [jboss-kie-dashbuilder](jboss-kie-dashbuilder): RHPAM Dashbuilder Image specific module.
+  - [jboss-eap-config-openshift](jboss-eap-config-openshift): Holds the JBoss EAP standalone-openshift.xml file used by the IBM BAMOE images.
+  - [jboss-kie-common](jboss-kie-common): This module holds common functions reused on IBM BAMOE images.
+  - [jboss-kie-common-dependencies](jboss-kie-common-dependencies): Installs common rpm packages on IBM BAMOE images.
+  - [jboss-kie-controller](jboss-kie-controller): IBM BAMOE Controller Image specific module.
+  - [jboss-kie-dashbuilder](jboss-kie-dashbuilder): IBM BAMOE Dashbuilder Image specific module.
   - [jboss-kie-db-drivers](jboss-kie-db-drivers): Provides the MariaDB and PostgreSQL jdbc drivers through rpm package manager.
   - [jboss-kie-jdk-clean](jboss-kie-jdk-clean): Clean possible JDK packages not needed on the runtime image.
-  - [jboss-kie-kieserver](jboss-kie-kieserver): RHDM/PAM Execution Server Image specific module.
-  - [jboss-kie-process-migration](jboss-kie-process-migration): RHPAM Process Instance Migration Image specific module.
-  - [jboss-kie-smartrouter](jboss-kie-smartrouter): RHPAM Smart Router specific module.
+  - [jboss-kie-kieserver](jboss-kie-kieserver): IBM BAMOE Execution Server Image specific module.
+  - [jboss-kie-process-migration](jboss-kie-process-migration): IBM BAMOE Process Instance Migration Image specific module.
+  - [jboss-kie-smartrouter](jboss-kie-smartrouter): IBM BAMOE Smart Router specific module.
   - [jboss-kie-wildfly-common](jboss-kie-wildfly-common): Common modules shared between all images.
-  - [jboss-kie-workbench](jboss-kie-workbench):  RHDM/PAM Decision/Business Central specific module.
-  - [os-eap-kegacy](os-eap-legacy): Provides legacy modules used by RHPAM/DM images that aren't available anymore on the cct and jboss-eap-modules on the stable branch.
+  - [jboss-kie-workbench](jboss-kie-workbench):  IBM BAMOE Business Central specific module.
+  - [os-eap-kegacy](os-eap-legacy): Provides legacy modules used by IBM BAMOE images that aren't available anymore on the cct and jboss-eap-modules on the stable branch.
   - [tests](tests):
      - [bats](tests/bats): Common files for Bats tests.
      - [features](tests/features): Image tests (behave)
   - [tools](tools)
-     _ [build-osbs](tools/build-osbs): Auxiliary script to perform local OSBS builds.
-     - [build-overrides](tools/build-overrides): Tool used to help to perform image builds using nightly, staging, or candidate artifact builds.
      - [gen-template-doc](tools/gen-template-doc): Tool that generates the reference documentation from  Application Templates.
      - [openshift-template-validator](tools/openshift-template-validator): Tool used to validate the application templates, if you’re going to develop templates, this tool helps to prevent syntax or accidental issues.
      - [python-mock-server](tools/python-mock-server): Small server to mock k8s requests used in the Bats tests
@@ -103,13 +101,13 @@ cekit test -v
 ...
 2019-03-21 12:32:39,525 cekit        INFO     Tests collected!
 2019-03-21 12:32:39,562 cekit        DEBUG    Running behave in '/data/dev/sources/rhpam-7-openshift-image/smartrouter/target/test'.
-@rhpam-7/rhpam78-smartrouter-openshift
-Feature: RHPAM Smart Router configuration tests # features/jboss-kie-modules.git-main/rhpam/smartrouter/rhpam-smartrouter.feature:2
+@ibm-bamoe/rhpam78-smartrouter-openshift
+Feature: IBM BAMOE Smart Router configuration tests # features/jboss-kie-modules.git-main/rhpam/smartrouter/ibm-bamoe-smartrouter.feature:2
 
-  Scenario: Check if image version and release is printed on boot                          # features/jboss-kie-modules.git-main/rhpam/smartrouter/rhpam-smartrouter.feature:5
+  Scenario: Check if image version and release is printed on boot                          # features/jboss-kie-modules.git-main/rhpam/smartrouter/ibm-bamoe-smartrouter.feature:5
     When container is ready                                                                # steps/container_steps.py:13 3.692s
-    Then container log should contain rhpam-7/rhpam78-smartrouter-openshift image, version # steps/container_steps.py:27
-    Then container log should contain rhpam-7/rhpam78-smartrouter-openshift image, version # steps/container_steps.py:27 0.058s
+    Then container log should contain ibm-bamoe/rhpam78-smartrouter-openshift image, version # steps/container_steps.py:27
+    Then container log should contain ibm-bamoe/rhpam78-smartrouter-openshift image, version # steps/container_steps.py:27 0.058s
 2019-03-21 12:32:44,003 - dock.middleware.container - INFO - Removing container '61fab7c508fdd56f9c86bbc054d8574ca267113f73b3145eee5fb20892bbd50c', 1 try...
 2019-03-21 12:32:44,022 - dock.middleware.container - INFO - Container '61fab7c508fdd56f9c86bbc054d8574ca267113f73b3145eee5fb20892bbd50c' removed
 ...
@@ -146,8 +144,8 @@ $ cekit test --test-wip v
 ...
 2019-01-10 18:17:21,815 cekit        INFO     Fetching common steps from 'https://github.com/cekit/behave-test-steps.git'.
 2019-01-10 18:17:23,195 cekit        INFO     Tests collected!
-@rhpam-7/rhpam73-businesscentral-openshift
-Feature: RHPAM Business Central configuration tests # features/jboss-kie-modules/rhpam/businesscentral/rhpam-businesscentral.feature:2
+@ibm-bamoe/rhpam73-businesscentral-openshift
+Feature: IBM BAMOE Business Central configuration tests # features/jboss-kie-modules/rhpam/businesscentral/rhpam-businesscentral.feature:2
 
   @wip
   Scenario: Check if JBOSS_HOME is correctly set                                     # features/jboss-kie-modules/rhpam/businesscentral/rhpam-businesscentral.feature:54

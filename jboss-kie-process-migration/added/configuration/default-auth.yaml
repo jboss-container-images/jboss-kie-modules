@@ -7,6 +7,6 @@ quarkus:
         realm-name: pim-file
         enabled: true
         plain-text: true
-        users: /opt/rhpam-process-migration/quarkus-app/config/application-users.properties
-        roles: /opt/rhpam-process-migration/quarkus-app/config/application-roles.properties
+        users: /opt/ibm-bamoe-process-migration/quarkus-app/config/application-users.properties
+        roles: /opt/ibm-bamoe-process-migration/quarkus-app/config/application-roles.properties
 
