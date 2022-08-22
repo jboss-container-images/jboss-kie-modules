@@ -57,7 +57,8 @@ template_dirs = ['target/templates/process', 'target/templates/decision']
 # TODO: improve it to not use full image name
 # used to link the image to the image.yaml when the given image is used by a s2i build
 LINKS = {"rhpam-kieserver-rhel8:7.12.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
-         "rhpam-kieserver-rhel8:7.13.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]"}
+         "rhpam-kieserver-rhel8:7.13.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
+          "rhpam-kieserver-rhel8:7.13.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]"}
 
 # used to update template parameters values
 PARAMETER_VALUES = {"EXAMPLE": "var"}
