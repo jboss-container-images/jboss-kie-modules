@@ -9,6 +9,7 @@ jobs:
           type: shell
           name: install dependencies
           command: |
+            sudo apt-get -y update
             sudo apt-get install libxml2-utils maven
             sudo ln -s /usr/bin/python3 /usr/bin/python
       - run:
