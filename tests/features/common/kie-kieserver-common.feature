@@ -1,4 +1,4 @@
-@rhdm-7/rhdm-kieserver-rhel8  @rhpam-7/rhpam-kieserver-rhel8
+@rhpam-7/rhpam-kieserver-rhel8
 Feature: Kie Server common features
 
   Scenario: RHPAM-2855: /opt/jboss/container/maven/default/ should not contain '*' and symlink /usr/local/s2i/scl-enable-maven should not exist

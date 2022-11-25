@@ -1,11 +1,8 @@
-@rhdm-7/rhdm-kieserver-rhel8
 @rhpam-7/rhpam-kieserver-rhel8
-@rhdm-7/rhdm-decisioncentral-rhel8
 @rhpam-7/rhpam-businesscentral-rhel8
 @rhpam-7/rhpam-businesscentral-monitoring-rhel8
 @rhpam-7/rhpam-dashbuilder-rhel8
 @rhpam-7/rhpam-controller-rhel8
-@rhdm-7/rhdm-controller-rhel8
 Feature: RHPAM and RHDM common tests
 
   Scenario: Ensure the openjdk8 packages are not installed on container.
@@ -13,6 +10,16 @@ Feature: RHPAM and RHDM common tests
     Then run sh -c '/usr/bin/rpm -q java-1.8.0-openjdk-devel || true' in container and check its output contains package java-1.8.0-openjdk-devel is not installed
      And run sh -c '/usr/bin/rpm -q java-1.8.0-openjdk-headless || true' in container and check its output for package java-1.8.0-openjdk-headless is not installed
      And run sh -c '/usr/bin/rpm -q java-1.8.0-openjdk || true' in container and check its output for package java-1.8.0-openjdk is not installed
+
+  Scenario: Ensure the maven 8+ is installed
+    When container is started with command bash
+    Then run sh -c '/usr/bin/mvn --version | grep  "Apache Maven"' in container and check its output contains Apache Maven 3.8
+
+  Scenario: Ensure the openjdk17 packages are not installed on container, it is pulled by maven 8
+    When container is started with command bash
+    Then run sh -c '/usr/bin/rpm -q java-17-openjdk-devel || true' in container and check its output contains package java-17-openjdk-devel is not installed
+    And run sh -c '/usr/bin/rpm -q java-17-openjdk-headless || true' in container and check its output for package java-17-openjdk-headless is not installed
+    And run sh -c '/usr/bin/rpm -q java-17-openjdk || true' in container and check its output for package java-17-openjdk is not installed
 
   Scenario: Configure container to use LDAP authentication
     When container is started with env
