@@ -1,9 +1,0 @@
-schema_version: 1
-name: jboss-kie-jdk-clean
-version: '11-deprecated'
-description: ^
-  Ensures the removal of other JDKs that got installed via other modules' dependencies.
-  For example, the maven module's install brings in JDK 8.
-
-execute:
-- script: configure.sh
