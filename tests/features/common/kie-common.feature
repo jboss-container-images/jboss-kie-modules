@@ -11,7 +11,7 @@ Feature: IBM BAMOE common tests
      And run sh -c '/usr/bin/rpm -q java-1.8.0-openjdk-headless || true' in container and check its output for package java-1.8.0-openjdk-headless is not installed
      And run sh -c '/usr/bin/rpm -q java-1.8.0-openjdk || true' in container and check its output for package java-1.8.0-openjdk is not installed
 
-  Scenario: Ensure the maven 8+ is installed
+  Scenario: Ensure the maven 3.8+ is installed
     When container is started with command bash
     Then run sh -c '/usr/bin/mvn --version | grep  "Apache Maven"' in container and check its output contains Apache Maven 3.8
 
