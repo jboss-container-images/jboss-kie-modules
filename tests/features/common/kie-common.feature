@@ -15,7 +15,7 @@ Feature: IBM BAMOE common tests
     When container is started with command bash
     Then run sh -c '/usr/bin/mvn --version | grep  "Apache Maven"' in container and check its output contains Apache Maven 3.8
 
-  Scenario: Ensure the openjdk17 packages are not installed on container, it is pulled by maven 8
+  Scenario: Ensure the openjdk17 packages are not installed on container, it is pulled by maven 3.8+
     When container is started with command bash
     Then run sh -c '/usr/bin/rpm -q java-17-openjdk-devel || true' in container and check its output contains package java-17-openjdk-devel is not installed
     And run sh -c '/usr/bin/rpm -q java-17-openjdk-headless || true' in container and check its output for package java-17-openjdk-headless is not installed
