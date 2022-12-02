@@ -1,4 +1,3 @@
-@rhdm-7/rhdm-kieserver-rhel8
 @rhpam-7/rhpam-kieserver-rhel8
 Feature: KIE specific elytron configuration
   Scenario: test if elytron KieRealm is correctly added with default filesystem location

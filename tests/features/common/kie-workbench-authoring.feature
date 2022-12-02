@@ -1,4 +1,4 @@
-@rhdm-7/rhdm-decisioncentral-rhel8 @rhpam-7/rhpam-businesscentral-rhel8
+@rhpam-7/rhpam-businesscentral-rhel8
 Feature: Decision/Business Central authoring features
 
   Scenario: Configure GIT_HOOKS_DIR and check for directory existence

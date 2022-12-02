@@ -1,4 +1,4 @@
-@rhdm-7/rhdm-decisioncentral-rhel8 @rhpam-7/rhpam-businesscentral-rhel8
+@rhpam-7/rhpam-businesscentral-rhel8
 Feature: Decision/Business Central common features
 
   Scenario: Web console is available
