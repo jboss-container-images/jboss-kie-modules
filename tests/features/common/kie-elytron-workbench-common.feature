@@ -1,4 +1,3 @@
-@rhdm-7/rhdm-decisioncentral-rhel8
 @rhpam-7/rhpam-businesscentral-rhel8
 @rhpam-7/rhpam-businesscentral-monitoring-rhel8
 Feature: KIE specific elytron configuration
