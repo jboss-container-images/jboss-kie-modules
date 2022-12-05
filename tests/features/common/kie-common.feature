@@ -337,7 +337,7 @@ Feature: IBM BAMOE common tests
       | AUTH_LDAP_BIND_DN           | cn=Manager,dc=example,dc=com                                         |
       | AUTH_LDAP_BIND_CREDENTIAL   | admin                                                                |
       | AUTH_LDAP_BASE_CTX_DN       | ou=Users,dc=example,dc=com                                           |
-      | AUTH_LDAP_ROLE_FILTER       | (member={1})                                                         |
+      | AUTH_LDAP_ROLE_FILTER       | (&(objectClass=groupOfUniqueNames)(uniqueMember={1}))                |
       | AUTH_LDAP_ROLE_ATTRIBUTE_ID | cn                                                                   |
       | AUTH_LDAP_ROLES_CTX_DN      | ou=Roles,dc=example,dc=com                                           |
       | AUTH_LDAP_BASE_FILTER       | (&(mail={0}))(\|(objectclass=dbperson)(objectclass=inetOrgPerson)))  |
@@ -345,7 +345,7 @@ Feature: IBM BAMOE common tests
     Then container log should contain AUTH_LDAP_URL is set to [test_url], setting up LDAP authentication with elytron...
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" principal="cn=Manager,dc=example,dc=com">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <credential-reference clear-text="admin"/>
-    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=Roles,dc=example,dc=com"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(&amp;(objectClass=groupOfUniqueNames)(uniqueMember={1}))" filter-base-dn="ou=Roles,dc=example,dc=com"/>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <identity-mapping rdn-identifier="(&amp;(mail={0}))(|(objectclass=dbperson)(objectclass=inetOrgPerson)))" search-base-dn="ou=Users,dc=example,dc=com">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIELdapRealm" permission-mapper="default-permission-mapper">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security elytron-domain="KIELdapSecurityDomain"/>

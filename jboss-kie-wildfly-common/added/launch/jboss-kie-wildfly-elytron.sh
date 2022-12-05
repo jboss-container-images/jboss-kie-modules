@@ -269,10 +269,15 @@ function configure_elytron_ldap_auth() {
     sed -i "s|<!-- ##KIE_LDAP_REALM## -->|${kie_elytron_ldap_realm}|" $CONFIG_FILE
 
     # configure ldap attribute mapping
+    local role_filter="${AUTH_LDAP_ROLE_FILTER}"
+    if [[ "${AUTH_LDAP_ROLE_FILTER}" =~ "\|" ]]; then
+        role_filter=${AUTH_LDAP_ROLE_FILTER//\\|/|}
+    fi
+    role_filter="$(normalize_string "${role_filter}")"
     local kie_elytron_ldap_attribute_mapping="<attribute-mapping>\n\
                         <attribute from=\"${AUTH_LDAP_ROLE_ATTRIBUTE_ID}\" \
                         to=\"Roles\" \
-                        filter=\"${AUTH_LDAP_ROLE_FILTER}\" \
+                        filter=\"${role_filter}\" \
                         filter-base-dn=\"${AUTH_LDAP_ROLES_CTX_DN}\""
     if [ "${AUTH_LDAP_ROLE_RECURSION}x" != "x" ]; then
         kie_elytron_ldap_attribute_mapping="${kie_elytron_ldap_attribute_mapping} role-recursion=\"${AUTH_LDAP_ROLE_RECURSION}\"/>\n"
