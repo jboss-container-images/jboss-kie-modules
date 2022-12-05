@@ -482,7 +482,7 @@ teardown() {
     AUTH_LDAP_BASE_FILTER="(&(mail={0}))(\|(objectclass=dbperson)(objectclass=inetOrgPerson)))"
     AUTH_LDAP_BASE_CTX_DN="ou=people,dc=example,dc=com"
     AUTH_LDAP_ROLE_ATTRIBUTE_ID="cn"
-    AUTH_LDAP_ROLE_FILTER="(member={1})"
+    AUTH_LDAP_ROLE_FILTER="(&(objectClass=groupOfUniqueNames)(uniqueMember={1}))"
     AUTH_LDAP_ROLES_CTX_DN="ou=roles,dc=example,dc=com"
 
     configure_elytron_ldap_auth
@@ -490,7 +490,7 @@ teardown() {
     expected="<ldap-realm name=\"KIELdapRealm\" dir-context=\"KIELdapDC\">
                 <identity-mapping rdn-identifier=\"(&amp;(mail={0}))(|(objectclass=dbperson)(objectclass=inetOrgPerson)))\" search-base-dn=\"ou=people,dc=example,dc=com\">
                     <attribute-mapping>
-                        <attribute from=\"cn\" to=\"Roles\" filter=\"(member={1})\" filter-base-dn=\"ou=roles,dc=example,dc=com\"/>
+                        <attribute from=\"cn\" to=\"Roles\" filter=\"(&amp;(objectClass=groupOfUniqueNames)(uniqueMember={1}))\" filter-base-dn=\"ou=roles,dc=example,dc=com\"/>
                     </attribute-mapping>
                     <!-- ##KIE_LDAP_NEW_IDENTITY_ATTRIBUTES## -->
                     <user-password-mapper from=\"userPassword\" writable=\"true\"/>
