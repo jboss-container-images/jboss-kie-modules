@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 function assert_xml() {
   local file=$1
   local xpath=$2

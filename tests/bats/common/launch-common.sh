@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 export KUBERNETES_SERVICE_PROTOCOL="http"
 export KUBERNETES_SERVICE_HOST="localhost"
