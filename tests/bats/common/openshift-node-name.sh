@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 function init_node_name() {
   if [ -z "${JBOSS_NODE_NAME}" ] ; then
     if [ -n "${NODE_NAME}" ]; then
