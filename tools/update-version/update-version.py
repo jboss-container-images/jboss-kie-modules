@@ -43,39 +43,6 @@ def get_rhpam_behave_tests_files():
     return files
 
 
-def get_updated_rhdm_prefix(version):
-    return "rhdm{0}".format(get_shortened_version(version).replace(".", ""))
-
-
-def update_rhdm_behave_tests(version, confirm):
-    """
-    Update the rhdm behave tests to the given version.
-    :param version: version to set into the module
-    :param confirm: if true will save the changes otherwise will print the proposed changes
-    """
-
-    tests_to_update = get_rhdm_behave_tests_files()
-    print("Updating rhdm behave test files {0}".format(tests_to_update))
-
-    try:
-        for test_to_update in tests_to_update:
-            with open(test_to_update) as bh:
-                # replace all occurrences of shortened version first
-                plain = SHORTENED_VERSION_REGEX.sub(get_shortened_version(version), bh.read())
-
-                if not confirm:
-                    print("Applied changes are [{0}]: \n".format(test_to_update))
-                    print(plain)
-                    print("\n----------------------------------\n")
-
-            if confirm:
-                with open(test_to_update, 'w') as bh:
-                    bh.write(plain)
-
-    except TypeError:
-        raise
-
-
 def update_rhpam_behave_tests(version, confirm):
     """
     Update the rhpam behave tests to the given version.
@@ -112,7 +79,7 @@ def update_adocs_readme(version, confirm):
     :param confirm: if true will save the changes otherwise will print the proposed changes
     """
 
-    readmes = ['tools/gen-template-doc/README_RHDM.adoc.in', 'tools/gen-template-doc/README_RHPAM.adoc.in']
+    readmes = ['tools/gen-template-doc/README_RHPAM.adoc.in']
 
     if confirm:
         for readme in readmes:
@@ -159,10 +126,10 @@ def update_build_overrides_script(version, confirm):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='RHDM Version Manager')
+    parser = argparse.ArgumentParser(description='RHPAM Version Manager')
     parser.add_argument('-v', dest='t_version', help='update everything to the next version')
     parser.add_argument('--confirm', default=False, action='store_true', help='if not set, script will not update the '
-                                                                              'rhdm modules. (Dry run)')
+                                                                              ' modules. (Dry run)')
     args = parser.parse_args()
 
     if len(sys.argv) == 1:
