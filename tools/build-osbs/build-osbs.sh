@@ -237,6 +237,11 @@ set_git_config
 
 if [ -n "$KERBEROS_PRINCIPAL" ]; then
     get_kerb_ticket
+    # overrides the OSBS_BUILD_USER if it is not set and KERBEROS principal is in use
+    if [ ! -n "$OSBS_BUILD_USER" ]; then
+      echo "setting OSBS_BUILD_USER to KERBEROS_PRINCIPAL"
+      OSBS_BUILD_USER=$KERBEROS_PRINCIPAL
+    fi
 else
     echo No kerberos principal specified, assuming there is a current kerberos ticket
 fi
@@ -259,6 +264,6 @@ if [ -n "$OSBS_BUILD_USER" ]; then
 fi
 
 # Invoke cekit and respond with Y to any prompts
-echo "cekit --redhat $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user $builduser --koji-target $OSBS_BUILD_TARGET"
+echo "cekit --redhat $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user $builduser"
 
-yes Y | cekit --redhat $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user $builduser --koji-target $OSBS_BUILD_TARGET
+cekit --redhat $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs -y --user $builduser
