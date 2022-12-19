@@ -685,6 +685,12 @@ delete_cached_artifacts() {
 }
 
 main() {
+    DATE_BINARY="date"
+    # OSX compatibility
+    if [[ $OSTYPE == 'darwin'* ]]; then
+        # installed by coreutils brew package
+        DATE_BINARY="gdate"
+    fi
     validate_cekit_version
     local args
     IFS=' ' read -r -a args <<< "$(echo ${@})"
@@ -693,7 +699,7 @@ main() {
     local build_type
     local build_type_default="nightly"
     local build_date
-    local build_date_default=$(date --date="1 day ago" '+%Y%m%d')
+    local build_date_default=$($DATE_BINARY --date="1 day ago" '+%y%m%d')
     local products_valid=( all \
         rhpam rhpam-businesscentral rhpam-businesscentral-monitoring rhpam-controller rhpam-kieserver rhpam-process-migration rhpam-smartrouter )
     local product_default="all"
