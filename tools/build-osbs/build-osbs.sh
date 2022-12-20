@@ -129,7 +129,8 @@ function get_extra_cekit_overrides_options()
     fi
 
     # If there is an artifact-overrides.yaml in the local dir, use it
-    if [ -f "artifact-overrides.yaml" ]; then
+    has_artifacts=$(cat artifact-overrides.yaml |  python3 -c 'import yaml,sys;obj=yaml.load(sys.stdin, Loader=yaml.FullLoader); print(obj["artifacts"])')
+    if [ -f "artifact-overrides.yaml" && "${has_artifacts}" != "None" ]; then
         artifactoverrides="--overrides-file artifact-overrides.yaml"
     fi
 }
@@ -259,7 +260,7 @@ if [ -n "$OSBS_BUILD_USER" ]; then
     builduser="$OSBS_BUILD_USER"
 fi
 
+CEKIT_COMMAND="cekit --redhat $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user $builduser"
 # Invoke cekit and respond with Y to any prompts
-echo "cekit --redhat $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user $builduser"
-
-cekit --redhat $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs -y --user $builduser
+echo -e "########## Using CeKit version: `cekit --version`.\nExecuting the following CeKit build Command: \n$CEKIT_COMMAND"
+`$CEKIT_COMMAND`
