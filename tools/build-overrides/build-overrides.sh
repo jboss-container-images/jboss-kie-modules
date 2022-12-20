@@ -272,7 +272,7 @@ get_build_url() {
     local product_suite_lower=${4,,}
     local product_suite_upper=${4^^}
     local build_url
-    if [ "${product_suite_lower}" = "rhdm" ] || [ "${product_suite_lower}" = "rhpam" ]; then
+    if [ "${product_suite_lower}" = "rhpam" ]; then
         if [ "${build_type}" = "nightly" ]; then
             build_url="http://download.eng.bos.redhat.com/rcm-guest/staging/${product_suite_lower}/${product_suite_upper}-${full_version}.NIGHTLY/${product_suite_lower}-${build_date}.properties"
         elif [ "${build_type}" = "staging" ]; then
@@ -313,175 +313,6 @@ product_matches() {
     fi
 }
 
-handle_rhdm_artifacts() {
-    local full_version=${1}
-    local short_version=${2}
-    local build_type=${3}
-    local build_date=${4}
-    local product=${5}
-    local artifacts_dir="${6}"
-    local overrides_dir="${7}"
-    local work_dir="${8}"
-
-    local build_file=$(get_build_file "${full_version}" "${build_type}" "${build_date}" "rhdm" "${artifacts_dir}")
-    if [ -z "${build_file}" ]; then
-        return 1
-    fi
-
-    # RHDM Add-Ons
-    local add_ons_distribution_zip
-    local add_ons_distribution_md5
-    if product_matches "${product}" "rhdm" "controller" ; then
-        local add_ons_distribution_url=$(get_artifact_url "rhdm.addons.latest.url" "${build_file}")
-        add_ons_distribution_zip=$(get_artifact_name "${add_ons_distribution_url}")
-        local add_ons_distribution_file="${artifacts_dir}/${add_ons_distribution_zip}"
-        if download "${add_ons_distribution_url}" "${add_ons_distribution_file}" ; then
-            if cache "${add_ons_distribution_file}" "${work_dir}"; then
-                add_ons_distribution_md5=$(get_sum "md5" "${add_ons_distribution_file}")
-            else
-                return 1
-            fi
-        else
-            return 1
-        fi
-    fi
-
-    # RHDM Controller
-    if product_matches "${product}" "rhdm" "controller" ; then
-        local controller_distribution_zip="rhdm-${short_version}-controller-ee7.zip"
-        local controller_overrides_yaml="${overrides_dir}/rhdm-controller-overrides.yaml"
-        local controller_overrides_json="${overrides_dir}/rhdm-controller-overrides.json"
-        if [ ! -f "${controller_overrides_yaml}" ]; then
-            log_info "Generating ${controller_overrides_yaml} ..."
-cat <<EOF > "${controller_overrides_yaml}"
-envs:
-- name: "CONTROLLER_DISTRIBUTION_ZIP"
-  value: "${controller_distribution_zip}"
-artifacts:
-- name: "rhdm_add_ons_distribution.zip"
-  # ${add_ons_distribution_zip}
-  md5: "${add_ons_distribution_md5}"
-  url: "${add_ons_distribution_url}"
-EOF
-        else
-            log_info "File ${controller_overrides_yaml} already generated."
-        fi
-        if [ ! -f "${controller_overrides_json}" ]; then
-            log_info "Generating ${controller_overrides_json} ..."
-cat <<EOF > "${controller_overrides_json}"
-{
-  "envs": [
-    {
-      "name": "CONTROLLER_DISTRIBUTION_ZIP",
-      "value": "${controller_distribution_zip}"
-    }
-  ],
-  "artifacts": [
-    {
-      "name": "rhdm_add_ons_distribution.zip",
-      "md5": "${add_ons_distribution_md5}",
-      "url": "${add_ons_distribution_url}"
-    }
-  ]
-}
-EOF
-        else
-            log_info "File ${controller_overrides_json} already generated."
-        fi
-    fi
-
-    # RHDM Decision Central
-    if product_matches "${product}" "rhdm" "decisioncentral" ; then
-        local decision_central_distribution_url=$(get_artifact_url "rhdm.decision-central-eap7.latest.url" "${build_file}")
-        local decision_central_distribution_zip=$(get_artifact_name "${decision_central_distribution_url}")
-        local decision_central_distribution_file="${artifacts_dir}/${decision_central_distribution_zip}"
-        if download "${decision_central_distribution_url}" "${decision_central_distribution_file}" ; then
-            if cache "${decision_central_distribution_file}" "${work_dir}"; then
-                local decision_central_distribution_md5=$(get_sum "md5" "${decision_central_distribution_file}")
-                local decisioncentral_overrides_yaml="${overrides_dir}/rhdm-decisioncentral-overrides.yaml"
-                local decisioncentral_overrides_json="${overrides_dir}/rhdm-decisioncentral-overrides.json"
-                if [ ! -f "${decisioncentral_overrides_yaml}" ]; then
-                    log_info "Generating ${decisioncentral_overrides_yaml} ..."
-cat <<EOF > "${decisioncentral_overrides_yaml}"
-artifacts:
-- name: "rhdm_decision_central_distribution.zip"
-  # ${decision_central_distribution_zip}
-  md5: "${decision_central_distribution_md5}"
-  url: "${decision_central_distribution_url}"
-EOF
-                else
-                    log_info "File ${decisioncentral_overrides_yaml} already generated."
-                fi
-                if [ ! -f "${decisioncentral_overrides_json}" ]; then
-                    log_info "Generating ${decisioncentral_overrides_json} ..."
-cat <<EOF > "${decisioncentral_overrides_json}"
-{
-  "artifacts": [
-    {
-      "name": "rhdm_decision_central_distribution.zip",
-      "md5": "${decision_central_distribution_md5}",
-      "url": "${decision_central_distribution_url}"
-    }
-  ]
-}
-EOF
-                else
-                    log_info "File ${decisioncentral_overrides_json} already generated."
-                fi
-            else
-                return 1
-            fi
-        else
-            return 1
-        fi
-    fi
-
-    # RHDM KIE Server
-    if product_matches "${product}" "rhdm" "kieserver" ; then
-        local kie_server_distribution_url=$(get_artifact_url "rhdm.kie-server.ee8.latest.url" "${build_file}")
-        local kie_server_distribution_zip=$(get_artifact_name "${kie_server_distribution_url}")
-        local kie_server_distribution_file="${artifacts_dir}/${kie_server_distribution_zip}"
-        if download "${kie_server_distribution_url}" "${kie_server_distribution_file}" ; then
-            if cache "${kie_server_distribution_file}" "${work_dir}"; then
-                local kie_server_distribution_md5=$(get_sum "md5" "${kie_server_distribution_file}")
-                local kieserver_overrides_yaml="${overrides_dir}/rhdm-kieserver-overrides.yaml"
-                local kieserver_overrides_json="${overrides_dir}/rhdm-kieserver-overrides.json"
-                if [ ! -f "${kieserver_overrides_yaml}" ]; then
-                    log_info "Generating ${kieserver_overrides_yaml} ..."
-cat <<EOF > "${kieserver_overrides_yaml}"
-artifacts:
-- name: "rhdm_kie_server_distribution.zip"
-  # ${kie_server_distribution_zip}
-  md5: "${kie_server_distribution_md5}"
-  url: "${kie_server_distribution_url}"
-EOF
-                else
-                    log_info "File ${kieserver_overrides_yaml} already generated."
-                fi
-                if [ ! -f "${kieserver_overrides_json}" ]; then
-                    log_info "Generating ${kieserver_overrides_json} ..."
-cat <<EOF > "${kieserver_overrides_json}"
-{
-  "artifacts": [
-    {
-      "name": "rhdm_kie_server_distribution.zip",
-      "md5": "${kie_server_distribution_md5}",
-      "url": "${kie_server_distribution_url}"
-    }
-  ]
-}
-EOF
-                else
-                    log_info "File ${kieserver_overrides_json} already generated."
-                fi
-            else
-                return 1
-            fi
-        else
-            return 1
-        fi
-    fi
-}
 
 handle_rhpam_artifacts() {
     local full_version=${1}
@@ -823,8 +654,8 @@ EOF
 delete_cached_artifacts() {
     local product=${1}
     local product_default="all"
-    local products_valid=(all rhdm rhpam)
-    local query="rhpam*\|rhdm*"
+    local products_valid=(all rhpam)
+    local query="rhpam*"
     if [ -z "${product}" ]; then
         product="${product_default}"
     else
@@ -864,7 +695,6 @@ main() {
     local build_date
     local build_date_default=$(date --date="1 day ago" '+%Y%m%d')
     local products_valid=( all \
-        rhdm rhdm-controller rhdm-decisioncentral rhdm-kieserver \
         rhpam rhpam-businesscentral rhpam-businesscentral-monitoring rhpam-controller rhpam-kieserver rhpam-process-migration rhpam-smartrouter )
     local product_default="all"
     local version_example="7.13.2"
@@ -938,7 +768,7 @@ main() {
         log_help "-w | --work-dir = [w]orking directory used by cekit (optional; default: the cekit default)"
         log_help "-c | --cache = [c]ache artifact (optional; a local artifact file or directory of artifacts to cache, or a remote artifact starting with \"http(s)://\"; examples: ${cache_artifact_examples})"
         log_help "-C | --cache-list = [C]ache list (optional; a local text file containing a list of artifacts to cache, or a remote one starting with \"http(s)://\"; examples: ${cache_list_examples})"
-        log_help "--delete-cache = deletes local cached artifacts from specified product (optional; default: don't delete anything; allowed: all rhdm rhpam)"
+        log_help "--delete-cache = deletes local cached artifacts from specified product (optional; default: don't delete anything; allowed: all rhpam)"
         log_help "--no-color = Suppress terminal color output (optional; default: ANSI escape codes for color will be included)"
         log_help "-h | --help = [h]elp / usage"
     elif [ -z "${full_version}" ] && [ -z "${cache_artifact}" ] && [ -z "${cache_list}" ] && [ -z "${delete_product}" ]; then
@@ -1046,9 +876,6 @@ main() {
             fi
 
             # handle artifacts
-            if [ "${product}" = "all" ] || [[ "${product}" =~ rhdm.* ]]; then
-                handle_rhdm_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}" "${work_dir}"
-            fi
             if [ "${product}" = "all" ] || [[ "${product}" =~ rhpam.* ]]; then
                 handle_rhpam_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}" "${work_dir}"
             fi
