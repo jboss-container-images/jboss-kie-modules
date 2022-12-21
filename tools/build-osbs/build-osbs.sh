@@ -95,6 +95,7 @@ function get_kerb_ticket() {
     if [ -n "$KERBEROS_PASSWORD" ]; then
         echo "$KERBEROS_PASSWORD" | kinit "$KERBEROS_PRINCIPAL"
         klist
+        hello_koji
         if [ "$?" -ne 0 ]; then
             echo "Failed to get kerberos token for $KERBEROS_PRINCIPAL with password"
             exit -1
@@ -102,6 +103,7 @@ function get_kerb_ticket() {
     elif [ -n "$KERBEROS_KEYTAB" ]; then
         kinit -k -t "$KERBEROS_KEYTAB" "$KERBEROS_PRINCIPAL"
         klist
+        hello_koji
         if [ "$?" -ne 0 ]; then
             echo "Failed to get kerberos token for $KERBEROS_PRINCIPAL with $KERBEROS_KEYTAB"
             exit -1
@@ -113,6 +115,8 @@ function get_kerb_ticket() {
     set -e
 }
 
+# hello_koji will help to indentify if the kerberos ticket and koji is are properly configured, only called if
+# debug is enabled
 function hello_koji() {
     if [ -n "$DEBUG" ]; then
         cat  /etc/koji.conf.d/brewkoji.conf
@@ -269,7 +273,7 @@ if [ -n "$OSBS_BUILD_USER" ]; then
     builduser="$OSBS_BUILD_USER"
 fi
 
-CEKIT_COMMAND="cekit --redhat $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user \"$builduser\""
+CEKIT_COMMAND="cekit --redhat $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user $builduser"
 # Invoke cekit and respond with Y to any prompts
 echo -e "########## Using CeKit version: `cekit --version`.\nExecuting the following CeKit build Command: \n$CEKIT_COMMAND"
 exec $CEKIT_COMMAND
