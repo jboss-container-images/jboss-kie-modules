@@ -94,12 +94,14 @@ function get_kerb_ticket() {
     set +e
     if [ -n "$KERBEROS_PASSWORD" ]; then
         echo "$KERBEROS_PASSWORD" | kinit "$KERBEROS_PRINCIPAL"
+        klist
         if [ "$?" -ne 0 ]; then
             echo "Failed to get kerberos token for $KERBEROS_PRINCIPAL with password"
             exit -1
         fi
     elif [ -n "$KERBEROS_KEYTAB" ]; then
         kinit -k -t "$KERBEROS_KEYTAB" "$KERBEROS_PRINCIPAL"
+        klist
         if [ "$?" -ne 0 ]; then
             echo "Failed to get kerberos token for $KERBEROS_PRINCIPAL with $KERBEROS_KEYTAB"
             exit -1
@@ -111,8 +113,15 @@ function get_kerb_ticket() {
     set -e
 }
 
-function set_git_config()
-{
+function hello_koji() {
+    if [ -n "$DEBUG" ]; then
+        cat  /etc/koji.conf.d/brewkoji.conf
+        KRB5_TRACE=/dev/stdout koji -d hello
+    fi
+}
+
+
+function set_git_config() {
     git config --global user.email "$GIT_EMAIL"
     git config --global user.name  "$GIT_USER"
     git config --global core.pager ""
@@ -130,7 +139,7 @@ function get_extra_cekit_overrides_options()
 
     # If there is an artifact-overrides.yaml in the local dir, use it
     has_artifacts=$(cat artifact-overrides.yaml |  python3 -c 'import yaml,sys;obj=yaml.load(sys.stdin, Loader=yaml.FullLoader); print(obj["artifacts"])')
-    if [ -f "artifact-overrides.yaml" && "${has_artifacts}" != "None" ]; then
+    if [ -f "artifact-overrides.yaml" ] && [ "${has_artifacts}" != "None" ]; then
         artifactoverrides="--overrides-file artifact-overrides.yaml"
     fi
 }
@@ -260,7 +269,7 @@ if [ -n "$OSBS_BUILD_USER" ]; then
     builduser="$OSBS_BUILD_USER"
 fi
 
-CEKIT_COMMAND="cekit --redhat $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user $builduser"
+CEKIT_COMMAND="cekit --redhat $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user \"$builduser\""
 # Invoke cekit and respond with Y to any prompts
 echo -e "########## Using CeKit version: `cekit --version`.\nExecuting the following CeKit build Command: \n$CEKIT_COMMAND"
-`$CEKIT_COMMAND`
+exec $CEKIT_COMMAND
