@@ -143,7 +143,6 @@ if __name__ == "__main__":
 
         if VERSION_REGEX.match(args.t_version):
             print("Version will be updated to {0}".format(args.t_version))
-            update_rhdm_behave_tests(args.t_version, args.confirm)
             update_rhpam_behave_tests(args.t_version, args.confirm)
             update_adocs_readme(args.t_version, args.confirm)
             update_build_overrides_script(args.t_version, args.confirm)
