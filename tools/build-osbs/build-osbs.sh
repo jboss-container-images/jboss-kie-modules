@@ -7,8 +7,7 @@ GIT_USER=${GIT_USER:-"Your Name"}
 GIT_EMAIL=${GIT_EMAIL:-"yourname@email.com"}
 WORK_DIR=$(pwd)/build-temp
 
-function help()
-{
+function help() {
     echo "usage: build-osbs.sh [options]"
     echo
     echo "Run a cekit osbs build of an rhba image component based on a nightly build of the upstream kie repos"
@@ -52,8 +51,7 @@ function get_short_version() {
   echo $short_version
 }
 
-function check_for_required_envs()
-{
+function check_for_required_envs() {
     if [ -z "$GIT_EMAIL" ]; then
         echo "No git email specified with GIT_EMAIL"
         exit -1
@@ -127,8 +125,7 @@ function set_git_config() {
     git config --global core.pager ""
 }
 
-function get_extra_cekit_overrides_options()
-{
+function get_extra_cekit_overrides_options() {
     local gen_overrides_dir=$1
     overrides=
     artifactoverrides=
@@ -138,14 +135,15 @@ function get_extra_cekit_overrides_options()
     fi
 
     # If there is an artifact-overrides.yaml in the local dir, use it
-    has_artifacts=$(cat artifact-overrides.yaml |  python3 -c 'import yaml,sys;obj=yaml.load(sys.stdin, Loader=yaml.FullLoader); print(obj["artifacts"])')
-    if [ -f "artifact-overrides.yaml" ] && [ "${has_artifacts}" != "None" ]; then
-        artifactoverrides="--overrides-file artifact-overrides.yaml"
+    if [ -f artifact-overrides.yaml ]; then
+        has_artifacts=$(cat artifact-overrides.yaml |  python3 -c 'import yaml,sys;obj=yaml.load(sys.stdin, Loader=yaml.FullLoader); print(obj["artifacts"])')
+        if [ -f "artifact-overrides.yaml" ] && [ "${has_artifacts}" != "None" ]; then
+            artifactoverrides="--overrides-file artifact-overrides.yaml"
+        fi
     fi
 }
 
-function handle_cache_urls()
-{
+function handle_cache_urls() {
     # Parse and cache extra urls to add to the local cekit cache
     if [ -n "$1" ]; then
         local IFS=,
@@ -157,8 +155,7 @@ function handle_cache_urls()
     fi
 }
 
-function generate_overrides_files()
-{
+function generate_overrides_files() {
     echo build-overrides.sh -v $PROD_VERSION -t nightly -p $PROD_COMPONENT $bo_options
     build-overrides.sh -v $PROD_VERSION -t nightly -p $PROD_COMPONENT $bo_options
 }
