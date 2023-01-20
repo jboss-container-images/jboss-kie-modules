@@ -113,7 +113,7 @@ function get_kerb_ticket() {
     set -e
 }
 
-# _klist will help to indentify if the kerberos ticket, prints when debug is enabled
+# _klist will help to indentify if the kerberos ticket is valid, prints when debug is enabled
 function _klist() {
     if [ -n "$DEBUG" ]; then
         klist
@@ -247,7 +247,7 @@ if [ -n "$KERBEROS_PRINCIPAL" ]; then
     if [ ! -n "$OSBS_BUILD_USER" ]; then
       echo "setting OSBS_BUILD_USER to KERBEROS_PRINCIPAL"
       # need to catch only the first part of the principal, before the / otherwise 'rhpkg' will fail
-      OSBS_BUILD_USER=$(echo ${KERBEROS_PRINCIPAL} | awk -F"/" '{print $1}')
+      OSBS_BUILD_USER=$(echo ${KERBEROS_PRINCIPAL} | awk -F"@" '{print $1}')
     fi
 else
     echo No kerberos principal specified, assuming there is a current kerberos ticket
@@ -270,7 +270,7 @@ if [ -n "$OSBS_BUILD_USER" ]; then
     builduser="$OSBS_BUILD_USER"
 fi
 
-CEKIT_COMMAND="cekit --redhat $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user $builduser"
+CEKIT_COMMAND="cekit --redhat $debug --work-dir=$cekit_cache_dir build --overrides-file branch-overrides.yaml $overrides $artifactoverrides osbs --user $builduser -y"
 # Invoke cekit and respond with Y to any prompts
 echo -e "########## Using CeKit version: `cekit --version`.\nExecuting the following CeKit build Command: \n$CEKIT_COMMAND"
 exec $CEKIT_COMMAND
