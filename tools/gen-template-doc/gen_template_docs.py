@@ -4,7 +4,7 @@
 # ver:  Python 3.7
 # Desc: Generates application-template documentation by cloning application-template
 #       repository, then translating information from template JSON files into
-#       template asciidoctor files, and stores them in the a directory(Specified by
+#       template asciidoctor files, and stores them in the directory(Specified by
 #       TEMPLATE_DOCS variable).
 #
 # Dependencies
@@ -58,7 +58,8 @@ template_dirs = ['target/templates/process', 'target/templates/decision']
 # used to link the image to the image.yaml when the given image is used by a s2i build
 LINKS = {"rhpam-kieserver-rhel8:7.13.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
          "rhpam-kieserver-rhel8:7.13.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
-         "rhpam-kieserver-rhel8:7.13.2": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]"}
+         "rhpam-kieserver-rhel8:7.13.2": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
+         "rhpam-kieserver-rhel8:7.13.3": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]"}
 
 # used to update template parameters values
 PARAMETER_VALUES = {"EXAMPLE": "var"}
