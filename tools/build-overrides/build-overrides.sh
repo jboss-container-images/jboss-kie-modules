@@ -272,7 +272,10 @@ get_build_url() {
     local product_suite_lower=${4,,}
     local product_suite_upper=${4^^}
     local build_url
-    if [ "${product_suite_lower}" = "rhpam" ]; then
+    if [ "${product_suite_lower}" = "bamoe" ]; then
+        #small hack to overcome the url pattern, it still under rhpam directory
+        product_suite_lower="rhpam"
+        product_suite_upper="${product_suite_lower^^}"
         if [ "${build_type}" = "nightly" ]; then
             build_url="http://download.eng.bos.redhat.com/rcm-guest/staging/${product_suite_lower}/${product_suite_upper}-${full_version}.NIGHTLY/${product_suite_lower}-${build_date}.properties"
         elif [ "${build_type}" = "staging" ]; then
@@ -314,7 +317,7 @@ product_matches() {
 }
 
 
-handle_rhpam_artifacts() {
+handle_bamoe_artifacts() {
     local full_version=${1}
     local short_version=${2}
     local build_type=${3}
@@ -324,15 +327,15 @@ handle_rhpam_artifacts() {
     local overrides_dir="${7}"
     local work_dir="${8}"
 
-    local build_file=$(get_build_file "${full_version}" "${build_type}" "${build_date}" "rhpam" "${artifacts_dir}")
+    local build_file=$(get_build_file "${full_version}" "${build_type}" "${build_date}" "bamoe" "${artifacts_dir}")
     if [ -z "${build_file}" ]; then
         return 1
     fi
 
-    # RHPAM Add-Ons
+    # BAMOE Add-Ons
     local add_ons_distribution_zip
     local add_ons_distribution_md5
-    if product_matches "${product}" "rhpam" "controller" || product_matches "${product}" "rhpam" "process-migration" || product_matches "${product}" "rhpam" "smartrouter" || product_matches "${product}" "rhpam" "dashbuilder"; then
+    if product_matches "${product}" "bamoe" "controller" || product_matches "${product}" "bamoe" "process-migration" || product_matches "${product}" "bamoe" "smartrouter" || product_matches "${product}" "bamoe" "dashbuilder"; then
         local add_ons_distribution_url=$(get_property "rhpam.addons.latest.url" "${build_file}")
         add_ons_distribution_zip=$(get_artifact_name "${add_ons_distribution_url}")
         local add_ons_distribution_file="${artifacts_dir}/${add_ons_distribution_zip}"
@@ -347,26 +350,26 @@ handle_rhpam_artifacts() {
         fi
     fi
 
-    # RHPAM Business Central
+    # BAMOE Business Central
     local business_central_distribution_url
     local business_central_distribution_zip
     local business_central_distribution_file
     local business_central_distribution_md5
-    if product_matches "${product}" "rhpam" "businesscentral" || product_matches "${product}" "rhpam" "kieserver" ; then
+    if product_matches "${product}" "bamoe" "businesscentral" || product_matches "${product}" "bamoe" "kieserver" ; then
         business_central_distribution_url=$(get_property "rhpam.business-central-eap7.latest.url" "${build_file}")
         business_central_distribution_zip=$(get_artifact_name "${business_central_distribution_url}")
         business_central_distribution_file="${artifacts_dir}/${business_central_distribution_zip}"
         if download "${business_central_distribution_url}" "${business_central_distribution_file}" ; then
             if cache "${business_central_distribution_file}" "${work_dir}"; then
                 business_central_distribution_md5=$(get_sum "md5" "${business_central_distribution_file}")
-                if product_matches "${product}" "rhpam" "businesscentral" ; then
-                    local businesscentral_overrides_yaml="${overrides_dir}/rhpam-businesscentral-overrides.yaml"
-                    local businesscentral_overrides_json="${overrides_dir}/rhpam-businesscentral-overrides.json"
+                if product_matches "${product}" "bamoe" "businesscentral" ; then
+                    local businesscentral_overrides_yaml="${overrides_dir}/bamoe-businesscentral-overrides.yaml"
+                    local businesscentral_overrides_json="${overrides_dir}/bamoe-businesscentral-overrides.json"
                     if [ ! -f "${businesscentral_overrides_yaml}" ]; then
                         log_info "Generating ${businesscentral_overrides_yaml} ..."
 cat <<EOF > "${businesscentral_overrides_yaml}"
 artifacts:
-- name: "rhpam_business_central_distribution.zip"
+- name: "bamoe_business_central_distribution.zip"
   # ${business_central_distribution_zip}
   md5: "${business_central_distribution_md5}"
   url: "${business_central_distribution_url}"
@@ -380,7 +383,7 @@ cat <<EOF > "${businesscentral_overrides_json}"
 {
   "artifacts": [
     {
-      "name": "rhpam_business_central_distribution.zip",
+      "name": "bamoe_business_central_distribution.zip",
       "md5": "${business_central_distribution_md5}",
       "url": "${business_central_distribution_url}"
     }
@@ -399,8 +402,8 @@ EOF
         fi
     fi
 
-    # RHPAM Business Central Monitoring
-    if product_matches "${product}" "rhpam" "businesscentral-monitoring" ; then
+    # BAMOE Business Central Monitoring
+    if product_matches "${product}" "bamoe" "businesscentral-monitoring" ; then
         local business_central_monitoring_distribution_url=$(get_property "rhpam.monitoring.latest.url" "${build_file}")
         if [ -z "${business_central_monitoring_distribution_url}" ]; then
             if [ -z "${business_central_distribution_url}" ]; then
@@ -414,13 +417,13 @@ EOF
         if download "${business_central_monitoring_distribution_url}" "${business_central_monitoring_distribution_file}" ; then
             if cache "${business_central_monitoring_distribution_file}" "${work_dir}"; then
                 local business_central_monitoring_distribution_md5=$(get_sum "md5" "${business_central_monitoring_distribution_file}")
-                local businesscentral_monitoring_overrides_yaml="${overrides_dir}/rhpam-businesscentral-monitoring-overrides.yaml"
-                local businesscentral_monitoring_overrides_json="${overrides_dir}/rhpam-businesscentral-monitoring-overrides.json"
+                local businesscentral_monitoring_overrides_yaml="${overrides_dir}/bamoe-businesscentral-monitoring-overrides.yaml"
+                local businesscentral_monitoring_overrides_json="${overrides_dir}/bamoe-businesscentral-monitoring-overrides.json"
                 if [ ! -f "${businesscentral_monitoring_overrides_yaml}" ]; then
                     log_info "Generating ${businesscentral_monitoring_overrides_yaml} ..."
 cat <<EOF > "${businesscentral_monitoring_overrides_yaml}"
 artifacts:
-- name: "rhpam_business_central_monitoring_distribution.zip"
+- name: "bamoe_business_central_monitoring_distribution.zip"
   # ${business_central_monitoring_distribution_zip}
   md5: "${business_central_monitoring_distribution_md5}"
   url: "${business_central_monitoring_distribution_url}"
@@ -434,7 +437,7 @@ cat <<EOF > "${businesscentral_monitoring_overrides_json}"
 {
   "artifacts": [
     {
-      "name": "rhpam_business_central_monitoring_distribution.zip",
+      "name": "bamoe_business_central_monitoring_distribution.zip",
       "md5": "${business_central_monitoring_distribution_md5}",
       "url": "${business_central_monitoring_distribution_url}"
     }
@@ -452,11 +455,11 @@ EOF
         fi
     fi
 
-    # RHPAM Controller
-    if product_matches "${product}" "rhpam" "controller" ; then
-        local controller_distribution_zip="rhpam-${full_version}-controller-ee7.zip"
-        local controller_overrides_yaml="${overrides_dir}/rhpam-controller-overrides.yaml"
-        local controller_overrides_json="${overrides_dir}/rhpam-controller-overrides.json"
+    # BAMOE Controller
+    if product_matches "${product}" "bamoe" "controller" ; then
+        local controller_distribution_zip="bamoe-${full_version}-controller-ee7.zip"
+        local controller_overrides_yaml="${overrides_dir}/bamoe-controller-overrides.yaml"
+        local controller_overrides_json="${overrides_dir}/bamoe-controller-overrides.json"
         if [ ! -f "${controller_overrides_yaml}" ]; then
             log_info "Generating ${controller_overrides_yaml} ..."
 cat <<EOF > "${controller_overrides_yaml}"
@@ -464,7 +467,7 @@ envs:
 - name: "CONTROLLER_DISTRIBUTION_ZIP"
   value: "${controller_distribution_zip}"
 artifacts:
-- name: "rhpam_add_ons_distribution.zip"
+- name: "bamoe_add_ons_distribution.zip"
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
   url: "${add_ons_distribution_url}"
@@ -484,7 +487,7 @@ cat <<EOF > "${controller_overrides_json}"
   ],
   "artifacts": [
     {
-      "name": "rhpam_add_ons_distribution.zip",
+      "name": "bamoe_add_ons_distribution.zip",
       "md5": "${add_ons_distribution_md5}",
       "url": "${add_ons_distribution_url}"
     }
@@ -496,12 +499,12 @@ EOF
         fi
     fi
 
-    # RHPAM KIE Server
-    if product_matches "${product}" "rhpam" "kieserver" ; then
-        # handle the overrides manually by clonning the rhpam-7-image and override the needed content manually
+    # BAMOE KIE Server
+    if product_matches "${product}" "bamoe" "kieserver" ; then
+        # handle the overrides manually by cloning the rhpam-7-image and override the needed content manually
         # in this step, handle the following artifacts kie-server-services-jbpm-cluster, jbpm-event-emitters-kafka and
         # jbpm-wb-kie-server-backend
-        # then edit the kieserver module manully and update the version and hash as required. Then the generated
+        # then edit the kieserver module manually and update the version and hash as required. Then the generated
         # overrides file will overrides the module instead the artifacts.
         # clone the repository
         local branch="${short_version}.x"
@@ -542,8 +545,8 @@ EOF
                 jbpm_emitters_kafka_jar_url="${maven_base_url}/org/jbpm/jbpm-event-emitters-kafka/${kie_version}/jbpm-event-emitters-kafka-${kie_version}.jar"
                 jbpm_emitters_kafka_jar_md5=$(curl ${jbpm_emitters_kafka_jar_url}.md5 --silent)
 
-                local kieserver_overrides_yaml="${overrides_dir}/rhpam-kieserver-overrides.yaml"
-                local kieserver_overrides_json="${overrides_dir}/rhpam-kieserver-overrides.json"
+                local kieserver_overrides_yaml="${overrides_dir}/bamoe-kieserver-overrides.yaml"
+                local kieserver_overrides_json="${overrides_dir}/bamoe-kieserver-overrides.json"
                 if [ ! -f "${kieserver_overrides_yaml}" ]; then
                     log_info "Generating ${kieserver_overrides_yaml} ..."
 cat <<EOF > "${kieserver_overrides_yaml}"
@@ -551,11 +554,11 @@ envs:
 - name: "JBPM_WB_KIE_SERVER_BACKEND_JAR"
   value: "${jbpm_wb_kie_server_backend_jar}"
 artifacts:
-- name: "rhpam_kie_server_distribution.zip"
+- name: "bamoe_kie_server_distribution.zip"
   # ${kie_server_distribution_zip}
   md5: "${kie_server_distribution_md5}"
   url: "${kie_server_distribution_url}"
-- name: "rhpam_business_central_distribution.zip"
+- name: "bamoe_business_central_distribution.zip"
   # ${business_central_distribution_zip}
   md5: "${business_central_distribution_md5}"
   url: "${business_central_distribution_url}"
@@ -585,12 +588,12 @@ cat <<EOF > "${kieserver_overrides_json}"
   ],
   "artifacts": [
     {
-      "name": "rhpam_kie_server_distribution.zip",
+      "name": "bamoe_kie_server_distribution.zip",
       "md5": "${kie_server_distribution_md5}",
       "url": "${kie_server_distribution_url}"
     },
     {
-      "name": "rhpam_business_central_distribution.zip",
+      "name": "bamoe_business_central_distribution.zip",
       "md5": "${business_central_distribution_md5}",
       "url": "${business_central_distribution_url}"
     },
@@ -632,19 +635,19 @@ EOF
     fi
 
 
-    # RHPAM Process Migration
-    if product_matches "${product}" "rhpam" "process-migration" ; then
-        local process_migration_distribution_jar="rhpam-${full_version}-process-migration-service-standalone.jar"
-        local process_migration_overrides_yaml="${overrides_dir}/rhpam-process-migration-overrides.yaml"
-        local process_migration_overrides_json="${overrides_dir}/rhpam-process-migration-overrides.json"
+    # BAMOE Process Migration
+    if product_matches "${product}" "bamoe" "process-migration" ; then
+        local process_migration_distribution_zip="bamoe-${full_version}-process-migration-service.zip"
+        local process_migration_overrides_yaml="${overrides_dir}/bamoe-process-migration-overrides.yaml"
+        local process_migration_overrides_json="${overrides_dir}/bamoe-process-migration-overrides.json"
         if [ ! -f "${process_migration_overrides_yaml}" ]; then
             log_info "Generating ${process_migration_overrides_yaml} ..."
 cat <<EOF > "${process_migration_overrides_yaml}"
 envs:
-- name: "KIE_PROCESS_MIGRATION_DISTRIBUTION_JAR"
-  value: "${process_migration_distribution_jar}"
+- name: "KIE_PROCESS_MIGRATION_DISTRIBUTION_ZIP"
+  value: "${process_migration_distribution_zip}"
 artifacts:
-- name: "rhpam_add_ons_distribution.zip"
+- name: "bamoe_add_ons_distribution.zip"
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
   url: "${add_ons_distribution_url}"
@@ -658,13 +661,13 @@ cat <<EOF > "${process_migration_overrides_json}"
 {
   "envs": [
     {
-      "name": "KIE_PROCESS_MIGRATION_DISTRIBUTION_JAR",
-      "value": "${process_migration_distribution_jar}"
+      "name": "KIE_PROCESS_MIGRATION_DISTRIBUTION_ZIP",
+      "value": "${process_migration_distribution_zip}"
     }
   ],
   "artifacts": [
     {
-      "name": "rhpam_add_ons_distribution.zip",
+      "name": "bamoe_add_ons_distribution.zip",
       "md5": "${add_ons_distribution_md5}",
       "url": "${add_ons_distribution_url}"
     }
@@ -676,11 +679,11 @@ EOF
         fi
     fi
 
-    # RHPAM Smart Router
-    if product_matches "${product}" "rhpam" "smartrouter" ; then
-        local kie_router_distribution_jar="rhpam-${full_version}-smart-router.jar"
-        local smartrouter_overrides_yaml="${overrides_dir}/rhpam-smartrouter-overrides.yaml"
-        local smartrouter_overrides_json="${overrides_dir}/rhpam-smartrouter-overrides.json"
+    # BAMOE Smart Router
+    if product_matches "${product}" "bamoe" "smartrouter" ; then
+        local kie_router_distribution_jar="bamoe-${full_version}-smart-router.jar"
+        local smartrouter_overrides_yaml="${overrides_dir}/bamoe-smartrouter-overrides.yaml"
+        local smartrouter_overrides_json="${overrides_dir}/bamoe-smartrouter-overrides.json"
         if [ ! -f "${smartrouter_overrides_yaml}" ]; then
             log_info "Generating ${smartrouter_overrides_yaml} ..."
 cat <<EOF > "${smartrouter_overrides_yaml}"
@@ -688,7 +691,7 @@ envs:
 - name: "KIE_ROUTER_DISTRIBUTION_JAR"
   value: "${kie_router_distribution_jar}"
 artifacts:
-- name: "rhpam_add_ons_distribution.zip"
+- name: "bamoe_add_ons_distribution.zip"
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
   url: "${add_ons_distribution_url}"
@@ -708,7 +711,7 @@ cat <<EOF > "${smartrouter_overrides_json}"
   ],
   "artifacts": [
     {
-      "name": "rhpam_add_ons_distribution.zip",
+      "name": "bamoe_add_ons_distribution.zip",
       "md5": "${add_ons_distribution_md5}",
       "url": "${add_ons_distribution_url}"
     }
@@ -720,11 +723,11 @@ EOF
         fi
     fi
 
-    # RHPAM Dashbuilder
-    if product_matches "${product}" "rhpam" "dashbuilder" ; then
-        local dashbuilder_distribution_zip="rhpam-${full_version}-dashbuilder-runtime.zip"
-        local dashbuilder_overrides_yaml="${overrides_dir}/rhpam-dashbuilder-overrides.yaml"
-        local dashbuilder_overrides_json="${overrides_dir}/rhpam-dashbuilder-overrides.json"
+    # BAMOE Dashbuilder
+    if product_matches "${product}" "bamoe" "dashbuilder" ; then
+        local dashbuilder_distribution_zip="bamoe-${full_version}-dashbuilder-runtime.zip"
+        local dashbuilder_overrides_yaml="${overrides_dir}/bamoe-dashbuilder-overrides.yaml"
+        local dashbuilder_overrides_json="${overrides_dir}/bamoe-dashbuilder-overrides.json"
         if [ ! -f "${dashbuilder_overrides_yaml}" ]; then
             log_info "Generating ${dashbuilder_overrides_yaml} ..."
 cat <<EOF > "${dashbuilder_overrides_yaml}"
@@ -732,7 +735,7 @@ envs:
 - name: "DASHBUILDER_DISTRIBUTION_ZIP"
   value: "${dashbuilder_distribution_zip}"
 artifacts:
-- name: "rhpam_add_ons_distribution.zip"
+- name: "bamoe_add_ons_distribution.zip"
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
   url: "${add_ons_distribution_url}"
@@ -752,7 +755,7 @@ cat <<EOF > "${dashbuilder_overrides_json}"
   ],
   "artifacts": [
     {
-      "name": "rhpam_add_ons_distribution.zip",
+      "name": "bamoe_add_ons_distribution.zip",
       "md5": "${add_ons_distribution_md5}",
       "url": "${add_ons_distribution_url}"
     }
@@ -769,8 +772,8 @@ EOF
 delete_cached_artifacts() {
     local product=${1}
     local product_default="all"
-    local products_valid=(all rhpam)
-    local query="rhpam*"
+    local products_valid=(all bamoe)
+    local query="bamoe*"
     if [ -z "${product}" ]; then
         product="${product_default}"
     else
@@ -816,9 +819,9 @@ main() {
     local build_date
     local build_date_default=$($DATE_BINARY --date="1 day ago" '+%y%m%d')
     local products_valid=( all \
-        rhpam rhpam-businesscentral rhpam-businesscentral-monitoring rhpam-controller rhpam-kieserver rhpam-process-migration rhpam-smartrouter rhpam-dashbuilder)
+        bamoe bamoe-businesscentral bamoe-businesscentral-monitoring bamoe-controller bamoe-kieserver bamoe-process-migration bamoe-smartrouter bamoe-dashbuilder)
     local product_default="all"
-    local version_example="7.14.0"
+    local version_example="8.0.3"
     local default_dir_example="/tmp/${build_tool}/${build_type_default}/${build_date_default}/${version_example}"
     local default_dir
     local artifacts_dir
@@ -890,7 +893,7 @@ main() {
         log_help "-w | --work-dir = [w]orking directory used by cekit (optional; default: the cekit default)"
         log_help "-c | --cache = [c]ache artifact (optional; a local artifact file or directory of artifacts to cache, or a remote artifact starting with \"http(s)://\"; examples: ${cache_artifact_examples})"
         log_help "-C | --cache-list = [C]ache list (optional; a local text file containing a list of artifacts to cache, or a remote one starting with \"http(s)://\"; examples: ${cache_list_examples})"
-        log_help "--delete-cache = deletes local cached artifacts from specified product (optional; default: don't delete anything; allowed: all rhpam)"
+        log_help "--delete-cache = deletes local cached artifacts from specified product (optional; default: don't delete anything; allowed: all bamoe)"
         log_help "--no-color = Suppress terminal color output (optional; default: ANSI escape codes for color will be included)"
         log_help "-h | --help = [h]elp / usage"
     elif [ -z "${full_version}" ] && [ -z "${cache_artifact}" ] && [ -z "${cache_list}" ] && [ -z "${delete_product}" ]; then
@@ -997,8 +1000,8 @@ main() {
             fi
 
             # handle artifacts
-            if [ "${product}" = "all" ] || [[ "${product}" =~ rhpam.* ]]; then
-                handle_rhpam_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}" "${work_dir}"
+            if [ "${product}" = "all" ] || [[ "${product}" =~ bamoe.* ]]; then
+                handle_bamoe_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}" "${work_dir}"
             fi
         fi
         clear_env

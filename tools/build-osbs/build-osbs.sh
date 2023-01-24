@@ -18,8 +18,8 @@ function help() {
     echo "Required:"
     echo "  -v PROD_VERSION           Version being built. Passed to the build-overrides.sh -v option"
     echo "  -c PROD_COMPONENT         Component for which an image is being built. Valid choices are:"
-    echo "                            rhpam-businesscentral, rhpam-businesscentral-monitoring,"
-    echo "                            rhpam-controller, rhpam-kieserver, rhpam-smartrouter, rhpam-process-migration"
+    echo "                            bamoe-businesscentral, bamoe-businesscentral-monitoring, bamoe-dashbuilder"
+    echo "                            bamoe-controller, bamoe-kieserver, bamoe-smartrouter, bamoe-process-migration"
     echo "  -t OSBS_BUILD_TARGET      Build target for osbs, for example rhba-7.3-openshift-containers-candidate"
     echo ""
     echo "Optional:"
@@ -69,16 +69,16 @@ function check_for_required_envs() {
         exit -1
     else
         case "$PROD_COMPONENT" in
-            rhpam-businesscentral | \
-            rhpam-businesscentral-monitoring | \
-            rhpam-controller | \
-            rhpam-kieserver | \
-            rhpam-process-migration | \
-            rhpam-smartrouter | \
-            rhpam-dashbuilder)
+            bamoe-businesscentral | \
+            bamoe-businesscentral-monitoring | \
+            bamoe-controller | \
+            bamoe-kieserver | \
+            bamoe-process-migration | \
+            bamoe-smartrouter | \
+            bamoe-dashbuilder)
                 ;;
             *)
-                echo Invalid subcomponent specified with PROD_COMPONENT: ${PROD_COMPONENT}
+                echo Invalid subcomponent specified with PROD_COMPONENT - "${PROD_COMPONENT}"
                 exit -1
                 ;;
         esac
