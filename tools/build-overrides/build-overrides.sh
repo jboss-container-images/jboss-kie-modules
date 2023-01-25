@@ -118,7 +118,7 @@ get_zip_path() {
     echo -n "${zip_path}"
 }
 
-get_artifact_url() {
+get_property() {
     local key=${1}
     local file=${2}
     local url=$(grep "${key}" "${file}" | awk -F\= '{ print $2 }')
@@ -333,7 +333,7 @@ handle_rhpam_artifacts() {
     local add_ons_distribution_zip
     local add_ons_distribution_md5
     if product_matches "${product}" "rhpam" "controller" || product_matches "${product}" "rhpam" "process-migration" || product_matches "${product}" "rhpam" "smartrouter" ; then
-        local add_ons_distribution_url=$(get_artifact_url "rhpam.addons.latest.url" "${build_file}")
+        local add_ons_distribution_url=$(get_property "rhpam.addons.latest.url" "${build_file}")
         add_ons_distribution_zip=$(get_artifact_name "${add_ons_distribution_url}")
         local add_ons_distribution_file="${artifacts_dir}/${add_ons_distribution_zip}"
         if download "${add_ons_distribution_url}" "${add_ons_distribution_file}" ; then
@@ -353,7 +353,7 @@ handle_rhpam_artifacts() {
     local business_central_distribution_file
     local business_central_distribution_md5
     if product_matches "${product}" "rhpam" "businesscentral" || product_matches "${product}" "rhpam" "kieserver" ; then
-        business_central_distribution_url=$(get_artifact_url "rhpam.business-central-eap7.latest.url" "${build_file}")
+        business_central_distribution_url=$(get_property "rhpam.business-central-eap7.latest.url" "${build_file}")
         business_central_distribution_zip=$(get_artifact_name "${business_central_distribution_url}")
         business_central_distribution_file="${artifacts_dir}/${business_central_distribution_zip}"
         if download "${business_central_distribution_url}" "${business_central_distribution_file}" ; then
@@ -401,10 +401,10 @@ EOF
 
     # RHPAM Business Central Monitoring
     if product_matches "${product}" "rhpam" "businesscentral-monitoring" ; then
-        local business_central_monitoring_distribution_url=$(get_artifact_url "rhpam.monitoring.latest.url" "${build_file}")
+        local business_central_monitoring_distribution_url=$(get_property "rhpam.monitoring.latest.url" "${build_file}")
         if [ -z "${business_central_monitoring_distribution_url}" ]; then
             if [ -z "${business_central_distribution_url}" ]; then
-                business_central_distribution_url=$(get_artifact_url "rhpam.business-central-eap7.latest.url" "${build_file}")
+                business_central_distribution_url=$(get_property "rhpam.business-central-eap7.latest.url" "${build_file}")
             fi
             business_central_monitoring_distribution_url=$(echo "${business_central_distribution_url}" | sed -e 's/business-central-eap7-deployable/monitoring-ee7/')
             log_warn "Property \"rhpam.monitoring.latest.url\" is not defined. Attempting ${business_central_monitoring_distribution_url} ..."
@@ -498,7 +498,30 @@ EOF
 
     # RHPAM KIE Server
     if product_matches "${product}" "rhpam" "kieserver" ; then
-        local kie_server_distribution_url=$(get_artifact_url "rhpam.kie-server.ee8.latest.url" "${build_file}")
+        # handle the overrides manually by clonning the rhpam-7-image and override the needed content manually
+        # in this step, handle the following artifacts kie-server-services-jbpm-cluster, jbpm-event-emitters-kafka and
+        # jbpm-wb-kie-server-backend
+        # then edit the kieserver module manully and update the version and hash as required. Then the generated
+        # overrides file will overrides the module instead the artifacts.
+        # clone the repository
+        local branch="${short_version}.x"
+        if [[ "${product}" =~ bamoe* ]]; then
+            branch="${branch}-blue"
+        fi
+        git clone https://github.com/jboss-container-images/rhpam-7-image --branch ${branch}
+        local ks_module_file="`pwd`/rhpam-7-image/kieserver/modules/kieserver/module.yaml"
+        local rhpam_repo="`pwd`/rhpam-7-image"
+        local old_jbpm_backend_jar=$(cat ${ks_module_file} |grep jbpm-wb-kie-server-backend | awk -F"\"" '{print $2}')
+        local old_jbpm_cluster_jar=$(cat ${ks_module_file} |grep kie-server-services-jbpm-cluster | awk -F"\"" '{print $2}')
+        local old_jbpm_emitters_kafka_jar=$(cat ${ks_module_file} |grep jbpm-event-emitters-kafka | awk -F"\"" '{print $2}')
+        local maven_base_url="${BXMS_QE_NEXUS}/content/repositories/rhba-7.13-nightly"
+        local jbpm_cluster_jar_url=""
+        local jbpm_cluster_jar_md5=""
+        local jbpm_emitters_kafka_jar_url=""
+        local jbpm_emitters_kafka_jar_md5=""
+
+        local kie_version=$(get_property "KIE_VERSION" "${build_file}")
+        local kie_server_distribution_url=$(get_property "rhpam.kie-server.ee8.latest.url" "${build_file}")
         local kie_server_distribution_zip=$(get_artifact_name "${kie_server_distribution_url}")
         local kie_server_distribution_file="${artifacts_dir}/${kie_server_distribution_zip}"
         if download "${kie_server_distribution_url}" "${kie_server_distribution_file}" && [ -f "${kie_server_distribution_file}" ]; then
@@ -506,6 +529,19 @@ EOF
                 local kie_server_distribution_md5=$(get_sum "md5" "${kie_server_distribution_file}")
                 local jbpm_wb_kie_server_backend_path=$(get_zip_path "${business_central_distribution_file}" '.*jbpm-wb-kie-server-backend.*\.jar')
                 local jbpm_wb_kie_server_backend_jar=$(get_artifact_name "${jbpm_wb_kie_server_backend_path}")
+
+                # override the bpm-wb-kie-server-backend jar file
+                sed -i "s/${old_jbpm_backend_jar}/${jbpm_wb_kie_server_backend_jar}/" "${ks_module_file}"
+                # override the kie-server-services-jbpm-cluster jar file
+                sed -i "s/${old_jbpm_cluster_jar}/kie-server-services-jbpm-cluster-${kie_version}.jar/" "${ks_module_file}"
+                jbpm_cluster_jar_url="${maven_base_url}/org/kie/server/kie-server-services-jbpm-cluster/${kie_version}/kie-server-services-jbpm-cluster-${kie_version}.jar"
+                jbpm_cluster_jar_md5=$(curl ${jbpm_cluster_jar_url}.md5 --silent)
+
+                # override the jbpm-event-emitters-kafka jar file
+                sed -i "s/${old_jbpm_emitters_kafka_jar}/jbpm-event-emitters-kafka-${kie_version}.jar/" "${ks_module_file}"
+                jbpm_emitters_kafka_jar_url="${maven_base_url}/org/jbpm/jbpm-event-emitters-kafka/${kie_version}/jbpm-event-emitters-kafka-${kie_version}.jar"
+                jbpm_emitters_kafka_jar_md5=$(curl ${jbpm_emitters_kafka_jar_url}.md5 --silent)
+
                 local kieserver_overrides_yaml="${overrides_dir}/rhpam-kieserver-overrides.yaml"
                 local kieserver_overrides_json="${overrides_dir}/rhpam-kieserver-overrides.json"
                 if [ ! -f "${kieserver_overrides_yaml}" ]; then
@@ -523,6 +559,16 @@ artifacts:
   # ${business_central_distribution_zip}
   md5: "${business_central_distribution_md5}"
   url: "${business_central_distribution_url}"
+- name: "kie-server-services-jbpm-cluster-${kie_version}.jar"
+  md5: "${jbpm_cluster_jar_md5}"
+  url: "${jbpm_cluster_jar_url}"
+- name: "jbpm-event-emitters-kafka-${kie_version}.jar"
+  md5: "${jbpm_emitters_kafka_jar_md5}"
+  url: "${jbpm_emitters_kafka_jar_url}"
+modules:
+  repositories:
+    - name: rhpam-7-image
+      path: "${rhpam_repo}"
 EOF
                 else
                     log_info "File ${kieserver_overrides_yaml} already generated."
@@ -547,8 +593,26 @@ cat <<EOF > "${kieserver_overrides_json}"
       "name": "rhpam_business_central_distribution.zip",
       "md5": "${business_central_distribution_md5}",
       "url": "${business_central_distribution_url}"
+    },
+    {
+      "name": "kie-server-services-jbpm-cluster-${kie_version}.jar",
+      "md5": "${jbpm_cluster_jar_md5}",
+      "url": "${jbpm_cluster_jar_url}"
+    },
+    {
+      "name": "jbpm-event-emitters-kafka-${kie_version}.jar",
+      "md5": "${jbpm_emitters_kafka_jar_md5}",
+      "url": "${jbpm_emitters_kafka_jar_url}"
     }
-  ]
+  ],
+  "modules": {
+    "repositories": [
+      {
+        "name": "rhpam-7-image",
+        "path": "${rhpam_repo}"
+      }
+    ]
+  }
 }
 EOF
                 else
@@ -561,6 +625,12 @@ EOF
             return 1
         fi
     fi
+    if [ "${VERBOSE^^}" == "TRUE" ]; then
+        cat ${ks_module_file}
+        cat ${kieserver_overrides_yaml}
+        cat ${kieserver_overrides_json}
+    fi
+
 
     # RHPAM Process Migration
     if product_matches "${product}" "rhpam" "process-migration" ; then
@@ -716,6 +786,7 @@ main() {
     local delete_product
     local no_color
     local usage_help
+    local short_version
     local OPTIND opt
     while getopts ":v:t:b:p:d:a:o:w:c:C:-:h:" opt ${args[@]}; do
         case "${opt}" in
@@ -782,10 +853,10 @@ main() {
     else
         # parse version
         local version_array
-        local short_version
         if [ -n "${full_version}" ]; then
             IFS='.' read -r -a version_array <<< "${full_version}"
-            short_version="${version_array[0]}.${version_array[1]}.${version_array[2]}"
+            short_version="${version_array[0]}.${version_array[1]}"
+            echo "asd asd $short_version"
             log_debug "Full build version: ${full_version}"
             log_debug "Short build version: ${short_version}"
         else
