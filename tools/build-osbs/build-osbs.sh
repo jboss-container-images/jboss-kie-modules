@@ -74,10 +74,11 @@ function check_for_required_envs() {
             rhpam-controller | \
             rhpam-kieserver | \
             rhpam-process-migration | \
-            rhpam-smartrouter)
+            rhpam-smartrouter | \
+            rhpam-dashbuilder)
                 ;;
             *)
-                echo Invalid subcomponent specified with PROD_COMPONENT
+                echo Invalid subcomponent specified with PROD_COMPONENT: ${PROD_COMPONENT}
                 exit -1
                 ;;
         esac
