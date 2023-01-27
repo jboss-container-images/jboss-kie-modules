@@ -856,7 +856,6 @@ main() {
         if [ -n "${full_version}" ]; then
             IFS='.' read -r -a version_array <<< "${full_version}"
             short_version="${version_array[0]}.${version_array[1]}"
-            echo "asd asd $short_version"
             log_debug "Full build version: ${full_version}"
             log_debug "Short build version: ${short_version}"
         else
