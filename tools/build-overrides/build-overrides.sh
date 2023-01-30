@@ -332,7 +332,7 @@ handle_rhpam_artifacts() {
     # RHPAM Add-Ons
     local add_ons_distribution_zip
     local add_ons_distribution_md5
-    if product_matches "${product}" "rhpam" "controller" || product_matches "${product}" "rhpam" "process-migration" || product_matches "${product}" "rhpam" "smartrouter" ; then
+    if product_matches "${product}" "rhpam" "controller" || product_matches "${product}" "rhpam" "process-migration" || product_matches "${product}" "rhpam" "smartrouter" || product_matches "${product}" "rhpam" "dashbuilder"; then
         local add_ons_distribution_url=$(get_property "rhpam.addons.latest.url" "${build_file}")
         add_ons_distribution_zip=$(get_artifact_name "${add_ons_distribution_url}")
         local add_ons_distribution_file="${artifacts_dir}/${add_ons_distribution_zip}"
@@ -454,7 +454,7 @@ EOF
 
     # RHPAM Controller
     if product_matches "${product}" "rhpam" "controller" ; then
-        local controller_distribution_zip="rhpam-${short_version}-controller-ee7.zip"
+        local controller_distribution_zip="rhpam-${full_version}-controller-ee7.zip"
         local controller_overrides_yaml="${overrides_dir}/rhpam-controller-overrides.yaml"
         local controller_overrides_json="${overrides_dir}/rhpam-controller-overrides.json"
         if [ ! -f "${controller_overrides_yaml}" ]; then
@@ -634,7 +634,7 @@ EOF
 
     # RHPAM Process Migration
     if product_matches "${product}" "rhpam" "process-migration" ; then
-        local process_migration_distribution_jar="rhpam-${short_version}-process-migration-service-standalone.jar"
+        local process_migration_distribution_jar="rhpam-${full_version}-process-migration-service-standalone.jar"
         local process_migration_overrides_yaml="${overrides_dir}/rhpam-process-migration-overrides.yaml"
         local process_migration_overrides_json="${overrides_dir}/rhpam-process-migration-overrides.json"
         if [ ! -f "${process_migration_overrides_yaml}" ]; then
@@ -678,7 +678,7 @@ EOF
 
     # RHPAM Smart Router
     if product_matches "${product}" "rhpam" "smartrouter" ; then
-        local kie_router_distribution_jar="rhpam-${short_version}-smart-router.jar"
+        local kie_router_distribution_jar="rhpam-${full_version}-smart-router.jar"
         local smartrouter_overrides_yaml="${overrides_dir}/rhpam-smartrouter-overrides.yaml"
         local smartrouter_overrides_json="${overrides_dir}/rhpam-smartrouter-overrides.json"
         if [ ! -f "${smartrouter_overrides_yaml}" ]; then
@@ -719,6 +719,51 @@ EOF
             log_info "File ${smartrouter_overrides_json} already generated."
         fi
     fi
+
+    # RHPAM Dashbuilder
+    if product_matches "${product}" "rhpam" "dashbuilder" ; then
+        local dashbuilder_distribution_zip="rhpam-${full_version}-dashbuilder-runtime.zip"
+        local dashbuilder_overrides_yaml="${overrides_dir}/rhpam-dashbuilder-overrides.yaml"
+        local dashbuilder_overrides_json="${overrides_dir}/rhpam-dashbuilder-overrides.json"
+        if [ ! -f "${dashbuilder_overrides_yaml}" ]; then
+            log_info "Generating ${dashbuilder_overrides_yaml} ..."
+cat <<EOF > "${dashbuilder_overrides_yaml}"
+envs:
+- name: "DASHBUILDER_DISTRIBUTION_ZIP"
+  value: "${dashbuilder_distribution_zip}"
+artifacts:
+- name: "rhpam_add_ons_distribution.zip"
+  # ${add_ons_distribution_zip}
+  md5: "${add_ons_distribution_md5}"
+  url: "${add_ons_distribution_url}"
+EOF
+        else
+            log_info "File ${dashbuilder_overrides_yaml} already generated."
+        fi
+        if [ ! -f "${dashbuilder_overrides_json}" ]; then
+            log_info "Generating ${dashbuilder_overrides_json} ..."
+cat <<EOF > "${dashbuilder_overrides_json}"
+{
+  "envs": [
+    {
+      "name": "DASHBUILDER_DISTRIBUTION_ZIP",
+      "value": "${dashbuilder_distribution_zip}"
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "rhpam_add_ons_distribution.zip",
+      "md5": "${add_ons_distribution_md5}",
+      "url": "${add_ons_distribution_url}"
+    }
+  ]
+}
+EOF
+        else
+            log_info "File ${dashbuilder_overrides_json} already generated."
+        fi
+    fi
+
 }
 
 delete_cached_artifacts() {
@@ -771,7 +816,7 @@ main() {
     local build_date
     local build_date_default=$($DATE_BINARY --date="1 day ago" '+%y%m%d')
     local products_valid=( all \
-        rhpam rhpam-businesscentral rhpam-businesscentral-monitoring rhpam-controller rhpam-kieserver rhpam-process-migration rhpam-smartrouter )
+        rhpam rhpam-businesscentral rhpam-businesscentral-monitoring rhpam-controller rhpam-kieserver rhpam-process-migration rhpam-smartrouter rhpam-dashbuilder)
     local product_default="all"
     local version_example="7.13.3"
     local default_dir_example="/tmp/${build_tool}/${build_type_default}/${build_date_default}/${version_example}"
