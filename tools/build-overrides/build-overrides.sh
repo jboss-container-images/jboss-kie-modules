@@ -517,7 +517,7 @@ EOF
         local old_jbpm_backend_jar=$(cat ${ks_module_file} |grep jbpm-wb-kie-server-backend | awk -F"\"" '{print $2}')
         local old_jbpm_cluster_jar=$(cat ${ks_module_file} |grep kie-server-services-jbpm-cluster | awk -F"\"" '{print $2}')
         local old_jbpm_emitters_kafka_jar=$(cat ${ks_module_file} |grep jbpm-event-emitters-kafka | awk -F"\"" '{print $2}')
-        local maven_base_url="${BXMS_QE_NEXUS}/content/repositories/rhba-7.13-nightly"
+        local maven_base_url="${BXMS_QE_NEXUS}/content/repositories/rhba-8.0-nightly"
         local jbpm_cluster_jar_url=""
         local jbpm_cluster_jar_md5=""
         local jbpm_emitters_kafka_jar_url=""
