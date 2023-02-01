@@ -73,7 +73,7 @@ download() {
     local code
     if [ ! -f "${file}" ]; then
         log_info "Downloading ${url} to ${file} ..."
-        curl --silent --location --show-error --fail "${url}" --output "${file}"
+        curl --silent --location --show-error --fail "${url}" --output "${file}" --insecure
         code=$?
         if [ ${code} != 0 ] || [ ! -f "${file}" ]; then
             log_error "Downloading to ${file} failed."
@@ -509,7 +509,7 @@ EOF
         # clone the repository
         local branch="${short_version}.x"
         if [[ "${product}" =~ bamoe* ]]; then
-            branch="${branch}-blue"
+            branch="7.13.x-blue"
         fi
         git clone https://github.com/jboss-container-images/rhpam-7-image --branch ${branch}
         local ks_module_file="`pwd`/rhpam-7-image/kieserver/modules/kieserver/module.yaml"
