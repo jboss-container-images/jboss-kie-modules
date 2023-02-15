@@ -273,9 +273,6 @@ get_build_url() {
     local product_suite_upper=${4^^}
     local build_url
     if [ "${product_suite_lower}" = "bamoe" ]; then
-        #small hack to overcome the url pattern, it still under rhpam directory
-        product_suite_lower="rhpam"
-        product_suite_upper="${product_suite_lower^^}"
         if [ "${build_type}" = "nightly" ]; then
             build_url="http://download.eng.bos.redhat.com/rcm-guest/staging/${product_suite_lower}/${product_suite_upper}-${full_version}.NIGHTLY/${product_suite_lower}-${build_date}.properties"
         elif [ "${build_type}" = "staging" ]; then
@@ -329,14 +326,14 @@ handle_bamoe_artifacts() {
 
     local build_file=$(get_build_file "${full_version}" "${build_type}" "${build_date}" "bamoe" "${artifacts_dir}")
     if [ -z "${build_file}" ]; then
-        return 1
+        exit 14
     fi
 
     # BAMOE Add-Ons
     local add_ons_distribution_zip
     local add_ons_distribution_md5
     if product_matches "${product}" "bamoe" "controller" || product_matches "${product}" "bamoe" "process-migration" || product_matches "${product}" "bamoe" "smartrouter" || product_matches "${product}" "bamoe" "dashbuilder"; then
-        local add_ons_distribution_url=$(get_property "rhpam.addons.latest.url" "${build_file}")
+        local add_ons_distribution_url=$(get_property "bamoe.addons.latest.url" "${build_file}")
         add_ons_distribution_zip=$(get_artifact_name "${add_ons_distribution_url}")
         local add_ons_distribution_file="${artifacts_dir}/${add_ons_distribution_zip}"
         if download "${add_ons_distribution_url}" "${add_ons_distribution_file}" ; then
@@ -356,7 +353,7 @@ handle_bamoe_artifacts() {
     local business_central_distribution_file
     local business_central_distribution_md5
     if product_matches "${product}" "bamoe" "businesscentral" || product_matches "${product}" "bamoe" "kieserver" ; then
-        business_central_distribution_url=$(get_property "rhpam.business-central-eap7.latest.url" "${build_file}")
+        business_central_distribution_url=$(get_property "bamoe.business-central-eap7.latest.url" "${build_file}")
         business_central_distribution_zip=$(get_artifact_name "${business_central_distribution_url}")
         business_central_distribution_file="${artifacts_dir}/${business_central_distribution_zip}"
         if download "${business_central_distribution_url}" "${business_central_distribution_file}" ; then
@@ -404,13 +401,13 @@ EOF
 
     # BAMOE Business Central Monitoring
     if product_matches "${product}" "bamoe" "businesscentral-monitoring" ; then
-        local business_central_monitoring_distribution_url=$(get_property "rhpam.monitoring.latest.url" "${build_file}")
+        local business_central_monitoring_distribution_url=$(get_property "bamoe.monitoring.latest.url" "${build_file}")
         if [ -z "${business_central_monitoring_distribution_url}" ]; then
             if [ -z "${business_central_distribution_url}" ]; then
-                business_central_distribution_url=$(get_property "rhpam.business-central-eap7.latest.url" "${build_file}")
+                business_central_distribution_url=$(get_property "bamoe.business-central-eap7.latest.url" "${build_file}")
             fi
             business_central_monitoring_distribution_url=$(echo "${business_central_distribution_url}" | sed -e 's/business-central-eap7-deployable/monitoring-ee7/')
-            log_warn "Property \"rhpam.monitoring.latest.url\" is not defined. Attempting ${business_central_monitoring_distribution_url} ..."
+            log_warn "Property \"bamoe.monitoring.latest.url\" is not defined. Attempting ${business_central_monitoring_distribution_url} ..."
         fi
         local business_central_monitoring_distribution_zip=$(get_artifact_name "${business_central_monitoring_distribution_url}")
         local business_central_monitoring_distribution_file="${artifacts_dir}/${business_central_monitoring_distribution_zip}"
@@ -524,7 +521,7 @@ EOF
         local jbpm_emitters_kafka_jar_md5=""
 
         local kie_version=$(get_property "KIE_VERSION" "${build_file}")
-        local kie_server_distribution_url=$(get_property "rhpam.kie-server.ee8.latest.url" "${build_file}")
+        local kie_server_distribution_url=$(get_property "bamoe.kie-server.ee8.latest.url" "${build_file}")
         local kie_server_distribution_zip=$(get_artifact_name "${kie_server_distribution_url}")
         local kie_server_distribution_file="${artifacts_dir}/${kie_server_distribution_zip}"
         if download "${kie_server_distribution_url}" "${kie_server_distribution_file}" && [ -f "${kie_server_distribution_file}" ]; then
