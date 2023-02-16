@@ -73,7 +73,7 @@ download() {
     local code
     if [ ! -f "${file}" ]; then
         log_info "Downloading ${url} to ${file} ..."
-        curl --silent --location --show-error --fail "${url}" --output "${file}" --insecure
+        curl --silent --location --show-error --fail "${url}" --output "${file}"
         code=$?
         if [ ${code} != 0 ] || [ ! -f "${file}" ]; then
             log_error "Downloading to ${file} failed."
