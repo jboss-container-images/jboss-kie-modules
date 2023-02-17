@@ -323,6 +323,7 @@ handle_rhpam_artifacts() {
     local artifacts_dir="${6}"
     local overrides_dir="${7}"
     local work_dir="${8}"
+    local osbs_branch="${9}"
 
     local build_file=$(get_build_file "${full_version}" "${build_type}" "${build_date}" "rhpam" "${artifacts_dir}")
     if [ -z "${build_file}" ]; then
@@ -370,6 +371,9 @@ artifacts:
   # ${business_central_distribution_zip}
   md5: "${business_central_distribution_md5}"
   url: "${business_central_distribution_url}"
+osbs:
+  repository:
+    branch: "${osbs_branch}"
 EOF
                     else
                         log_info "File ${businesscentral_overrides_yaml} already generated."
@@ -385,6 +389,11 @@ cat <<EOF > "${businesscentral_overrides_json}"
       "url": "${business_central_distribution_url}"
     }
   ]
+  "osbs": {
+    "repository": {
+      "branch": "${osbs_branch}"
+    }
+  }
 }
 EOF
                     else
@@ -424,6 +433,9 @@ artifacts:
   # ${business_central_monitoring_distribution_zip}
   md5: "${business_central_monitoring_distribution_md5}"
   url: "${business_central_monitoring_distribution_url}"
+osbs:
+  repository:
+    branch: "${osbs_branch}"
 EOF
                 else
                     log_info "File ${businesscentral_monitoring_overrides_yaml} already generated."
@@ -439,6 +451,11 @@ cat <<EOF > "${businesscentral_monitoring_overrides_json}"
       "url": "${business_central_monitoring_distribution_url}"
     }
   ]
+  "osbs": {
+    "repository": {
+      "branch": "${osbs_branch}"
+    }
+  }
 }
 EOF
                 else
@@ -468,6 +485,9 @@ artifacts:
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
   url: "${add_ons_distribution_url}"
+osbs:
+  repository:
+    branch: "${osbs_branch}"
 EOF
         else
             log_info "File ${controller_overrides_yaml} already generated."
@@ -489,6 +509,11 @@ cat <<EOF > "${controller_overrides_json}"
       "url": "${add_ons_distribution_url}"
     }
   ]
+  "osbs": {
+    "repository": {
+      "branch": "${osbs_branch}"
+    }
+  }
 }
 EOF
         else
@@ -569,6 +594,9 @@ modules:
   repositories:
     - name: rhpam-7-image
       path: "${rhpam_repo}"
+osbs:
+  repository:
+    branch: "${osbs_branch}"
 EOF
                 else
                     log_info "File ${kieserver_overrides_yaml} already generated."
@@ -613,6 +641,11 @@ cat <<EOF > "${kieserver_overrides_json}"
       }
     ]
   }
+  "osbs": {
+    "repository": {
+      "branch": "${osbs_branch}"
+    }
+  }
 }
 EOF
                 else
@@ -648,6 +681,9 @@ artifacts:
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
   url: "${add_ons_distribution_url}"
+osbs:
+  repository:
+    branch: "${osbs_branch}"
 EOF
         else
             log_info "File ${process_migration_overrides_yaml} already generated."
@@ -669,6 +705,11 @@ cat <<EOF > "${process_migration_overrides_json}"
       "url": "${add_ons_distribution_url}"
     }
   ]
+  "osbs": {
+    "repository": {
+      "branch": "${osbs_branch}"
+    }
+  }
 }
 EOF
         else
@@ -692,6 +733,9 @@ artifacts:
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
   url: "${add_ons_distribution_url}"
+osbs:
+  repository:
+    branch: "${osbs_branch}"
 EOF
         else
             log_info "File ${smartrouter_overrides_yaml} already generated."
@@ -713,6 +757,11 @@ cat <<EOF > "${smartrouter_overrides_json}"
       "url": "${add_ons_distribution_url}"
     }
   ]
+  "osbs": {
+    "repository": {
+      "branch": "${osbs_branch}"
+    }
+  }
 }
 EOF
         else
@@ -736,6 +785,9 @@ artifacts:
   # ${add_ons_distribution_zip}
   md5: "${add_ons_distribution_md5}"
   url: "${add_ons_distribution_url}"
+osbs:
+  repository:
+    branch: "${osbs_branch}"
 EOF
         else
             log_info "File ${dashbuilder_overrides_yaml} already generated."
@@ -757,6 +809,11 @@ cat <<EOF > "${dashbuilder_overrides_json}"
       "url": "${add_ons_distribution_url}"
     }
   ]
+  "osbs": {
+    "repository": {
+      "branch": "${osbs_branch}"
+    }
+  }
 }
 EOF
         else
@@ -832,8 +889,10 @@ main() {
     local no_color
     local usage_help
     local short_version
+    local osbs_branch
+    local osbs_branch_default="rhba-7-rhel-8-nightly"
     local OPTIND opt
-    while getopts ":v:t:b:p:d:a:o:w:c:C:-:h:" opt ${args[@]}; do
+    while getopts ":v:t:b:p:d:a:o:w:c:C:s:-:h:" opt ${args[@]}; do
         case "${opt}" in
             -)
                 arg="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
@@ -850,6 +909,7 @@ main() {
                     cache-list)           cache_list="${arg}"   ;;
                     delete-cache)     delete_product="${arg}"   ;;
                     no-color)               no_color="${arg,,}" ;;
+                    osbs-branch)         osbs_branch="${arg,,}" ;;
                     help)                 usage_help="${arg,,}" ;;
                     *) log_error "Invalid arg: --${OPTARG}"     ;;
                 esac;;
@@ -863,6 +923,7 @@ main() {
             w)             work_dir="${OPTARG}"   ;;
             c)       cache_artifact="${OPTARG}"   ;;
             C)           cache_list="${OPTARG}"   ;;
+            s)          osbs_branch="${OPTARG,,}" ;;
             h)           usage_help="${OPTARG,,}" ;;
            \?) log_error "Invalid arg: ${OPTARG}" ;;
         esac
@@ -892,6 +953,7 @@ main() {
         log_help "-C | --cache-list = [C]ache list (optional; a local text file containing a list of artifacts to cache, or a remote one starting with \"http(s)://\"; examples: ${cache_list_examples})"
         log_help "--delete-cache = deletes local cached artifacts from specified product (optional; default: don't delete anything; allowed: all rhpam)"
         log_help "--no-color = Suppress terminal color output (optional; default: ANSI escape codes for color will be included)"
+        log_help "-s | --osbs-branch = osbs-branch to override the one defined in the image.yaml"
         log_help "-h | --help = [h]elp / usage"
     elif [ -z "${full_version}" ] && [ -z "${cache_artifact}" ] && [ -z "${cache_list}" ] && [ -z "${delete_product}" ]; then
         log_error "Version (-v), artifact or directory of artifacts to cache (-c), list file of artifacts to cache (-C), or product artifacts to delete (--delete-cache) is required. Run ${build_tool}.sh -h for help."
@@ -928,6 +990,12 @@ main() {
             build_date="${build_date_default}"
         fi
         log_debug "Build date: ${build_date}"
+
+        # osbs branch
+        if [ -z "${osbs_branch}" ]; then
+            osbs_branch="${osbs_branch_default}"
+        fi
+        log_debug "OSBS Branch: ${osbs_branch}"
 
         # default directory
         if [ -z "${default_dir}" ]; then
@@ -998,7 +1066,7 @@ main() {
 
             # handle artifacts
             if [ "${product}" = "all" ] || [[ "${product}" =~ rhpam.* ]]; then
-                handle_rhpam_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}" "${work_dir}"
+                handle_rhpam_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}" "${work_dir}" "${osbs_branch}"
             fi
         fi
         clear_env
