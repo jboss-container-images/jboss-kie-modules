@@ -40,7 +40,7 @@ require (
 	github.com/urfave/cli v1.20.0
 	golang.org/x/crypto v0.0.0-20180222182404-49796115aa4b // indirect
 	golang.org/x/net v0.0.0-20170809000501-1c05540f6879 // indirect
-	golang.org/x/sys v0.0.0-20171031081856-95c657629925 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/text v0.0.0-20170810154203-b19bf474d317 // indirect
 	golang.org/x/time v0.0.0-20161028155119-f51c12702a4d // indirect
 	gopkg.in/inf.v0 v0.9.0 // indirect
