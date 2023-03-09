@@ -73,7 +73,7 @@ download() {
     local code
     if [ ! -f "${file}" ]; then
         log_info "Downloading ${url} to ${file} ..."
-        curl --silent --location --show-error --fail "${url}" --output "${file}" --insecure
+        curl --silent --location --show-error --fail "${url}" --output "${file}"
         code=$?
         if [ ${code} != 0 ] || [ ! -f "${file}" ]; then
             log_error "Downloading to ${file} failed."
@@ -290,6 +290,14 @@ get_build_file() {
     local build_date=${3}
     local product_suite=${4}
     local artifacts_dir="${5}"
+    local property_file_url="${6}"
+
+    local build_url
+    if [ -n "${property_file_url}" ]; then
+        build_url=${property_file_url}
+    else
+        local build_url=$(get_build_url "${full_version}" "${build_type}" "${build_date}" "${product_suite}")
+    fi
 
     local build_url=$(get_build_url "${full_version}" "${build_type}" "${build_date}" "${product_suite}")
     if [ -n "${build_url}" ]; then
@@ -324,8 +332,9 @@ handle_bamoe_artifacts() {
     local overrides_dir="${7}"
     local work_dir="${8}"
     local osbs_branch="${9}"
+    local property_file_url="${10}"
 
-    local build_file=$(get_build_file "${full_version}" "${build_type}" "${build_date}" "bamoe" "${artifacts_dir}")
+    local build_file=$(get_build_file "${full_version}" "${build_type}" "${build_date}" "bamoe" "${artifacts_dir}" "${property_file_url}")
     if [ -z "${build_file}" ]; then
         exit 14
     fi
@@ -867,6 +876,7 @@ main() {
     local args
     IFS=' ' read -r -a args <<< "$(echo ${@})"
     local build_tool="build-overrides"
+    local property_file_url
     local full_version
     local build_type
     local build_type_default="nightly"
@@ -892,28 +902,30 @@ main() {
     local osbs_branch
     local osbs_branch_default="ibm-bamoe-rhel-8-nightly"
     local OPTIND opt
-    while getopts ":v:t:b:p:d:a:o:w:c:C:s:-:h:" opt ${args[@]}; do
+    while getopts ":v:f:t:b:p:d:a:o:w:c:C:s:-:h:" opt ${args[@]}; do
         case "${opt}" in
             -)
                 arg="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                 case "${OPTARG}" in
-                    version)            full_version="${arg^^}" ;;
-                    build-type)           build_type="${arg,,}" ;;
-                    build-date)           build_date="${arg}"   ;;
-                    product)                 product="${arg,,}" ;;
-                    default-dir)         default_dir="${arg}"   ;;
-                    artifacts-dir)     artifacts_dir="${arg}"   ;;
-                    overrides-dir)     overrides_dir="${arg}"   ;;
-                    work-dir)               work_dir="${arg}"   ;;
-                    cache)            cache_artifact="${arg}"   ;;
-                    cache-list)           cache_list="${arg}"   ;;
-                    delete-cache)     delete_product="${arg}"   ;;
-                    no-color)               no_color="${arg,,}" ;;
-                    osbs-branch)         osbs_branch="${arg,,}" ;;
-                    help)                 usage_help="${arg,,}" ;;
-                    *) log_error "Invalid arg: --${OPTARG}"     ;;
+                    version)              full_version="${arg^^}" ;;
+                    property_file_url) property_file_url="${arg}" ;;
+                    build-type)             build_type="${arg,,}" ;;
+                    build-date)             build_date="${arg}"   ;;
+                    product)                   product="${arg,,}" ;;
+                    default-dir)           default_dir="${arg}"   ;;
+                    artifacts-dir)       artifacts_dir="${arg}"   ;;
+                    overrides-dir)       overrides_dir="${arg}"   ;;
+                    work-dir)                 work_dir="${arg}"   ;;
+                    cache)              cache_artifact="${arg}"   ;;
+                    cache-list)             cache_list="${arg}"   ;;
+                    delete-cache)       delete_product="${arg}"   ;;
+                    no-color)                 no_color="${arg,,}" ;;
+                    osbs-branch)           osbs_branch="${arg,,}" ;;
+                    help)                   usage_help="${arg,,}" ;;
+                    *)   log_error "Invalid arg: --${OPTARG}"     ;;
                 esac;;
             v)         full_version="${OPTARG^^}" ;;
+            f)      property_file_url="${OPTARG}" ;;
             t)           build_type="${OPTARG,,}" ;;
             b)           build_date="${OPTARG}"   ;;
             p)              product="${OPTARG,,}" ;;
@@ -939,6 +951,7 @@ main() {
         # usage/help
         log_help "Usage: ${build_tool}.sh [-v \"#.#.#\"] [-t \"${build_type_default}\"] [-b \"YYYYMMDD\"] [-p \"${product_default}\"] [-d \"DEFAULT_DIR\"] [-a \"ARTIFACT_DIR\"] [-o \"OVERRIDES_DIR\"] [-w \"WORK_DIR\"] [-c \"CACHE_ARTIFACT\"] [-C \"CACHE_LIST\"] [-h]"
         log_help "-v | --version = [v]ersion of build (required unless -c or -C is defined; format: major.minor.micro; example: ${version_example})"
+        log_help "-f | --property-file-url = the properties file url for the given build. It is expected that the property file url points to the nightly builds and contains the build date within it."
         log_help "-t | --build-type = [t]ype of build (optional; default: ${build_type_default}; allowed: nightly, staging, candidate, cache)"
         log_help "-b | --build-date = [b]uild date (optional; default: ${build_date_default})"
         local ifs_orig=${IFS}
@@ -967,6 +980,17 @@ main() {
             log_debug "Short build version: ${short_version}"
         else
             log_warn "No build version defined."
+        fi
+
+        if [ ! -z "${property_file_url}" ]; then
+            log_debug "Property file set to: ${property_file_url}"
+            # extract the build date from the given url
+            build_date=$(echo ${property_file_url} | awk -Fbamoe- '{print $2}' | cut -d. -f1)
+            if [ ${#build_date} != 6 ]; then
+                log_error "Failed to get the build date from: ${property_file_url}"
+                clear_env
+                return 1
+            fi
         fi
 
         # build type
@@ -1066,7 +1090,7 @@ main() {
 
             # handle artifacts
             if [ "${product}" = "all" ] || [[ "${product}" =~ bamoe.* ]]; then
-                handle_bamoe_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}" "${work_dir}" "${osbs_branch}"
+                handle_bamoe_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}" "${work_dir}" "${osbs_branch} "${property_file_url}""
             fi
         fi
         clear_env
