@@ -17,6 +17,7 @@ function help() {
     echo ""
     echo "Required:"
     echo "  -v PROD_VERSION           Version being built. Passed to the build-overrides.sh -v option"
+    echo "  -f PROPERTY_FILE_URL      the properties file url for the given build. It is expected that the property file url points to the nightly builds and contains the build date within it."
     echo "  -c PROD_COMPONENT         Component for which an image is being built. Valid choices are:"
     echo "                            rhpam-businesscentral, rhpam-businesscentral-monitoring,"
     echo "                            rhpam-controller, rhpam-kieserver, rhpam-smartrouter, rhpam-process-migration"
@@ -150,18 +151,26 @@ function handle_cache_urls() {
         local IFS=,
         local urllist=($1)
         for url in "${urllist[@]}"; do
-            echo build-overrides.sh -c $url $bo_options
-            build-overrides.sh -c $url $bo_options
+            local OVERRIDES_COMMAND="build-overrides.sh -c $url $bo_options"
+            echo "Executing ${OVERRIDES_COMMAND}"
+            exec $OVERRIDES_COMMAND
         done
     fi
 }
 
 function generate_overrides_files() {
-    echo build-overrides.sh -v $PROD_VERSION -t nightly -p $PROD_COMPONENT $bo_options
-    build-overrides.sh -v $PROD_VERSION -t nightly -p $PROD_COMPONENT $bo_options
+    local OVERRIDES_COMMAND="build-overrides.sh $(check_property_file_url) -v $PROD_VERSION -t nightly -p $PROD_COMPONENT $bo_options $(check_property_file_url)"
+    echo "Executing ${OVERRIDES_COMMAND}"
+    exec $OVERRIDES_COMMAND
 }
 
-while getopts gu:e:v:c:t:o:r:n:d:p:k:s:b:l:i:w:h option; do
+function check_property_file_url() {
+    if [ -n "${PROPERTY_FILE_URL}" ]; then
+        echo "-f ${PROPERTY_FILE_URL}"
+    fi
+}
+
+while getopts gu:e:v:f:c:t:o:r:n:d:p:k:s:b:l:i:w:h option; do
     case $option in
         g)
             DEBUG=true
@@ -204,6 +213,9 @@ while getopts gu:e:v:c:t:o:r:n:d:p:k:s:b:l:i:w:h option; do
             ;;
         w)
             WORK_DIR=$OPTARG
+            ;;
+        f)
+            PROPERTY_FILE_URL=$OPTARG
             ;;
         h)
             help
