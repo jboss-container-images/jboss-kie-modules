@@ -15,6 +15,12 @@ Feature: IBM BAMOE Business Central Monitoring configuration tests
     When container is ready
     Then container log should contain ibm-bamoe/bamoe-businesscentral-monitoring-rhel8 image, version
 
+  Scenario: Check if the correct default maven proviles are activated
+    When container is ready
+    Then file /home/jboss/.m2/settings.xml should contain <activeProfile>securecentral</activeProfile>
+    And file /home/jboss/.m2/settings.xml should contain <activeProfile>jboss-eap-repository</activeProfile>
+    And file /home/jboss/.m2/settings.xml should contain <!-- ### active profiles ### -->
+
   Scenario: Check for product and version environment variables
     When container is started with command bash
     Then run sh -c 'echo $JBOSS_PRODUCT' in container and check its output for ibm-bamoe-businesscentral-monitoring
