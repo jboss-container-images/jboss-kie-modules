@@ -62,3 +62,7 @@ done
 mkdir ${JBOSS_HOME}/modules/system/layers/openshift &> /dev/null || true
 chown -R jboss:root ${JBOSS_HOME}/modules/system/layers/openshift
 
+# Enable the jboss-eap-repository maven profile by default.
+# There is a activation property for command line mvn commands (-Dcom.redhat.xpaas.repo.redhatga)
+# however it seems not to apply to the kiesoup-maven integration for embedded integration, thus enable by default.
+sed -i 's|<!-- ### active profiles ### -->|<activeProfile>jboss-eap-repository</activeProfile>\n\    <!-- ### active profiles ### -->|' ${HOME}/.m2/settings.xml
