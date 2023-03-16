@@ -153,7 +153,7 @@ function handle_cache_urls() {
         for url in "${urllist[@]}"; do
             local OVERRIDES_COMMAND="build-overrides.sh -c $url $bo_options"
             echo "Executing ${OVERRIDES_COMMAND}"
-            exec $OVERRIDES_COMMAND
+            $OVERRIDES_COMMAND
         done
     fi
 }
@@ -161,7 +161,7 @@ function handle_cache_urls() {
 function generate_overrides_files() {
     local OVERRIDES_COMMAND="build-overrides.sh $(check_property_file_url) -v $PROD_VERSION -t nightly -p $PROD_COMPONENT $bo_options $(check_property_file_url)"
     echo "Executing ${OVERRIDES_COMMAND}"
-    exec $OVERRIDES_COMMAND
+    $OVERRIDES_COMMAND
 }
 
 function check_property_file_url() {
