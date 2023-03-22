@@ -381,6 +381,7 @@ artifacts:
   url: "${business_central_distribution_url}"
 osbs:
   repository:
+    name: containers/rhpam-7-businesscentral
     branch: "${osbs_branch}"
 EOF
                     else
@@ -399,6 +400,7 @@ cat <<EOF > "${businesscentral_overrides_json}"
   ]
   "osbs": {
     "repository": {
+      "name": "containers/rhpam-7-businesscentral",
       "branch": "${osbs_branch}"
     }
   }
@@ -443,6 +445,7 @@ artifacts:
   url: "${business_central_monitoring_distribution_url}"
 osbs:
   repository:
+    name: containers/rhpam-7-businesscentral-monitoring
     branch: "${osbs_branch}"
 EOF
                 else
@@ -461,6 +464,7 @@ cat <<EOF > "${businesscentral_monitoring_overrides_json}"
   ]
   "osbs": {
     "repository": {
+      "name": "containers/rhpam-7-businesscentral-monitoring",
       "branch": "${osbs_branch}"
     }
   }
@@ -495,6 +499,7 @@ artifacts:
   url: "${add_ons_distribution_url}"
 osbs:
   repository:
+    name: containers/rhpam-7-controller
     branch: "${osbs_branch}"
 EOF
         else
@@ -519,6 +524,7 @@ cat <<EOF > "${controller_overrides_json}"
   ]
   "osbs": {
     "repository": {
+      "name": "containers/rhpam-7-controller"
       "branch": "${osbs_branch}"
     }
   }
@@ -604,6 +610,7 @@ modules:
       path: "${rhpam_repo}"
 osbs:
   repository:
+    name: containers/rhpam-7-kieserver
     branch: "${osbs_branch}"
 EOF
                 else
@@ -651,6 +658,7 @@ cat <<EOF > "${kieserver_overrides_json}"
   }
   "osbs": {
     "repository": {
+      "name": "containers/rhpam-7-kieserver",
       "branch": "${osbs_branch}"
     }
   }
@@ -691,6 +699,7 @@ artifacts:
   url: "${add_ons_distribution_url}"
 osbs:
   repository:
+    name: containers/rhpam-7-process-migration
     branch: "${osbs_branch}"
 EOF
         else
@@ -715,6 +724,7 @@ cat <<EOF > "${process_migration_overrides_json}"
   ]
   "osbs": {
     "repository": {
+      "name": "containers/rhpam-7-process-migration",
       "branch": "${osbs_branch}"
     }
   }
@@ -743,6 +753,7 @@ artifacts:
   url: "${add_ons_distribution_url}"
 osbs:
   repository:
+    name: containers/rhpam-7-smartrouter
     branch: "${osbs_branch}"
 EOF
         else
@@ -767,6 +778,7 @@ cat <<EOF > "${smartrouter_overrides_json}"
   ]
   "osbs": {
     "repository": {
+      "name": "containers/rhpam-7-smartrouter",
       "branch": "${osbs_branch}"
     }
   }
@@ -795,6 +807,7 @@ artifacts:
   url: "${add_ons_distribution_url}"
 osbs:
   repository:
+    name: containers/rhpam-7-dashbuilder
     branch: "${osbs_branch}"
 EOF
         else
@@ -819,6 +832,7 @@ cat <<EOF > "${dashbuilder_overrides_json}"
   ]
   "osbs": {
     "repository": {
+      "name": "containers/rhpam-7-dashbuilder",
       "branch": "${osbs_branch}"
     }
   }
