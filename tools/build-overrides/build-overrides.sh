@@ -1104,7 +1104,7 @@ main() {
 
             # handle artifacts
             if [ "${product}" = "all" ] || [[ "${product}" =~ bamoe.* ]]; then
-                handle_bamoe_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}" "${work_dir}" "${osbs_branch} "${property_file_url}""
+                handle_bamoe_artifacts "${full_version}" "${short_version}" "${build_type}" "${build_date}" "${product}" "${artifacts_dir}" "${overrides_dir}" "${work_dir}" "${osbs_branch}" "${property_file_url}"
             fi
         fi
         clear_env
