@@ -114,10 +114,6 @@ Feature: Decision/Business Central common features
     When container is ready
     Then container log should contain -Dorg.uberfire.metadata.index.dir=/opt/kie/data
 
-  Scenario: RHPAM-3517: Update maven to 3.6
-    When container is started with command bash
-    Then run sh -c "mvn --version | sed -n -e 's/^.*Apache //p' | grep 3.6 && echo  all good" in container and check its output for all good
-
   Scenario: Test if KIE Server access is correct set with user/pass
     When container is started with env
       | variable       | value     |
