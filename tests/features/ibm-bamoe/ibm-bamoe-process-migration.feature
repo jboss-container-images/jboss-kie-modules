@@ -3,7 +3,7 @@ Feature: IBM BAMOE Process Migration tests
 
   Scenario: Verify if all labels are correctly set on ibm-bamoe-process-migration-rhel8 image
     When container is started with command bash
-    Then the image should contain label com.ibm.component with value ibm-bamoe-8-process-migration-rhel8-container
+    Then the image should contain label com.redhat.component with value ibm-bamoe-process-migration-rhel8-container
     And the image should contain label io.openshift.expose-services with value 8080:http
     And the image should contain label io.k8s.description with value Platform for running IBM Business Automation Manager Open Editions Process Migration
     And the image should contain label io.k8s.display-name with value IBM Process Migration 8.0
