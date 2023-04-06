@@ -2,7 +2,7 @@
 @rhpam-7/rhpam-businesscentral-rhel8
 @rhpam-7/rhpam-businesscentral-monitoring-rhel8
 @rhpam-7/rhpam-controller-rhel8
-Feature: RHPAM and RHDM common tests
+Feature: RHPAM common maven tests
 
   Scenario: Ensure the maven 3.8+ is installed
     When container is started with command bash
