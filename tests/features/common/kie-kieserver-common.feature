@@ -585,13 +585,12 @@ Feature: Kie Server common features
 
   Scenario: Verify if the KieExecutorMDB is configured
     When container is started with env
-      | variable                             | value                         |
-      | KIE_SERVER_DECISIONS_ONLY             | TRUE                          |
+      | variable                    | value    |
+      | KIE_SERVER_DECISIONS_ONLY   | TRUE     |
     Then container log should contain KIE Server will be executed with DM only capabilities.
      And container log should contain KIE Server's cluster for Jbpm failover is disabled.
      And container log should contain Drools KIE Server extension has been successfully registered as server extension
      And container log should contain DMN KIE Server extension has been successfully registered as server extension
-     And container log should contain OptaPlanner KIE Server extension has been successfully registered as server extension
      And container log should not contain jBPM KIE Server extension has been successfully registered as server extension
      And container log should not contain Case-Mgmt KIE Server extension has been successfully registered as server extension
      And container log should not contain jBPM-UI KIE Server extension has been successfully registered as server extension
@@ -604,7 +603,6 @@ Feature: Kie Server common features
     Then container log should contain KIE Server's cluster for Jbpm failover is disabled.
     And container log should contain Drools KIE Server extension has been successfully registered as server extension
     And container log should contain DMN KIE Server extension has been successfully registered as server extension
-    And container log should contain OptaPlanner KIE Server extension has been successfully registered as server extension
     And container log should contain jBPM KIE Server extension has been successfully registered as server extension
     And container log should contain Case-Mgmt KIE Server extension has been successfully registered as server extension
     And container log should contain jBPM-UI KIE Server extension has been successfully registered as server extension
