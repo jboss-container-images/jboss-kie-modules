@@ -13,7 +13,7 @@ require (
 	github.com/docker/go-units v0.3.2-0.20170127094116-9e638d38cf69 // indirect
 	github.com/getsentry/raven-go v0.0.0-20171206001108-32a13797442c // indirect
 	github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680 // indirect
-	github.com/gogo/protobuf v0.0.0-20170330071051-c0656edd0d9e // indirect
+	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/glog v0.0.0-20141105023935-44145f04b68c // indirect
 	github.com/golang/protobuf v1.1.0 // indirect
 	github.com/google/gofuzz v0.0.0-20161122191042-44d81051d367 // indirect
