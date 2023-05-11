@@ -7,7 +7,7 @@ require (
 	github.com/blang/semver v3.5.2-0.20180723201105-3c1074078d32+incompatible // indirect
 	github.com/certifi/gocertifi v0.0.0-20180905225744-ee1a9a0726d2 // indirect
 	github.com/davecgh/go-spew v1.1.1-0.20170626231645-782f4967f2dc // indirect
-	github.com/docker/distribution v2.6.0-rc.1.0.20170726174610-edc3ab29cdff+incompatible // indirect
+	github.com/docker/distribution v2.8.2-beta.1+incompatible // indirect
 	github.com/docker/docker v1.13.2-0.20170601211448-f5ec1e2936dc // indirect
 	github.com/docker/go-connections v0.3.0 // indirect
 	github.com/docker/go-units v0.3.2-0.20170127094116-9e638d38cf69 // indirect
