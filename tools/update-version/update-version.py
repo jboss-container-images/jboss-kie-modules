@@ -2,10 +2,10 @@
 # This script will to help to manage rhdm components modules version, it will update all needed files
 # Example of usage:
 #   # move the current version to the next one or rcX
-#   python3 scripts/update-version.py -v 7.15.1 --confirm
+#   python3 scripts/update-version.py -v 8.15.1 --confirm
 #
 #   # to only see the proposed changes (dry run):
-#   python3 scripts/update-version.py -v 7.15.1
+#   python3 scripts/update-version.py -v 8.15.1
 #
 # Version pattern is: X.YY.Z
 # Dependencies:
@@ -19,9 +19,9 @@ import sys
 # All bamoe modules that will be updated.
 TESTS_DIR = {"", ""}
 
-# e.g. 7.16.0
+# e.g. 8.16.0
 VERSION_REGEX = re.compile(r'\b8[.]\d[.]\d\b')
-# e.g. 7.16
+# e.g. 8.16
 SHORTENED_VERSION_REGEX = re.compile(r'\b8[.]\d\b|8[.]\d')
 
 
@@ -29,21 +29,21 @@ def get_shortened_version(version):
     return '.'.join([str(elem) for elem in str(version).split(".")[0:2]])
 
 
-def get_rhpam_behave_tests_files():
+def get_bamoe_behave_tests_files():
     files = []
-    for file in glob.glob("tests/features/rhpam/*.feature"):
+    for file in glob.glob("tests/features/ibm-bamoe/*.feature"):
         files.append(file)
     return files
 
 
-def update_rhpam_behave_tests(version, confirm):
+def update_bamoe_behave_tests(version, confirm):
     """
-    Update the rhpam behave tests to the given version.
+    Update the bamoe behave tests to the given version.
     :param version: version to set into the module
     :param confirm: if true will save the changes otherwise will print the proposed changes
     """
 
-    tests_to_update = get_rhpam_behave_tests_files()
+    tests_to_update = get_bamoe_behave_tests_files()
     print("Updating bamoe behave test files {0}".format(tests_to_update))
 
     try:
@@ -65,6 +65,32 @@ def update_rhpam_behave_tests(version, confirm):
         raise
 
 
+def update_build_overrides_script(version, confirm):
+    """
+    Update the build-overrides.sh script occurrences of the given version.
+    :param version: version to set updated
+    :param confirm: if true will save the changes otherwise will print the proposed changes
+    """
+
+    build_overrides_file = 'tools/build-overrides/build-overrides.sh'
+
+    if confirm:
+        try:
+            with open(build_overrides_file) as ig:
+                # replace all occurrences of shortened version first
+                plain = VERSION_REGEX.sub(version, ig.read())
+
+            with open(build_overrides_file, 'w') as ig:
+                print("Updating the {0} version occurrences to {1} using version".format(build_overrides_file, version))
+                ig.write(plain)
+
+        except TypeError:
+            raise
+
+    else:
+        print("Skipping build-overrides {0} file".format(build_overrides_file))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='RHDM Version Manager')
     parser.add_argument('-v', dest='t_version', help='update everything to the next version')
@@ -83,7 +109,8 @@ if __name__ == "__main__":
 
         if VERSION_REGEX.match(args.t_version):
             print("Version will be updated to {0}".format(args.t_version))
-            update_rhpam_behave_tests(args.t_version, args.confirm)
+            update_bamoe_behave_tests(args.t_version, args.confirm)
+            update_build_overrides_script(args.t_version, args.confirm)
 
         else:
             print("Provided version {0} does not match the expected regex - {1}".format(args.t_version, pattern))
