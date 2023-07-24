@@ -22,7 +22,7 @@ require (
 	github.com/docker/docker v1.13.2-0.20170601211448-f5ec1e2936dc // indirect
 	github.com/docker/go-connections v0.3.0 // indirect
 	github.com/docker/go-units v0.3.2-0.20170127094116-9e638d38cf69 // indirect
-	github.com/evanphx/json-patch v0.0.0-20190815234213-e83c0a1c26c8 // indirect
+	github.com/evanphx/json-patch v0.5.2 // indirect
 	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/getsentry/raven-go v0.0.0-20171206001108-32a13797442c // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
