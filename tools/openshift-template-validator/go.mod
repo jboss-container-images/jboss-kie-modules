@@ -19,7 +19,7 @@ require (
 	github.com/certifi/gocertifi v0.0.0-20180905225744-ee1a9a0726d2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/distribution v2.8.2+incompatible // indirect
-	github.com/docker/docker v1.13.2-0.20170601211448-f5ec1e2936dc // indirect
+	github.com/docker/docker v20.10.24+incompatible // indirect
 	github.com/docker/go-connections v0.3.0 // indirect
 	github.com/docker/go-units v0.3.2-0.20170127094116-9e638d38cf69 // indirect
 	github.com/evanphx/json-patch v0.5.2 // indirect
@@ -29,6 +29,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/golang/protobuf v1.4.2 // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/gofuzz v1.0.0 // indirect
 	github.com/googleapis/gnostic v0.4.1 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
@@ -64,7 +65,7 @@ require (
 	gopkg.in/inf.v0 v0.9.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0 // indirect
-	gotest.tools v2.2.0+incompatible // indirect
+	gotest.tools/v3 v3.5.0 // indirect
 	k8s.io/apiextensions-apiserver v0.0.0-20180718013825-06dfdaae5c2b // indirect
 	k8s.io/apiserver v0.0.0-20180718002855-8b122ec9e3bb // indirect
 	k8s.io/client-go v0.19.0-rc.2 // indirect
@@ -72,8 +73,6 @@ require (
 	k8s.io/kube-openapi v0.0.0-20200427153329-656914f816f9 // indirect
 	vbom.ml/util v0.0.0-20160121211510-db5cfe13f5cc // indirect
 )
-
-replace github.com/docker/docker v1.13.2-0.20170601211448-f5ec1e2936dc => github.com/docker/engine v17.12.0-ce-rc1.0.20180718150940-a3ef7e9a9bda+incompatible
 
 replace (
 	k8s.io/api => k8s.io/api v0.0.0-20180712090710-2d6f90ab1293
