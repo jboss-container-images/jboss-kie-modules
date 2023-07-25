@@ -43,7 +43,7 @@ require (
 	github.com/onsi/ginkgo v1.11.0 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
-	github.com/opencontainers/image-spec v1.0.0-rc6.0.20170604055404-372ad780f634 // indirect
+	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/openshift/client-go v0.0.0-20180830153425-431ec9a26e50 // indirect
 	github.com/openshift/library-go v0.0.0-20180828150415-0b8367a46798 // indirect
 	github.com/openshift/source-to-image v1.1.12-0.20181024142939-d7dca853b2f3 // indirect
