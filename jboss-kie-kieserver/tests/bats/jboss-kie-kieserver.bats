@@ -76,6 +76,25 @@ teardown() {
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Url}" = "jdbc:mariadb://myapp-host:3306/rhpam-mariadb?pinGlobalTxToPhysicalConnection=true\&amp;enabledSslProtocolSuites=TLSv1.2" ]
 }
 
+@test "test if the EJB_TIMER datasource has been auto-configured also with RHPAM_XA_CONNECTION_PROPERTY_Url and driver is mariadb" {
+    local expected_timer_service="EJB_TIMER"
+    local expected_datasources="EJB_TIMER,RHPAM"
+    local expected_url="jdbc:mariadb://myapp-host:3306/rhpam-mariadb?enabledSslProtocolSuites=TLSv1.2"
+    export DATASOURCES="RHPAM"
+    export RHPAM_DRIVER="mariadb"
+    export RHPAM_XA_CONNECTION_PROPERTY_Url="${expected_url}"
+    export RHPAM_NONXA="false"
+    configure_EJB_Timer_datasource >&2
+    echo "Expected EJB_TIMER url is ${EJB_TIMER_XA_CONNECTION_PROPERTY_Url}" >&2
+    echo "Expected RHPAM_URL is '${RHPAM_URL}'" >&2
+    echo "Expected RHPAM_XA_CONNECTION_PROPERTY_Url is ${RHPAM_XA_CONNECTION_PROPERTY_Url}" >&2
+    echo "Expected DATASOURCES is ${DATASOURCES}" >&2
+    [ "${TIMER_SERVICE_DATA_STORE^^}" = "${expected_timer_service}" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Url}" = "jdbc:mariadb://myapp-host:3306/rhpam-mariadb?enabledSslProtocolSuites=TLSv1.2\&amp;pinGlobalTxToPhysicalConnection=true\&amp;enabledSslProtocolSuites=TLSv1.2" ]
+    [ "${RHPAM_XA_CONNECTION_PROPERTY_Url}" = "jdbc:mariadb://myapp-host:3306/rhpam-mariadb?enabledSslProtocolSuites=TLSv1.2" ]
+    [ "${DATASOURCES}" = "${expected_datasources}" ]
+    [ "${RHPAM_NONXA}" = "false" ]
+}
 @test "verify if EJB_TIMER related default settings are set" {
     local TIMER_SERVICE_DATA_STORE="EJB_TIMER"
     local expected_ejb_timer_tx="-Dorg.jbpm.ejb.timer.tx=true"
@@ -167,7 +186,7 @@ teardown() {
     export RHPAM_JTA="true"
     configure_EJB_Timer_datasource >&2
     echo "EJBTimer url is ${EJB_TIMER_XA_CONNECTION_PROPERTY_Url} " >&2
-    echo "RHPAM url is ${RHPAM_URL} " >&2
+    echo "RHPAM_XA_CONNECTION_PROPERTY_Url is ${RHPAM_XA_CONNECTION_PROPERTY_Url} " >&2
     [ "${TIMER_SERVICE_DATA_STORE^^}" = "${expected_timer_service}" ]
     [ "${DATASOURCES}" = "${expected_datasources}" ]
     [ "${EJB_TIMER_DRIVER}" = "${RHPAM_DRIVER}" ]
@@ -176,6 +195,27 @@ teardown() {
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection}" = "" ]
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledSslProtocolSuites}" = "" ]
     # the URL property must be set
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Url}" = "jdbc:postgres://host:3306/postgres?ssl=true\&amp\;sslmode=allow" ]
+}
+
+@test "verify if EJB_TIMER is correctly configured with data-sources using URL with multiple params when driver is postgres with RHPAM_XA_CONNECTION_PROPERTY_Url" {
+    local expected_timer_service="EJB_TIMER"
+    local expected_datasources="EJB_TIMER,RHPAM"
+    export DATASOURCES="RHPAM"
+    export RHPAM_DRIVER="postgresql"
+    export RHPAM_NONXA="false"
+    export RHPAM_XA_CONNECTION_PROPERTY_Url="jdbc:postgres://host:3306/postgres?ssl=true&amp;sslmode=allow"
+    configure_EJB_Timer_datasource >&2
+    echo "EJBTimer url is ${EJB_TIMER_XA_CONNECTION_PROPERTY_Url} " >&2
+    echo "RHPAM_XA_CONNECTION_PROPERTY_Url is ${RHPAM_XA_CONNECTION_PROPERTY_Url} " >&2
+    [ "${TIMER_SERVICE_DATA_STORE^^}" = "${expected_timer_service}" ]
+    [ "${DATASOURCES}" = "${expected_datasources}" ]
+    [ "${EJB_TIMER_DRIVER}" = "${RHPAM_DRIVER}" ]
+    # we do not expect that this var is set anymore, since we're using URL property directly
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledSslProtocolSuites}" = "" ]
+    # the URL property must be set
+    [ "${RHPAM_URL}" = "jdbc:postgres://host:3306/postgres?ssl=true&amp;sslmode=allow" ]
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Url}" = "jdbc:postgres://host:3306/postgres?ssl=true\&amp\;sslmode=allow" ]
 }
 

@@ -1291,6 +1291,41 @@ Feature: RHPAM KIE Server configuration tests
      And container log should contain -Dorg.jbpm.ejb.timer.tx=true
      And container log should contain -Dorg.jbpm.ejb.timer.local.cache=false
 
+
+  Scenario: Checks if the EJB Timer and common datasource were created using RHPAM_XA_CONNECTION_PROPERTY_Url and mariadb
+    When container is started with env
+      | variable                         | value                               |
+      | DATASOURCES                      | RHPAM                               |
+      | RHPAM_DATABASE                   | rhpam7                              |
+      | RHPAM_JNDI                       | java:jboss/datasources/rhpam        |
+      | RHPAM_DRIVER                     | mariadb                             |
+      | RHPAM_USERNAME                   | sa                                  |
+      | RHPAM_PASSWORD                   | 123456                              |
+      | RHPAM_XA_CONNECTION_PROPERTY_Url | jdbc:mariadb://10.1.1.1:3306/bpms   |
+      | RHPAM_NONXA                      | true                                |
+    Then XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/rhpam on XPath //*[local-name()='datasource']/@jndi-name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value rhpam-RHPAM on XPath //*[local-name()='datasource']/@pool-name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='datasource']/@enabled
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='datasource']/@use-java-context
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value mariadb on XPath //*[local-name()='xa-datasource']/*[local-name()='driver']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER on XPath //*[local-name()='xa-datasource']/@pool-name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:mariadb://10.1.1.1:3306/bpms?enabledSslProtocolSuites=TLSv1.2 on XPath //*[local-name()='datasource']/*[local-name()='connection-url']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/rhpam_EJBTimer on XPath //*[local-name()='xa-datasource']/@jndi-name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@use-java-context
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@enabled
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:mariadb://10.1.1.1:3306/bpms?pinGlobalTxToPhysicalConnection=true&enabledSslProtocolSuites=TLSv1.2 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Url"]
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value sa on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 123456 on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='password']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value TRANSACTION_READ_COMMITTED on XPath //*[local-name()='xa-datasource']/*[local-name()='transaction-isolation']
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_ds on XPath //*[local-name()='timer-service']/@default-data-store
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_ds on XPath //*[local-name()='database-data-store']/@name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/rhpam_EJBTimer on XPath //*[local-name()='database-data-store']/@datasource-jndi-name
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value mariadb on XPath //*[local-name()='database-data-store']/@database
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_part on XPath //*[local-name()='database-data-store']/@partition
+     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value -1 on XPath //*[local-name()='database-data-store']/@refresh-interval
+     And container log should contain -Dorg.jbpm.ejb.timer.tx=true
+     And container log should contain -Dorg.jbpm.ejb.timer.local.cache=false
+
   Scenario: Checks if the launch directory has the right permissions set
     When container is started with command bash
     Then run sh -c '[ $(ls -l /opt/eap/bin/launch/*.sh | wc -l) -gt 0 ] && echo "has script files"' in container and check its output for has script files

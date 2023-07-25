@@ -157,18 +157,30 @@ function configure_EJB_Timer_datasource {
     fi
 }
 
+
+# Retrieving XA URL from PREFIX_XA_CONNECTION_PROPERTY_URL or PREFIX_XA_CONNECTION_PROPERTY_Url
+# and defaulting on PREFIX_URL
+# RHPAM-4710 EJB_TIMER Ds Auto creation does not recognizes Url XA property
+function get_xa_url {
+      local xaUrl=$(find_env "${1}_XA_CONNECTION_PROPERTY_URL" "${2}")
+      if [ "${xaUrl}x" = "${2}x" ]; then
+         xaUrl=$(find_env "${1}_XA_CONNECTION_PROPERTY_Url" "${2}")
+      fi
+      echo ${xaUrl}
+}
+
 # Sets the NONXA url if only the PREFIX_XA_CONNECTION_PROPERTY_URL is provided and vice-versa.
 # $1 - datasource prefix
 function set_url {
     local prefixedUrl=$(find_env "${1}_URL")
-    url=$(find_env "${1}_XA_CONNECTION_PROPERTY_URL" "${prefixedUrl}")
+    url=$(get_xa_url "${1}" "${prefixedUrl}")
     # remove spaces, newlines, etc from url, see RHPAM-3808
     url=$(echo ${url} | tr -d '[:space:]')
     if [ "${prefixedUrl}x" = "x" ]; then
         # KIECLOUD-598 We need to escape the & if it isn't already escaped...
         url=$(echo "${url}" | sed 's|\([^\\]\)&amp|\1\\\&amp|g')
         # KIECLOUD-598 ...and we need to escape also the ; only in this case
-        url=$(echo ${url} | sed -e 's/\;/\\;/g')
+        url=$(echo ${url} | sed -e 's/\([^\\]\);/\1\\\;/g')
         eval ${1}_URL="${url}"
     else
         eval ${1}_URL='${url}'
@@ -177,7 +189,7 @@ function set_url {
         # KIECLOUD-598 We need to escape the & if it isn't already escaped...
         url=$(echo "${url}" | sed 's|\([^\\]\)&amp|\1\\\&amp|g')
         # KIECLOUD-598 ...and we need to escape also the ; only in this case
-        url=$(echo ${url} | sed -e 's/\;/\\;/g')
+        url=$(echo ${url} | sed -e 's/\([^\\]\);/\1\\\;/g')
         eval ${1}_XA_CONNECTION_PROPERTY_URL='${url}'
     fi
 }
@@ -193,7 +205,7 @@ function set_timer_env {
 
 function declare_timer_common_variables {
     local common_vars=(DRIVER JNDI USERNAME PASSWORD TX_ISOLATION \
-                            XA_CONNECTION_PROPERTY_URL MAX_POOL_SIZE \
+                            XA_CONNECTION_PROPERTY_URL XA_CONNECTION_PROPERTY_Url MAX_POOL_SIZE \
                             MIN_POOL_SIZE CONNECTION_CHECKER EXCEPTION_SORTER \
                             BACKGROUND_VALIDATION BACKGROUND_VALIDATION_MILLIS)
 
@@ -204,7 +216,7 @@ function declare_timer_common_variables {
                 ## https://issues.redhat.com/browse/RHPAM-3211 avoid expansion if $n is in the username/password
                 eval "EJB_TIMER_${var}=\$value"
             else
-                if [ "${var}" = "XA_CONNECTION_PROPERTY_URL" ]; then
+                if [ "${var}" = "XA_CONNECTION_PROPERTY_URL" ] || [ "${var}" = "XA_CONNECTION_PROPERTY_Url" ] ; then
                     value=$(echo ${value} | tr -d '[:space:]')
                     eval EJB_TIMER_${var}='${value}'
                 else
@@ -235,7 +247,7 @@ function set_timer_defaults {
     EJB_TIMER_TX_ISOLATION="${EJB_TIMER_TX_ISOLATION:-TRANSACTION_READ_COMMITTED}"
 
     local url=$(find_env "${prefix}_URL")
-    url=$(find_env "${prefix}_XA_CONNECTION_PROPERTY_URL" "${url}")
+    url=$(get_xa_url "${prefix}" "${url}")
     # Default to the Mariadb property
     enabledTLSParameterName="enabledSslProtocolSuites"
     if [[ $EJB_TIMER_DRIVER =~ mysql|mariadb ]]; then
@@ -304,7 +316,7 @@ function declare_xa_variables {
     local prefix=$1
     local service=$2
     local url=$(find_env "${prefix}_URL")
-    url=$(find_env "${prefix}_XA_CONNECTION_PROPERTY_URL" "${url}")
+    url=$(get_xa_url "${prefix}" "${url}")
     if [ "x${url}" == "x" ]; then
         local serviceHost=$(find_env "${service}_SERVICE_HOST")
         local host=$(find_env "${prefix}_SERVICE_HOST" "${serviceHost}")
