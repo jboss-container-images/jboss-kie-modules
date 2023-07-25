@@ -6,7 +6,7 @@ SRC_DIR = $(shell pwd)
 VERSION ?= main-$(shell git rev-parse --short=11 HEAD)
 
 build:
-	${GO_EXECUTABLE} build -o openshift-template-validator-linux-amd64 -ldflags "-X main.version=${VERSION}" main.go
+	GOOS=linux GOARCH=amd64 ${GO_EXECUTABLE} build -o openshift-template-validator-linux-amd64 -ldflags "-X main.version=${VERSION}" main.go
 	GOOS=windows GOARCH=amd64 ${GO_EXECUTABLE} build -o openshift-template-validator-amd64.exe -ldflags "-X main.version=${VERSION}" main.go
 	GOOS=darwin GOARCH=arm64 ${GO_EXECUTABLE} build -o openshift-template-validator-arm64 -ldflags "-X main.version=${VERSION}" main.go
 
