@@ -58,6 +58,7 @@ function configure() {
     configure_controller_access
     configure_server_access
     configure_openshift_enhancement
+    configure_workbench_secure_access
     configure_workbench_profile
     configure_guvnor_settings
     configure_metaspace
@@ -183,6 +184,15 @@ function configure_openshift_enhancement() {
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.openshift.global.discovery.enabled=${kscGlobalDiscoveryEnabled}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.openshift.prefer.kieserver.service=${kscPreferKieService}"
     JBOSS_KIE_ARGS="${JBOSS_KIE_ARGS} -Dorg.kie.server.controller.template.cache.ttl=${kscTemplateCacheTTL}"
+}
+
+# See: https://issues.redhat.com/browse/RHPAM-4705
+function configure_workbench_secure_access() {
+    local cert="${HTTPS_KEYSTORE_DIR}/${HTTPS_KEYSTORE}"
+    if [ ! -f "${cert}" ]; then
+        log_info "No certificate found, skipping secure access configuration."
+        sed -i "s|<secure>true</secure>|<secure>false</secure>|" ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/web.xml
+    fi
 }
 
 function configure_workbench_profile() {
