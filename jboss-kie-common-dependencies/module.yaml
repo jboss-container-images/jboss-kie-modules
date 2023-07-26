@@ -6,3 +6,4 @@ packages:
   install:
     - findutils
     - hostname
+    - tzdata-java
