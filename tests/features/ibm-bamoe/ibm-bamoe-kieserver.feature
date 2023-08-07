@@ -401,9 +401,6 @@ Feature: IBM BAMOE KIE Server configuration tests
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/ExampleDS_EJBTimer on XPath //*[local-name()='xa-datasource']/@jndi-name
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@use-java-context
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@enabled
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpms on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DatabaseName"]
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 3306 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Port"]
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10.1.1.1 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="ServerName"]
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmUser on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmPass on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='password']
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value TRANSACTION_READ_COMMITTED on XPath //*[local-name()='xa-datasource']/*[local-name()='transaction-isolation']
@@ -415,8 +412,12 @@ Feature: IBM BAMOE KIE Server configuration tests
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10 on XPath //*[local-name()='xa-pool']/*[local-name()='min-pool-size']
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10 on XPath //*[local-name()='xa-pool']/*[local-name()='max-pool-size']
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:mysql://10.1.1.1:3306/bpms?pinGlobalTxToPhysicalConnection=true&enabledTLSProtocols=TLSv1.2 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="URL"]
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <connection-url>jdbc:mysql://10.1.1.1:3306/bpms?enabledTLSProtocols=TLSv1.2</connection-url>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="PinGlobalTxToPhysicalConnection">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="EnabledTLSProtocols">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="DatabaseName">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="Port">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="ServerName">
 
   Scenario: Checks if the EJB Timer was successfully configured with MySQL XA with DATASOURCES env
     When container is started with env
@@ -440,9 +441,6 @@ Feature: IBM BAMOE KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/ejb_timer on XPath //*[local-name()='xa-datasource']/@jndi-name
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@use-java-context
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@enabled
-     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10.1.1.1 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="ServerName"]
-     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 3306 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Port"]
-     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpms on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DatabaseName"]
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmUser on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmPass on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='password']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_ds on XPath //*[local-name()='timer-service']/@default-data-store
@@ -458,8 +456,12 @@ Feature: IBM BAMOE KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker on XPath //*[local-name()='validation']/*[local-name()='valid-connection-checker']/@class-name
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter on XPath //*[local-name()='validation']/*[local-name()='exception-sorter']/@class-name
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:mysql://10.1.1.1:3306/bpms?pinGlobalTxToPhysicalConnection=true&enabledTLSProtocols=TLSv1.2 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="URL"]
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain xa-datasource-property name="URL"><![CDATA[jdbc:mysql://10.1.1.1:3306/bpms?pinGlobalTxToPhysicalConnection=true&amp;enabledTLSProtocols=TLSv1.2]]></xa-datasource-property>
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="PinGlobalTxToPhysicalConnection">
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="EnabledTLSProtocols">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="DatabaseName">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="Port">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="ServerName">
      And container log should not contain WARN Missing configuration for XA datasource EJB_TIMER
 
   Scenario: Checks if the EJB Timer was successfully configured with MySQL with DATASOURCES env
@@ -484,9 +486,6 @@ Feature: IBM BAMOE KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/ejb_timer on XPath //*[local-name()='xa-datasource']/@jndi-name
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@use-java-context
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@enabled
-     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10.1.1.1 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="ServerName"]
-     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 3306 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Port"]
-     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpms on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DatabaseName"]
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmUser on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmPass on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='password']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value TRANSACTION_READ_COMMITTED on XPath //*[local-name()='xa-datasource']/*[local-name()='transaction-isolation']
@@ -503,9 +502,59 @@ Feature: IBM BAMOE KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker on XPath //*[local-name()='validation']/*[local-name()='valid-connection-checker']/@class-name
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter on XPath //*[local-name()='validation']/*[local-name()='exception-sorter']/@class-name
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:mysql://10.1.1.1:3306/bpms?pinGlobalTxToPhysicalConnection=true&enabledTLSProtocols=TLSv1.2 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="URL"]
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <connection-url>jdbc:mysql://10.1.1.1:3306/bpms?enabledTLSProtocols=TLSv1.2</connection-url>
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="PinGlobalTxToPhysicalConnection">
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="EnabledTLSProtocols">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="DatabaseName">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="Port">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="ServerName">
      And container log should not contain WARN Missing configuration for XA datasource EJB_TIMER
+
+  Scenario: Checks if the EJB Timer was successfully configured with MariaDB with DATASOURCES env with validation properties
+    When container is started with env
+      | variable                                  | value                                                                     |
+      | DATASOURCES                               | TEST                                                                      |
+      | TEST_DATABASE                             | bpms                                                                      |
+      | TEST_USERNAME                             | bpmUser                                                                   |
+      | TEST_PASSWORD                             | bpmPass                                                                   |
+      | TEST_DRIVER                               | mariadb                                                                   |
+      | TEST_SERVICE_HOST                         | 10.1.1.1                                                                  |
+      | TEST_SERVICE_PORT                         | 3306                                                                      |
+      | TEST_NONXA                                | true                                                                      |
+      | TEST_BACKGROUND_VALIDATION                | false                                                                     |
+      | TEST_CONNECTION_CHECKER                   | org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker  |
+      | TEST_EXCEPTION_SORTER                     | org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter         |
+      | TIMER_SERVICE_DATA_STORE_REFRESH_INTERVAL | 10000                                                                     |
+    Then XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/test on XPath //*[local-name()='datasource']/@jndi-name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value test-TEST on XPath //*[local-name()='datasource']/@pool-name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value mariadb on XPath //*[local-name()='xa-datasource']/*[local-name()='driver']
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER on XPath //*[local-name()='xa-datasource']/@pool-name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/ejb_timer on XPath //*[local-name()='xa-datasource']/@jndi-name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@use-java-context
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@enabled
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmUser on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmPass on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='password']
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value TRANSACTION_READ_COMMITTED on XPath //*[local-name()='xa-datasource']/*[local-name()='transaction-isolation']
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_ds on XPath //*[local-name()='timer-service']/@default-data-store
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_ds on XPath //*[local-name()='database-data-store']/@name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/ejb_timer on XPath //*[local-name()='database-data-store']/@datasource-jndi-name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value mariadb on XPath //*[local-name()='database-data-store']/@database
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_part on XPath //*[local-name()='database-data-store']/@partition
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10000 on XPath //*[local-name()='database-data-store']/@refresh-interval
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10 on XPath //*[local-name()='xa-pool']/*[local-name()='min-pool-size']
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10 on XPath //*[local-name()='xa-pool']/*[local-name()='max-pool-size']
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='validation']/*[local-name()='validate-on-match']
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value false on XPath //*[local-name()='validation']/*[local-name()='background-validation']
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker on XPath //*[local-name()='validation']/*[local-name()='valid-connection-checker']/@class-name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter on XPath //*[local-name()='validation']/*[local-name()='exception-sorter']/@class-name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:mariadb://10.1.1.1:3306/bpms?pinGlobalTxToPhysicalConnection=true&enabledSslProtocolSuites=TLSv1.2 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Url"]
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <connection-url>jdbc:mariadb://10.1.1.1:3306/bpms?enabledSslProtocolSuites=TLSv1.2</connection-url>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="PinGlobalTxToPhysicalConnection">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="EnabledTLSProtocols">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="DatabaseName">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="Port">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="ServerName">
+    And container log should not contain WARN Missing configuration for XA datasource EJB_TIMER
 
   Scenario: Checks if the EJB Timer was successfully configured with MySQL with DATASOURCES env custom driver
     When container is started with env
@@ -526,9 +575,6 @@ Feature: IBM BAMOE KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/ejb_timer on XPath //*[local-name()='xa-datasource']/@jndi-name
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@use-java-context
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@enabled
-     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10.1.1.1 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="ServerName"]
-     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 3306 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Port"]
-     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpms on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DatabaseName"]
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:mysql://10.1.1.1:3306/bpms?enabledTLSProtocols=TLSv1.2 on XPath //*[local-name()='datasource']/*[local-name()='connection-url']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmUser on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmPass on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='password']
@@ -544,6 +590,9 @@ Feature: IBM BAMOE KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:mysql://10.1.1.1:3306/bpms?pinGlobalTxToPhysicalConnection=true&enabledTLSProtocols=TLSv1.2 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="URL"]
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="PinGlobalTxToPhysicalConnection">
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="EnabledTLSProtocols">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="DatabaseName">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="Port">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="ServerName">
      And container log should not contain WARN Missing configuration for XA datasource EJB_TIMER
 
   Scenario: Checks if the EJB Timer was successfully configured with MySQL with DATASOURCES env using custom driver name and URL
@@ -669,9 +718,6 @@ Feature: IBM BAMOE KIE Server configuration tests
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/myJndi_EJBTimer on XPath //*[local-name()='xa-datasource']/@jndi-name
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@use-java-context
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@enabled
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10.1.1.1 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="ServerName"]
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 3306 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Port"]
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpms on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DatabaseName"]
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmUser on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmPass on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='password']
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value TRANSACTION_READ_COMMITTED on XPath //*[local-name()='xa-datasource']/*[local-name()='transaction-isolation']
@@ -682,10 +728,14 @@ Feature: IBM BAMOE KIE Server configuration tests
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_part on XPath //*[local-name()='database-data-store']/@partition
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10000 on XPath //*[local-name()='database-data-store']/@refresh-interval
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:mysql://10.1.1.1:3306/bpms?pinGlobalTxToPhysicalConnection=true&enabledTLSProtocols=TLSv1.2 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="URL"]
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <connection-url>jdbc:mysql://10.1.1.1:3306/bpms?enabledTLSProtocols=TLSv1.2</connection-url>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="PinGlobalTxToPhysicalConnection">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="EnabledTLSProtocols">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="DatabaseName">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="Port">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="ServerName">
 
-  Scenario: Checks if the EJB Timer was successfully configured with MySQL with DB_SERVICE_PREFIX_MAPPING env
+  Scenario: Checks if the EJB Timer was successfully configured with MariaDB with DB_SERVICE_PREFIX_MAPPING env
     When container is started with env
       | variable                     | value                            |
       | DB_SERVICE_PREFIX_MAPPING    | kie-app-mariadb=DB               |
@@ -704,9 +754,6 @@ Feature: IBM BAMOE KIE Server configuration tests
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/ExampleDS_EJBTimer on XPath //*[local-name()='xa-datasource']/@jndi-name
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@use-java-context
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@enabled
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpms on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DatabaseName"]
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 3306 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Port"]
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10.1.1.1 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="ServerName"]
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmUser on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmPass on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='password']
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value TRANSACTION_READ_COMMITTED on XPath //*[local-name()='xa-datasource']/*[local-name()='transaction-isolation']
@@ -718,46 +765,99 @@ Feature: IBM BAMOE KIE Server configuration tests
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10 on XPath //*[local-name()='xa-pool']/*[local-name()='min-pool-size']
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10 on XPath //*[local-name()='xa-pool']/*[local-name()='max-pool-size']
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:mariadb://10.1.1.1:3306/bpms?pinGlobalTxToPhysicalConnection=true&enabledSslProtocolSuites=TLSv1.2 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Url"]
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <connection-url>jdbc:mariadb://10.1.1.1:3306/bpms?enabledSslProtocolSuites=TLSv1.2</connection-url>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="PinGlobalTxToPhysicalConnection">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="EnabledSslProtocolSuites">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="DatabaseName">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="Port">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="ServerName">
 
-  Scenario: Checks if the EJB Timer was successfully configured with MariaDB with DATASOURCES env custom driver
+  Scenario: Checks if the EJB Timer was successfully configured with MariaDB with XA DATASOURCES env with defaults and refresh interval
     When container is started with env
       | variable                                  | value      |
       | DATASOURCES                               | TEST       |
       | TEST_DATABASE                             | bpms       |
       | TEST_USERNAME                             | bpmUser    |
       | TEST_PASSWORD                             | bpmPass    |
-      | TEST_DRIVER                               | mariadbTest|
+      | TEST_DRIVER                               | mariadb    |
       | TEST_SERVICE_HOST                         | 10.1.1.1   |
       | TEST_SERVICE_PORT                         | 3306       |
-      | TEST_NONXA                                | true       |
+      | TEST_NONXA                                | false      |
       | TIMER_SERVICE_DATA_STORE_REFRESH_INTERVAL | 10000      |
-    Then XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/test on XPath //*[local-name()='datasource']/@jndi-name
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value test-TEST on XPath //*[local-name()='datasource']/@pool-name
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value mariadbTest on XPath //*[local-name()='xa-datasource']/*[local-name()='driver']
+    Then XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/test on XPath //*[local-name()='xa-datasource']/@jndi-name
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <xa-datasource-property name="Url">jdbc:mariadb://10.1.1.1:3306/bpms?pinGlobalTxToPhysicalConnection=true&amp;enabledSslProtocolSuites=TLSv1.2</xa-datasource-property>
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value test-TEST on XPath //*[local-name()='xa-datasource']/@pool-name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value mariadb on XPath //*[local-name()='xa-datasource']/*[local-name()='driver']
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER on XPath //*[local-name()='xa-datasource']/@pool-name
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/ejb_timer on XPath //*[local-name()='xa-datasource']/@jndi-name
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@use-java-context
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@enabled
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10.1.1.1 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="ServerName"]
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 3306 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Port"]
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpms on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DatabaseName"]
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:mariadb://10.1.1.1:3306/bpms?enabledSslProtocolSuites=TLSv1.2 on XPath //*[local-name()='datasource']/*[local-name()='connection-url']
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmUser on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmPass on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='password']
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value TRANSACTION_READ_COMMITTED on XPath //*[local-name()='xa-datasource']/*[local-name()='transaction-isolation']
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_ds on XPath //*[local-name()='timer-service']/@default-data-store
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_ds on XPath //*[local-name()='database-data-store']/@name
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/ejb_timer on XPath //*[local-name()='database-data-store']/@datasource-jndi-name
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value mariadbTest on XPath //*[local-name()='database-data-store']/@database
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value mariadb on XPath //*[local-name()='database-data-store']/@database
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_part on XPath //*[local-name()='database-data-store']/@partition
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10000 on XPath //*[local-name()='database-data-store']/@refresh-interval
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10 on XPath //*[local-name()='xa-pool']/*[local-name()='min-pool-size']
     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10 on XPath //*[local-name()='xa-pool']/*[local-name()='max-pool-size']
-    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:mariadb://10.1.1.1:3306/bpms?pinGlobalTxToPhysicalConnection=true&enabledSslProtocolSuites=TLSv1.2 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Url"]
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <connection-url>jdbc:mariadb://10.1.1.1:3306/bpms?enabledSslProtocolSuites=TLSv1.2</connection-url>
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="PinGlobalTxToPhysicalConnection">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="EnabledSslProtocolSuites">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="DatabaseName">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="Port">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="ServerName">
+    And container log should not contain WARN Missing configuration for XA datasource EJB_TIMER
+
+  Scenario: Checks if the EJB Timer was successfully configured with MariaDB with DATASOURCES and XA Properties
+    When container is started with env
+      | variable                                                     | value                     |
+      | DATASOURCES                                                  | TEST                      |
+      | TEST_USERNAME                                                | bpmUser                   |
+      | TEST_PASSWORD                                                | bpmPass                   |
+      | TEST_DRIVER                                                  | mariadb                   |
+      | TEST_XA_CONNECTION_PROPERTY_ServerName                       | 10.1.1.1                  |
+      | TEST_XA_CONNECTION_PROPERTY_Port                             | 3306                      |
+      | TEST_XA_CONNECTION_PROPERTY_DatabaseName                     | bpms                      |
+      | TEST_XA_CONNECTION_PROPERTY_JNDI                             | jboss:/datasources/rhpam  |
+      | TEST_XA_CONNECTION_PROPERTY_EnabledSslProtocolSuites         | TLSv1.2                   |
+      | TEST_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection  | true                      |
+      | TEST_XA_CONNECTION_PROPERTY_Test                             | true                      |
+      | TEST_NONXA                                                   | false                     |
+      | TEST_JTA                                                     | true                      |
+    Then XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/test on XPath //*[local-name()='xa-datasource']/@jndi-name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Test"]
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value test-TEST on XPath //*[local-name()='xa-datasource']/@pool-name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/*[local-name()='validation']/*[local-name()='validate-on-match']
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value false on XPath //*[local-name()='xa-datasource']/*[local-name()='validation']/*[local-name()='background-validation']
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker on XPath //*[local-name()='xa-datasource']/*[local-name()='validation']/*[local-name()='valid-connection-checker']/@class-name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter on XPath //*[local-name()='xa-datasource']/*[local-name()='validation']/*[local-name()='exception-sorter']/@class-name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value mariadb on XPath //*[local-name()='xa-datasource']/*[local-name()='driver']
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER on XPath //*[local-name()='xa-datasource']/@pool-name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/ejb_timer on XPath //*[local-name()='xa-datasource']/@jndi-name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@use-java-context
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@enabled
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmUser on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmPass on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='password']
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value TRANSACTION_READ_COMMITTED on XPath //*[local-name()='xa-datasource']/*[local-name()='transaction-isolation']
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_ds on XPath //*[local-name()='timer-service']/@default-data-store
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_ds on XPath //*[local-name()='database-data-store']/@name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/ejb_timer on XPath //*[local-name()='database-data-store']/@datasource-jndi-name
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value mariadb on XPath //*[local-name()='database-data-store']/@database
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value ejb_timer-EJB_TIMER_part on XPath //*[local-name()='database-data-store']/@partition
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value -1 on XPath //*[local-name()='database-data-store']/@refresh-interval
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10 on XPath //*[local-name()='xa-pool']/*[local-name()='min-pool-size']
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10 on XPath //*[local-name()='xa-pool']/*[local-name()='max-pool-size']
+    And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:mariadb://10.1.1.1:3306/bpms?pinGlobalTxToPhysicalConnection=true&enabledSslProtocolSuites=TLSv1.2 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Url"]
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <connection-url>jdbc:mariadb://10.1.1.1:3306/bpms?enabledSslProtocolSuites=TLSv1.2</connection-url>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="JNDI">jboss:/datasources/rhpam</xa-datasource-property>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="PinGlobalTxToPhysicalConnection">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="EnabledSslProtocolSuites">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="DatabaseName">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="Port">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="ServerName">
     And container log should not contain WARN Missing configuration for XA datasource EJB_TIMER
 
   Scenario: Checks if the EJB Timer was successfully configured with MariaDB with DATASOURCES env using custom driver name and URL
@@ -1089,7 +1189,7 @@ Feature: IBM BAMOE KIE Server configuration tests
      And container log should contain -Dorg.kie.server.persistence.ds=java:jboss/datasources/yes
      And container log should contain -Dorg.kie.server.persistence.tm=tmTest
 
-  Scenario: Checks if the EJB Timer was successfully configured with MariaDB with DATASOURCES env
+  Scenario: Checks if the EJB Timer was successfully configured with MariaDB with non XA DATASOURCES env
     When container is started with env
       | variable                                  | value        |
       | DATASOURCES                               | TEST         |
@@ -1108,9 +1208,6 @@ Feature: IBM BAMOE KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/ejb_timer on XPath //*[local-name()='xa-datasource']/@jndi-name
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@use-java-context
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@enabled
-     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10.1.1.1 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="ServerName"]
-     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 3306 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Port"]
-     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpms on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DatabaseName"]
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:mariadb://10.1.1.1:3306/bpms?enabledSslProtocolSuites=TLSv1.2 on XPath //*[local-name()='datasource']/*[local-name()='connection-url']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmUser on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmPass on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='password']
@@ -1125,6 +1222,9 @@ Feature: IBM BAMOE KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10 on XPath //*[local-name()='xa-pool']/*[local-name()='max-pool-size']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:mariadb://10.1.1.1:3306/bpms?pinGlobalTxToPhysicalConnection=true&enabledSslProtocolSuites=TLSv1.2 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Url"]
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="PinGlobalTxToPhysicalConnection">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain value 10.1.1.1 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="ServerName"]
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain value 3306 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Port"]
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain value bpms on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DatabaseName"]
 
   Scenario: Checks if the EJB Timer was successfully configured with MariaDB with DATASOURCES env XA
     When container is started with env
@@ -1146,9 +1246,6 @@ Feature: IBM BAMOE KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value java:jboss/datasources/ejb_timer on XPath //*[local-name()='xa-datasource']/@jndi-name
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@use-java-context
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value true on XPath //*[local-name()='xa-datasource']/@enabled
-     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 127.0.0.1 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="ServerName"]
-     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 3306 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Port"]
-     And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpms on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DatabaseName"]
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmUser on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='user-name']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value bpmPass on XPath //*[local-name()='xa-datasource']/*[local-name()='security']/*[local-name()='password']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value TRANSACTION_READ_COMMITTED on XPath //*[local-name()='xa-datasource']/*[local-name()='transaction-isolation']
@@ -1162,6 +1259,9 @@ Feature: IBM BAMOE KIE Server configuration tests
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value 10 on XPath //*[local-name()='xa-pool']/*[local-name()='max-pool-size']
      And XML file /opt/eap/standalone/configuration/standalone-openshift.xml should contain value jdbc:mariadb://127.0.0.1:3306/bpms?pinGlobalTxToPhysicalConnection=true&enabledSslProtocolSuites=TLSv1.2 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Url"]
      And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="PinGlobalTxToPhysicalConnection">
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain value 127.0.0.1 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="ServerName"]
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain value 3306 on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="Port"]
+     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain value bpms on XPath //*[local-name()='xa-datasource']/*[local-name()='xa-datasource-property'][@name="DatabaseName"]
 
   Scenario: Checks if the EJB Timer and common datasource were created
     When container is started with env

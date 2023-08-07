@@ -24,3 +24,4 @@ tools/gen-template-doc/rhdm-*
 tools/gen-template-doc/rhpam-*
 venv/
 tools/openshift-template-validator/openshift-template-validator
+jboss-kie-repo-certificates/
