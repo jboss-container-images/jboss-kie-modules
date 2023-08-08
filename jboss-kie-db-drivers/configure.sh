@@ -12,6 +12,8 @@ function link {
 
 link /usr/lib/java/mariadb-java-client.jar $JBOSS_HOME/modules/system/layers/openshift/org/mariadb/main/mariadb-java-client.jar
 link /usr/share/java/postgresql-jdbc.jar $JBOSS_HOME/modules/system/layers/openshift/org/postgresql/main/postgresql-jdbc.jar
+link /usr/share/java/ongres-scram/common.jar $JBOSS_HOME/modules/system/layers/openshift/com/ongres/scram/common/main/ongres-scram-common.jar
+link /usr/share/java/ongres-scram/client.jar $JBOSS_HOME/modules/system/layers/openshift/com/ongres/scram/client/main/ongres-scram-client.jar
 
 # module definitions for MariaDB, PostgreSQL
 # Remove any existing destination files first (which might be symlinks)
