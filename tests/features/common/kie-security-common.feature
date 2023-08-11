@@ -212,6 +212,35 @@ Feature: KIE Security configuration common tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <role name="test"/>
     And file /opt/eat/standalone/deploy/ROOT/WEB-INF/jboss-web.xml should not contain <security-domain>other</security-domain>
 
+  Scenario: Configure images to use LDAP the direct-verification attribute to true
+    When container is started with env
+      | variable                                      | value                        |
+      | AUTH_LDAP_URL                                 | test_url                     |
+      | AUTH_LDAP_BIND_DN                             | cn=Manager,dc=example,dc=com |
+      | AUTH_LDAP_BIND_CREDENTIAL                     | admin                        |
+      | AUTH_LDAP_BASE_CTX_DN                         | ou=Users,dc=example,dc=com   |
+      | AUTH_LDAP_BASE_FILTER                         | uid                          |
+      | AUTH_LDAP_ROLE_ATTRIBUTE_ID                   | cn                           |
+      | AUTH_LDAP_ROLES_CTX_DN                        | ou=Roles,dc=example,dc=com   |
+      | AUTH_LDAP_ROLE_FILTER                         | (member={1})                 |
+      | AUTH_LDAP_ALLOW_EMPTY_PASSWORDS               | false                        |
+      | AUTH_LDAP_DIRECT_VERIFICATION                 | true                         |
+      | AUTH_LDAP_DEFAULT_ROLE                        | test                         |
+      | AUTH_LDAP_ROLE_RECURSION                      | 34                           |
+      | AUTH_LDAP_SEARCH_TIME_LIMIT                   | 1000                         |
+    Then file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <dir-context name="KIELdapDC" url="test_url" read-timeout="1000" principal="cn=Manager,dc=example,dc=com">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <credential-reference clear-text="admin"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <attribute from="cn" to="Roles" filter="(member={1})" filter-base-dn="ou=Roles,dc=example,dc=com" role-recursion="34"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <ldap-realm name="KIELdapRealm" direct-verification="true" dir-context="KIELdapDC">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <identity-mapping rdn-identifier="uid" search-base-dn="ou=Users,dc=example,dc=com">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security-domain name="KIELdapSecurityDomain" default-realm="KIELdapRealm" permission-mapper="default-permission-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <realm name="KIELdapRealm" role-decoder="from-roles-attribute" role-mapper="kie-ldap-logical-default-role-mapper"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <security elytron-domain="KIELdapSecurityDomain"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <application-security-domain name="other" security-domain="KIELdapSecurityDomain"/>
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <constant-role-mapper name="kie-ldap-role-mapper">
+    And file /opt/eap/standalone/configuration/standalone-openshift.xml should contain <role name="test"/>
+    And file /opt/eat/standalone/deploy/ROOT/WEB-INF/jboss-web.xml should not contain <security-domain>other</security-domain>
+
   Scenario: Configure images to use LDAP authentication with search time limit and referral mode
     When container is started with env
       | variable                                      | value                        |
