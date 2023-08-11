@@ -504,8 +504,6 @@ teardown() {
     [ "${expected}" = "${result}" ]
 }
 
-
-
 @test "test elytron ldap configuration ldap-realm with identity-mapping and attribute mapping using recursive search and blank password" {
     AUTH_LDAP_URL="ldap://test:12345"
     AUTH_LDAP_BASE_FILTER="(uid={0})"
@@ -519,6 +517,36 @@ teardown() {
     configure_elytron_ldap_auth
 
     expected="<ldap-realm name=\"KIELdapRealm\" direct-verification=\"true\" allow-blank-password=\"true\" dir-context=\"KIELdapDC\">
+                <identity-mapping rdn-identifier=\"(uid={0})\" search-base-dn=\"ou=people,dc=example,dc=com\" use-recursive-search=\"true\">
+                    <attribute-mapping>
+                        <attribute from=\"cn\" to=\"Roles\" filter=\"(member={1})\" filter-base-dn=\"ou=roles,dc=example,dc=com\"/>
+                    </attribute-mapping>
+                    <!-- ##KIE_LDAP_NEW_IDENTITY_ATTRIBUTES## -->
+                    <user-password-mapper from=\"userPassword\" writable=\"true\"/>
+                </identity-mapping>
+            </ldap-realm>"
+
+    result="$(xmllint --xpath "//*[local-name()='ldap-realm']" $CONFIG_FILE)"
+
+    echo "expected: ${expected}"
+    echo "result  : ${result}"
+    [ "${expected}" = "${result}" ]
+}
+
+@test "test elytron ldap configuration by setting the direct-verification attribute to true" {
+    AUTH_LDAP_URL="ldap://test:12345"
+    AUTH_LDAP_BASE_FILTER="(uid={0})"
+    AUTH_LDAP_BASE_CTX_DN="ou=people,dc=example,dc=com"
+    AUTH_LDAP_ROLE_ATTRIBUTE_ID="cn"
+    AUTH_LDAP_ROLE_FILTER="(member={1})"
+    AUTH_LDAP_ROLES_CTX_DN="ou=roles,dc=example,dc=com"
+    AUTH_LDAP_RECURSIVE_SEARCH="true"
+    AUTH_LDAP_ALLOW_EMPTY_PASSWORDS="false"
+    AUTH_LDAP_DIRECT_VERIFICATION=true
+
+    configure_elytron_ldap_auth
+
+    expected="<ldap-realm name=\"KIELdapRealm\" direct-verification=\"true\" dir-context=\"KIELdapDC\">
                 <identity-mapping rdn-identifier=\"(uid={0})\" search-base-dn=\"ou=people,dc=example,dc=com\" use-recursive-search=\"true\">
                     <attribute-mapping>
                         <attribute from=\"cn\" to=\"Roles\" filter=\"(member={1})\" filter-base-dn=\"ou=roles,dc=example,dc=com\"/>
