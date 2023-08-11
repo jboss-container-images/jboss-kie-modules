@@ -10,6 +10,7 @@ function unset_kie_security_auth_env() {
     unset AUTH_LDAP_BIND_CREDENTIAL
     unset AUTH_LDAP_BIND_DN
     unset AUTH_LDAP_DEFAULT_ROLE
+    unset AUTH_LDAP_DIRECT_VERIFICATION
     unset AUTH_LDAP_MAPPER_KEEP_MAPPED
     unset AUTH_LDAP_MAPPER_KEEP_NON_MAPPED
     unset AUTH_LDAP_NEW_IDENTITY_ATTRIBUTES
@@ -242,8 +243,11 @@ function configure_elytron_ldap_auth() {
 
     # configure ldap-realm
     local allow_empty_pass=""
+    local direct_verification="${AUTH_LDAP_DIRECT_VERIFICATION,,}"
     if [ "${AUTH_LDAP_ALLOW_EMPTY_PASSWORDS^^}" == "TRUE" ]; then
-        allow_empty_pass="direct-verification=\"true\" allow-blank-password=\"true\" "
+        allow_empty_pass="direct-verification=\"${direct_verification:-true}\" allow-blank-password=\"true\" "
+    elif [ ! -z ${AUTH_LDAP_DIRECT_VERIFICATION} ]; then
+        allow_empty_pass="direct-verification=\"${direct_verification}\" "
     fi
 
     local base_filter="${AUTH_LDAP_BASE_FILTER}"
