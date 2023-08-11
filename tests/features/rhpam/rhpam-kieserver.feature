@@ -410,7 +410,6 @@ Feature: RHPAM KIE Server configuration tests
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="Port">
     And file /opt/eap/standalone/configuration/standalone-openshift.xml should not contain <xa-datasource-property name="ServerName">
 
-  @wip
   Scenario: Checks if the EJB Timer was successfully configured with MySQL XA with DATASOURCES env
     When container is started with env
       | variable                                  | value                                                                     |
