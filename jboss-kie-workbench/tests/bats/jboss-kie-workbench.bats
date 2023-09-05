@@ -5,11 +5,13 @@ export JBOSS_HOME=${OPT_DIR}/eap
 
 mkdir -p ${OPT_DIR}/kie/data
 mkdir -p ${JBOSS_HOME}/bin/launch
+mkdir -p ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF
 
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/launch-common.sh $JBOSS_HOME/bin/launch
 cp $BATS_TEST_DIRNAME/../../../tests/bats/common/logging.bash $JBOSS_HOME/bin/launch/logging.sh
 cp $BATS_TEST_DIRNAME/../../../jboss-kie-common/added/launch/jboss-kie-common.sh $JBOSS_HOME/bin/launch/jboss-kie-common.sh
 cp $BATS_TEST_DIRNAME/../../../jboss-kie-wildfly-common/added/launch/jboss-kie-wildfly-security.sh $JBOSS_HOME/bin/launch/jboss-kie-wildfly-security.sh
+cp $BATS_TEST_DIRNAME/resources/web.xml ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/web.xml
 
 # begin mocks - import if require in future tests
 touch "${JBOSS_HOME}/bin/launch/login-modules-common.sh"
@@ -264,4 +266,19 @@ teardown() {
     echo "Result  : ${JBOSS_KIE_ARGS}"
 
     [ "${JBOSS_KIE_ARGS}" = "${expected}" ]
+}
+
+@test "test if the secure flag is set to false when https is enabled" {
+    HTTPS_KEYSTORE_DIR="/tmp/certs"
+    HTTPS_KEYSTORE="keystore.jks"
+
+    expected="            <secure>false</secure>"
+
+    configure_workbench_secure_access
+
+    result="$(cat ${JBOSS_HOME}/standalone/deployments/ROOT.war/WEB-INF/web.xml | grep secure)"
+    echo "Expected: ${expected}"
+    echo "Result  : ${result}"
+
+    [ "${expected}" = "${result}" ]
 }

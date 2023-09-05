@@ -161,3 +161,10 @@ Feature: Decision/Business Central common features
       | variable                    | value    |
       | KIE_SERVER_BYPASS_AUTH_USER | true     |
     Then container log should contain -Dorg.kie.server.bypass.auth.user=true
+
+  Scenario: Verify if the secure flag is set to false when https is enabled
+    When container is started with env
+      | variable           | value                               |
+      | HTTPS_KEYSTORE_DIR | /home/businesscentral-secret-volume |
+      | HTTPS_KEYSTORE     | keystore.jks                        |
+    Then file /opt/eap/standalone/deployments/ROOT.war/WEB-INF/web.xml should contain <secure>false</secure>

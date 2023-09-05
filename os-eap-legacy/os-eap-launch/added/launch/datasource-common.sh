@@ -153,6 +153,8 @@ function inject_external_datasources() {
         db="POSTGRESQL"
       elif [ "$driver" == "mysql" ]; then
         db="MYSQL"
+      elif [ "$driver" == "mariadb" ]; then
+        db="MARIADB"
       else
         db="EXTERNAL"
       fi
@@ -240,6 +242,13 @@ function generate_external_datasource() {
           <driver>$driver</driver>"
   else
     ds=" <xa-datasource jndi-name=\"${jndi_name}\" pool-name=\"${pool_name}\" enabled=\"true\" use-java-context=\"true\" statistics-enabled=\"\${wildfly.datasources.statistics-enabled:\${wildfly.statistics-enabled:false}}\">"
+
+    # Fixes: java.lang.NoSuchMethodException: Method setJNDI not found
+    if [[ $driver =~ mariadb ]];then
+      eval unset ${prefix}_XA_CONNECTION_PROPERTY_JNDI
+    fi
+
+
     local xa_props=$(compgen -v | grep -s "${prefix}_XA_CONNECTION_PROPERTY_")
     if [ -z "$xa_props" ] && [ "$driver" != "postgresql" ] && [ "$driver" != "mysql" ]; then
       log_warning "At least one ${prefix}_XA_CONNECTION_PROPERTY_property for datasource ${service_name} is required. Datasource will not be configured."
@@ -250,6 +259,9 @@ function generate_external_datasource() {
         prop_name=$(echo "${xa_prop}" | sed -e "s/${prefix}_XA_CONNECTION_PROPERTY_//g")
         prop_val=$(find_env $xa_prop)
         if [ ! -z ${prop_val} ]; then
+          if [[ $driver =~ postgresql|mariadb ]] && [ "${prop_name}" = "URL" ]; then
+            prop_name="Url"
+          fi
           ds="$ds <xa-datasource-property name=\"${prop_name}\">${prop_val}</xa-datasource-property>"
         fi
       done
@@ -403,14 +415,16 @@ function map_properties() {
   local serverNameVar=${2}
   local portVar=${3}
   local databaseNameVar=${4}
+  local xaUrl=${5}
 
   if [ -n "$host" ] && [ -n "$port" ] && [ -n "$database" ]; then
     if [ -z "$url" ]; then
       url="${protocol}://${host}:${port}/${database}"
+      local tUrl=$(find_env "${prefix}_XA_CONNECTION_PROPERTY_Url")
+      local xaUrl=$(find_env "${prefix}_XA_CONNECTION_PROPERTY_URL" ${tUrl})
     fi
 
-    if [ "$NON_XA_DATASOURCE" == "false" ] && [ -z "$(eval echo \$${prefix}_XA_CONNECTION_PROPERTY_URL)" ]; then
-
+    if [ "$NON_XA_DATASOURCE" == "false" ] && [ -z "${xaUrl}" ] ; then
       if [ -z "${!serverNameVar}" ]; then
         eval ${serverNameVar}=${host}
       fi
@@ -423,8 +437,9 @@ function map_properties() {
         eval ${databaseNameVar}=${database}
       fi
     fi
-  elif [ "$NON_XA_DATASOURCE" == "false" ]; then
-    if [ -z "$(eval echo \$${prefix}_XA_CONNECTION_PROPERTY_URL)" ]; then
+  elif [ "$NON_XA_DATASOURCE" = "false" ]; then
+
+    if [ -z "${xaUrl}" ]; then
       if [ -z "${!serverNameVar}" ] || [ -z "${!portVar}" ] || [ -z "${!databaseNameVar}" ]; then
         if [ "$prefix" != "$service" ]; then
           log_warning "Missing configuration for datasource $prefix. ${service}_SERVICE_HOST, ${service}_SERVICE_PORT, and/or ${prefix}_DATABASE is missing. Datasource will not be configured."
@@ -432,6 +447,7 @@ function map_properties() {
           log_warning "Missing configuration for XA datasource $prefix. Either ${prefix}_XA_CONNECTION_PROPERTY_URL or $serverNameVar, and $portVar, and $databaseNameVar is required. Datasource will not be configured."
         fi
       else
+
         host="${!serverNameVar}"
         port="${!portVar}"
         database="${!databaseNameVar}"
@@ -521,9 +537,17 @@ function inject_datasource() {
 
   case "$db" in
     "MYSQL")
-      map_properties "jdbc:mysql" "${prefix}_XA_CONNECTION_PROPERTY_ServerName" "${prefix}_XA_CONNECTION_PROPERTY_Port" "${prefix}_XA_CONNECTION_PROPERTY_DatabaseName"
+      map_properties "jdbc:mysql" "${prefix}_XA_CONNECTION_PROPERTY_ServerName" "${prefix}_XA_CONNECTION_PROPERTY_Port" "${prefix}_XA_CONNECTION_PROPERTY_DatabaseName" "${prefix}_XA_CONNECTION_PROPERTY_URL"
 
       driver="mysql"
+      validate="true"
+      checker="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker"
+      sorter="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter"
+      ;;
+    "MARIADB")
+      map_properties "jdbc:mariadb" "${prefix}_XA_CONNECTION_PROPERTY_ServerName" "${prefix}_XA_CONNECTION_PROPERTY_Port" "${prefix}_XA_CONNECTION_PROPERTY_DatabaseName"  "${prefix}_XA_CONNECTION_PROPERTY_Url"
+
+      driver="mariadb"
       validate="true"
       checker="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker"
       sorter="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter"
