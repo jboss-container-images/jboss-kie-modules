@@ -898,7 +898,7 @@ main() {
     local products_valid=( all \
         rhpam rhpam-businesscentral rhpam-businesscentral-monitoring rhpam-controller rhpam-kieserver rhpam-process-migration rhpam-smartrouter rhpam-dashbuilder)
     local product_default="all"
-    local version_example="7.13.4"
+    local version_example="7.13.5"
     local default_dir_example="/tmp/${build_tool}/${build_type_default}/${build_date_default}/${version_example}"
     local default_dir
     local artifacts_dir
