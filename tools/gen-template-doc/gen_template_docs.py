@@ -59,7 +59,9 @@ template_dirs = ['target/templates/process', 'target/templates/decision']
 LINKS = {"rhpam-kieserver-rhel8:7.13.0": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
          "rhpam-kieserver-rhel8:7.13.1": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
          "rhpam-kieserver-rhel8:7.13.2": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
-         "rhpam-kieserver-rhel8:7.13.3": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]"}
+         "rhpam-kieserver-rhel8:7.13.3": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
+         "rhpam-kieserver-rhel8:7.13.4": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]",
+         "rhpam-kieserver-rhel8:7.13.5": "../../../kieserver/image.yaml[`rhpam-7/rhpam-kieserver-rhel8`]"}
 
 # used to update template parameters values
 PARAMETER_VALUES = {"EXAMPLE": "var"}
