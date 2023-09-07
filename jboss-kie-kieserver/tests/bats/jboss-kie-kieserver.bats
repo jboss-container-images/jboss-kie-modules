@@ -59,6 +59,7 @@ teardown() {
     export RHPAM_JTA="true"
     configure_EJB_Timer_datasource >&2
     echo "EJBTimer url is ${EJB_TIMER_XA_CONNECTION_PROPERTY_Url} " >&2
+    echo "RHPAM url is ${RHPAM_URL} " >&2
     [ "${TIMER_SERVICE_DATA_STORE^^}" = "${expected_timer_service}" ]
     [ "${DATASOURCES}" = "${expected_datasources}" ]
     [ "${EJB_TIMER_DRIVER}" = "${RHPAM_DRIVER}" ]
@@ -68,8 +69,9 @@ teardown() {
     # we do not expect that this var is set anymore, since we're using URL property directly
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection}" = "" ]
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledSslProtocolSuites}" = "" ]
-    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName}" = "${RHPAM_SERVICE_HOST}" ]
-    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName}" = "${RHPAM_DATABASE}" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Port}" = "" ]
     # the URL property must be set
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Url}" = "jdbc:mariadb://myapp-host:3306/rhpam-mariadb?pinGlobalTxToPhysicalConnection=true\&amp;enabledSslProtocolSuites=TLSv1.2" ]
 }
@@ -200,10 +202,81 @@ teardown() {
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection}" = "" ]
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledSslProtocolSuites}" = "" ]
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledTLSProtocols}" = "" ]
-    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName}" = "${RHPAM_SERVICE_HOST}" ]
-    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName}" = "${RHPAM_DATABASE}" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Port}" = "" ]
     # the URL property must be set
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Url}" = "" ]
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}" = "jdbc:mysql://myapp-host:3306/rhpam-mysql?pinGlobalTxToPhysicalConnection=true\&amp;enabledTLSProtocols=TLSv1.2" ]
+}
+
+@test "verify if EJB_TIMER is correctly configured with data-sources when driver is mysql with nonxa set to false" {
+    local expected_timer_service="EJB_TIMER"
+    local expected_datasources="EJB_TIMER,RHPAM"
+    export DATASOURCES="RHPAM"
+    export RHPAM_DRIVER="mysql"
+    export RHPAM_DATABASE="rhpam-mysql"
+    export RHPAM_USERNAME="rhpam-user"
+    export RHPAM_PASSWORD="rhpam-pwd"
+    export RHPAM_SERVICE_HOST="myapp-host"
+    export RHPAM_SERVICE_PORT="3306"
+    export RHPAM_JNDI="jboss:/datasources/rhpam"
+    export RHPAM_NONXA="false"
+    export RHPAM_JTA="true"
+    configure_EJB_Timer_datasource >&2
+    echo "EJBTimer url is ${EJB_TIMER_XA_CONNECTION_PROPERTY_URL} " >&2
+    echo "RHPAM url is ${RHPAM_URL} " >&2
+    echo "RHPAM XA url is ${RHPAM_XA_CONNECTION_PROPERTY_URL} " >&2
+    [ "${TIMER_SERVICE_DATA_STORE^^}" = "${expected_timer_service}" ]
+    [ "${DATASOURCES}" = "${expected_datasources}" ]
+    [ "${EJB_TIMER_DRIVER}" = "${RHPAM_DRIVER}" ]
+    [ "${RHPAM_URL}" = "" ]
+    [ "${RHPAM_XA_CONNECTION_PROPERTY_URL}" = "\<\![CDATA[jdbc:mysql://myapp-host:3306/rhpam-mysql?pinGlobalTxToPhysicalConnection=true\&amp;enabledTLSProtocols=TLSv1.2]]\>" ]
+    # we do not expect that this var is set anymore, since we're using URL property directly
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledSslProtocolSuites}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledTLSProtocols}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Port}" = "" ]
+    # the URL property must be set
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Url}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}" = "jdbc:mysql://myapp-host:3306/rhpam-mysql?pinGlobalTxToPhysicalConnection=true\&amp;enabledTLSProtocols=TLSv1.2" ]
+}
+
+@test "verify if EJB_TIMER is correctly configured with data-sources when driver is mariadb with nonxa set to false" {
+    local expected_timer_service="EJB_TIMER"
+    local expected_datasources="EJB_TIMER,RHPAM"
+    export DATASOURCES="RHPAM"
+    export RHPAM_DRIVER="mariadb"
+    export RHPAM_DATABASE="rhpam-mysql"
+    export RHPAM_USERNAME="rhpam-user"
+    export RHPAM_PASSWORD="rhpam-pwd"
+    export RHPAM_SERVICE_HOST="myapp-host"
+    export RHPAM_SERVICE_PORT="3306"
+    export RHPAM_JNDI="jboss:/datasources/rhpam"
+    export RHPAM_NONXA="false"
+    export RHPAM_JTA="true"
+    configure_EJB_Timer_datasource >&2
+    echo "EJBTimer url is ${EJB_TIMER_XA_CONNECTION_PROPERTY_Url} " >&2
+    echo "RHPAM url is ${RHPAM_URL} " >&2
+    echo "RHPAM XA url is ${RHPAM_XA_CONNECTION_PROPERTY_URL} " >&2
+    [ "${TIMER_SERVICE_DATA_STORE^^}" = "${expected_timer_service}" ]
+    [ "${DATASOURCES}" = "${expected_datasources}" ]
+    [ "${EJB_TIMER_DRIVER}" = "${RHPAM_DRIVER}" ]
+    [ "${RHPAM_URL}" = "" ]
+    # the URL property is fixed by the datasource-common.sh script
+    [ "${RHPAM_XA_CONNECTION_PROPERTY_URL}" = "\<\![CDATA[jdbc:mariadb://myapp-host:3306/rhpam-mysql?pinGlobalTxToPhysicalConnection=true\&amp;enabledSslProtocolSuites=TLSv1.2]]\>" ]
+    # we do not expect that this var is set anymore, since we're using URL property directly
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledSslProtocolSuites}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledTLSProtocols}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Port}" = "" ]
+    # the URL property must be set
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Url}" = "jdbc:mariadb://myapp-host:3306/rhpam-mysql?pinGlobalTxToPhysicalConnection=true\&amp;enabledSslProtocolSuites=TLSv1.2" ]
 }
 
 @test "verify if EJB_TIMER is correctly configured with data-sources using URL param when driver is mysql" {
@@ -254,6 +327,31 @@ teardown() {
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledTLSProtocols}" = "" ]
     # the URL property must be set
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}" = "jdbc:mysql://myapp-host:3306/rhpam-mysql?useSSL=false\&amp;secondParam=value\&amp;pinGlobalTxToPhysicalConnection=true\&amp;enabledTLSProtocols=TLSv1.2" ]
+}
+
+@test "verify if EJB_TIMER is correctly configured with data-sources using URL using multiple params when driver is mariadb" {
+    local expected_timer_service="EJB_TIMER"
+    local expected_datasources="EJB_TIMER,RHPAM"
+    export DATASOURCES="RHPAM"
+    export RHPAM_DRIVER="mariadb"
+    export RHPAM_USERNAME="rhpam-user"
+    export RHPAM_PASSWORD="rhpam-pwd"
+    export RHPAM_URL="jdbc:mariadb://myapp-host:3306/rhpam-mysql?useSSL=false&secondParam=value"
+    export RHPAM_JNDI="jboss:/datasources/rhpam"
+    export RHPAM_JTA="true"
+    configure_EJB_Timer_datasource >&2
+    echo "EJBTimer url is ${EJB_TIMER_XA_CONNECTION_PROPERTY_Url} " >&2
+    echo "RHPAM url is ${RHPAM_URL} " >&2
+    [ "${TIMER_SERVICE_DATA_STORE^^}" = "${expected_timer_service}" ]
+    [ "${DATASOURCES}" = "${expected_datasources}" ]
+    [ "${EJB_TIMER_DRIVER}" = "${RHPAM_DRIVER}" ]
+    [ "${RHPAM_URL}" = "\<\![CDATA[jdbc:mariadb://myapp-host:3306/rhpam-mysql?useSSL=false&secondParam=value&enabledSslProtocolSuites=TLSv1.2]]\>" ]
+    # we do not expect that this var is set anymore, since we're using URL property directly
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledSslProtocolSuites}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledTLSProtocols}" = "" ]
+    # the URL property must be set
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Url}" = "jdbc:mariadb://myapp-host:3306/rhpam-mysql?useSSL=false\&amp;secondParam=value\&amp;pinGlobalTxToPhysicalConnection=true\&amp;enabledSslProtocolSuites=TLSv1.2" ]
 }
 
 @test "Checks if the EJB Timer was successfully configured with MySQL with DATASOURCES env using custom driver name and URL" {
@@ -312,8 +410,8 @@ teardown() {
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection}" = "" ]
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledSslProtocolSuites}" = "" ]
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledTLSProtocols}" = "" ]
-    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName}" = "${RHPAM_SERVICE_HOST}" ]
-    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName}" = "${RHPAM_DATABASE}" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName}" = "" ]
     # the URL property must be set
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}" = "jdbc:mysql://myapp-host:3306/rhpam-mysql?pinGlobalTxToPhysicalConnection=true\&amp;enabledTLSProtocols=TLSv1.2" ]
 }
@@ -375,14 +473,13 @@ teardown() {
 @test "verify EJB_TIMER is configured by passing XA parameters for mysql datasources" {
     unset EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName
     unset EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName
-    unset EJB_TIMER_XA_CONNECTION_PROPERTY_PortNumber
     unset EJB_TIMER_XA_CONNECTION_PROPERTY_Port
     unset EJB_TIMER_XA_CONNECTION_PROPERTY_Url
     local expected_timer_service="EJB_TIMER"
     local expected_datasources="EJB_TIMER,RHPAM"
     export DATASOURCES="RHPAM"
     export RHPAM_DRIVER="mysql"
-    export RHPAM_USER="rhpam-user"
+    export RHPAM_USERNAME="rhpam-user"
     export RHPAM_PASSWORD="rhpam-pwd"
     export RHPAM_XA_CONNECTION_PROPERTY_ServerName="myapp-host"
     export RHPAM_XA_CONNECTION_PROPERTY_Port="3306"
@@ -393,18 +490,54 @@ teardown() {
     export RHPAM_JTA="true"
     configure_EJB_Timer_datasource >&2
     echo -en "EJB_TIMER env are: \n $(env | grep -i ejb_timer | sort -u) \n" >&2
-    log_info "EJB_TIMER_XA_CONNECTION_PROPERTY_URL is ${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}"
+    log_info "EJB_TIMER_XA_CONNECTION_PROPERTY_URL is ${EJB_TIMER_XA_CONNECTION_PROPERTY_URL} $EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledTLSProtocols"
     [ "${TIMER_SERVICE_DATA_STORE^^}" = "${expected_timer_service}" ]
     [ "${DATASOURCES}" = "${expected_datasources}" ]
     [ "${EJB_TIMER_DRIVER}" = "${RHPAM_DRIVER}" ]
     # we do not expect that this var is set anymore, since we're using URL property directly
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection}" = "" ]
     [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledSslProtocolSuites}" = "" ]
-    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledTLSProtocols}" = "${RHPAM_XA_CONNECTION_PROPERTY_EnabledTLSProtocols}" ]
-    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName}" = "${RHPAM_XA_CONNECTION_PROPERTY_ServerName}" ]
-    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName}" = "${RHPAM_XA_CONNECTION_PROPERTY_DatabaseName}" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledTLSProtocols}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Port}" = "" ]
     # the URL property must be set
-    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}" = "jdbc:${RHPAM_DRIVER}://${RHPAM_XA_CONNECTION_PROPERTY_ServerName}:${RHPAM_XA_CONNECTION_PROPERTY_Port}/${RHPAM_XA_CONNECTION_PROPERTY_DatabaseName}?pinGlobalTxToPhysicalConnection=true\&amp;enabledTLSProtocols=TLSv1.2" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}" = "jdbc:mysql://myapp-host:3306/rhpam-mysql?pinGlobalTxToPhysicalConnection=true\&amp;enabledTLSProtocols=TLSv1.2" ]
+}
+
+@test "verify EJB_TIMER is configured by passing XA parameters for mariadb datasources" {
+    unset EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName
+    unset EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName
+    unset EJB_TIMER_XA_CONNECTION_PROPERTY_Port
+    unset EJB_TIMER_XA_CONNECTION_PROPERTY_Url
+    local expected_timer_service="EJB_TIMER"
+    local expected_datasources="EJB_TIMER,RHPAM"
+    export DATASOURCES="RHPAM"
+    export RHPAM_DRIVER="mariadb"
+    export RHPAM_USERNAME="rhpam-user"
+    export RHPAM_PASSWORD="rhpam-pwd"
+    export RHPAM_XA_CONNECTION_PROPERTY_ServerName="myapp-host"
+    export RHPAM_XA_CONNECTION_PROPERTY_Port="3306"
+    export RHPAM_XA_CONNECTION_PROPERTY_DatabaseName="rhpam-mysql"
+    export RHPAM_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection="true"
+    export RHPAM_XA_CONNECTION_PROPERTY_EnabledSslProtocolSuites="TLSv1.2"
+    export RHPAM_XA_CONNECTION_PROPERTY_JNDI="jboss:/datasources/rhpam"
+    export RHPAM_JTA="true"
+    configure_EJB_Timer_datasource >&2
+    echo -en "EJB_TIMER env are: \n $(env | grep -i ejb_timer | sort -u) \n" >&2
+    log_info "EJB_TIMER_XA_CONNECTION_PROPERTY_Url is ${EJB_TIMER_XA_CONNECTION_PROPERTY_Url}"
+    [ "${TIMER_SERVICE_DATA_STORE^^}" = "${expected_timer_service}" ]
+    [ "${DATASOURCES}" = "${expected_datasources}" ]
+    [ "${EJB_TIMER_DRIVER}" = "${RHPAM_DRIVER}" ]
+    # we do not expect that this var is set anymore, since we're using URL property directly
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledTLSProtocols}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledSslProtocolSuites}" = "${RHPAM_XA_CONNECTION_PROPERTY_EnabledSslProtocolSuites}" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName}" = "" ]
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Port}" = "" ]
+    # the URL property must be set
+    [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Url}" = "jdbc:mariadb://myapp-host:3306/rhpam-mysql?pinGlobalTxToPhysicalConnection=true\&amp;enabledSslProtocolSuites=TLSv1.2" ]
 }
 
 @test "verify if EJB_TIMER is correctly configured with data-sources when driver is db2 using SERVICE envs" {

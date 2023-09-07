@@ -899,7 +899,7 @@ main() {
     local products_valid=( all \
         bamoe bamoe-businesscentral bamoe-businesscentral-monitoring bamoe-controller bamoe-kieserver bamoe-process-migration bamoe-smartrouter bamoe-dashbuilder)
     local product_default="all"
-    local version_example="8.0.3"
+    local version_example="8.0.4"
     local default_dir_example="/tmp/${build_tool}/${build_type_default}/${build_date_default}/${version_example}"
     local default_dir
     local artifacts_dir
