@@ -192,10 +192,11 @@ function generate_datasource_common() {
   local service_name="${11}"
   local jta="${12}"
   local validate="${13}"
+  # the escapes will be handled by the jboss-kie-kieserver.sh script
   # CLOUD-3198 Since Sed replaces '&' with a full match, we need to escape it.
-  local url="${14//&/\\&}"
+  #local url="${14//&/\\&}"
   # CLOUD-3198 In addition to that, we also need to escape ';'
-  url="${url//;/\\;}"
+  #url="${url//;/\\;}"
 
   if [ -n "$driver" ]; then
     ds=$(generate_external_datasource)
@@ -545,7 +546,7 @@ function inject_datasource() {
       sorter="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter"
       ;;
     "MARIADB")
-      map_properties "jdbc:mariadb" "${prefix}_XA_CONNECTION_PROPERTY_ServerName" "${prefix}_XA_CONNECTION_PROPERTY_Port" "${prefix}_XA_CONNECTION_PROPERTY_DatabaseName"  "${prefix}_XA_CONNECTION_PROPERTY_Url"
+      map_properties "jdbc:mariadb" "${prefix}_XA_CONNECTION_PROPERTY_ServerName" "${prefix}_XA_CONNECTION_PROPERTY_Port" "${prefix}_XA_CONNECTION_PROPERTY_DatabaseName" "${prefix}_XA_CONNECTION_PROPERTY_Url"
 
       driver="mariadb"
       validate="true"
@@ -553,7 +554,7 @@ function inject_datasource() {
       sorter="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter"
       ;;
     "POSTGRESQL")
-      map_properties "jdbc:postgresql" "${prefix}_XA_CONNECTION_PROPERTY_ServerName" "${prefix}_XA_CONNECTION_PROPERTY_PortNumber" "${prefix}_XA_CONNECTION_PROPERTY_DatabaseName"
+      map_properties "jdbc:postgresql" "${prefix}_XA_CONNECTION_PROPERTY_ServerName" "${prefix}_XA_CONNECTION_PROPERTY_PortNumber" "${prefix}_XA_CONNECTION_PROPERTY_DatabaseName" "${prefix}_XA_CONNECTION_PROPERTY_Url"
 
       driver="postgresql"
       validate="true"
