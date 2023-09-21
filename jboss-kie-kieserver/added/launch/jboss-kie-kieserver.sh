@@ -159,7 +159,7 @@ function configure_EJB_Timer_datasource {
 
 # finds the URL, precedence is XA_CONNECTION_PROPERTY_Url > XA_CONNECTION_PROPERTY_URL > URL
 # $1 - datasource prefix
-function find_url() {
+function find_url {
     local url=$(find_env "${1}_URL")
     local xaUrl=$(find_env "${1}_XA_CONNECTION_PROPERTY_Url")
     if [ ! -z "${xaUrl}" ]; then
@@ -178,7 +178,7 @@ function set_url {
     url=$(echo ${url} | tr -d '[:space:]')
 
     # KIECLOUD-598 We need to escape the & if it isn't already escaped...
-    url=$(echo "${url}" | sed 's/&/\\&amp;/g')
+    url=$(echo "${url}" | sed 's|\([^\\]\)&|\1\\\&amp;|g')
     # KIECLOUD-598 ...and we need to escape also the ; only in this case
     url=$(echo ${url} | sed -e 's/\;/\\;/g')
 
@@ -272,10 +272,10 @@ function set_timer_defaults {
             EJB_TIMER_XA_CONNECTION_PROPERTY_URL="${url}${paramDelimiterCharacter}pinGlobalTxToPhysicalConnection=true\&amp\;${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
             local nonxa=$(find_env ${1}_NONXA)
             if [ "${nonxa^^}" = "FALSE" ]; then
-                xaUrl=${url//\&amp\\;/$cdataDelimiterCharacter}
+                xaUrl=$(echo "${url}" | sed 's/\&amp\\;/\&/g')
                 eval ${prefix}_XA_CONNECTION_PROPERTY_URL='${cdataBegin}${xaUrl}${cdataDelimiterCharacter}pinGlobalTxToPhysicalConnection=true${cdataDelimiterCharacter}${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}${cdataEnd}'
             else
-                url=${url//\&amp\\;/$cdataDelimiterCharacter}
+                url=$(echo "${url}" | sed 's/\&amp\\;/\&/g')
                 eval ${prefix}_URL='${cdataBegin}${url}${cdataDelimiterCharacter}${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}${cdataEnd}'
             fi
         fi
