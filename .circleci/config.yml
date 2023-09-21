@@ -7,6 +7,11 @@ jobs:
       - checkout
       - run:
           type: shell
+          name: print shell version
+          command: |
+            bash --version
+      - run:
+          type: shell
           name: install dependencies
           command: |
             sudo apt-get update
