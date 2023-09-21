@@ -416,7 +416,7 @@ function map_properties() {
   local serverNameVar=${2}
   local portVar=${3}
   local databaseNameVar=${4}
-  local xaUrl=${5}
+  local xaUrl=$(find_env "${5}")
 
   if [ -n "$host" ] && [ -n "$port" ] && [ -n "$database" ]; then
     if [ -z "$url" ]; then
