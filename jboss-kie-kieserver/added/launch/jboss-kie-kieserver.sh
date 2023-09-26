@@ -157,30 +157,43 @@ function configure_EJB_Timer_datasource {
     fi
 }
 
-# Sets the NONXA url if only the PREFIX_XA_CONNECTION_PROPERTY_URL is provided and vice-versa.
+# finds the URL, precedence is XA_CONNECTION_PROPERTY_Url > XA_CONNECTION_PROPERTY_URL > URL
 # $1 - datasource prefix
-function set_url {
-    local prefixedUrl=$(find_env "${1}_URL")
-    url=$(find_env "${1}_XA_CONNECTION_PROPERTY_URL" "${prefixedUrl}")
-    # remove spaces, newlines, etc from url, see RHPAM-3808
-    url=$(echo ${url} | tr -d '[:space:]')
-    if [ "${prefixedUrl}x" = "x" ]; then
-        # KIECLOUD-598 We need to escape the & if it isn't already escaped...
-        url=$(echo "${url}" | sed 's|\([^\\]\)&amp|\1\\\&amp|g')
-        # KIECLOUD-598 ...and we need to escape also the ; only in this case
-        url=$(echo ${url} | sed -e 's/\;/\\;/g')
-        eval ${1}_URL="${url}"
+function find_url {
+    local url=$(find_env "${1}_URL")
+    local xaUrl=$(find_env "${1}_XA_CONNECTION_PROPERTY_Url")
+    if [ ! -z "${xaUrl}" ]; then
+        echo ${xaUrl}
     else
-        eval ${1}_URL='${url}'
-    fi
-    if [ -z "$(eval echo \$${1}_XA_CONNECTION_PROPERTY_URL)" ]; then
-        # KIECLOUD-598 We need to escape the & if it isn't already escaped...
-        url=$(echo "${url}" | sed 's|\([^\\]\)&amp|\1\\\&amp|g')
-        # KIECLOUD-598 ...and we need to escape also the ; only in this case
-        url=$(echo ${url} | sed -e 's/\;/\\;/g')
-        eval ${1}_XA_CONNECTION_PROPERTY_URL='${url}'
+      url=$(find_env "${1}_XA_CONNECTION_PROPERTY_URL" "${url}")
+      echo ${url}
     fi
 }
+
+# Sets the NONXA url if only the PREFIX_XA_CONNECTION_PROPERTY_URL|Url is provided and vice-versa.
+# $1 - datasource prefix
+function set_url {
+    local url=$(find_url "${1}")
+    # remove spaces, newlines, etc from url, see RHPAM-3808
+    url=$(echo ${url} | tr -d '[:space:]')
+
+    # KIECLOUD-598 We need to escape the & if it isn't already escaped...
+    url=$(echo "${url}" | sed 's|\([^\\]\)&|\1\\\&amp;|g')
+    # KIECLOUD-598 ...and we need to escape also the ; only in this case
+    url=$(echo ${url} | sed -e 's/\;/\\;/g')
+
+    local nonxa=$(find_env ${1}_NONXA)
+    if [ "${nonxa^^}" = "FALSE" ]; then
+        if [[ "$(eval echo \$${1}_DRIVER)" =~ postgresql|mariadb ]]; then
+            export eval ${1}_XA_CONNECTION_PROPERTY_Url=${url}
+        else
+            export eval ${1}_XA_CONNECTION_PROPERTY_URL=${url}
+        fi
+    else
+        export eval ${1}_URL="${url}"
+    fi
+}
+
 
 function set_timer_env {
     local prefix=$1
@@ -193,7 +206,7 @@ function set_timer_env {
 
 function declare_timer_common_variables {
     local common_vars=(DRIVER JNDI USERNAME PASSWORD TX_ISOLATION \
-                            XA_CONNECTION_PROPERTY_URL MAX_POOL_SIZE \
+                            XA_CONNECTION_PROPERTY_URL XA_CONNECTION_PROPERTY_Url MAX_POOL_SIZE \
                             MIN_POOL_SIZE CONNECTION_CHECKER EXCEPTION_SORTER \
                             BACKGROUND_VALIDATION BACKGROUND_VALIDATION_MILLIS)
 
@@ -201,10 +214,10 @@ function declare_timer_common_variables {
         local value=$(find_env "${prefix}_${var}")
         if [[ -n ${value} ]]; then
             if [ "${var}" = "PASSWORD" ] || [ "${var}" = "USERNAME" ]; then
-                ## https://issues.redhat.com/browse/RHPAM-3211 avoid expansion if $n is in the username/password
+                # https://issues.redhat.com/browse/RHPAM-3211 avoid expansion if $n is in the username/password
                 eval "EJB_TIMER_${var}=\$value"
             else
-                if [ "${var}" = "XA_CONNECTION_PROPERTY_URL" ]; then
+                if [ "${var}" = "XA_CONNECTION_PROPERTY_URL" ] || [ "${var}" = "XA_CONNECTION_PROPERTY_Url" ]; then
                     value=$(echo ${value} | tr -d '[:space:]')
                     eval EJB_TIMER_${var}='${value}'
                 else
@@ -234,8 +247,7 @@ function set_timer_defaults {
     EJB_TIMER_MIN_POOL_SIZE=${EJB_TIMER_MIN_POOL_SIZE:-"10"}
     EJB_TIMER_TX_ISOLATION="${EJB_TIMER_TX_ISOLATION:-TRANSACTION_READ_COMMITTED}"
 
-    local url=$(find_env "${prefix}_URL")
-    url=$(find_env "${prefix}_XA_CONNECTION_PROPERTY_URL" "${url}")
+    local url=$(find_url "${1}")
     # Default to the Mariadb property
     enabledTLSParameterName="enabledSslProtocolSuites"
     if [[ $EJB_TIMER_DRIVER =~ mysql|mariadb ]]; then
@@ -245,31 +257,32 @@ function set_timer_defaults {
 
         if [ "x${url}" != "x" ]; then
             paramDelimiterCharacter="?"
-	          xaParamDelimiterCharacter="?"
-	          xaUrl=${url}
+            cdataDelimiterCharacter="?"
 	          cdataBegin=""
 	          cdataEnd=""
             if [[ ${url} = *"?"* ]]; then
-                xaParamDelimiterCharacter="\&amp;"
                 # for non XA needs to use CDATA, datasources scripts scape the prefix_URL even if it is already escaped,
                 # leading to error
-                paramDelimiterCharacter="&"
+                paramDelimiterCharacter="\&amp\;"
+                cdataDelimiterCharacter="\&"
                 cdataBegin="\<\![CDATA["
                 cdataEnd="]]\>"
-                # make sure there is no & character for xa-url.
-                xaUrl=${url//\&/$xaParamDelimiterCharacter}
             fi
 
-            EJB_TIMER_XA_CONNECTION_PROPERTY_URL="${xaUrl}${xaParamDelimiterCharacter}pinGlobalTxToPhysicalConnection=true\&amp;${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
-            eval ${prefix}_URL='${cdataBegin}${url}${paramDelimiterCharacter}${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}${cdataEnd}'
+            EJB_TIMER_XA_CONNECTION_PROPERTY_URL="${url}${paramDelimiterCharacter}pinGlobalTxToPhysicalConnection=true\&amp\;${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
+            local nonxa=$(find_env ${1}_NONXA)
+            if [ "${nonxa^^}" = "FALSE" ]; then
+                xaUrl=$(echo "${url}" | sed 's/\&amp\\;/\&/g')
+                eval ${prefix}_XA_CONNECTION_PROPERTY_URL='${cdataBegin}${xaUrl}${cdataDelimiterCharacter}pinGlobalTxToPhysicalConnection=true${cdataDelimiterCharacter}${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}${cdataEnd}'
+            else
+                url=$(echo "${url}" | sed 's/\&amp\\;/\&/g')
+                eval ${prefix}_URL='${cdataBegin}${url}${cdataDelimiterCharacter}${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}${cdataEnd}'
+            fi
         fi
 
         # the first character must be upper case
         local paramName=${enabledTLSParameterName^}
         # KIECLOUD-243 if this variable is set in the xa-datasource, an exception may occur during server bootstrap
-        # if these parameters are needed, URL should be used instead
-        #eval unset EJB_TIMER_XA_CONNECTION_PROPERTY_${paramName}
-        #eval unset ${prefix}_XA_CONNECTION_PROPERTY_${paramName}
         unset EJB_TIMER_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection
         eval unset ${prefix}_XA_CONNECTION_PROPERTY_PinGlobalTxToPhysicalConnection
         unset EJB_TIMER_XA_CONNECTION_PROPERTY_EnabledSslProtocolSuites
@@ -278,7 +291,7 @@ function set_timer_defaults {
         eval unset ${prefix}_XA_CONNECTION_PROPERTY_EnabledTLSProtocols
     fi
 
-    fix_ejbtimer_xa_url
+    fix_ejbtimer_xa_url ${prefix} ${url}
 }
 
 function get_svc_var {
@@ -303,8 +316,8 @@ function get_svc_var {
 function declare_xa_variables {
     local prefix=$1
     local service=$2
-    local url=$(find_env "${prefix}_URL")
-    url=$(find_env "${prefix}_XA_CONNECTION_PROPERTY_URL" "${url}")
+    local url=$(find_url "${1}")
+
     if [ "x${url}" == "x" ]; then
         local serviceHost=$(find_env "${service}_SERVICE_HOST")
         local host=$(find_env "${prefix}_SERVICE_HOST" "${serviceHost}")
@@ -373,9 +386,8 @@ function declare_xa_variables {
             # KIECLOUD-4712 Do not set URL if the XA properties are set.
             local jdbcUrl="jdbc:${dbType}://${host}:${port}/${database}"
             if [[ $EJB_TIMER_DRIVER =~ mysql|mariadb ]]; then
-
                 # we also need to set URL property for mysql|mariadb databases, since pinGlobalTxToPhysicalConnection can only be passed this way
-                EJB_TIMER_XA_CONNECTION_PROPERTY_URL="${jdbcUrl}?pinGlobalTxToPhysicalConnection=true\&amp;${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
+                EJB_TIMER_XA_CONNECTION_PROPERTY_URL="${jdbcUrl}?pinGlobalTxToPhysicalConnection=true\&amp\;${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
                 unset EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName
                 unset EJB_TIMER_XA_CONNECTION_PROPERTY_DatabaseName
                 unset EJB_TIMER_XA_CONNECTION_PROPERTY_Port
@@ -383,23 +395,19 @@ function declare_xa_variables {
                 eval unset ${prefix}_XA_CONNECTION_PROPERTY_DatabaseName
                 eval unset ${prefix}_XA_CONNECTION_PROPERTY_Port
                 if [ "${nonxa^^}" = "FALSE" ]; then
-                    xaParamDelimiterCharacter="\&amp;"
+                    xaParamDelimiterCharacter="\&"
                     cdataBegin="\<\![CDATA["
                     cdataEnd="]]\>"
                     # make sure there is no & character for xa-url.
                     xaUrl=${jdbcUrl//\&/$xaParamDelimiterCharacter}
-
-                    eval ${prefix}_XA_CONNECTION_PROPERTY_URL='${cdataBegin}${xaUrl}?pinGlobalTxToPhysicalConnection=true${xaParamDelimiterCharacter}${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}${cdataEnd}'
-                                      #     eval ${prefix}_URL='${cdataBegin}${url}${paramDelimiterCharacter}${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}${cdataEnd}'
-                    # eval ${prefix}_XA_CONNECTION_PROPERTY_URL="${jdbcUrl}?pinGlobalTxToPhysicalConnection=true\&amp;${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
+                    eval ${prefix}_XA_CONNECTION_PROPERTY_URL='${cdataBegin}${jdbcUrl}?pinGlobalTxToPhysicalConnection=true${xaParamDelimiterCharacter}${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}${cdataEnd}'
                 else
                     eval ${prefix}_URL="${jdbcUrl}?${enabledTLSParameterName}=${MYSQL_ENABLED_TLS_PROTOCOLS:-TLSv1.2}"
                 fi
             else
                 eval ${prefix}_URL="${jdbcUrl}"
             fi
-
-            fix_ejbtimer_xa_url
+            fix_ejbtimer_xa_url ${prefix} ${jdbcUrl}
         fi
 
     elif [ "x${url}" != "x" ]; then
@@ -416,26 +424,40 @@ function declare_xa_variables {
 
             eval unset EJB_TIMER_XA_CONNECTION_PROPERTY_URL
             eval unset EJB_TIMER_XA_CONNECTION_PROPERTY_Url
+
+        elif [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}x" = "x" ] && [ "${EJB_TIMER_XA_CONNECTION_PROPERTY_Url}x" = "x" ]; then
+            EJB_TIMER_XA_CONNECTION_PROPERTY_URL=${url}
+                fix_ejbtimer_xa_url ${prefix} ${url}
         fi
     fi
+
 }
 
 # XA Set URL method for postgresql is Url, fixes: Method setURL not found
 function fix_ejbtimer_xa_url {
     if [[ $EJB_TIMER_DRIVER =~ postgresql|mariadb ]]; then
         if [ ! -z "$EJB_TIMER_XA_CONNECTION_PROPERTY_URL" ]; then
-            # KIECLOUD-598 If a EJB_TIMER_XA_CONNECTION_PROPERTY_URL is set let's escape the & for each &amp
-            EJB_TIMER_XA_CONNECTION_PROPERTY_Url=$(echo "$EJB_TIMER_XA_CONNECTION_PROPERTY_URL" | sed 's|\([^\\]\)&amp|\1\\\&amp|g')
+            EJB_TIMER_XA_CONNECTION_PROPERTY_Url="${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}"
+            local rhpam=$(find_env ${1}_XA_CONNECTION_PROPERTY_URL)
+            if [ "${rhpam}x" = "x" ]; then
+                rhpam="${EJB_TIMER_XA_CONNECTION_PROPERTY_URL}"
+            fi
+            eval ${1}_XA_CONNECTION_PROPERTY_Url='${rhpam}'
             unset EJB_TIMER_XA_CONNECTION_PROPERTY_URL
+            unset eval ${1}_XA_CONNECTION_PROPERTY_URL
         else
-            # KIECLOUD-598 If there isn't a EJB_TIMER_XA_CONNECTION_PROPERTY_URL let's use the $1 param
-            local url=$1;
-            url=$(echo ${url} | sed 's|\([^\\]\)&amp|\1\\\&amp|g')
-            url=$(echo ${url} | sed -e 's/\([^\\]\);/\1\\\;/g')
-            EJB_TIMER_XA_CONNECTION_PROPERTY_Url=$url
+            unset unset EJB_TIMER_XA_CONNECTION_PROPERTY_Url
+            local providedUrl=$(find_env ${1}_URL)
+            # KIECLOUD-598 If there isn't a EJB_TIMER_XA_CONNECTION_PROPERTY_URL let's use the $2 param
+            if [ ! -z ${EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName} ] && [ ! -z ${EJB_TIMER_XA_CONNECTION_PROPERTY_ServerName} ] && [ ! -z ${EJB_TIMER_XA_CONNECTION_PROPERTY_PortNumber} ]; then
+                unset EJB_TIMER_XA_CONNECTION_PROPERTY_Url="${2}"
+            else
+                 EJB_TIMER_XA_CONNECTION_PROPERTY_Url="${2}"
+            fi
+            eval ${1}_XA_CONNECTION_PROPERTY_Url='${2}'
+            unset EJB_TIMER_XA_CONNECTION_PROPERTY_URL
+            unset eval ${1}_XA_CONNECTION_PROPERTY_URL
         fi
-    else
-        EJB_TIMER_XA_CONNECTION_PROPERTY_URL=$(echo "$EJB_TIMER_XA_CONNECTION_PROPERTY_URL" | sed 's|\([^\\]\)&amp|\1\\\&amp|g')
     fi
 }
 
