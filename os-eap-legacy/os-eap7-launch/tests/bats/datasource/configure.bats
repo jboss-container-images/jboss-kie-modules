@@ -288,7 +288,8 @@ load common
     TEST_XA_CONNECTION_PROPERTY_DatabaseName="ibmdb2db"
 
     run inject_datasources
-
+    echo "Output: ${lines[0]}"
+     echo "Output: ${output}"
     expected="[WARN]Missing configuration for XA datasource TEST. Either TEST_XA_CONNECTION_PROPERTY_URL or TEST_XA_CONNECTION_PROPERTY_ServerName, and TEST_XA_CONNECTION_PROPERTY_PortNumber, and TEST_XA_CONNECTION_PROPERTY_DatabaseName is required. Datasource will not be configured."
     [ "$output" = "$expected" ]
 }
