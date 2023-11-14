@@ -24,7 +24,7 @@ function verifyServerContainers() {
         if [ -x "$(command -v java)" ]; then
             java ${JAVA_OPTS_APPEND} $(getKieJavaArgs) ${containerVerifier} ${releaseIds}
         else
-            log_warning "java symlink in /usr/bin not founded, using JAVA_HOME $JAVA_HOME instead to run verificatoin."
+            log_warning "java symlink in /usr/bin not founded, using JAVA_HOME $JAVA_HOME instead to run verification."
             $JAVA_HOME/bin/java ${JAVA_OPTS_APPEND} $(getKieJavaArgs) ${containerVerifier} ${releaseIds}
         fi
     fi
