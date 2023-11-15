@@ -20,7 +20,13 @@ function verifyServerContainers() {
         done
         local containerVerifier="org.kie.server.services.impl.KieServerContainerVerifier"
         log_info "Attempting to verify kie server containers with 'java ${containerVerifier} ${releaseIds}' with custom Java properties '${JAVA_OPTS_APPEND}'"
-        java ${JAVA_OPTS_APPEND} $(getKieJavaArgs) ${containerVerifier} ${releaseIds}
+        # Workaround for RHPAM-4849
+        if [ -x "$(command -v java)" ]; then
+            java ${JAVA_OPTS_APPEND} $(getKieJavaArgs) ${containerVerifier} ${releaseIds}
+        else
+            log_warning "java symlink in /usr/bin not found, using JAVA_HOME $JAVA_HOME instead to run verification."
+            $JAVA_HOME/bin/java ${JAVA_OPTS_APPEND} $(getKieJavaArgs) ${containerVerifier} ${releaseIds}
+        fi
     fi
 }
 
