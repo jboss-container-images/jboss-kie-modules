@@ -788,7 +788,13 @@ function configure_server_state() {
         # create a KIE server state file with all configured containers and properties
         local stateFileInit="org.kie.server.services.impl.storage.file.KieServerStateFileInit"
         log_info "Attempting to generate kie server state file with 'java ${JBOSS_KIE_ARGS} ${stateFileInit}'"
-        java ${JBOSS_KIE_ARGS} $(getKieJavaArgs) ${stateFileInit}
+        # Workaround for RHPAM-4849
+        if [ -x "$(command -v java)" ]; then
+            java ${JBOSS_KIE_ARGS} $(getKieJavaArgs) ${stateFileInit}
+        else
+            log_warning "java symlink in /usr/bin not found, using JAVA_HOME $JAVA_HOME instead to run verification."
+            $JAVA_HOME/bin/java ${JBOSS_KIE_ARGS} $(getKieJavaArgs) ${stateFileInit}
+        fi
         ERR=$?
         if [ $ERR -ne 0 ]; then
             log_error "Aborting due to error code $ERR from kie server state file init"
