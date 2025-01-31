@@ -27,8 +27,8 @@ Feature: IBM BAMOE common tests
 
   Scenario: [KIECLOUD-520] - Make sure the jmx_prometheus_agent is on the desired version
     When container is started with command bash
-    Then run sh -c 'test -f /opt/jboss/container/prometheus/jmx_prometheus_javaagent-0.3.2.redhat-00003.jar && echo all good' in container and check its output for all good
-    And run sh -c 'md5sum /opt/jboss/container/prometheus/jmx_prometheus_javaagent-0.3.2.redhat-00003.jar' in container and check its output for 8b3af39995b113baf35e53468bad7aae  /opt/jboss/container/prometheus/jmx_prometheus_javaagent-0.3.2.redhat-00003.jar
+    Then run sh -c 'test -f /opt/jboss/container/prometheus/jmx_prometheus_javaagent-0.18.0.redhat-00001.jar && echo all good' in container and check its output for all good
+    And run sh -c 'md5sum /opt/jboss/container/prometheus/jmx_prometheus_javaagent-0.18.0.redhat-00001.jar' in container and check its output for 8b3af39995b113baf35e53468bad7aae  /opt/jboss/container/prometheus/jmx_prometheus_javaagent-0.18.0.redhat-00001.jar
 
   Scenario: Make sure the logger pattern is properly configured with a custom pattern
     When container is started with env
