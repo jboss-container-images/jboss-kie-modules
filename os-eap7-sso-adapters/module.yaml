@@ -1,13 +1,13 @@
 schema_version: 1
 name: os-eap7-sso-adapters
-version: '7.5.0-kie'
-description: RHSS adapters for JBoss EAP 7.
+version: '7.6.12-kie'
+description: RHSSO adapters for JBoss EAP 7.
 execute:
   - script: configure.sh
     user: '185'
 
 artifacts:
-  - name: rh-sso-7.5.0-eap7-adapter-dist.zip
-    md5: 981c957ceaaa54357e7880710c11f864
-  - name: rh-sso-7.5.0-saml-eap7-adapter-dist.zip
-    md5: 0ac36212cfd87ff66b721277ce721cf1
+  - name: rh-sso-7.6.12-eap7-adapter-dist.zip
+    md5: cf9cdccef0974e883a61081ef268fbea
+  - name: rh-sso-7.6.12-saml-eap7-adapter-dist.zip
+    md5: cae7e2666cfa9d1a14b02f78c7c349bb
